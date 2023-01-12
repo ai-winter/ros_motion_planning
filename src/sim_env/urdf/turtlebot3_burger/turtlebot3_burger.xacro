@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<robot name="turtlebot3_burger" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find sim_env)/urdf/turtlebot3_burger/common_properties.xacro"/>
+  <xacro:include filename="$(find sim_env)/urdf/turtlebot3_burger/turtlebot3_burger.gazebo.xacro"/>
+  <xacro:include filename="$(find sim_env)/urdf/turtlebot3_burger/turtlebot3_burger.urdf.xacro"/>
+  
+</robot>

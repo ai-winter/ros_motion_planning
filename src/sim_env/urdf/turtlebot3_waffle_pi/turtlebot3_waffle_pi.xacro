@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<robot name="turtlebot3_waffle_pi" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find sim_env)/urdf/turtlebot3_waffle_pi/common_properties.xacro"/>
+  <xacro:include filename="$(find sim_env)/urdf/turtlebot3_waffle_pi/turtlebot3_waffle_pi.gazebo.xacro"/>
+  <xacro:include filename="$(find sim_env)/urdf/turtlebot3_waffle_pi/turtlebot3_waffle_pi.urdf.xacro"/>
+
+</robot>

@@ -1,0 +1,47 @@
+Panels:
+- Class: rviz/Displays
+  Name: Displays
+- Class: rviz/Tool Properties
+  Name: Tool Properties
+Visualization Manager:
+  Displays:
+  - Class: rviz/Map
+    Enabled: true
+    Name: Map
+    Topic: /map
+  - Class: rviz/Grid
+    Enabled: true
+    Name: Grid
+  - Class: rviz/TF
+    Enabled: false
+    Name: TF
+  - Class: rviz/RobotModel
+    Enabled: true
+    Name: RobotModel
+    Robot Description: robot_description
+  - Class: rviz/Image
+    Enabled: false
+    Name: Image
+    Topic: /camera/rgb/image_raw
+  - Alpha: 1
+    Class: rviz/LaserScan
+    Color: 255; 0; 0
+    Color Transformer: FlatColor
+    Enabled: true
+    Name: LaserScan
+    Size (m): 0.03
+    Style: Spheres
+    Topic: /scan
+  Global Options:
+    Fixed Frame: map
+  Tools:
+  - Class: rviz/Interact
+  - Class: rviz/MoveCamera
+  - Class: rviz/Select
+  - Class: rviz/FocusCamera
+  - Class: rviz/Measure
+  - Class: rviz/PublishPoint
+  - Class: rviz/SetInitialPose
+    Topic: /initialpose
+  - Class: rviz/SetGoal
+    Topic: /move_base_simple/goal
