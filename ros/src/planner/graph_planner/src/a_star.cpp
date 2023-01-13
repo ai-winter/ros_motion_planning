@@ -1,7 +1,7 @@
 /***********************************************************
  * 
  * @file: a_star.cpp
- * @breif: Contains the A* (Dijsktra and GBFS) planner class
+ * @breif: Contains the A* (dijkstra and GBFS) planner class
  * @author: Yang Haodong
  * @update: 2022-10-27
  * @version: 1.1
@@ -25,14 +25,14 @@ namespace a_star_planner{
    * @param   ny          pixel number in costmap y direction
    * @param   resolution  costmap resolution
    */
-  AStar::AStar(int nx, int ny, double resolution, bool dijsktra, bool gbfs) : 
+  AStar::AStar(int nx, int ny, double resolution, bool dijkstra, bool gbfs) : 
       GlobalPlanner(nx, ny, resolution) {
-    // can not using both dijsktra and GBFS at the same time
-    if(!(dijsktra && gbfs)) {
-      this->is_dijsktra_ = dijsktra;
+    // can not using both dijkstra and GBFS at the same time
+    if(!(dijkstra && gbfs)) {
+      this->is_dijkstra_ = dijkstra;
       this->is_gbfs_ = gbfs;
     } else {
-      this->is_dijsktra_ = false;
+      this->is_dijkstra_ = false;
       this->is_gbfs_ = false;   
     }
   };
@@ -88,8 +88,8 @@ namespace a_star_planner{
         new_point.id = this->grid2Index(new_point.x, new_point.y);
         new_point.pid = current.id;
 
-        // if using dijsktra implementation, do not consider heuristics cost
-        if(!this->is_dijsktra_)
+        // if using dijkstra implementation, do not consider heuristics cost
+        if(!this->is_dijkstra_)
           new_point.h_cost = std::abs(new_point.x - goal.x) + std::abs(new_point.y - goal.y);
         // if using GBFS implementation, only consider heuristics cost
         if(this->is_gbfs_)

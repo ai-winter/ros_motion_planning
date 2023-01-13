@@ -90,7 +90,7 @@ namespace graph_planner {
             private_nh.param("planner_name", planner_name, (std::string)"a_star");
             if (planner_name == "a_star")
                 this->g_planner_ = new a_star_planner::AStar(nx, ny, resolution);
-            else if (planner_name == "dijsktra")
+            else if (planner_name == "dijkstra")
                 this->g_planner_ = new a_star_planner::AStar(nx, ny, resolution, true);
             else if (planner_name == "gbfs")
                 this->g_planner_ = new a_star_planner::AStar(nx, ny, resolution, false, true); 

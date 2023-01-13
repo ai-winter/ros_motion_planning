@@ -91,10 +91,10 @@ bool compare_coordinates::operator()(const Node& p1, const Node& p2)  const {
  */
 std::vector<Node> getMotion() {
   return {
-    Node(0, 1, NEUTRAL_COST, 0, 0, 0),
-    Node(1, 0, NEUTRAL_COST, 0, 0, 0),
-    Node(0, -1, NEUTRAL_COST, 0, 0, 0),
-    Node(-1, 0, NEUTRAL_COST, 0, 0, 0)
+    Node(0, 1, 1, 0, 0, 0),
+    Node(1, 0, 1, 0, 0, 0),
+    Node(0, -1, 1, 0, 0, 0),
+    Node(-1, 0, 1, 0, 0, 0)
     // Node(1, 1, sqrt(2) * NEUTRAL_COST, 0, 0, 0),
     // Node(1, -1, sqrt(2) * NEUTRAL_COST, 0, 0, 0),
     // Node(-1, 1, sqrt(2) * NEUTRAL_COST, 0, 0, 0),
