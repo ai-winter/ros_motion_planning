@@ -8,7 +8,7 @@
 
 Planner      |    C++    | Python    | Matlab
 ------------ | --------- | --------- | -----------------
-**GBFS**                 | ![Status](https://img.shields.io/badge/done-v1.0-brightgreen)   | ![Status](https://img.shields.io/badge/done-v1.0-brightgreen)   | ![Status](https://img.shields.io/badge/develop-v1.0-red)   |
+**GBFS**                 | ![](https://img.shields.io/badge/done-v1.0-brightgreen)   | ![Status](https://img.shields.io/badge/done-v1.0-brightgreen)   | ![Status](https://img.shields.io/badge/develop-v1.0-red)   |
 **Dijkstra**                 | ![Status](https://img.shields.io/badge/done-v1.0-brightgreen)  | ![Status](https://img.shields.io/badge/done-v1.0-brightgreen) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
 **A***                 | ![Status](https://img.shields.io/badge/done-v1.1-brightgreen) | ![Status](https://img.shields.io/badge/done-v1.0-brightgreen) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | 
 **JPS**                 | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
