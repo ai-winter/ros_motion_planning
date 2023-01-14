@@ -1,4 +1,4 @@
-image: /home/winter/warehouse.pgm
+image: warehouse.pgm
 resolution: 0.050000
 origin: [-12.000000, -12.000000, 0.000000]
 negate: 0
