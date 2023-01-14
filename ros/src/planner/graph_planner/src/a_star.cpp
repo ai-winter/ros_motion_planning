@@ -90,7 +90,7 @@ namespace a_star_planner{
 
         // if using dijkstra implementation, do not consider heuristics cost
         if(!this->is_dijkstra_)
-          new_point.h_cost = std::abs(new_point.x - goal.x) + std::abs(new_point.y - goal.y);
+          new_point.h_cost = std::sqrt(std::pow(new_point.x - goal.x, 2) + std::pow(new_point.y - goal.y, 2));
         // if using GBFS implementation, only consider heuristics cost
         if(this->is_gbfs_)
           new_point.cost = 0;

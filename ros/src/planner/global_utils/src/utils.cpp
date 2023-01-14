@@ -78,12 +78,6 @@ bool compare_coordinates::operator()(const Node& p1, const Node& p2)  const {
   return p1.x == p2.x && p1.y == p2.y;
 }
 
-// Possible motions for dijkstra, A*, and similar algorithms.
-// Not using this for RRT & RRT* to allow random direction movements.
-// TODO(vss): Consider adding option for motion restriction in RRT and RRT* by
-//       replacing new node with nearest node that satisfies motion constraints
-
-
 /*************************** Some useful functions ********************************/
 /**
  * @brief Get permissible motion primatives for the bot
@@ -94,16 +88,12 @@ std::vector<Node> getMotion() {
     Node(0, 1, 1, 0, 0, 0),
     Node(1, 0, 1, 0, 0, 0),
     Node(0, -1, 1, 0, 0, 0),
-    Node(-1, 0, 1, 0, 0, 0)
-    // Node(1, 1, sqrt(2) * NEUTRAL_COST, 0, 0, 0),
-    // Node(1, -1, sqrt(2) * NEUTRAL_COST, 0, 0, 0),
-    // Node(-1, 1, sqrt(2) * NEUTRAL_COST, 0, 0, 0),
-    // Node(-1, -1, sqrt(2) * NEUTRAL_COST, 0, 0, 0)
+    Node(-1, 0, 1, 0, 0, 0),
+    Node(1, 1, sqrt(2), 0, 0, 0),
+    Node(1, -1, sqrt(2), 0, 0, 0),
+    Node(-1, 1, sqrt(2), 0, 0, 0),
+    Node(-1, -1, sqrt(2), 0, 0, 0)
   };
-  // NOTE: Add diagonal movements for A* and D* only after the heuristics in the
-  // algorithms have been modified. Refer to README.md. The heuristics currently
-  // implemented are based on Manhattan distance and dwill not account for
-  // diagonal/ any other motions
 }
 
 /**
