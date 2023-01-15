@@ -17,7 +17,7 @@ class GBFS(AStar):
         super().__init__(start, goal, env, heuristic_type)
     
     def __str__(self) -> str:
-        return "Greedy Best First Search(GBFS) motion planning"
+        return "Greedy Best First Search(GBFS)"
 
     def plan(self):
         '''

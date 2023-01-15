@@ -5,6 +5,7 @@
 @update: 2023.1.13
 '''
 import os, sys
+import math
 import heapq
 
 sys.path.append(os.path.abspath(os.path.join(__file__, "../../")))
@@ -41,7 +42,7 @@ class AStar(GraphSearcher):
         super().__init__(start, goal, env, heuristic_type)
 
     def __str__(self) -> str:
-        return "A* motion planning"
+        return "A*"
 
     def plan(self):
         '''
@@ -123,13 +124,17 @@ class AStar(GraphSearcher):
 
         Return
         ----------
+        cost: float
+            the cost of planning path
         path: list
             the planning path
         '''
+        cost = 0
         node = closed_set[closed_set.index(self.goal)]
         path = [node.current]
         while node != self.start:
             index = closed_set.index(Node(node.parent, None, None, None))
+            cost += math.hypot(node.current[0] - node.parent[0], node.current[1] - node.parent[1])
             node = closed_set[index]
             path.append(node.current)
-        return path
+        return cost, path

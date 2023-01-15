@@ -17,7 +17,7 @@ class Dijkstra(AStar):
         super().__init__(start, goal, env, heuristic_type)
     
     def __str__(self) -> str:
-        return "Dijkstra motion planning"
+        return "Dijkstra"
 
     def plan(self):
         '''

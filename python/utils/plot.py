@@ -18,7 +18,8 @@ class Plot:
     def update_obs(self, obs):
         self.obs = obs
 
-    def animation(self, path, expand, name):
+    def animation(self, path, expand, name, cost=None):
+        name = name + "\ncost: " + str(cost) if cost else name
         self.plotGrid(name)
         self.plotExpand(expand)
         self.plotPath(path)

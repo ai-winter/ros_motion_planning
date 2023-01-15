@@ -69,7 +69,8 @@ namespace a_star_planner{
       current.id = this->grid2Index(current.x, current.y);
       
       // current node do not exist in closed list
-      if (closed_list.find(current) != closed_list.end()) continue;
+      if (closed_list.find(current) != closed_list.end())
+        continue;
 
       // goal found
       if (current==goal) {
@@ -82,7 +83,8 @@ namespace a_star_planner{
         Node new_point = current + m;
 
         // current node do not exist in closed list
-        if (closed_list.find(new_point) != closed_list.end()) continue;
+        if (closed_list.find(new_point) != closed_list.end())
+          continue;
 
         // explore a new node
         new_point.id = this->grid2Index(new_point.x, new_point.y);
@@ -90,7 +92,9 @@ namespace a_star_planner{
 
         // if using dijkstra implementation, do not consider heuristics cost
         if(!this->is_dijkstra_)
-          new_point.h_cost = std::sqrt(std::pow(new_point.x - goal.x, 2) + std::pow(new_point.y - goal.y, 2));
+          new_point.h_cost = std::sqrt(std::pow(new_point.x - goal.x, 2)
+                              + std::pow(new_point.y - goal.y, 2));
+
         // if using GBFS implementation, only consider heuristics cost
         if(this->is_gbfs_)
           new_point.cost = 0;
@@ -101,11 +105,10 @@ namespace a_star_planner{
           break;
         }
 
-        // boundary check
-        if (new_point.id < 0 || new_point.id >= this->ns_)  continue;
-
-        // obstacle or visited
-        if (costs[new_point.id] >= this->lethal_cost_ * this->factor_) continue;
+        // bext node hit the boundary or obstacle
+        if (new_point.id < 0 || new_point.id >= this->ns_ || 
+            costs[new_point.id] >= this->lethal_cost_ * this->factor_)
+            continue;
 
         open_list.push(new_point);
         expand.push_back(new_point);

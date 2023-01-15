@@ -34,153 +34,147 @@ namespace jps_planner {
                                                 const Node& goal, std::vector<Node> &expand) {
         // copy
         this->costs_ = costs;
-        // ROS_INFO("aaa_cost:%d", cos)
         this->start_ = start, this->goal_ = goal;
 
+        // open list
+        std::priority_queue<Node, std::vector<Node>, compare_cost> open_list;
+        open_list.push(start);
+
+        // closed list
+        std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list;
+
+        // expand list
+        expand.clear();
+        expand.push_back(start);
+
         // get all possible motions
-        std::vector<Node> motion = getMotion();
-        open_list_.push(start_);
+        std::vector<Node> motions = getMotion();
 
         // main loop
-        while (!open_list_.empty()) {
+        while (!open_list.empty()) {
             // pop current node from open list
-            Node current = open_list_.top();
-            this->open_list_.pop();
-            current.id = this->grid2Index(current.x, current.y);
+            Node current = open_list.top();
+            open_list.pop();
 
             // current node do not exist in closed list
-            if (this->closed_list_.find(current) != this->closed_list_.end()) continue;
+            if (closed_list.find(current) != closed_list.end())
+                continue;
 
             // goal found
-            if (current==this->goal_) {
-                this->closed_list_.insert(current);
-                ROS_INFO("GOAL 1");
-                return {true, this->_convertClosedListToPath(this->closed_list_, this->start_, this->goal_)};
+            if (current == goal) {
+                closed_list.insert(current);
+                return {true, this->_convertClosedListToPath(closed_list, start, goal)};
             }
 
             // explore neighbor of current node
-            for (const auto& m : motion) {
-                Node new_point = current + m;
+            std::vector<Node> jp_list;
+            for (const auto& motion : motions) {
+                Node jp = this->jump(current, motion);
 
-                // current node do not exist in closed list
-                if (this->closed_list_.find(new_point) != this->closed_list_.end()) continue;
+                // exists and not in CLOSED set
+                if (jp.id != -1 && closed_list.find(jp) == closed_list.end()) {
+                    jp.pid = current.id;
+                    jp.h_cost = std::sqrt(std::pow(jp.x - goal.x, 2)
+                                + std::pow(jp.y - goal.y, 2));
+                    jp_list.push_back(jp);
+                }
+            }
 
-                // explore a new node
-                new_point.id = this->grid2Index(new_point.x, new_point.y);
-                new_point.pid = current.id;
-                new_point.h_cost = std::abs(new_point.x - goal.x) + std::abs(new_point.y - goal.y);
+            for (const auto& jp : jp_list) {
+                open_list.push(jp);
+                expand.push_back(jp);
 
                 // goal found
-                if (new_point==this->goal_) {
-                    this->open_list_.push(new_point);
+                if (jp == goal)
                     break;
-                }
-  
-                // boundary check
-                if (new_point.id < 0 || new_point.id >= this->ns_)  continue;
-
-                // obstacle or visited
-                if (costs[new_point.id] >= this->lethal_cost_ * this->factor_) continue;
-  
-                // ROS_INFO("before jump");
-                // start jump point search
-                Node jump_point = this->jump(new_point, m, current.id);
-                ROS_INFO("%d", jump_point.id);
-                // ROS_INFO("after jump");
-                // jump point found
-                if (jump_point.id != -1) {
-                    this->open_list_.push(jump_point);
-                    expand.push_back(jump_point);
-                    // goal found
-                    if (jump_point==this->goal_) {
-                        this->closed_list_.insert(current);
-                        this->closed_list_.insert(jump_point);
-                        ROS_INFO("GOAL 2");
-                        return {true, this->_convertClosedListToPath(this->closed_list_, start, goal)};
-                    }
-                }
-                this->open_list_.push(new_point);
             }
-            this->closed_list_.insert(current);
+            
+            closed_list.insert(current);
         }
         return {false, {}};
     }
+           
     /**
      * @brief detect whether current node has forced neighbor or not 
-     * @param cur_point     current node
-     * @param next_point    next node
-     * @param motion        current motion
+     * @param point     current node
+     * @param motion    the motion that current node executes
      * @return true if current node has forced neighbor else false
      */
-    bool JumpPointSearch::hasForcedNeighbours(const Node& cur_point, const Node& next_point,
-                                              const Node& motion) {
-        // current node's neighbor 
-        int cn1x = cur_point.x + motion.y;
-        int cn1y = cur_point.y + motion.x;
-        int cn1id = this->grid2Index(cn1x, cn1y);
-        int cn2x = cur_point.x - motion.y;
-        int cn2y = cur_point.y - motion.x;
-        int cn2id = this->grid2Index(cn2x, cn2y);
+    bool JumpPointSearch::detectForceNeighbor(const Node& point, const Node& motion) {
+        int x = point.x;
+        int y = point.y;
+        int x_dir = motion.x;
+        int y_dir = motion.y;
 
-        // next node's neighbor
-        int nn1x = next_point.x + motion.y;
-        int nn1y = next_point.y + motion.x;
-        int nn1id = this->grid2Index(nn1x, nn1y);
-        int nn2x = next_point.x - motion.y;
-        int nn2y = next_point.y - motion.x;
-        int nn2id = this->grid2Index(nn2x, nn2y);
-        // ROS_INFO("cn1:%d, cn2: %d, nn1:%d, nn2:%d", cn1id, cn2id, nn1id, nn2id);
-        // ROS_INFO("cn1:%d, cn2: %d, nn1:%d, nn2:%d", this->costs_[cn1id], this->costs_[cn2id], this->costs_[nn1id], this->costs_[nn2id]);
-        bool a = !(cn1id < 0 || cn1id >= this->ns_ ||
-                   this->costs_[cn1id] >= this->lethal_cost_ * this->factor_);
-        bool b = !(nn1id < 0 || nn1id >= this->ns_ ||
-                   this->costs_[nn1id] >= this->lethal_cost_ * this->factor_);
-        bool c = !(cn2id < 0 || cn2id >= this->ns_ ||
-                   this->costs_[cn2id] >= this->lethal_cost_ * this->factor_);
-        bool d = !(nn2id < 0 || nn2id >= this->ns_ ||
-                   this->costs_[nn2id] >= this->lethal_cost_ * this->factor_);
-        // ROS_INFO("a:%d, b: %d, c:%d, d:%d", a, b, c, d);
-        return (a != b) || (c != d);
+        // horizontal
+        if (x_dir && !y_dir) {
+            if (this->costs_[this->grid2Index(x, y + 1)] >= this->lethal_cost_ * this->factor_ &&
+                this->costs_[this->grid2Index(x + x_dir, y + 1)] < this->lethal_cost_ * this->factor_)
+                return true;
+            if (this->costs_[this->grid2Index(x, y - 1)] >= this->lethal_cost_ * this->factor_ &&
+                this->costs_[this->grid2Index(x + x_dir, y - 1)] < this->lethal_cost_ * this->factor_)
+                return true;
+        }
+        
+        // vertical
+        if (!x_dir && y_dir) {
+            if (this->costs_[this->grid2Index(x + 1, y)] >= this->lethal_cost_ * this->factor_ &&
+                this->costs_[this->grid2Index(x + 1, y + y_dir)] < this->lethal_cost_ * this->factor_)
+                return true;
+            if (this->costs_[this->grid2Index(x - 1, y)] >= this->lethal_cost_ * this->factor_ &&
+                this->costs_[this->grid2Index(x - 1, y + y_dir)] < this->lethal_cost_ * this->factor_)
+                return true;
+        }
+
+        // diagonal
+        if (x_dir && y_dir) {
+            if (this->costs_[this->grid2Index(x - x_dir, y)] >= this->lethal_cost_ * this->factor_ &&
+                this->costs_[this->grid2Index(x - x_dir, y + y_dir)] < this->lethal_cost_ * this->factor_)
+                return true;
+            if (this->costs_[this->grid2Index(x, y - y_dir)] >= this->lethal_cost_ * this->factor_ &&
+                this->costs_[this->grid2Index(x + x_dir, y - y_dir)] < this->lethal_cost_ * this->factor_)
+                return true;
+        }
+
+        return false;
     }
     
     /**
      * @brief calculate jump node recursively
-     * @param new_point new node
-     * @param motion    current motion
-     * @param id        parent id of `new_point`
+     * @param point     current node
+     * @param motion    the motion that current node executes
      * @return jump node
      */   
-    Node JumpPointSearch::jump(const Node& new_point, const Node& motion, const int id) {
-        Node next_point = new_point + motion;
-        next_point.id = this->grid2Index(next_point.x, next_point.y);
-        next_point.pid = id;
-        next_point.h_cost = std::abs(next_point.x - this->goal_.x) + std::abs(next_point.y - this->goal_.y);
-// ROS_INFO("next_point id:%d, goal id: %d", next_point.id, goal_.id);
+    Node JumpPointSearch::jump(const Node& point, const Node& motion) {
+        Node new_point = point + motion;
+        new_point.id = this->grid2Index(new_point.x, new_point.y);
+        new_point.pid = point.id;
+        new_point.h_cost = std::sqrt(std::pow(new_point.x - this->goal_.x, 2)
+                            + std::pow(new_point.y - this->goal_.y, 2));
 
         // next node hit the boundary or obstacle
-        if (next_point.id < 0 || next_point.id >= this->ns_ || 
-            this->costs_[next_point.id] >= this->lethal_cost_ * this->factor_) {
+        if (new_point.id < 0 || new_point.id >= this->ns_ || 
+            this->costs_[new_point.id] >= this->lethal_cost_ * this->factor_)
             return Node(-1, -1, -1, -1, -1, -1);
-        }
         
-
         // goal found
-        if (next_point==this->goal_)  return next_point;
-// ROS_INFO("before neighbor");
-        // detect forced neighbor
-        bool fn = this->hasForcedNeighbours(new_point, next_point, motion);
-        if (fn)                       return next_point;
-// ROS_INFO("after neighbor");
-        // calculate the jump node
-        Node jump_node = jump(next_point, motion, id);
-        // ROS_INFO("!!!!!!!!!!!!!!!!!!");
-        // pruned
-        if (jump_node.cost != -1 && jump_node.cost + jump_node.h_cost <=
-                                    next_point.cost + next_point.h_cost) {
-            return jump_node;
+        if (new_point == this->goal_)
+            return new_point;
+
+        // diagonal
+        if (motion.x && motion.y) {
+            // if exists jump point at horizontal or vertical
+            Node x_dir = Node(motion.x, 0, 1, 0, 0, 0);
+            Node y_dir = Node(0, motion.y, 1, 0, 0, 0);
+            if (this->jump(new_point, x_dir).id != -1 || 
+                this->jump(new_point, y_dir).id != -1)
+                return new_point;
         }
 
-        return next_point;
-}
-
+        // exists forced neighbor
+        if (this->detectForceNeighbor(new_point, motion))
+            return new_point;
+        else
+            return this->jump(new_point, motion);
+    }
 }
