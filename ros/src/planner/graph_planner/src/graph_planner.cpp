@@ -42,7 +42,10 @@ namespace graph_planner {
      */
     GraphPlanner::~GraphPlanner() {
         if (g_planner_)
+        {
             delete g_planner_;
+            g_planner_ = NULL;
+        }
     }
 
 

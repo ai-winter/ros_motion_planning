@@ -12,33 +12,33 @@
 
 <launch>
     <!-- global path planner name -->
-    <arg name="global_planner" default="a_star"/>
+    <arg name="global_planner" default="a_star" />
 
     <!-- initial pose -->
-    <arg name="x_pos" default="0.0"/>
-    <arg name="y_pos" default="0.0"/>
-    <arg name="z_pos" default="0.0"/>
-    <arg name="yaw"   default="1.57"/>
+    <arg name="x_pos" default="0.0" />
+    <arg name="y_pos" default="0.0" />
+    <arg name="z_pos" default="0.0" />
+    <arg name="yaw" default="1.57" />
 
     <!-- environment -->
-    <arg name="world" default="warehouse" doc="model type [warehouse, workshop, turtlebot3_house, ...]"/>
+    <arg name="world" default="warehouse" doc="model type [warehouse, workshop, turtlebot3_house, ...]" />
     <arg name="map" default="warehouse" doc="map type [warehouse, workshop, turtlebot3_house, ...]" />
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find sim_env)/maps/$(arg map)/$(arg map).yaml" unless="$(eval arg('map') == '')"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find sim_env)/maps/$(arg map)/$(arg map).yaml" unless="$(eval arg('map') == '')" />
 
     <!-- robot -->
-    <arg name="robot" default="turtlebot3_waffle"/>
+    <arg name="robot" default="turtlebot3_waffle" />
     <param name="robot_description" command="$(find xacro)/xacro --inorder $(find sim_env)/urdf/$(arg robot)/$(arg robot).xacro" />
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
     <!-- Rviz and Gazebo -->
-    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find sim_env)/rviz/sim_env.rviz"/>
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find sim_env)/rviz/sim_env.rviz" />
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <arg name="world_name" value="$(find sim_env)/worlds/$(arg world).world"/>
-        <arg name="paused" value="false"/>
-        <arg name="use_sim_time" value="true"/>
+        <arg name="world_name" value="$(find sim_env)/worlds/$(arg world).world" />
+        <arg name="paused" value="false" />
+        <arg name="use_sim_time" value="true" />
     </include>
-    <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf"  args="-urdf -model $(arg robot) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
+    <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model $(arg robot) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
 
     <!-- AMCL定位模块 -->
     <include file="$(find sim_env)/launch/includes/amcl.launch.xml">
