@@ -16,6 +16,7 @@
 #include "graph_planner.h"
 #include "a_star.h"
 #include "jump_point_search.h"
+#include "d_star.h"
 
 PLUGINLIB_EXPORT_CLASS(graph_planner::GraphPlanner, nav_core::BaseGlobalPlanner)
 
@@ -89,18 +90,19 @@ namespace graph_planner {
             private_nh.param("expand_zone", this->is_expand_, false);
 
             // planner name
-            std::string planner_name; 
-            private_nh.param("planner_name", planner_name, (std::string)"a_star");
-            if (planner_name == "a_star")
+            private_nh.param("planner_name", this->planner_name_, (std::string)"a_star");
+            if (this->planner_name_ == "a_star")
                 this->g_planner_ = new a_star_planner::AStar(nx, ny, resolution);
-            else if (planner_name == "dijkstra")
+            else if (this->planner_name_ == "dijkstra")
                 this->g_planner_ = new a_star_planner::AStar(nx, ny, resolution, true);
-            else if (planner_name == "gbfs")
+            else if (this->planner_name_ == "gbfs")
                 this->g_planner_ = new a_star_planner::AStar(nx, ny, resolution, false, true); 
-            else if (planner_name == "jps")
+            else if (this->planner_name_ == "jps")
                 this->g_planner_ = new jps_planner::JumpPointSearch(nx, ny, resolution);
+            else if (this->planner_name_ == "d_star")
+                this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution);
 
-            ROS_INFO("Using global graph planner: %s", planner_name.c_str());
+            ROS_INFO("Using global graph planner: %s", this->planner_name_.c_str());
 
             /*====================== register topics and services =======================*/
             // register planning publisher

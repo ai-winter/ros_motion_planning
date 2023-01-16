@@ -33,11 +33,11 @@
 | **GA**  | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
 
 
-
 # Papers
 ## Search-base Planning
 * [A*: ](https://ieeexplore.ieee.org/document/4082128) A Formal Basis for the heuristic Determination of Minimum Cost Paths
 * [JPS:](https://ojs.aaai.org/index.php/AAAI/article/view/7994) Online Graph Pruning for Pathfinding On Grid Maps
+* [D*:](https://ieeexplore.ieee.org/document/351061) Optimal and efficient path planning for partially-known environments 
 
 # Update
 | Date      | Update                                                                                                                                                                        |
