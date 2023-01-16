@@ -42,7 +42,7 @@ class GBFS(AStar):
         >>> goal = (45, 25)
         >>> env = Env(51, 31)
         >>> planner = GBFS(start, goal, env)
-        >>> path, expand = planner.plan()
+        >>> planner.run()
         '''
         # OPEN set with priority and CLOSED set
         OPEN = []

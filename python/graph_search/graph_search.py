@@ -35,7 +35,7 @@ class GraphSearcher(ABC):
         # allowed motions
         self.motions = self.env.motions
         # obstacles
-        self.obstacles = self.env.obstacle_map
+        self.obstacles = self.env.obstacles
 
     def h(self, node: Node) -> float:
         '''
@@ -60,5 +60,12 @@ class GraphSearcher(ABC):
     def plan(self):
         '''
         Interface for planning.
+        '''
+        pass
+
+    @abstractmethod
+    def run(self):
+        '''
+        Interface for running both plannig and animation.
         '''
         pass

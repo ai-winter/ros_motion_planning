@@ -87,9 +87,14 @@ class Env:
                         Node((0, 1),  None, 1, None), Node((1, 1),   None, sqrt(2), None),
                         Node((1, 0),  None, 1, None), Node((1, -1),  None, sqrt(2), None),
                         Node((0, -1), None, 1, None), Node((-1, -1), None, sqrt(2), None)]
+        # obstacles
+        self.obstacles = self.initObstacles()
 
     @property
-    def obstacle_map(self) -> set:
+    def grid_map(self) -> set:
+        return {(i, j) for i in range(self.x_range) for j in range(self.y_range)}
+
+    def initObstacles(self) -> set:
         '''
         Initialize obstacles' positions.
 
@@ -121,5 +126,5 @@ class Env:
 
         return obstacles
 
-    def update_obs(self, obs):
-        self.obs = obs
+    def updateObstacles(self, obstacles):
+        self.obstacles = obstacles
