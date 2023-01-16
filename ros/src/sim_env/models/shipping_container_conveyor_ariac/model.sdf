@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="shipping_container_conveyor_ariac">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision_belt_side_front">
+        <pose>1.191 1.6275 0.32 0 0 0</pose>
+        <max_contacts>10</max_contacts>
+        <geometry>
+          <box>
+            <size>0.137 7.98 0.3</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="collision_belt_side_back">
+        <pose>0.268 1.6275 0.32 0 0 0</pose>
+        <max_contacts>10</max_contacts>
+        <geometry>
+          <box>
+            <size>0.145 7.98 0.3</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <scale>1.3 0.7 1.0</scale>
+            <uri>model://shipping_container_conveyor_ariac/meshes/ShippingContainer_Textured.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>
