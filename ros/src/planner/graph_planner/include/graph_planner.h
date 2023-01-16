@@ -96,6 +96,8 @@ class GraphPlanner : public nav_core::BaseGlobalPlanner {
         ros::Publisher expand_pub_;
         // planning service
         ros::ServiceServer make_plan_srv_;
+        // planner name
+        std::string planner_name_;
 
     private:
         // thread mutex
