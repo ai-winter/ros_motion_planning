@@ -11,7 +11,7 @@ import heapq
 sys.path.append(os.path.abspath(os.path.join(__file__, "../../")))
 
 from .graph_search import GraphSearcher
-from utils import Env, Node, Plot
+from utils import Env, Node
 
 class AStar(GraphSearcher):
     '''
@@ -139,38 +139,5 @@ class AStar(GraphSearcher):
         '''
         Running both plannig and animation.
         '''
-        plot = Plot(self.start.current, self.goal.current, self.env)
         (cost, path), expand = self.plan()
-        plot.animation(path, str(self), cost, expand)
-
-    def isCollision(self, node1: Node, node2: Node) -> bool:
-        '''
-        Judge collision when moving from node1 to node2.
-
-        Parameters
-        ----------
-        node1, node2: Node
-
-        Return
-        ----------
-        collision: bool
-            True if collision exists else False
-        '''
-        if node1.current in self.obstacles or node2.current in self.obstacles:
-            return True
-
-        x1, y1 = node1.current
-        x2, y2 = node2.current
-
-        if x1 != x2 and y1 != y2:
-            if x2 - x1 == y1 - y2:
-                s1 = (min(x1, x2), min(y1, y2))
-                s2 = (max(x1, x2), max(y1, y2))
-            else:
-                s1 = (min(x1, x2), max(y1, y2))
-                s2 = (max(x1, x2), min(y1, y2))
-
-            if s1 in self.obstacles or s2 in self.obstacles:
-                return True
-
-        return False
+        self.plot.animation(path, str(self), cost, expand)

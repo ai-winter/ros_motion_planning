@@ -85,6 +85,9 @@ class DStar(GraphSearcher):
         return "Dynamic A*(D*)"
 
     def plan(self):
+        '''
+        D* static motion planning function.
+        '''
         while True:
             self.processState()
             if self.start.t == 'CLOSED':
@@ -158,7 +161,7 @@ class DStar(GraphSearcher):
             the planning path
         '''
         cost = 0
-        node = closed_set[closed_set.index(self.start)]
+        node = self.start
         path = [node.current]
         while node != self.goal:
             index = closed_set.index(DNode(node.parent, None, None, None, None))
@@ -314,46 +317,6 @@ class DStar(GraphSearcher):
         neighbors = []
         for motion in self.motions:
             n = self.map[self.map.index(node + motion)]
-            if n.current not in self.obstacles:
+            if not self.isCollision(node, n):
                 neighbors.append(n)
         return neighbors
-
-    def cost(self, node1: Node, node2: Node) -> float:
-        '''
-        Calculate cost for this motion.
-        '''
-        if self.isCollision(node1, node2):
-            return float("inf")
-        return math.hypot(node2.current[0] - node1.current[0], node2.current[1] - node1.current[1])
-
-    def isCollision(self, node1: Node, node2: Node) -> bool:
-        '''
-        Judge collision when moving from node1 to node2.
-
-        Parameters
-        ----------
-        node1, node2: Node
-
-        Return
-        ----------
-        collision: bool
-            True if collision exists else False
-        '''
-        if node1.current in self.obstacles or node2.current in self.obstacles:
-            return True
-
-        x1, y1 = node1.current
-        x2, y2 = node2.current
-
-        if x1 != x2 and y1 != y2:
-            if x2 - x1 == y1 - y2:
-                s1 = (min(x1, x2), min(y1, y2))
-                s2 = (max(x1, x2), max(y1, y2))
-            else:
-                s1 = (min(x1, x2), max(y1, y2))
-                s2 = (max(x1, x2), min(y1, y2))
-
-            if s1 in self.obstacles or s2 in self.obstacles:
-                return True
-
-        return False
