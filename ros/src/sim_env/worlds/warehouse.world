@@ -1159,18 +1159,18 @@
       <pose>-6.16639 -5.9682 0 0 -0 1.57</pose>
     </model>
     <state world_name='default'>
-      <sim_time>2146 950000000</sim_time>
-      <real_time>886 767740098</real_time>
-      <wall_time>1652703690 24957314</wall_time>
-      <iterations>884231</iterations>
+      <sim_time>0 0</sim_time>
+      <real_time>0 0</real_time>
+      <wall_time>1673837831 488549028</wall_time>
+      <iterations>0</iterations>
       <model name='Dumpster'>
-        <pose>7.96829 -2.34424 0.006023 0.014034 -0 -0.011635</pose>
+        <pose>7.96723 -2.34687 0.004667 0.010306 2e-06 -0.008426</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>7.96829 -2.34424 0.006023 0.014034 -0 -0.011635</pose>
+          <pose>7.96723 -2.34687 0.004667 0.010306 2e-06 -0.008426</pose>
           <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>-0 0 -0 0 -0 0</acceleration>
-          <wrench>-0 0 -0 0 -0 0</wrench>
+          <acceleration>-0.348151 -3.56616 1.10209 0.366208 0.673676 1.72966</acceleration>
+          <wrench>-0.348151 -3.56616 1.10209 0 -0 0</wrench>
         </link>
       </model>
       <model name='aws_robomaker_warehouse_ClutteringA_01'>
@@ -1415,7 +1415,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>13.2878 -8.8152 14.0252 -0 0.861797 2.63302</pose>
+        <pose>10.4233 25.0754 20.1626 -0 0.697799 -2.01418</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
