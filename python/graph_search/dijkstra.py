@@ -42,7 +42,7 @@ class Dijkstra(AStar):
         >>> goal = (45, 25)
         >>> env = Env(51, 31)
         >>> planner = Dijkstra(start, goal, env)
-        >>> path, expand = planner.plan()
+        >>> planner.run()
         '''
         # OPEN set with priority and CLOSED set
         OPEN = []

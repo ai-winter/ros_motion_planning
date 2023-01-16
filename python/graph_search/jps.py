@@ -35,7 +35,7 @@ class JPS(AStar):
     >>> goal = (45, 25)
     >>> env = Env(51, 31)
     >>> planner = JPS(start, goal, env)
-    >>> path, expand = planner.plan()
+    >>> planner.run()
     '''
     def __init__(self, start: tuple, goal: tuple, env: Env, heuristic_type: str = "euclidean") -> None:
         super().__init__(start, goal, env, heuristic_type)

@@ -13,21 +13,19 @@ class Plot:
         self.start = Node(start, start, 0, 0)
         self.goal = Node(goal, goal, 0, 0)
         self.env = env
-        self.obs = self.env.obstacle_map
+        self.fig = plt.figure()
 
-    def update_obs(self, obs):
-        self.obs = obs
-
-    def animation(self, path, expand, name, cost=None):
+    def animation(self, path, name, cost=None, expand=None):
         name = name + "\ncost: " + str(cost) if cost else name
         self.plotGrid(name)
-        self.plotExpand(expand)
+        if expand:
+            self.plotExpand(expand)
         self.plotPath(path)
         plt.show()
 
     def plotGrid(self, name):
-        obs_x = [x[0] for x in self.obs]
-        obs_y = [x[1] for x in self.obs]
+        obs_x = [x[0] for x in self.env.obstacles]
+        obs_y = [x[1] for x in self.env.obstacles]
         plt.plot(self.start.current[0], self.start.current[1], marker="s", color="#ff0000")
         plt.plot(self.goal.current[0], self.goal.current[1], marker="s", color="#1155cc")
         plt.plot(obs_x, obs_y, "sk")
@@ -59,6 +57,14 @@ class Plot:
         plt.plot(self.start.current[0], self.start.current[1], marker="s", color="#ff0000")
         plt.plot(self.goal.current[0], self.goal.current[1], marker="s", color="#1155cc")
 
+    def connect(self, name: str, func) -> None:
+        self.fig.canvas.mpl_connect(name, func)
+
+    def clean(self):
+        plt.cla()
+
+    def update(self):
+        self.fig.canvas.draw_idle()
 
     @staticmethod
     def color_list():
