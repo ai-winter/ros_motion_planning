@@ -229,6 +229,15 @@ namespace graph_planner {
      * @param  resp response from server
      */
     bool GraphPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::GetPlan::Response& resp) {
+        if (this->planner_name_ == "d_star")
+        {
+            delete this->g_planner_;
+            // costmap size
+            unsigned int nx = this->costmap_->getSizeInCellsX(), ny = this->costmap_->getSizeInCellsY();
+            // costmap resolution
+            double resolution = this->costmap_->getResolution();
+            this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution, this->p_local_costmap_);
+        }
         makePlan(req.start, req.goal, resp.plan.poses);
         resp.plan.header.stamp = ros::Time::now();
         resp.plan.header.frame_id = this->frame_id_;
