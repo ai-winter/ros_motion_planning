@@ -33,7 +33,6 @@ Planner      |    C++    | Python    | Matlab
 | **GA**  | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
 
 
-
 # Papers
 ## Search-based Planning
 * [A*: ](https://ieeexplore.ieee.org/document/4082128) A Formal Basis for the heuristic Determination of Minimum Cost Paths

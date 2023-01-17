@@ -32,6 +32,7 @@ add_library(${PROJECT_NAME}
   src/a_star.cpp
   src/jump_point_search.cpp
   src/graph_planner.cpp
+  src/d_star.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
