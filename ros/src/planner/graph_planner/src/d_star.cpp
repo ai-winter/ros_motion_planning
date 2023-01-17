@@ -8,7 +8,8 @@ namespace d_star_planner
         this->init_plan = false;
 
         this->pp_local_costmap = new nav_msgs::OccupancyGrid *;
-        *(this->pp_local_costmap) = p_local_costmap;
+        *this->pp_local_costmap = p_local_costmap;
+        this->global_costmap = new unsigned char[this->ns_];
 
         initMap();
     }
@@ -176,7 +177,6 @@ namespace d_star_planner
 
     void DStar::extractPath(const Node &start, const Node &goal)
     {
-        this->path.clear();
         DNodePtr nPtr = this->DNodeMap[start.x][start.y];
         while (nPtr->x != goal.x && nPtr->y != goal.y)
         {
@@ -189,19 +189,71 @@ namespace d_star_planner
         std::reverse(this->path.begin(), this->path.end());
     }
 
+    void DStar::updateMap()
+    {
+        nav_msgs::OccupancyGrid *p_local_costmap = *this->pp_local_costmap;
+        int x_l = (int)p_local_costmap->info.origin.position.x;
+        int y_l = (int)p_local_costmap->info.origin.position.y;
+        int height_l = (int)p_local_costmap->info.height;
+        int width_l = (int)p_local_costmap->info.width;
+        int thresh = 90;
+
+        int min_x = std::min(std::max(0, x_l - height_l / 2), this->nx_);
+        int min_y = std::min(std::max(0, y_l - height_l / 2), this->ny_);
+        int max_x = std::min(std::max(0, x_l + height_l / 2), this->nx_);
+        int max_y = std::min(std::max(0, y_l + height_l / 2), this->ny_);
+
+        int min_id = this->grid2Index(min_x, min_y);
+        int max_id = this->grid2Index(max_x, max_y);
+
+        auto local_costmap = p_local_costmap->data; // [0, 100]
+        for (int i = min_id, j = 0; i < max_id && j < height_l * width_l; i++, j++)
+            this->global_costmap[i] = local_costmap[j] < thresh ? 0 : this->lethal_cost_;
+    }
+
+    Node DStar::getState(const Node &current)
+    {
+        Node state(this->path[0].x, this->path[0].y);
+        int dis_min = std::abs(state.x - current.x) + std::abs(state.y - current.y);
+        int idx_min = 0;
+        for (int i = 1; i < this->path.size(); i++)
+        {
+            int dis = std::abs(this->path[i].x - current.x) + std::abs(this->path[i].y - current.y);
+            if (dis < dis_min)
+            {
+                dis_min = dis;
+                idx_min = i;
+                state.x = path[i].x;
+                state.y = path[i].y;
+            }
+        }
+        // // delete travelled nodes
+        // this->path.erase(this->path.begin() + idx_min, this->path.end());
+        return state;
+    }
+
+    void DStar::modify(DNodePtr x, DNodePtr y)
+    {
+        if (x->tag == CLOSED)
+            this->insert(x, y->cost + this->cost(x, y));
+
+        while (1)
+        {
+            double k_min = this->processState();
+            if (k_min >= x->cost)
+                break;
+        }
+    }
+
     std::tuple<bool, std::vector<Node>> DStar::plan(const unsigned char *costs, const Node &start,
                                                     const Node &goal, std::vector<Node> &expand)
     {
-        // ===== NOTE: TEMP, need to rewrite when incroperating local costmap =====
-        expand.clear();
-        this->reset();
-        // ========================================================================
-        this->global_costmap = costs;
+        memcpy(this->global_costmap, costs, this->ns_);
+
         DNodePtr sPtr = this->DNodeMap[start.x][start.y];
         DNodePtr gPtr = this->DNodeMap[goal.x][goal.y];
 
-        // if (!this->init_plan)
-        if (1)
+        if (!this->init_plan)
         {
             this->init_plan = true;
             gPtr->cost = 0;
@@ -214,12 +266,52 @@ namespace d_star_planner
                     break;
             }
 
-            this->extractExpand(expand);
+            this->path.clear();
             this->extractPath(start, goal);
+
+            expand.clear();
+            this->extractExpand(expand);
             return {true, this->path};
         }
-        // else
-        // {
-        // }
+        else
+        {
+            // update map: from local to global
+            // .... global costmap will update the obstacles...
+            // maybe no use to update from local costmap...
+            // this->updateMap();
+
+            // get current state from path, argmin distance
+            Node state = this->getState(start);
+            DNodePtr x = this->DNodeMap[state.x][state.y];
+            DNodePtr y;
+
+            // walk forward *N points*, once collision, modify
+            int i = 0;
+            int steps = 10;
+            while (i < steps)
+            {
+                i++;
+                int x_val, y_val;
+                this->index2Grid(x->pid, x_val, y_val);
+                y = this->DNodeMap[x_val][y_val];
+                // collision
+                if (global_costmap[y->id] > this->lethal_cost_ * this->factor_)
+                    break;
+                x = y;
+            }
+
+            // collision
+            if (i != steps)
+                this->modify(x, y);
+
+            if (i != 10)
+                ROS_INFO("i = %d", i);
+            this->path.clear();
+            this->extractPath(state, goal);
+
+            expand.clear();
+            this->extractExpand(expand);
+            return {true, this->path};
+        }
     }
 }

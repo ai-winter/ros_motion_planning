@@ -28,7 +28,7 @@ namespace d_star_planner
     {
     public:
         // global costmap
-        const unsigned char *global_costmap;
+        unsigned char *global_costmap;
         // local costmap pointer pointer
         nav_msgs::OccupancyGrid **pp_local_costmap;
         // init plan flag
@@ -60,6 +60,12 @@ namespace d_star_planner
         void extractExpand(std::vector<Node> &expand);
 
         void extractPath(const Node &start, const Node &goal);
+
+        void updateMap();
+
+        Node getState(const Node& current);
+
+        void modify(DNodePtr x, DNodePtr y);
 
         std::tuple<bool, std::vector<Node>> plan(const unsigned char *costs, const Node &start,
                                                  const Node &goal, std::vector<Node> &expand);
