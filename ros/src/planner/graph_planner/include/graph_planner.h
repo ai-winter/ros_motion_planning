@@ -79,11 +79,11 @@ class GraphPlanner : public nav_core::BaseGlobalPlanner {
          * @param  resp response from server
          */
         bool makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::GetPlan::Response& resp);
-        // /**
-        //  * @brief  local costmap callback function
-        //  * @param  costmap local costmap data
-        //  */
-        // void localCostmapCallback(const nav_msgs::OccupancyGrid& costmap);
+        /**
+         * @brief  local costmap callback function
+         * @param  costmap local costmap data
+         */
+        void localCostmapCallback(const nav_msgs::OccupancyGrid& local_costmap);
 
 
     protected:
@@ -105,6 +105,8 @@ class GraphPlanner : public nav_core::BaseGlobalPlanner {
         std::string planner_name_;
         // local costmap subscriber
         ros::Subscriber local_costmap_sub_;
+        // local costmap pointer
+        nav_msgs::OccupancyGrid* p_local_costmap_;
 
     private:
         // thread mutex

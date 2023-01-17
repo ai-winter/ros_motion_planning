@@ -99,8 +99,12 @@ namespace graph_planner {
                 this->g_planner_ = new a_star_planner::AStar(nx, ny, resolution, false, true); 
             else if (this->planner_name_ == "jps")
                 this->g_planner_ = new jps_planner::JumpPointSearch(nx, ny, resolution);
-            // else if (this->planner_name_ == "d_star")
-            //     this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution);
+            else if (this->planner_name_ == "d_star")
+            {
+                this->p_local_costmap_ = new nav_msgs::OccupancyGrid();
+                this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution, this->p_local_costmap_);
+                this->local_costmap_sub_ = private_nh.subscribe("/move_base/local_costmap/costmap", 1, &GraphPlanner::localCostmapCallback, this);
+            }
 
             ROS_INFO("Using global graph planner: %s", this->planner_name_.c_str());
 
@@ -111,9 +115,6 @@ namespace graph_planner {
             this->expand_pub_ = private_nh.advertise<nav_msgs::OccupancyGrid>("expand", 1);
             // register planning service
             this->make_plan_srv_ = private_nh.advertiseService("make_plan", &GraphPlanner::makePlanService, this);
-
-            // if (this->planner_name_ == "d_star")
-            //     this->local_costmap_sub_ = private_nh.subscribe("move_base/local_costmap/costmap", 1, &GraphPlanner::localCostmapCallback, this);
 
             // set initialization flag
             this->initialized_ = true;
@@ -233,13 +234,14 @@ namespace graph_planner {
         resp.plan.header.frame_id = this->frame_id_;
         return true;
     }
-    // /**
-    //  * @brief  local costmap callback function
-    //  * @param  costmap local costmap data
-    //  */
-    // void localCostmapCallback(const nav_msgs::OccupancyGrid& costmap) {
-    //     ROS_INFO("receive local costmap!");
-    // }
+    /**
+     * @brief  local costmap callback function
+     * @param  costmap local costmap data
+     */
+    void GraphPlanner::localCostmapCallback(const nav_msgs::OccupancyGrid& local_costmap) {
+        *(this->p_local_costmap_) = local_costmap;
+        // ROS_WARN("this->p_local_costmap_->data.at(10) = %d", this->p_local_costmap_->data.at(10));
+    }
 
 
     /**
