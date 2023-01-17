@@ -5,6 +5,7 @@
 @update: 2023.1.13
 '''
 from math import sqrt
+from abc import ABC, abstractmethod
 
 class Node(object):
     '''
@@ -61,7 +62,7 @@ class Node(object):
         return "----------\ncurrent:{}\nparent:{}\ng:{}\nh:{}\n----------" \
             .format(self.current, self.parent, self.g, self.h)
 
-class Env:
+class Env(ABC):
     '''
     Class for building 2-d workspace of robots.
 
@@ -82,26 +83,32 @@ class Env:
         self.x_range = x_range  
         self.y_range = y_range
 
+    @property
+    def grid_map(self) -> set:
+        return {(i, j) for i in range(self.x_range) for j in range(self.y_range)}
+
+    @abstractmethod
+    def init(self) -> None:
+        pass
+
+class Grid(Env):
+    '''
+    Class for discrete 2-d grid map.
+    '''
+    def __init__(self, x_range: int, y_range: int) -> None:
+        super().__init__(x_range, y_range)
         # allowed motions
         self.motions = [Node((-1, 0), None, 1, None), Node((-1, 1),  None, sqrt(2), None),
                         Node((0, 1),  None, 1, None), Node((1, 1),   None, sqrt(2), None),
                         Node((1, 0),  None, 1, None), Node((1, -1),  None, sqrt(2), None),
                         Node((0, -1), None, 1, None), Node((-1, -1), None, sqrt(2), None)]
         # obstacles
-        self.obstacles = self.initObstacles()
-
-    @property
-    def grid_map(self) -> set:
-        return {(i, j) for i in range(self.x_range) for j in range(self.y_range)}
-
-    def initObstacles(self) -> set:
+        self.obstacles = None
+        self.init()
+    
+    def init(self) -> None:
         '''
-        Initialize obstacles' positions.
-
-        Return
-        ----------
-        obstacles: set
-            map of obstacles
+        Initialize grid map.
         '''
         x, y = self.x_range, self.y_range
         obstacles = set()
@@ -124,7 +131,54 @@ class Env:
         for i in range(16):
             obstacles.add((40, i))
 
-        return obstacles
-
-    def updateObstacles(self, obstacles):
         self.obstacles = obstacles
+
+    def update(self, obstacles):
+        self.obstacles = obstacles 
+
+
+class Map(Env):
+    '''
+    Class for continuous 2-d map.
+    '''
+    def __init__(self, x_range: int, y_range: int) -> None:
+        super().__init__(x_range, y_range)
+        self.boundary = None
+        self.obs_circ = None
+        self.obs_rect = None
+        self.init()
+
+    def init(self):
+        '''
+        Initialize map.
+        '''
+        x, y = self.x_range, self.y_range
+
+        # boundary of environment
+        self.boundary = [
+            [0, 0, 1, y],
+            [0, y, x, 1],
+            [1, 0, x, 1],
+            [x, 1, 1, y]
+        ]
+
+        # user-defined obstacles
+        self.obs_rect = [
+            [14, 12, 8, 2],
+            [18, 22, 8, 3],
+            [26, 7, 2, 12],
+            [32, 14, 10, 2]
+        ]
+
+        self.obs_circ = [
+            [7, 12, 3],
+            [46, 20, 2],
+            [15, 5, 2],
+            [37, 7, 3],
+            [37, 23, 3]
+        ]
+
+    def update(self, boundary, obs_circ, obs_rect):
+        self.boundary = boundary if boundary else self.boundary
+        self.obs_circ = obs_circ if obs_circ else self.obs_circ
+        self.obs_rect = obs_rect if obs_rect else self.obs_rect

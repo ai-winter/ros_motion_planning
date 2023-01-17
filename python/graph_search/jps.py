@@ -29,11 +29,11 @@ class JPS(AStar):
 
     Examples
     ----------
-    >>> from utils import Env
+    >>> from utils import Grid
     >>> from graph_search import JPS
     >>> start = (5, 5)
     >>> goal = (45, 25)
-    >>> env = Env(51, 31)
+    >>> env = Grid(51, 31)
     >>> planner = JPS(start, goal, env)
     >>> planner.run()
     '''

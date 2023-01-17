@@ -4,14 +4,13 @@
 @author: Winter
 @update: 2023.1.13
 '''
-from abc import abstractmethod, ABC
 import math
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(__file__, "../../")))
 
-from utils import Env, Node, Plot
+from utils import Env, Node, Planner
 
-class GraphSearcher(ABC):
+class GraphSearcher(Planner):
     '''
     Base class for planner based on graph searching.
 
@@ -27,17 +26,13 @@ class GraphSearcher(ABC):
         heuristic function type, default is euclidean
     '''
     def __init__(self, start: tuple, goal: tuple, env: Env, heuristic_type: str="euclidean") -> None:
-        self.start = Node(start, start, 0, 0)
-        self.goal = Node(goal, goal, 0, 0)
-        self.env = env
+        super().__init__(start, goal, env)
+        # heuristic type
         self.heuristic_type = heuristic_type
-
         # allowed motions
         self.motions = self.env.motions
         # obstacles
         self.obstacles = self.env.obstacles
-        # graph handler
-        self.plot = Plot(self.start.current, self.goal.current, self.env)
 
     def h(self, node: Node, goal: Node) -> float:
         '''
@@ -66,7 +61,7 @@ class GraphSearcher(ABC):
         '''
         if self.isCollision(node1, node2):
             return float("inf")
-        return math.hypot(node2.current[0] - node1.current[0], node2.current[1] - node1.current[1])
+        return self.dist(node1, node2)
 
     def isCollision(self, node1: Node, node2: Node) -> bool:
         '''
@@ -97,17 +92,3 @@ class GraphSearcher(ABC):
             if s1 in self.obstacles or s2 in self.obstacles:
                 return True
         return False
-
-    @abstractmethod
-    def plan(self):
-        '''
-        Interface for planning.
-        '''
-        pass
-
-    @abstractmethod
-    def run(self):
-        '''
-        Interface for running both plannig and animation.
-        '''
-        pass

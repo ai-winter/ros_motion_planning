@@ -30,11 +30,11 @@ class AStar(GraphSearcher):
 
     Examples
     ----------
-    >>> from utils import Env
+    >>> from utils import Grid
     >>> from graph_search import AStar
     >>> start = (5, 5)
     >>> goal = (45, 25)
-    >>> env = Env(51, 31)
+    >>> env = Grid(51, 31)
     >>> planner = AStar(start, goal, env)
     >>> planner.run()
     '''
@@ -51,6 +51,8 @@ class AStar(GraphSearcher):
 
         Return
         ----------
+        cost: float
+            path cost
         path: list
             planning path
         expand: list
@@ -129,9 +131,9 @@ class AStar(GraphSearcher):
         node = closed_set[closed_set.index(self.goal)]
         path = [node.current]
         while node != self.start:
-            index = closed_set.index(Node(node.parent, None, None, None))
-            cost += math.hypot(node.current[0] - node.parent[0], node.current[1] - node.parent[1])
-            node = closed_set[index]
+            node_parent = closed_set[closed_set.index(Node(node.parent, None, None, None))]
+            cost += self.dist(node, node_parent)
+            node = node_parent
             path.append(node.current)
         return cost, path
 

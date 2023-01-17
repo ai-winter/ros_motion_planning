@@ -57,11 +57,11 @@ class DStar(GraphSearcher):
 
     Examples
     ----------
-    >>> from utils import Env
+    >>> from utils import Grid
     >>> from graph_search import DStar
     >>> start = (5, 5)
     >>> goal = (45, 25)
-    >>> env = Env(51, 31)
+    >>> env = Grid(51, 31)
     >>> planner = DStar(start, goal, env)
     >>> planner.run()
     '''
@@ -121,7 +121,7 @@ class DStar(GraphSearcher):
                 print("Add obstacle at: ({}, {})".format(x, y))
                 # update obstacles
                 self.obstacles.add((x, y))
-                self.env.updateObstacles(self.obstacles)
+                self.env.update(self.obstacles)
 
                 # move from start to goal, replan locally when meeting collisions
                 node = self.start

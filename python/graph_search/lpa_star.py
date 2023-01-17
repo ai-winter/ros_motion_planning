@@ -62,11 +62,11 @@ class LPAStar(GraphSearcher):
 
     Examples
     ----------
-    >>> from utils import Env
+    >>> from utils import Grid
     >>> from graph_search import LPAStar
     >>> start = (5, 5)
     >>> goal = (45, 25)
-    >>> env = Env(51, 31)
+    >>> env = Grid(51, 31)
     >>> planner = LPAStar(start, goal, env)
     >>> planner.run()
     '''
@@ -125,7 +125,7 @@ class LPAStar(GraphSearcher):
                 self.obstacles.remove((x, y))
                 self.updateVertex(node_change)
             
-            self.env.updateObstacles(self.obstacles)
+            self.env.update(self.obstacles)
 
             for node_n in self.getNeighbor(node_change):
                 self.updateVertex(node_n)
