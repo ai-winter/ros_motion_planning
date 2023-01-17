@@ -39,7 +39,7 @@ class GraphSearcher(ABC):
         # graph handler
         self.plot = Plot(self.start.current, self.goal.current, self.env)
 
-    def h(self, node: Node) -> float:
+    def h(self, node: Node, goal: Node) -> float:
         '''
         Calculate heuristic.
 
@@ -47,6 +47,8 @@ class GraphSearcher(ABC):
         ----------
         node: Node
             current node
+        goal: Node
+            goal node
 
         Return
         ----------
@@ -54,9 +56,9 @@ class GraphSearcher(ABC):
             heuristic function value of node
         '''
         if self.heuristic_type == "manhattan":
-            return abs(self.goal.current[0] - node.current[0]) + abs(self.goal.current[1] - node.current[1])
+            return abs(goal.current[0] - node.current[0]) + abs(goal.current[1] - node.current[1])
         elif self.heuristic_type == "euclidean":
-            return math.hypot(self.goal.current[0] - node.current[0], self.goal.current[1] - node.current[1])
+            return math.hypot(goal.current[0] - node.current[0], goal.current[1] - node.current[1])
 
     def cost(self, node1: Node, node2: Node) -> float:
         '''

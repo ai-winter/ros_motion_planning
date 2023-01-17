@@ -5,12 +5,10 @@
 @update: 2023.1.15
 '''
 import os, sys
-import math
-
 sys.path.append(os.path.abspath(os.path.join(__file__, "../../")))
 
 from .graph_search import GraphSearcher
-from utils import Env, Node, Plot
+from utils import Env, Node
 
 class DNode(Node):
     '''
@@ -75,8 +73,6 @@ class DStar(GraphSearcher):
         self.map = None
         # allowed motions
         self.motions = [DNode(motion.current, None, None, motion.g, 0) for motion in self.env.motions]
-        # graph handler
-        self.plot = Plot(start, goal, self.env)
         # OPEN set and EXPAND set
         self.OPEN = []
         self.EXPAND = []
@@ -136,7 +132,7 @@ class DStar(GraphSearcher):
                         self.modify(node, node_parent)
                         continue
                     path.append(node.current)
-                    cost += math.hypot(node.current[0] - node.parent[0], node.current[1] - node.parent[1])
+                    cost += self.cost(node, node_parent)
                     node = node_parent
 
                 self.plot.clean()
@@ -164,9 +160,9 @@ class DStar(GraphSearcher):
         node = self.start
         path = [node.current]
         while node != self.goal:
-            index = closed_set.index(DNode(node.parent, None, None, None, None))
-            cost += math.hypot(node.current[0] - node.parent[0], node.current[1] - node.parent[1])
-            node = closed_set[index]
+            node_parent = closed_set[closed_set.index(DNode(node.parent, None, None, None, None))]
+            cost += self.cost(node, node_parent)
+            node = node_parent
             path.append(node.current)
 
         return cost, path

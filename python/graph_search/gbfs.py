@@ -72,7 +72,7 @@ class GBFS(AStar):
                     continue
                 
                 node_n.parent = node.current
-                node_n.h = self.h(node_n)
+                node_n.h = self.h(node_n, self.goal)
                 node_n.g = 0
 
                 # goal found
