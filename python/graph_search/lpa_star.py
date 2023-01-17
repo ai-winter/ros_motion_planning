@@ -5,7 +5,6 @@
 @update: 2023.1.16
 '''
 import os, sys
-import math
 import heapq
 
 sys.path.append(os.path.abspath(os.path.join(__file__, "../../")))
@@ -75,11 +74,17 @@ class LPAStar(GraphSearcher):
         super().__init__(start, goal, env, heuristic_type)
         # start and goal
         self.start = LNode(start, float('inf'), 0.0, None)
-        self.goal = LNode(goal, 0, float('inf'), None)
-        # record history infomation of map grids
-        self.map = None
+        self.goal = LNode(goal, float('inf'), float('inf'), None)
         # OPEN set and expand zone
         self.U, self.EXPAND = [], []
+
+        # intialize global information, record history infomation of map grids
+        self.map = [LNode(s, float("inf"), float("inf"), None) for s in self.env.grid_map]
+        self.map[self.map.index(self.goal)] = self.goal
+        self.map[self.map.index(self.start)] = self.start
+        # OPEN set with priority
+        self.start.key = self.calculateKey(self.start)
+        heapq.heappush(self.U, self.start)
 
     def __str__(self) -> str:
         return "Lifelong Planning A*"
@@ -95,15 +100,6 @@ class LPAStar(GraphSearcher):
         '''
         Running both plannig and animation.
         '''
-        # intialize global information
-        self.map = [LNode(s, float("inf"), float("inf"), None) for s in self.env.grid_map]
-        self.map[self.map.index(self.goal)] = self.goal
-        self.map[self.map.index(self.start)] = self.start
-
-        # OPEN set with priority
-        self.start.key = self.calculateKey(self.start)
-        heapq.heappush(self.U, self.start)
-
         # static planning
         (cost, path), _ = self.plan()        
         
@@ -186,7 +182,7 @@ class LPAStar(GraphSearcher):
         '''
         Calculate priority of node.
         ''' 
-        return [min(node.g, node.rhs) + self.h(node),
+        return [min(node.g, node.rhs) + self.h(node, self.goal),
                 min(node.g, node.rhs)]
 
     def getNeighbor(self, node: LNode) -> list:
@@ -228,8 +224,7 @@ class LPAStar(GraphSearcher):
             neighbors = [node_n for node_n in self.getNeighbor(node) if not self.isCollision(node, node_n)]
             next_node = min(neighbors, key=lambda n: n.g)
             path.append(next_node.current)
-            cost += math.hypot(node.current[0] - next_node.current[0], 
-                    node.current[1] - next_node.current[1])
+            cost += self.cost(node, next_node)
             node = next_node
             count += 1
             if count == 1000:

@@ -6,7 +6,7 @@
 '''
 from utils import Env
 from graph_search import AStar, Dijkstra, GBFS, JPS
-from graph_search import DStar, LPAStar
+from graph_search import DStar, LPAStar, DStarLite
 
 if __name__ == '__main__':
     # build environment
@@ -19,8 +19,9 @@ if __name__ == '__main__':
     # planner = Dijkstra(start, goal, env)
     # planner = GBFS(start, goal, env)
     # planner = JPS(start, goal, env)
-    # planner = DStar(start, goal, env)
-    planner = LPAStar(start, goal, env)
+    planner = DStar(start, goal, env)
+    # planner = LPAStar(start, goal, env)
+    # planner = DStarLite(start, goal, env)
 
     # animation
     planner.run()

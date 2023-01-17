@@ -79,7 +79,7 @@ class AStar(GraphSearcher):
                     continue
                 
                 node_n.parent = node.current
-                node_n.h = self.h(node_n)
+                node_n.h = self.h(node_n, self.goal)
 
                 # goal found
                 if node_n == self.goal:

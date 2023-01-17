@@ -78,7 +78,7 @@ class JPS(AStar):
                 # exists and not in CLOSED set
                 if jp and jp not in CLOSED:
                     jp.parent = node.current
-                    jp.h = self.h(jp)
+                    jp.h = self.h(jp, self.goal)
                     jp_list.append(jp)
 
             for jp in jp_list:
@@ -111,7 +111,7 @@ class JPS(AStar):
         # explore a new node
         new_node = node + motion
         new_node.parent = node.current
-        new_node.h = self.h(new_node)
+        new_node.h = self.h(new_node, self.goal)
 
         # hit the obstacle
         if new_node.current in self.obstacles:
