@@ -85,7 +85,8 @@ class Plot:
             for x in expand:
                 count += 1
                 if x.parent:
-                    plt.plot([x.parent[0], x.current[0]], [x.parent[1], x.current[1]], "-k")
+                    plt.plot([x.parent[0], x.current[0]], [x.parent[1], x.current[1]], 
+                        color="#dddddd", linestyle="-")
                     plt.gcf().canvas.mpl_connect('key_release_event',
                                                  lambda event:
                                                  [exit(0) if event.key == 'escape' else None])

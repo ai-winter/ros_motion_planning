@@ -8,7 +8,7 @@ from utils import Grid, Map
 from graph_search import AStar, Dijkstra, GBFS, JPS
 from graph_search import DStar, LPAStar, DStarLite
 
-from sample_search import RRT
+from sample_search import RRT, RRTConnect, RRTStar, InformedRRT
 
 if __name__ == '__main__':
     '''
@@ -33,16 +33,19 @@ if __name__ == '__main__':
 
     # ========================================================
 
-    # '''
-    # sample search
-    # '''
+    '''
+    sample search
+    '''
     # build environment
-    start = (5, 5)
-    goal = (45, 25)
+    start = (18, 8)
+    goal = (37, 18)
     env = Map(51, 31)
 
     # creat planner
-    planner = RRT(start, goal, env, max_dist=0.5, sample_num=10000)
+    # planner = RRT(start, goal, env, max_dist=0.5, sample_num=10000)
+    # planner = RRTConnect(start, goal, env, max_dist=0.5, sample_num=10000)
+    # planner = RRTStar(start, goal, env, max_dist=0.5, r=20, sample_num=10000)
+    planner = InformedRRT(start, goal, env, max_dist=0.5, r=12, sample_num=1500)
 
     # animation
     planner.run()

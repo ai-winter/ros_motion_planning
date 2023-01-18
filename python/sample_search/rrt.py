@@ -79,13 +79,14 @@ class RRT(SampleSearcher):
                 continue
             
             # generate new node
-            node_new = self.getNearest(node_rand)
+            node_new = self.getNearest(self.sample_list, node_rand)
             if node_new:
                 self.sample_list.append(node_new)
                 dist = self.dist(node_new, self.goal)
                 # goal found
                 if dist <= self.max_dist and not self.isCollision(node_new, self.goal):
                     self.goal.parent = node_new.current
+                    self.goal.g = node_new.g + self.dist(self.goal, node_new)
                     self.sample_list.append(self.goal)
                     return self.extractPath(self.sample_list)
         return 0, None
@@ -93,7 +94,6 @@ class RRT(SampleSearcher):
     def run(self) -> None:
         '''
         Running both plannig and animation.
-
         '''
         cost, path = self.plan()
         self.plot.animation(path, str(self), cost, self.sample_list)
@@ -113,12 +113,14 @@ class RRT(SampleSearcher):
             return Node(current, None, 0, 0)
         return self.goal
 
-    def getNearest(self, node: Node) -> Node:
+    def getNearest(self, node_list: list, node: Node) -> Node:
         '''
-        Get the node in exploring tree that is nearest to `node`.
+        Get the node from `node_list` that is nearest to `node`.
 
         Parameters
         ----------
+        node_list: list
+            exploring list
         node: Node
             currently generated node
 
@@ -128,16 +130,15 @@ class RRT(SampleSearcher):
             nearest node 
         '''
         # find nearest neighbor
-        dist = [math.hypot(nd.current[0] - node.current[0], 
-            nd.current[1] - node.current[1]) for nd in self.sample_list]
-        node_near = self.sample_list[int(np.argmin(dist))]
+        dist = [self.dist(node, nd) for nd in node_list]
+        node_near = node_list[int(np.argmin(dist))]
 
         # regular and generate new node
         dist, theta = self.dist(node_near, node), self.angle(node_near, node)
         dist = min(self.max_dist, dist)
         node_new = Node((node_near.current[0] + dist * math.cos(theta),
                         (node_near.current[1] + dist * math.sin(theta))),
-                         node_near.current, 0, 0)
+                         node_near.current, node_near.g + dist, 0)
         
         # obstacle check
         if self.isCollision(node_new, node_near):
@@ -160,12 +161,11 @@ class RRT(SampleSearcher):
         path: list
             the planning path
         '''
-        cost = 0
         node = closed_set[closed_set.index(self.goal)]
         path = [node.current]
+        cost = node.g
         while node != self.start:
             node_parent = closed_set[closed_set.index(Node(node.parent, None, None, None))]
-            cost += self.dist(node, node_parent)
             node = node_parent
             path.append(node.current)
 
