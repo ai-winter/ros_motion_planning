@@ -165,6 +165,7 @@ class SamplePlanner : public nav_core::BaseGlobalPlanner {
          *  @param pid second marker id
          */
         void _pubLine(visualization_msgs::Marker* line_msg, ros::Publisher* line_pub, int id, int pid);
+        void _pubGeometry(ros::Publisher* pub);
 };
 }
 #endif

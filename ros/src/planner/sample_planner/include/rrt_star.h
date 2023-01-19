@@ -14,12 +14,6 @@
 #ifndef RRT_STAR_H
 #define RRT_STAR_H
 
-#include <limits>
-#include <tuple>
-#include <unordered_map>
-#include <vector>
-
-#include "global_planner.h"
 #include "rrt.h"
 #include "utils.h"
 

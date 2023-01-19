@@ -106,7 +106,12 @@ namespace rrt_planner {
       return {false, {}};
     }
 
-    std::vector<Node> RRTConnect::_convertClosedListToPath(const Node& boundaray) {
+    /**
+     * @brief convert closed list to path
+     * @param boundary  connected node that the boudary of forward and backward
+     * @return ector containing path nodes
+     */
+    std::vector<Node> RRTConnect::_convertClosedListToPath(const Node& boundary) {
         if (this->sample_list_f_.find(this->start_) == this->sample_list_.end())
             std::swap(this->sample_list_f_, this->sample_list_b_);
         
@@ -114,7 +119,7 @@ namespace rrt_planner {
         
         // backward
         std::vector<Node> path_b;
-        auto current = *this->sample_list_b_.find(boundaray);
+        auto current = *this->sample_list_b_.find(boundary);
         while (current != this->goal_) {
             path_b.push_back(current);
             auto it = this->sample_list_b_.find(Node(current.pid % this->nx_, current.pid / this->nx_, 0, 0, current.pid));
@@ -128,7 +133,7 @@ namespace rrt_planner {
         for (auto rit = path_b.rbegin(); rit != path_b.rend(); rit++)
             path.push_back(*rit);
 
-        current = *this->sample_list_f_.find(boundaray);
+        current = *this->sample_list_f_.find(boundary);
         while (current != this->start_) {
             auto it = this->sample_list_f_.find(Node(current.pid % this->nx_, current.pid / this->nx_, 0, 0, current.pid));
             if (it != this->sample_list_f_.end()) {

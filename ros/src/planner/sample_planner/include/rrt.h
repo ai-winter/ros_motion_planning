@@ -14,10 +14,8 @@
 #ifndef RRT_H
 #define RRT_H
 
-#include <limits>
 #include <tuple>
 #include <unordered_map>
-#include <vector>
 
 #include "global_planner.h"
 #include "utils.h"

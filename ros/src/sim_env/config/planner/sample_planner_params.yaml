@@ -1,6 +1,6 @@
 SamplePlanner:
   # random sample points
-  sample_points: 3000
+  sample_points: 2000 #1000 for informed RRT*, 3000 for others
   # max distance between sample points
   sample_max_d: 10.0
   # optimization radius

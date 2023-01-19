@@ -14,8 +14,6 @@
 #ifndef RRT_CONNECT_H
 #define RRT_CONNECT_H
 
-
-#include "global_planner.h"
 #include "rrt.h"
 #include "utils.h"
 
@@ -50,7 +48,12 @@ class RRTConnect : public RRT {
         // Sampled list backward
         std::unordered_set<Node, NodeIdAsHash, compare_coordinates> sample_list_b_;
 
-        std::vector<Node> _convertClosedListToPath(const Node& boundaray);
+        /**
+         * @brief convert closed list to path
+         * @param boundary  connected node that the boudary of forward and backward
+         * @return ector containing path nodes
+         */
+        std::vector<Node> _convertClosedListToPath(const Node& boundary);
 };
 }
 

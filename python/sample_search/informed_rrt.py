@@ -25,7 +25,7 @@ class ellipse:
         center_y = (p1[1] + p2[1]) / 2
 
         # rotation
-        theta = np.arctan2(p2[1] - p2[0], p1[1] - p1[0]) - np.pi / 2
+        theta = - np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
 
         # transform
         b = np.sqrt(a ** 2 - c ** 2)
