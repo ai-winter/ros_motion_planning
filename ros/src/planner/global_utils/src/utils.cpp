@@ -52,6 +52,15 @@ Node Node::operator-(const Node& p) const {
 bool Node::operator==(const Node& p) const {
     return this->x == p.x && this->y == p.y;
 }
+
+/**
+ * @brief Overloading operator != for Node class
+ * @param p node
+ * @return bool whether current node equals input node
+ */
+bool Node::operator!=(const Node &p) const {
+    return ! this->operator==(p);
+}
 /*********************************************************************************/
 
 

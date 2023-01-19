@@ -37,10 +37,12 @@
         <!-- sample search -->
         <param name="base_global_planner" value="sample_planner/SamplePlanner"
             if="$(eval arg('global_planner')=='rrt'
-                    or arg('global_planner')=='rrt_star')" />
+                    or arg('global_planner')=='rrt_star'
+                    or arg('global_planner')=='rrt_connect')" />
         <param name="SamplePlanner/planner_name" value="$(arg global_planner)"
             if="$(eval arg('global_planner')=='rrt'
-                    or arg('global_planner')=='rrt_star')" />
+                    or arg('global_planner')=='rrt_star'
+                    or arg('global_planner')=='rrt_connect')" />
 
         <!-- local planner plugin -->
         <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
