@@ -49,18 +49,18 @@ namespace rrt_planner {
       int iteration = 0;
       while (iteration < this->sample_num_) {
         // generate a random node in the map
-        Node new_node = this->_generateRandomNode();
+        Node sample_node = this->_generateRandomNode();
 
         // obstacle
-        if (costs[new_node.id] >= this->lethal_cost_ * this->factor_)
+        if (costs[sample_node.id] >= this->lethal_cost_ * this->factor_)
             continue;
         
         // visited
-        if (this->sample_list_.find(new_node) != this->sample_list_.end())
+        if (this->sample_list_.find(sample_node) != this->sample_list_.end())
             continue;
 
         // regular the sample node
-        this->_findNearestPoint(new_node);
+        Node new_node = this->_findNearestPoint(this->sample_list_, sample_node);
         if (new_node.id == -1)
             continue;
         else {
@@ -79,24 +79,24 @@ namespace rrt_planner {
 
 
     /**
-     * @brief Find the nearest Node that has been seen by the algorithm. This does
-     * not consider cost to reach the node.
-     * @param new_node Node to which the nearest node must be found
+     * @brief Regular the new node by the nearest node in the sample list
+     * @param list     sample list
+     * @param node     sample node
      * @return nearest node
      */
-    void RRTStar::_findNearestPoint(Node& new_node) {
-        Node nearest_node;
+    Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coordinates> list, Node& node) {
+        Node nearest_node, new_node(node);
         double min_dist = std::numeric_limits<double>::max();
 
-        for (const auto node : this->sample_list_) {
+        for (const auto node_ : list) {
             // calculate distance
-            double new_dist = std::sqrt(std::pow(node.x - new_node.x, 2) + std::pow(node.y - new_node.y, 2));
+            double new_dist = this->_dist(node_, new_node);
 
             // update nearest node
             if (new_dist < min_dist) {
-                nearest_node = node;
+                nearest_node = node_;
                 new_node.pid = nearest_node.id;
-                new_node.cost = new_dist + node.cost;
+                new_node.cost = new_dist + node_.cost;
                 min_dist = new_dist;
             }
         }
@@ -105,7 +105,7 @@ namespace rrt_planner {
         if (min_dist > this->max_dist_) {
             // connect sample node and nearest node, then move the nearest node 
             // forward to sample node with `max_distance` as result
-            double theta = atan2(new_node.y - nearest_node.y, new_node.x - nearest_node.x);
+            double theta = this->_angle(nearest_node, new_node);
             new_node.x = nearest_node.x + (int)(this->max_dist_ * cos(theta));
             new_node.y = nearest_node.y + (int)(this->max_dist_ * sin(theta));
             new_node.id = this->grid2Index(new_node.x, new_node.y);
@@ -115,24 +115,24 @@ namespace rrt_planner {
         // obstacle check
         if (!_isAnyObstacleInPath(new_node, nearest_node)) {
             // rewire optimization
-            for (auto node : this->sample_list_) {
+            for (auto node_ : this->sample_list_) {
                 // inside the optimization circle
-                double new_dist = std::sqrt(std::pow(node.x - new_node.x, 2) + std::pow(node.y - new_node.y, 2));
+                double new_dist = this->_dist(node_, new_node);
                 if (new_dist < this->r_) {
-                    double cost = node.cost + new_dist;
+                    double cost = node_.cost + new_dist;
                     // update new sample node's cost and parent 
                     if (new_node.cost > cost) {
-                        if (!_isAnyObstacleInPath(new_node, node)) {
-                            new_node.pid = node.id;
+                        if (!_isAnyObstacleInPath(new_node, node_)) {
+                            new_node.pid = node_.id;
                             new_node.cost = cost;
                         }
                     } else {
                         // update nodes' cost inside the radius
                         cost = new_node.cost + new_dist;
-                        if (cost < node.cost) {
-                            if (!_isAnyObstacleInPath(new_node, node)) {
-                                node.pid = new_node.id;
-                                node.cost = cost;
+                        if (cost < node_.cost) {
+                            if (!_isAnyObstacleInPath(new_node, node_)) {
+                                node_.pid = new_node.id;
+                                node_.cost = cost;
                             }
                         }
                     }
@@ -140,5 +140,6 @@ namespace rrt_planner {
             }           
         } else
             new_node.id = -1;
+        return new_node;
     }
 }

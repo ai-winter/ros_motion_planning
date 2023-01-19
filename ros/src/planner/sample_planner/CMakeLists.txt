@@ -32,6 +32,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/rrt.cpp
   src/rrt_star.cpp
+  src/rrt_connect.cpp
   src/sample_planner.cpp
 )
 

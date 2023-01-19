@@ -51,11 +51,12 @@ class RRT : public global_planner::GlobalPlanner {
 
   protected:
     /**
-     * @brief Regular the new node by the nearest node in the sample list 
-     * @param new_node new sample node
-     * @return None
+     * @brief Regular the sample node by the nearest node in the sample list 
+     * @param list  samplee list
+     * @param node  sample node
+     * @return nearest node
      */
-    void _findNearestPoint(Node& new_node);
+    Node _findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coordinates> list, const Node& node);
     /**
      * @brief Check if there is any obstacle between the 2 nodes.
      * @param n1        Node 1
@@ -74,6 +75,20 @@ class RRT : public global_planner::GlobalPlanner {
      * @return bool value of whether goal is reachable from current node
      */
     bool _checkGoal(const Node& new_node);
+    /**
+     * @brief Calculate distance between the 2 nodes.
+     * @param n1        Node 1
+     * @param n2        Node 2
+     * @return distance between nodes
+     */
+    double _dist(const Node& node1, const Node& node2);
+    /**
+     * @brief Calculate the angle of x-axis between the 2 nodes.
+     * @param n1        Node 1
+     * @param n2        Node 2
+     * @return he angle of x-axis between the 2 node
+     */
+    double _angle(const Node& node1, const Node& node2);
 
 
     // costmap copy
