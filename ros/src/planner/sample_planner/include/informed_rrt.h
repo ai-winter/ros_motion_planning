@@ -1,27 +1,27 @@
 /***********************************************************
  * 
- * @file: rrt_star.h
- * @breif: Contains the Rapidly-Exploring Random Tree Star(RRT*) planner class
+ * @file: informed_rrt.h
+ * @breif: Contains the informed RRT* planner class
  * @author: Yang Haodong
- * @update: 2022-10-29
+ * @update: 2023-1-19
  * @version: 1.0
  * 
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
  **********************************************************/
-#ifndef RRT_STAR_H
-#define RRT_STAR_H
+#ifndef INFORMED_RRT_H
+#define INFORMED_RRT_H
 
-#include "rrt.h"
+#include "rrt_star.h"
 #include "utils.h"
 
 namespace rrt_planner {
 /**
  * @brief Class for objects that plan using the RRT* algorithm
  */
-class RRTStar : public RRT {
+class InformedRRT : public RRTStar {
     public:
         /**
          * @brief  Constructor
@@ -32,7 +32,7 @@ class RRTStar : public RRT {
          * @param   max_dist    max distance between sample points
          * @param   r           optimization radius
          */
-        RRTStar(int nx, int ny, double resolution, int sample_num, double max_dist, double r);
+        InformedRRT(int nx, int ny, double resolution, int sample_num, double max_dist, double r);
         /**
          * @brief RRT implementation
          * @param costs     costmap
@@ -45,15 +45,26 @@ class RRTStar : public RRT {
                                                 const Node& goal, std::vector<Node> &expand);
 
     protected:
-        /**
-         * @brief Regular the new node by the nearest node in the sample list
-         * @param list     sample list
-         * @param node     sample node
-         * @return nearest node
-         */
-        Node _findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coordinates> list, Node& node);
+        // best planning cost
+        double c_best_;
+        // distance between start and goal
+        double c_min_;
 
-        double r_;
+        /**
+         * @brief Sample in ellipse
+         * @param   x   random sampling x
+         * @param   y   random sampling y
+         * @return ellipse node
+         */
+        Node _transform(double x, double y);
+
+        /**
+         * @brief Generates a random node
+         * @return Generated node
+         */
+        Node _generateRandomNode();
 };
 }
-#endif  // RRT_H
+#endif
+
+

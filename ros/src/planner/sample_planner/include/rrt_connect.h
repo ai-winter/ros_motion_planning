@@ -1,9 +1,9 @@
 /***********************************************************
  * 
- * @file: rrt_star.h
- * @breif: Contains the Rapidly-Exploring Random Tree Star(RRT*) planner class
+ * @file: rrt_connect.h
+ * @breif: Contains the RRT Connect planner class
  * @author: Yang Haodong
- * @update: 2022-10-29
+ * @update: 2023-1-18
  * @version: 1.0
  * 
  * Copyright (c) 2022， Yang Haodong
@@ -11,17 +11,17 @@
  * --------------------------------------------------------
  *
  **********************************************************/
-#ifndef RRT_STAR_H
-#define RRT_STAR_H
+#ifndef RRT_CONNECT_H
+#define RRT_CONNECT_H
 
 #include "rrt.h"
 #include "utils.h"
 
 namespace rrt_planner {
 /**
- * @brief Class for objects that plan using the RRT* algorithm
+ * @brief Class for objects that plan using the RRT Connect algorithm
  */
-class RRTStar : public RRT {
+class RRTConnect : public RRT {
     public:
         /**
          * @brief  Constructor
@@ -30,9 +30,8 @@ class RRTStar : public RRT {
          * @param   resolution  costmap resolution
          * @param   sample_num  andom sample points
          * @param   max_dist    max distance between sample points
-         * @param   r           optimization radius
          */
-        RRTStar(int nx, int ny, double resolution, int sample_num, double max_dist, double r);
+        RRTConnect(int nx, int ny, double resolution, int sample_num, double max_dist);
         /**
          * @brief RRT implementation
          * @param costs     costmap
@@ -43,17 +42,19 @@ class RRTStar : public RRT {
          */
         std::tuple<bool, std::vector<Node>> plan(const unsigned char* costs, const Node& start,
                                                 const Node& goal, std::vector<Node> &expand);
-
     protected:
-        /**
-         * @brief Regular the new node by the nearest node in the sample list
-         * @param list     sample list
-         * @param node     sample node
-         * @return nearest node
-         */
-        Node _findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coordinates> list, Node& node);
+        // Sampled list forward
+        std::unordered_set<Node, NodeIdAsHash, compare_coordinates> sample_list_f_;
+        // Sampled list backward
+        std::unordered_set<Node, NodeIdAsHash, compare_coordinates> sample_list_b_;
 
-        double r_;
+        /**
+         * @brief convert closed list to path
+         * @param boundary  connected node that the boudary of forward and backward
+         * @return ector containing path nodes
+         */
+        std::vector<Node> _convertClosedListToPath(const Node& boundary);
 };
 }
-#endif  // RRT_H
+
+#endif

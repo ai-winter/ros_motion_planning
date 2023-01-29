@@ -3,8 +3,8 @@
  * @file: rrt.cpp
  * @breif: Contains the Rapidly-Exploring Random Tree(RRT) planner class
  * @author: Yang Haodong
- * @update: 2022-10-27
- * @version: 1.0
+ * @update: 2023-1-19
+ * @version: 1.1
  * 
  * Copyright (c) 2022， Yang Haodong
  * All rights reserved.
@@ -48,18 +48,18 @@ namespace rrt_planner {
       int iteration = 0;
       while (iteration < this->sample_num_) {
         // generate a random node in the map
-        Node new_node = this->_generateRandomNode();
+        Node sample_node = this->_generateRandomNode();
 
         // obstacle
-        if (costs[new_node.id] >= this->lethal_cost_ * this->factor_)
+        if (costs[sample_node.id] >= this->lethal_cost_ * this->factor_)
           continue;
         
         // visited
-        if (this->sample_list_.find(new_node) != this->sample_list_.end())
+        if (this->sample_list_.find(sample_node) != this->sample_list_.end())
           continue;
 
         // regular the sample node
-        this->_findNearestPoint(new_node);
+        Node new_node = this->_findNearestPoint(this->sample_list_, sample_node);
         if (new_node.id == -1)
           continue;
         else {
@@ -87,33 +87,38 @@ namespace rrt_planner {
       // seed the generator
       std::mt19937 eng(rd());
       // define the range
-      std::uniform_int_distribution<int> distr(0, this->ns_ - 1);
-      // generate node
-      const int id = distr(eng);
-      int x, y;
-      this->index2Grid(id, x, y);
-      return Node(x, y, 0, 0, id, 0);
+      std::uniform_real_distribution<float> p(0, 1);
+      // heuristic
+      if (p(eng) > 0.05) {
+        // generate node
+        std::uniform_int_distribution<int> distr(0, this->ns_ - 1);
+        const int id = distr(eng);
+        int x, y;
+        this->index2Grid(id, x, y);
+        return Node(x, y, 0, 0, id, 0);
+      } else 
+        return Node(this->goal_.x, this->goal_.y, 0, 0, this->goal_.id, 0);
     }
 
     /**
-     * @brief Find the nearest Node that has been seen by the algorithm. This does
-     * not consider cost to reach the node.
-     * @param new_node Node to which the nearest node must be found
+     * @brief Regular the sample node by the nearest node in the sample list 
+     * @param list  samplee list
+     * @param node  sample node
      * @return nearest node
      */
-    void RRT::_findNearestPoint(Node& new_node) {
-      Node nearest_node;
+    Node RRT::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coordinates> list, const Node& node) {
+      Node nearest_node, new_node(node);
       double min_dist = std::numeric_limits<double>::max();
 
-      for (const auto node : this->sample_list_) {
+      for (const auto node_ : list) {
         // calculate distance
-        double new_dist = std::sqrt(std::pow(node.x - new_node.x, 2) + std::pow(node.y - new_node.y, 2));
+        double new_dist = this->_dist(node_, new_node);
 
         // update nearest node
         if (new_dist < min_dist) {
-          nearest_node = node;
+          nearest_node = node_;
           new_node.pid = nearest_node.id;
-          new_node.cost = new_dist + node.cost;
+          new_node.cost = new_dist + node_.cost;
           min_dist = new_dist;
         }
       }
@@ -122,7 +127,7 @@ namespace rrt_planner {
       if (min_dist > this->max_dist_) {
         // connect sample node and nearest node, then move the nearest node 
         // forward to sample node with `max_distance` as result
-        double theta = atan2(new_node.y - nearest_node.y, new_node.x - nearest_node.x);
+        double theta = this->_angle(nearest_node, new_node);
         new_node.x = nearest_node.x + (int)(this->max_dist_ * cos(theta));
         new_node.y = nearest_node.y + (int)(this->max_dist_ * sin(theta));
         new_node.id = this->grid2Index(new_node.x, new_node.y);
@@ -130,8 +135,10 @@ namespace rrt_planner {
       }
 
       // obstacle check
-      if (_isAnyObstacleInPath(new_node, nearest_node))
+      if (_isAnyObstacleInPath(new_node, nearest_node)) 
         new_node.id = -1;
+      
+      return new_node;
     }
 
     /**
@@ -141,8 +148,8 @@ namespace rrt_planner {
      * @return bool value of whether obstacle exists between nodes
      */
     bool RRT::_isAnyObstacleInPath(const Node& n1, const Node& n2) {
-      double theta = atan2(n2.y - n1.y, n2.x - n1.x);
-      double dist = std::sqrt(std::pow(n1.x - n2.x, 2) + std::pow(n1.y - n2.y, 2));
+      double theta = this->_angle(n1, n2);
+      double dist = this->_dist(n1, n2);
 
       // distance longer than the threshold
       if (dist > this->max_dist_)
@@ -165,8 +172,7 @@ namespace rrt_planner {
      * @return bool value of whether goal is reachable from current node
      */
     bool RRT::_checkGoal(const Node& new_node) {
-      auto dist = std::sqrt(std::pow(this->goal_.x - new_node.x, 2) +
-                            std::pow(this->goal_.y - new_node.y, 2));
+      auto dist = this->_dist(new_node, this->goal_);
       if (dist > this->max_dist_) 
         return false;
 
@@ -177,5 +183,25 @@ namespace rrt_planner {
         return true;
       }
       return false;
+    }
+
+    /**
+     * @brief Calculate distance between the 2 nodes.
+     * @param n1        Node 1
+     * @param n2        Node 2
+     * @return distance between nodes
+     */
+    double RRT::_dist(const Node& node1, const Node& node2) {
+      return std::sqrt(std::pow(node1.x - node2.x, 2) + std::pow(node1.y - node2.y, 2));
+    }
+    
+    /**
+     * @brief Calculate the angle of x-axis between the 2 nodes.
+     * @param n1        Node 1
+     * @param n2        Node 2
+     * @return he angle of x-axis between the 2 node
+     */
+    double RRT::_angle(const Node& node1, const Node& node2) {
+      return atan2(node2.y - node1.y, node2.x - node1.x);
     }
 }

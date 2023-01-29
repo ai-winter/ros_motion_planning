@@ -107,8 +107,7 @@ namespace global_planner {
             const Node& start, const Node& goal) {
         auto current = *closed_list.find(goal);
         std::vector<Node> path;
-        while (!compareCoordinates(current, start)) {
-            // ROS_INFO("path_id:%d, pid:%d", current.id, current.pid);
+        while (current != start) {
             path.push_back(current);
             auto it = closed_list.find(Node(current.pid % this->nx_, current.pid / this->nx_, 0, 0, current.pid));
             if (it != closed_list.end()) {
@@ -118,20 +117,4 @@ namespace global_planner {
         path.push_back(start);
         return path;
     }
-    // std::vector<Node> GlobalPlanner::_convertClosedListToPath(std::vector<Node>& closed_list,
-    //         const Node& start, const Node& goal) {
-    //     std::vector<Node> path;
-    //     int num = closed_list.size();
-    //     int index = num - 1;
-    //     for(int i = 0; i < num; i++) {
-    //         path.push_back(closed_list[index]);
-    //         if(closed_list[index] == start)    return path;
-    //         for(int j = 0; j < num; j++) {
-    //             if(closed_list[j].id == closed_list[index].pid) {
-    //                 index = j;
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
 }

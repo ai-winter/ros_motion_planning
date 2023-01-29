@@ -12,10 +12,13 @@
  *
  **********************************************************/
 #include <pluginlib/class_list_macros.h>
+#include <cmath>
 
 #include "sample_planner.h"
 #include "rrt.h"
 #include "rrt_star.h"
+#include "rrt_connect.h"
+#include "informed_rrt.h"
 
 PLUGINLIB_EXPORT_CLASS(sample_planner::SamplePlanner, nav_core::BaseGlobalPlanner)
 
@@ -98,6 +101,10 @@ namespace sample_planner {
                 this->g_planner_ = new rrt_planner::RRT(nx, ny, resolution, this->sample_points_, this->sample_max_d_);
             else if (planner_name == "rrt_star")
                 this->g_planner_ = new rrt_planner::RRTStar(nx, ny, resolution, this->sample_points_, this->sample_max_d_, this->opt_r_);
+            else if (planner_name == "rrt_connect")
+                this->g_planner_ = new rrt_planner::RRTConnect(nx, ny, resolution, this->sample_points_, this->sample_max_d_);
+            else if (planner_name == "informed_rrt")
+                this->g_planner_ = new rrt_planner::InformedRRT(nx, ny, resolution, this->sample_points_, this->sample_max_d_, this->opt_r_);
 
             ROS_INFO("Using global sample planner: %s", planner_name.c_str());
 
@@ -183,7 +190,6 @@ namespace sample_planner {
 
         if (path_found) {
             if (this->_getPlanFromPath(path, plan)) {
-                // 确保终点与发布的规划有相同时间戳
                 geometry_msgs::PoseStamped goalCopy = goal;
                 goalCopy.header.stamp = ros::Time::now();
                 plan.push_back(goalCopy);
@@ -192,7 +198,8 @@ namespace sample_planner {
         }
         else  ROS_ERROR("Failed to get a path.");
         // publish expand zone
-        if(this->is_expand_)   this->_publishExpand(expand);
+        if(this->is_expand_)
+            this->_publishExpand(expand);
 
         // publish visulization plan
         this->publishPlan(plan);

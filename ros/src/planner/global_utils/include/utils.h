@@ -88,6 +88,13 @@ class Node {
      * @return bool whether current node equals input node
      */
     bool operator==(const Node& p) const;
+
+    /**
+     * @brief Overloading operator != for Node class
+     * @param p node
+     * @return bool whether current node equals input node
+     */
+    bool operator!=(const Node& p) const;
 };
 
 /**
