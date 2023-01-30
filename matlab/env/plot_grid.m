@@ -21,9 +21,9 @@ function plot_grid(grid_map)
     axis image;
     
     for row = 1:rows
-        line([1, cols + 1], [row, row], 'Color', '#ddd');
+        line([1, cols + 1], [row, row], 'Color', '#eee');
     end
     for col = 1:cols
-            line([col, col], [1, rows + 1], 'Color', '#ddd');
+            line([col, col], [1, rows + 1], 'Color', '#eee');
     end
 end
