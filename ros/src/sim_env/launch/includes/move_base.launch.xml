@@ -47,8 +47,8 @@
                     or arg('global_planner')=='rrt_connect')" />
 
         <!-- local planner plugin -->
-        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
-        <!-- <param name="base_local_planner" value="local_planner/LocalPlanner" /> -->
+        <!-- <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" /> -->
+        <param name="base_local_planner" value="local_planner/LocalPlanner" />
 
         <!-- loading navigation parameters -->
         <rosparam
