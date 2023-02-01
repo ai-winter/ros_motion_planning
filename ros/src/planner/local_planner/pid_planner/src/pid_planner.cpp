@@ -1,21 +1,21 @@
-#include "local_planner.h"
+#include "pid_planner.h"
 #include <pluginlib/class_list_macros.h>
 
-PLUGINLIB_EXPORT_CLASS(local_planner::LocalPlanner, nav_core::BaseLocalPlanner)
+PLUGINLIB_EXPORT_CLASS(pid_planner::PIDPlanner, nav_core::BaseLocalPlanner)
 
-namespace local_planner
+namespace pid_planner
 {
-    LocalPlanner::LocalPlanner() : costmap_ros_(NULL), tf_(NULL), initialized_(false) {}
+    PIDPlanner::PIDPlanner() : costmap_ros_(NULL), tf_(NULL), initialized_(false) {}
 
-    LocalPlanner::LocalPlanner(std::string name, tf2_ros::Buffer *tf, costmap_2d::Costmap2DROS *costmap_ros)
+    PIDPlanner::PIDPlanner(std::string name, tf2_ros::Buffer *tf, costmap_2d::Costmap2DROS *costmap_ros)
         : costmap_ros_(NULL), tf_(NULL), initialized_(false)
     {
         initialize(name, tf, costmap_ros);
     }
 
-    LocalPlanner::~LocalPlanner() {}
+    PIDPlanner::~PIDPlanner() {}
 
-    void LocalPlanner::initialize(std::string name, tf2_ros::Buffer *tf, costmap_2d::Costmap2DROS *costmap_ros)
+    void PIDPlanner::initialize(std::string name, tf2_ros::Buffer *tf, costmap_2d::Costmap2DROS *costmap_ros)
     {
         if (!initialized_)
         {
@@ -25,27 +25,27 @@ namespace local_planner
 
             // ******* TODO: improve to parameters **********
             // target
-            p_window_ = 0.7;
-            o_window_ = 0.7;
+            p_window_ = 0.1;
+            o_window_ = 3.14; // disabled
             // goal tolerance
             p_precision_ = 0.5;
             o_precision_ = 0.2;
             // linear
-            max_vel_lin_ = 0.4;
+            max_vel_lin_ = 0.3;
             min_vel_lin_ = 0.0;
             max_incr_lin_ = 0.3;
             // angular
-            max_vel_ang_ = 0.4;
-            min_vel_ang_ = -0.4;
-            max_incr_ang_ = 0.25;
+            max_vel_ang_ = 1.0;
+            min_vel_ang_ = -1.0;
+            max_incr_ang_ = 0.5;
             // pid controller params
             k_p_lin_ = 2.00;
-            k_i_lin_ = 0.00;
+            k_i_lin_ = 0.04;
             k_d_lin_ = 0.00;
 
             k_p_ang_ = 2.00;
             k_i_ang_ = 0.00;
-            k_d_ang_ = 0.00;
+            k_d_ang_ = 0.10;
 
             // k_ = 1.0;
             // l_ = 0.5;
@@ -59,27 +59,25 @@ namespace local_planner
             base_frame_ = "base_link";
             plan_index_ = 0;
             last_plan_index_ = 0;
-            robot_curr_pose[0] = 0;
-            robot_curr_pose[1] = 0;
-            robot_curr_pose[2] = 0;
-            robot_curr_orien = 0;
+            robot_curr_pose[0] = 0.0;
+            robot_curr_pose[1] = 0.0;
+            robot_curr_pose[2] = 0.0;
+            robot_curr_orien = 0.0;
 
             double controller_freqency;
             nh.param("/move_base/controller_frequency", controller_freqency, 10.0);
             d_t_ = 1 / controller_freqency;
-            ROS_INFO("Local planner initialized!");
+            ROS_INFO("PID planner initialized!");
         }
         else
-        {
-            ROS_WARN("Local planner has already been initialized.");
-        }
+            ROS_WARN("PID planner has already been initialized.");
     }
 
-    bool LocalPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &orig_global_plan)
+    bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &orig_global_plan)
     {
         if (!initialized_)
         {
-            ROS_ERROR("This planner has not been initialized");
+            ROS_ERROR("PID planner has not been initialized");
             return false;
         }
 
@@ -91,14 +89,16 @@ namespace local_planner
         plan_index_ = 0;
         goal_reached_ = false;
 
-        // reset pid
-        integral_lin_ = integral_ang_ = 0.0;
-        error_lin_ = error_ang_ = 0.0;
+        // NOTE: should reset pid, but the global planner update too frequently, so descard these.
+        // integral_lin_ = 0.0;
+        // integral_ang_ = 0.0;
+        // error_lin_ = 0.0;
+        // error_ang_ = 0.0;
 
         return true;
     }
 
-    double LocalPlanner::LinearPIDController(nav_msgs::Odometry &base_odometry, double next_t_x, double next_t_y)
+    double PIDPlanner::LinearPIDController(nav_msgs::Odometry &base_odometry, double next_t_x, double next_t_y)
     {
         double vel_curr = hypot(base_odometry.twist.twist.linear.y, base_odometry.twist.twist.linear.x);
 
@@ -127,10 +127,13 @@ namespace local_planner
         return x_velocity;
     }
 
-    double LocalPlanner::AngularPIDController(nav_msgs::Odometry &base_odometry, double target_th_w, double robot_orien)
+    double PIDPlanner::AngularPIDController(nav_msgs::Odometry &base_odometry, double target_th_w, double robot_orien)
     {
         double orien_err = target_th_w - robot_orien;
-        rangeAngle(orien_err);
+        if (orien_err > M_PI)
+            orien_err -= (2 * M_PI);
+        if (orien_err < -M_PI)
+            orien_err += (2 * M_PI);
 
         double target_vel_ang = orien_err / d_t_;
         if (fabs(target_vel_ang) > max_vel_ang_)
@@ -146,19 +149,18 @@ namespace local_planner
         if (fabs(incr_ang) > max_incr_ang_)
             incr_ang = copysign(max_incr_ang_, incr_ang);
 
-        // double th_velocity = copysign(vel_ang + incr_ang, target_vel_ang);
-        double th_velocity = vel_ang + incr_ang;
+        double th_velocity = copysign(vel_ang + incr_ang, target_vel_ang);
         if (fabs(th_velocity) > max_vel_ang_)
             th_velocity = copysign(max_vel_ang_, th_velocity);
         if (fabs(th_velocity) < min_vel_ang_)
             th_velocity = copysign(min_vel_ang_, th_velocity);
 
-        ROS_INFO("orien_err: %lf, target_vel_ang: %lf, vel_ang: %lf, th_velocity: %lf", orien_err, target_vel_ang, vel_ang, th_velocity);
+        // ROS_INFO("orien_err: %lf, target_vel_ang: %lf, vel_ang: %lf, th_velocity: %lf", orien_err, target_vel_ang, vel_ang, th_velocity);
 
         return th_velocity;
     }
 
-    // void LocalPlanner::controller(double x, double y, double theta, double x_d, double y_d, geometry_msgs::Twist &cmd_vel)
+    // void PIDPlanner::controller(double x, double y, double theta, double x_d, double y_d, geometry_msgs::Twist &cmd_vel)
     // {
     //     Eigen::Matrix2d A;
     //     Eigen::Vector2d u;
@@ -171,17 +173,17 @@ namespace local_planner
     //     cmd_vel.angular.z = v_w(1);
     // }
 
-    bool LocalPlanner::computeVelocityCommands(geometry_msgs::Twist &cmd_vel)
+    bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist &cmd_vel)
     {
         if (!initialized_)
         {
-            ROS_ERROR("This planner has not been initialized");
+            ROS_ERROR("PID planner has not been initialized");
             return false;
         }
 
         if (goal_reached_)
         {
-            ROS_ERROR("This planner goal reached without motion.");
+            ROS_ERROR("PID planner goal reached without motion.");
             return true;
         }
 
@@ -200,19 +202,18 @@ namespace local_planner
             t_th_w = atan2((global_plan_[next_plan_index].pose.position.y -
                             global_plan_[plan_index_].pose.position.y),
                            (global_plan_[next_plan_index].pose.position.x -
-                            global_plan_[plan_index_].pose.position.x));
-            rangeAngle(t_th_w);
+                            global_plan_[plan_index_].pose.position.x)); // [-pi, pi]
 
             // tf::Quaternion th_target_quat = tf::createQuaternionFromYaw(t_th_w);
             tf2::Quaternion th_target_quat;
             th_target_quat.setRPY(0, 0, t_th_w);
-
-            target.pose.orientation.x = th_target_quat[0];
-            target.pose.orientation.y = th_target_quat[1];
-            target.pose.orientation.z = th_target_quat[2];
-            target.pose.orientation.w = th_target_quat[3];
+            tf2::convert(th_target_quat, target.pose.orientation);
+            // target.pose.orientation.x = th_target_quat[0];
+            // target.pose.orientation.y = th_target_quat[1];
+            // target.pose.orientation.z = th_target_quat[2];
+            // target.pose.orientation.w = th_target_quat[3];
+            // transform from map into base_frame
             getTransformedPosition(target, &t_x, &t_y, &t_th);
-            rangeAngle(t_th);
 
             if (hypot(t_x, t_y) > p_window_ || fabs(t_th) > o_window_)
                 break;
@@ -234,10 +235,10 @@ namespace local_planner
         robot_curr_pose[2] = global_pose.pose.position.z;
 
         // robot_curr_orien = tf::getYaw(global_pose.getRotation());
-        tf2::Quaternion q(global_pose.pose.orientation.x, global_pose.pose.orientation.y,
-                          global_pose.pose.orientation.z, global_pose.pose.orientation.w);
-        robot_curr_orien = q.getAngle(); // [0, 2pi]
-        rangeAngle(robot_curr_orien);
+        robot_curr_orien = tf2::getYaw(global_pose.pose.orientation);
+        // tf2::Quaternion q(global_pose.pose.orientation.x, global_pose.pose.orientation.y,
+        //                   global_pose.pose.orientation.z, global_pose.pose.orientation.w);
+        // robot_curr_orien = q.getAngle(); // [0, 2pi]
 
         // odometry observation - getting robot velocities in robot frame
         nav_msgs::Odometry base_odom;
@@ -245,16 +246,13 @@ namespace local_planner
 
         // get final goal orientation - Quaternion to Euler
         final_orientation = getEulerAngles(global_plan_.back());
-        rangeAngle(final_orientation[2]);
 
         // controller(robot_curr_pose[0], robot_curr_pose[1], robot_curr_orien, target.pose.position.x, target.pose.position.y, cmd_vel);
 
         if (getGoalPositionDistance(global_plan_.back(), robot_curr_pose[0], robot_curr_pose[1]) <= p_precision_)
         {
-            // check to see if the goal orientation has been reached
             if (fabs(final_orientation[2] - robot_curr_orien) <= o_precision_)
             {
-                // set the velocity command to zero
                 cmd_vel.linear.x = 0.0;
                 cmd_vel.linear.y = 0.0;
                 cmd_vel.angular.z = 0.0;
@@ -310,7 +308,7 @@ namespace local_planner
         return true;
     }
 
-    bool LocalPlanner::isGoalReached()
+    bool PIDPlanner::isGoalReached()
     {
         if (!initialized_)
         {
@@ -337,13 +335,13 @@ namespace local_planner
         return goal_reached_;
     }
 
-    double LocalPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped &global_pose, double goal_x, double goal_y)
+    double PIDPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped &global_pose, double goal_x, double goal_y)
     {
         return hypot(goal_x - global_pose.pose.position.x,
                      goal_y - global_pose.pose.position.y);
     }
 
-    std::vector<double> LocalPlanner::getEulerAngles(geometry_msgs::PoseStamped &Pose)
+    std::vector<double> PIDPlanner::getEulerAngles(geometry_msgs::PoseStamped &Pose)
     {
         std::vector<double> EulerAngles;
         EulerAngles.resize(3, 0);
@@ -360,11 +358,11 @@ namespace local_planner
         return EulerAngles;
     }
 
-    void LocalPlanner::rangeAngle(double &angle)
-    {
-        if (angle > M_PI)
-            angle -= (2 * M_PI);
-        if (angle < -M_PI)
-            angle += (2 * M_PI);
-    }
+    // void PIDPlanner::rangeAngle(double &angle)
+    // {
+    //     if (angle > M_PI)
+    //         angle -= (2 * M_PI);
+    //     if (angle < -M_PI)
+    //         angle += (2 * M_PI);
+    // }
 }
