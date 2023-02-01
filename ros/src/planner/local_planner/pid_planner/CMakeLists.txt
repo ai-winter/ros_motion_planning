@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(local_planner)
+project(pid_planner)
 
 find_package(catkin REQUIRED COMPONENTS
   angles
@@ -31,7 +31,7 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME}
-  src/local_planner.cpp
+  src/pid_planner.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
