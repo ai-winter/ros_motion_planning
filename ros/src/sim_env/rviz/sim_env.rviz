@@ -10,6 +10,7 @@ Panels:
         - /Map2
         - /Map3
         - /Map4
+        - /Marker1
       Splitter Ratio: 0.5
     Tree Height: 652
   - Class: rviz/Selection
@@ -206,21 +207,29 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: Map
       Topic: /move_base/local_costmap/costmap
       Unreliable: false
       Use Timestamp: false
-      Value: true
+      Value: false
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: Map
       Topic: /move_base/global_costmap/costmap
       Unreliable: false
       Use Timestamp: false
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /move_base/SamplePlanner/tree
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
@@ -268,7 +277,7 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Yaw: 1.5453975200653076
+      Yaw: 1.5403975248336792
     Saved: ~
 Window Geometry:
   Displays:
