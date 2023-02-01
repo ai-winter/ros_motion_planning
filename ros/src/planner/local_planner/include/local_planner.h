@@ -12,6 +12,11 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 
+#include <Eigen/Eigen>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <Eigen/Eigenvalues>
+
 using namespace std;
 
 namespace local_planner
@@ -37,7 +42,12 @@ namespace local_planner
         std::vector<double> getEulerAngles(geometry_msgs::PoseStamped &Pose);
 
         double LinearPIDController(nav_msgs::Odometry &base_odometry, double next_t_x, double next_t_y);
+
         double AngularPIDController(nav_msgs::Odometry &base_odometry, double target_th_w, double robot_orien);
+
+        // void controller(double x, double y, double theta, double x_d, double y_d, geometry_msgs::Twist &cmd_vel);
+
+        void rangeAngle(double &angle);
 
     private:
         void robotStops()
@@ -81,6 +91,7 @@ namespace local_planner
         double max_vel_ang_, min_vel_ang_, max_incr_ang_;
         double k_p_lin_, k_i_lin_, k_d_lin_;
         double k_p_ang_, k_i_ang_, k_d_ang_;
+        // double k_, l_;
         std::string base_frame_;
         base_local_planner::OdometryHelperRos *odom_helper_;
         ros::Publisher target_pose_pub_, curr_pose_pub;
