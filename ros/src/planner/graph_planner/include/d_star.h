@@ -30,7 +30,7 @@ namespace d_star_planner
         // global costmap
         unsigned char *global_costmap;
         // local costmap pointer pointer
-        nav_msgs::OccupancyGrid **pp_local_costmap;
+        // nav_msgs::OccupancyGrid **pp_local_costmap;
         // init plan flag
         bool init_plan;
         // grid map
@@ -41,7 +41,7 @@ namespace d_star_planner
         std::vector<Node> path;
 
     public:
-        DStar(int nx, int ny, double resolution, nav_msgs::OccupancyGrid *p_local_costmap);
+        DStar(int nx, int ny, double resolution);  // , nav_msgs::OccupancyGrid *p_local_costmap
 
         void reset();
 
@@ -61,7 +61,7 @@ namespace d_star_planner
 
         void extractPath(const Node &start, const Node &goal);
 
-        void updateMap();
+        // void updateMap();
 
         Node getState(const Node& current);
 
@@ -86,7 +86,6 @@ namespace d_star_planner
               const int id = 0, const int pid = 0, const int tag = NEW, const double k = 0)
             : Node(x, y, cost, h_cost, id, pid), tag(tag), k(k) {}
     };
-
 }
 
 #endif
