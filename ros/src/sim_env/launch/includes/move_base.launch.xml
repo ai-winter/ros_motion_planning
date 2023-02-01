@@ -11,11 +11,12 @@
 -->
 
 <launch>
+    <!-- robot model -->
     <arg name="robot" default="turtlebot3_waffle" />
-    <!-- move forward only -->
-    <arg name="move_forward_only" default="false" />
-    <!-- global path planner name -->
+    <!-- global planner name -->
     <arg name="global_planner" default="a_star" />
+    <!-- local planner name -->
+    <arg name="local_planner" default="dwa" />
 
     <!-- move base module -->
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
@@ -47,8 +48,8 @@
                     or arg('global_planner')=='rrt_connect')" />
 
         <!-- local planner plugin -->
-        <!-- <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" /> -->
-        <param name="base_local_planner" value="local_planner/LocalPlanner" />
+        <param name="base_local_planner" value="dwa_planner/DWAPlanner" if="$(eval arg('local_planner')=='dwa')" />
+        <rosparam file="$(find sim_env)/config/planner/dwa_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='dwa')" />
 
         <!-- loading navigation parameters -->
         <rosparam
@@ -62,15 +63,11 @@
         <rosparam file="$(find sim_env)/config/costmap/local_costmap_params.yaml" command="load" />
         <rosparam file="$(find sim_env)/config/costmap/global_costmap_params.yaml" command="load" />
         <rosparam file="$(find sim_env)/config/move_base_params.yaml" command="load" />
-        <rosparam
-            file="$(eval find('sim_env') + '/config/' + arg('robot') + '/dwa_local_planner_params_'
-                + arg('robot') + '.yaml')"
-            command="load" />
+  
         <rosparam file="$(find sim_env)/config/planner/graph_planner_params.yaml" command="load" />
         <rosparam file="$(find sim_env)/config/planner/sample_planner_params.yaml" command="load" />
 
         <!-- centralize map -->
         <remap from="map" to="/map" />
-        <param name="DWAPlannerROS/min_vel_x" value="0.0" if="$(arg move_forward_only)" />
     </node>
 </launch>
