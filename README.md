@@ -1,7 +1,85 @@
 
 # Introduction
 
-# Install
+`Motion planning` plans the state sequence of the robot without conflict between the start and goal. 
+
+`Motion planning` mainly includes `Path planning` and `Trajectory planning`.
+
+* `Path Planning`: It's based on path constraints (such as obstacles), planning the optimal path sequence for the robot to travel without conflict between the start and goal.
+* `Trajectory planning`: It plans the motion state to approach the global path based on kinematics, dynamics constraints and path sequence.
+
+This repository provides the implement of common `Motion planning` algorithm, welcome your star & fork & PR.
+
+The theory analysis can be found at [motion-planning](https://blog.csdn.net/frigidwinter/category_11410243.html)
+
+# Quick Start
+
+For ROS C++ version, execute the following commands
+
+```shell
+cd ./ros
+catkin_make
+source ./devel/setup.bash
+roslaunch sim_env main.launch global_planner:=d_star local_planner:=dwa
+```
+
+For python version, open `./python/main.py` and select the algorithm, for example
+
+```python
+if __name__ == '__main__':
+    '''
+    sample search
+    '''
+    # build environment
+    start = (18, 8)
+    goal = (37, 18)
+    env = Map(51, 31)
+
+    planner = InformedRRT(start, goal, env, max_dist=0.5, r=12, sample_num=1500)
+
+    # animation
+    planner.run()
+```
+
+For matlab version, open `./matlab/simulation_global.mlx` or `./matlab/simulation_local.mlx` and select the algorithm, for example
+
+```matlab
+clear all;
+clc;
+
+% load environment
+load("gridmap_20x20_scene1.mat");
+map_size = size(grid_map);
+G = 1;
+
+% start and goal
+start = [3, 2];
+goal = [18, 29];
+
+% planner
+planner_name = "rrt";
+
+planner = str2func(planner_name);
+[path, flag, cost, expand] = planner(grid_map, start, goal);
+
+% visualization
+clf;
+hold on
+
+% plot grid map
+plot_grid(grid_map);
+% plot expand zone
+plot_expand(expand, map_size, G, planner_name);
+% plot path
+plot_path(path, G);
+% plot start and goal
+plot_square(start, map_size, G, "#f00");
+plot_square(goal, map_size, G, "#15c");
+% title
+title([planner_name, "cost:" + num2str(cost)]);
+
+hold off
+```
 
 # Version
 ## Global Planner
@@ -41,12 +119,30 @@ Planner      |    C++    | Python    | Matlab
 
 
 # Animation
+
+## Global Planner
+
+Planner      |    C++    | Python    | Matlab
+------------ | --------- | --------- | -----------------
+**GBFS**                 | ![Status](https://img.shields.io/badge/gif-none-yellow)   | ![gbfs_python.png](gif/gbfs_python.png)   | ![gbfs_matlab.png](gif/gbfs_matlab.png)  |
+**Dijkstra**                 | ![Status](https://img.shields.io/badge/gif-none-yellow)  |![dijkstra_python.png](gif/dijkstra_python.png) | ![dijkstra_matlab.png](gif/dijkstra_matlab.png) |
+**A***                 | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![a_star_python.png](gif/a_star_python.png) | ![a_star.png](gif/a_star_matlab.png)| 
+**JPS**                 | ![Status](https://img.shields.io/badge/gif-none-yellow) |![jps_python.png](gif/jps_python.png) | ![jps_matlab.png](gif/jps_matlab.png) |
+**D***                 | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![d_star_python.png](gif/d_star_python.png)|![Status](https://img.shields.io/badge/gif-none-yellow) |
+**LPA***                 | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![lpa_star_python.png](gif/lpa_star_python.png) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
+**D\* Lite**                 | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![d_star_lite_python.png](gif/d_star_lite_python.png) |![Status](https://img.shields.io/badge/gif-none-yellow) |
+**RRT**                 | ![rrt_ros.gif](gif/rrt_ros.gif) | ![rrt_python.png](gif/rrt_python.png) | ![rrt_matlab.png](gif/rrt_matlab.png) |
+**RRT***                 | ![Status](https://img.shields.io/badge/gif-none-yellow)| ![rrt_star_python.png](gif/rrt_star_python.png) | ![Status](https://img.shields.io/badge/gif-none-yellow)|
+**Informed RRT**                 | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![informed_rrt_python.png](gif/informed_rrt_python.png) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
+**RRT-Connect**                 | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![rrt_connect_python.png](gif/rrt_connect_python.png) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
+
+
 ## Local Planner
 | Planner | C++                                                      | Python                                                   | Matlab                                                   |
 | ------- | -------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------- |
 | **PID** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
 | **APF** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
-| **DWA** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![Status](https://img.shields.io/badge/gif-none-yellow) |  | ![img](https://github.com/ai-winter/ros_motion_planning/blob/master/gif/dwa_matlab.gif)
+| **DWA** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![dwa_matlab.gif](gif/dwa_matlab.gif) | 
 
 
 # Papers
