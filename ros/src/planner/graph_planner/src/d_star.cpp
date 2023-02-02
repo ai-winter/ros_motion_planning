@@ -2,13 +2,13 @@
 
 namespace d_star_planner
 {
-    DStar::DStar(int nx, int ny, double resolution, nav_msgs::OccupancyGrid *p_local_costmap)
-        : global_planner::GlobalPlanner(nx, ny, resolution)
+    DStar::DStar(int nx, int ny, double resolution)
+        : global_planner::GlobalPlanner(nx, ny, resolution) // (, nav_msgs::OccupancyGrid *p_local_costmap)
     {
         this->init_plan = false;
 
-        this->pp_local_costmap = new nav_msgs::OccupancyGrid *;
-        *this->pp_local_costmap = p_local_costmap;
+        // this->pp_local_costmap = new nav_msgs::OccupancyGrid *;
+        // *this->pp_local_costmap = p_local_costmap;
         this->global_costmap = new unsigned char[this->ns_];
 
         initMap();
@@ -21,7 +21,7 @@ namespace d_star_planner
         {
             this->DNodeMap[i] = new DNodePtr[this->ny_];
             for (int j = 0; j < this->ny_; j++)
-                this->DNodeMap[i][j] = new DNode(i, j, inf, inf, this->grid2Index(i, j));
+                this->DNodeMap[i][j] = new DNode(i, j, inf, inf, this->grid2Index(i, j), -1, NEW, inf);
         }
     }
 
@@ -87,7 +87,8 @@ namespace d_star_planner
     {
         if (isCollision(n1, n2))
             return inf;
-        return std::sqrt(std::pow(n1->x - n2->x, 2) + std::pow(n1->y - n2->y, 2));
+        // return std::sqrt(std::pow(n1->x - n2->x, 2) + std::pow(n1->y - n2->y, 2));
+        return hypot(n1->x - n2->x, n1->y - n2->y);
     }
 
     double DStar::processState()
@@ -189,27 +190,27 @@ namespace d_star_planner
         std::reverse(this->path.begin(), this->path.end());
     }
 
-    void DStar::updateMap()
-    {
-        nav_msgs::OccupancyGrid *p_local_costmap = *this->pp_local_costmap;
-        int x_l = (int)p_local_costmap->info.origin.position.x;
-        int y_l = (int)p_local_costmap->info.origin.position.y;
-        int height_l = (int)p_local_costmap->info.height;
-        int width_l = (int)p_local_costmap->info.width;
-        int thresh = 90;
+    // void DStar::updateMap()
+    // {
+    //     nav_msgs::OccupancyGrid *p_local_costmap = *this->pp_local_costmap;
+    //     int x_l = (int)p_local_costmap->info.origin.position.x;
+    //     int y_l = (int)p_local_costmap->info.origin.position.y;
+    //     int height_l = (int)p_local_costmap->info.height;
+    //     int width_l = (int)p_local_costmap->info.width;
+    //     int thresh = 90;
 
-        int min_x = std::min(std::max(0, x_l - height_l / 2), this->nx_);
-        int min_y = std::min(std::max(0, y_l - height_l / 2), this->ny_);
-        int max_x = std::min(std::max(0, x_l + height_l / 2), this->nx_);
-        int max_y = std::min(std::max(0, y_l + height_l / 2), this->ny_);
+    //     int min_x = std::min(std::max(0, x_l - height_l / 2), this->nx_);
+    //     int min_y = std::min(std::max(0, y_l - height_l / 2), this->ny_);
+    //     int max_x = std::min(std::max(0, x_l + height_l / 2), this->nx_);
+    //     int max_y = std::min(std::max(0, y_l + height_l / 2), this->ny_);
 
-        int min_id = this->grid2Index(min_x, min_y);
-        int max_id = this->grid2Index(max_x, max_y);
+    //     int min_id = this->grid2Index(min_x, min_y);
+    //     int max_id = this->grid2Index(max_x, max_y);
 
-        auto local_costmap = p_local_costmap->data; // [0, 100]
-        for (int i = min_id, j = 0; i < max_id && j < height_l * width_l; i++, j++)
-            this->global_costmap[i] = local_costmap[j] < thresh ? 0 : this->lethal_cost_;
-    }
+    //     auto local_costmap = p_local_costmap->data; // [0, 100]
+    //     for (int i = min_id, j = 0; i < max_id && j < height_l * width_l; i++, j++)
+    //         this->global_costmap[i] = local_costmap[j] < thresh ? 0 : this->lethal_cost_;
+    // }
 
     Node DStar::getState(const Node &current)
     {
@@ -245,9 +246,9 @@ namespace d_star_planner
         }
     }
 
-    std::tuple<bool, std::vector<Node>> DStar::plan(const unsigned char *costs, const Node &start,
-                                                    const Node &goal, std::vector<Node> &expand)
+    std::tuple<bool, std::vector<Node>> DStar::plan(const unsigned char *costs, const Node &start, const Node &goal, std::vector<Node> &expand)
     {
+        // update costmap
         memcpy(this->global_costmap, costs, this->ns_);
 
         DNodePtr sPtr = this->DNodeMap[start.x][start.y];
@@ -256,8 +257,7 @@ namespace d_star_planner
         if (!this->init_plan)
         {
             this->init_plan = true;
-            gPtr->cost = 0;
-            this->insert(gPtr, gPtr->cost);
+            this->insert(gPtr, 0);
 
             while (1)
             {
@@ -295,17 +295,18 @@ namespace d_star_planner
                 this->index2Grid(x->pid, x_val, y_val);
                 y = this->DNodeMap[x_val][y_val];
                 // collision
-                if (global_costmap[y->id] > this->lethal_cost_ * this->factor_)
-                    break;
+                // if (global_costmap[y->id] > this->lethal_cost_ * this->factor_)
+                if (isCollision(x, y))
+                {
+                    this->modify(x, y);
+                    continue;
+                }
                 x = y;
             }
 
-            // collision
-            if (i != steps)
-                this->modify(x, y);
+            // if (i != 10)
+            //     ROS_INFO("i = %d", i);
 
-            if (i != 10)
-                ROS_INFO("i = %d", i);
             this->path.clear();
             this->extractPath(state, goal);
 
