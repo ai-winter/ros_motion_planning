@@ -1,8 +1,0 @@
-<library path="lib/liblocal_planner">
-    <class name="local_planner/LocalPlanner" type="local_planner::LocalPlanner"
-        base_class_type="nav_core::BaseLocalPlanner">
-        <description>
-            Simplest Plugin for BaseLocalPlanner
-        </description>
-    </class>
-</library>

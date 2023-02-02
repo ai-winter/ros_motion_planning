@@ -91,6 +91,9 @@
         "ios": "cpp",
         "locale": "cpp",
         "queue": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "dense": "cpp",
+        "eigen": "cpp",
+        "sparse": "cpp"
     }
 }
