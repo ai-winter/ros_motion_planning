@@ -1,4 +1,3 @@
-
 #ifndef D_STAR_H
 #define D_STAR_H
 
@@ -39,6 +38,8 @@ namespace d_star_planner
         std::multimap<double, DNodePtr> open_list;
         // path
         std::vector<Node> path;
+        // goal
+        Node goal_;
 
     public:
         DStar(int nx, int ny, double resolution);  // , nav_msgs::OccupancyGrid *p_local_costmap

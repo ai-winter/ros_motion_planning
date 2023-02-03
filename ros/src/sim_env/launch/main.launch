@@ -21,8 +21,8 @@
     <arg name="yaw" default="1.57" />
 
     <!-- environment -->
-    <!-- <arg name="world" default="warehouse_with_obstacles" doc="model type [warehouse, workshop, turtlebot3_house, ...]" /> -->
-    <arg name="world" default="warehouse" doc="model type [warehouse, workshop, turtlebot3_house, ...]" />
+    <arg name="world" default="warehouse_with_obstacles" doc="model type [warehouse, workshop, turtlebot3_house, ...]" />
+    <!-- <arg name="world" default="warehouse" doc="model type [warehouse, workshop, turtlebot3_house, ...]" /> -->
     <arg name="map" default="warehouse" doc="map type [warehouse, workshop, turtlebot3_house, ...]" />
     <node name="map_server" pkg="map_server" type="map_server" args="$(find sim_env)/maps/$(arg map)/$(arg map).yaml" unless="$(eval arg('map') == '')" />
 
