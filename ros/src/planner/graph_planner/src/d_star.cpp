@@ -5,7 +5,7 @@ namespace d_star_planner
     DStar::DStar(int nx, int ny, double resolution)
         : global_planner::GlobalPlanner(nx, ny, resolution) // (, nav_msgs::OccupancyGrid *p_local_costmap)
     {
-        this->init_plan = false;
+        // this->init_plan = false;
 
         // this->pp_local_costmap = new nav_msgs::OccupancyGrid *;
         // *this->pp_local_costmap = p_local_costmap;
@@ -248,15 +248,23 @@ namespace d_star_planner
 
     std::tuple<bool, std::vector<Node>> DStar::plan(const unsigned char *costs, const Node &start, const Node &goal, std::vector<Node> &expand)
     {
+        // ROS_INFO("Get new plan.");
         // update costmap
         memcpy(this->global_costmap, costs, this->ns_);
 
-        DNodePtr sPtr = this->DNodeMap[start.x][start.y];
-        DNodePtr gPtr = this->DNodeMap[goal.x][goal.y];
+        // DNodePtr sPtr = this->DNodeMap[start.x][start.y];
+        // DNodePtr gPtr = this->DNodeMap[goal.x][goal.y];
 
-        if (!this->init_plan)
+        if (this->goal_.x != goal.x || this->goal_.y != goal.y) // (!this->init_plan)
         {
-            this->init_plan = true;
+            this->reset();
+
+            DNodePtr sPtr = this->DNodeMap[start.x][start.y];
+            DNodePtr gPtr = this->DNodeMap[goal.x][goal.y];
+
+            // this->init_plan = true;
+            this->goal_ = goal;
+
             this->insert(gPtr, 0);
 
             while (1)
@@ -285,17 +293,15 @@ namespace d_star_planner
             DNodePtr x = this->DNodeMap[state.x][state.y];
             DNodePtr y;
 
-            // walk forward *N points*, once collision, modify
+            // walk forward N points, once collision, modify
             int i = 0;
-            int steps = 10;
-            while (i < steps)
+            int N = 10;
+            while (i < N && x->pid != -1)
             {
                 i++;
                 int x_val, y_val;
                 this->index2Grid(x->pid, x_val, y_val);
                 y = this->DNodeMap[x_val][y_val];
-                // collision
-                // if (global_costmap[y->id] > this->lethal_cost_ * this->factor_)
                 if (isCollision(x, y))
                 {
                     this->modify(x, y);
@@ -303,9 +309,6 @@ namespace d_star_planner
                 }
                 x = y;
             }
-
-            // if (i != 10)
-            //     ROS_INFO("i = %d", i);
 
             this->path.clear();
             this->extractPath(state, goal);
