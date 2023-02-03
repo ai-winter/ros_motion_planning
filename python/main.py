@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # creat planner
     # planner = RRT(start, goal, env, max_dist=0.5, sample_num=10000)
     # planner = RRTConnect(start, goal, env, max_dist=0.5, sample_num=10000)
-    planner = RRTStar(start, goal, env, max_dist=0.5, r=20, sample_num=10000)
+    planner = RRTStar(start, goal, env, max_dist=0.5, r=10, sample_num=10000)
     # planner = InformedRRT(start, goal, env, max_dist=0.5, r=12, sample_num=1500)
 
     # animation
