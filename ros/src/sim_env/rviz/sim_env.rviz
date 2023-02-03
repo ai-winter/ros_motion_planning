@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /Map1
         - /Path1
         - /Map2
         - /Map3
@@ -196,7 +197,7 @@ Visualization Manager:
     - Alpha: 0.8999999761581421
       Class: rviz/Map
       Color Scheme: costmap
-      Draw Behind: false
+      Draw Behind: true
       Enabled: true
       Name: Map
       Topic: /move_base/GraphPlanner/expand

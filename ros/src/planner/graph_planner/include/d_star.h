@@ -1,15 +1,15 @@
 #ifndef D_STAR_H
 #define D_STAR_H
 
-#include <map>
-#include <algorithm>
-
 #include <ros/ros.h>
 #include <nav_msgs/OccupancyGrid.h>
 
+#include <map>
+#include <algorithm>
+
 #include "global_planner.h"
 
-#define inf 1 << 20
+#define inf 10000
 
 enum Tag
 {
@@ -28,10 +28,6 @@ namespace d_star_planner
     public:
         // global costmap
         unsigned char *global_costmap;
-        // local costmap pointer pointer
-        // nav_msgs::OccupancyGrid **pp_local_costmap;
-        // init plan flag
-        bool init_plan;
         // grid map
         DNodePtr **DNodeMap;
         // open list
@@ -40,9 +36,11 @@ namespace d_star_planner
         std::vector<Node> path;
         // goal
         Node goal_;
+        // forward distance, range of the sensor (in grid)
+        int N_;
 
     public:
-        DStar(int nx, int ny, double resolution);  // , nav_msgs::OccupancyGrid *p_local_costmap
+        DStar(int nx, int ny, double resolution);
 
         void reset();
 
@@ -62,9 +60,7 @@ namespace d_star_planner
 
         void extractPath(const Node &start, const Node &goal);
 
-        // void updateMap();
-
-        Node getState(const Node& current);
+        Node getState(const Node &current);
 
         void modify(DNodePtr x, DNodePtr y);
 
@@ -79,12 +75,12 @@ namespace d_star_planner
         int tag;
         // Node's k_min in history
         double k;
-        // Node's iterator from multimap
+        // Node's iterator from multimap, default from small to large
         std::multimap<double, DNodePtr>::iterator nodeMapIt;
 
     public:
-        DNode(const int x = 0, const int y = 0, const double cost = 0, const double h_cost = 0,
-              const int id = 0, const int pid = 0, const int tag = NEW, const double k = 0)
+        DNode(const int x = 0, const int y = 0, const double cost = inf, const double h_cost = inf,
+              const int id = 0, const int pid = -1, const int tag = NEW, const double k = inf)
             : Node(x, y, cost, h_cost, id, pid), tag(tag), k(k) {}
     };
 }
