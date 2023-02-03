@@ -38,7 +38,7 @@ namespace pid_planner
             max_v_inc_ = 0.3;
 
             // angular velocity
-            max_w_ = M_PI_4;
+            max_w_ = M_PI_2;
             min_w_ = 0.0;
             max_w_inc_ = M_PI_4;
 
@@ -50,6 +50,9 @@ namespace pid_planner
             k_w_p_ = 2.00;
             k_w_i_ = 0.00;
             k_w_d_ = 0.05;
+
+            e_v_ = i_v_ = 0.0;
+            e_w_ = i_w_ = 0.0;
 
             ros::NodeHandle nh = ros::NodeHandle("~/" + name);
             odom_helper_ = new base_local_planner::OdometryHelperRos("/odom");
@@ -215,6 +218,8 @@ namespace pid_planner
         if (fabs(v_cmd) < min_v_)
             v_cmd = copysign(min_v_, v_cmd);
 
+        // ROS_INFO("v_d: %.2lf, e_v: %.2lf, i_v: %.2lf, d_v: %.2lf, v_cmd: %.2lf", v_d, e_v, i_v_, d_v, v_cmd);
+
         return v_cmd;
     }
 
@@ -245,6 +250,8 @@ namespace pid_planner
             w_cmd = copysign(max_w_, w_cmd);
         if (fabs(w_cmd) < min_w_)
             w_cmd = copysign(min_w_, w_cmd);
+
+        // ROS_INFO("w_d: %.2lf, e_w: %.2lf, i_w: %.2lf, d_w: %.2lf, w_cmd: %.2lf", w_d, e_w, i_w_, d_w, w_cmd);
 
         return w_cmd;
     }
