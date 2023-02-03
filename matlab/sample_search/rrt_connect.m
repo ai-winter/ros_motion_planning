@@ -1,10 +1,10 @@
-function [path, flag, cost, expand] = rrt(map, start, goal)
+function [path, flag, cost, expand] = rrt_connect(map, start, goal)
 %%
-% @file: rrt.m
-% @breif: RRT motion planning
-% @paper: Rapidly-Exploring Random Trees: A New Tool for Path Planning
+% @file: rrt_connect.m
+% @breif: RRT-Connect motion planning
+% @paper: RRT-Connect: An Efficient Approach to Single-Query Path Planning
 % @author: Winter
-% @update: 2023.1.30
+% @update: 2023.2.3
 
 %%
     % Maximum expansion distance one step
@@ -19,7 +19,8 @@ function [path, flag, cost, expand] = rrt(map, start, goal)
     param.resolution = 0.1;
     
     % sample list
-    sample_list  = [start, 0, start];
+    sample_list_f  = [start, 0, start];
+    sample_list_b = [goal, 0, goal];
     
     path = [];
     flag = false;
@@ -31,32 +32,46 @@ function [path, flag, cost, expand] = rrt(map, start, goal)
         % generate a random node in the map
         node_rand = generate_node(goal, param);
 
-        % visited
-        if loc_list(node_rand, sample_list, [1, 2])
-            continue
-        end
-
         % generate new node
-        [node_new, success] = get_nearest(sample_list, node_rand, map, param);
+        [node_new, success] = get_nearest(sample_list_f, node_rand, map, param);
         if success
-            sample_list = [node_new; sample_list];
-            distance = dist(node_new(1:2), goal');
-            
-            % goal found
-            if distance <= param.max_dist && ~is_collision(node_new(1:2), goal, map, param)
-                goal_ = [goal, node_new(3) + distance, node_new(1:2)];
-                sample_list = [goal_; sample_list];
-                flag = true;
-                cost = goal_(3);
-                break
+            sample_list_f = [node_new; sample_list_f];
+            % backward exploring
+            [node_new_b, success_b]  = get_nearest(sample_list_b, node_new(1:2), map, param);
+            if success_b
+                 sample_list_b = [node_new_b; sample_list_b];
+                 % greedy extending
+                 while true
+                     distance = min(param.max_dist, dist(node_new(1:2), node_new_b(1:2)'));
+                     theta = angle(node_new_b, node_new);
+                     node_new_b2 = [node_new_b(1) + distance * cos(theta), ...
+                                                  node_new_b(2) + distance * sin(theta), ...
+                                                  node_new_b(3) + distance, ...
+                                                  node_new_b(1:2)];
+                    if ~is_collision(node_new_b2(1:2), node_new_b(1:2), map, param)
+                        sample_list_b = [node_new_b2; sample_list_b];
+                        node_new_b = node_new_b2;
+                    else
+                        break
+                    end
+                    % goal found
+                    if node_new_b(1) == node_new(1) && node_new_b(2) == node_new(2)
+                        flag = true;
+                        cost = sample_list_f(1, 3) + sample_list_b(1, 3);
+                        path = extract_path(sample_list_f, sample_list_b, start, goal);
+                        expand = [sample_list_f; sample_list_b];
+                        return
+                    end
+                 end
             end
         end
-    end
-    
-    
-    if flag
-        path = extract_path(sample_list, start);
-        expand = sample_list;
+        
+        [len_f, ~] = size(sample_list_f); [len_b, ~] = size(sample_list_b);
+        if len_b < len_f
+            temp = sample_list_f;
+            sample_list_f = sample_list_b;
+            sample_list_b = temp;
+        end
     end
 end
 
@@ -137,18 +152,42 @@ function flag = is_collision(node1, node2, map, param)
       flag = false;
 end
 
-function path = extract_path(close, start)
+function path = extract_path(node_list_f, node_list_b, start, goal)
 % @breif: Extract the path based on the CLOSED set.
-    path  = [];               
-    closeNum = length(close(:, 1));
+    if isequal(node_list_b(end, 1:2), start)
+            temp = node_list_f;
+            node_list_f = node_list_b;
+            node_list_b = temp;
+    end
+    
+    path  = [];
+    
+    % forward
+    [len_f, ~] = size(node_list_f);
     index = 1;
     while 1
-        path = [path; close(index, 1:2)];
-        if isequal(close(index, 1:2), start)   
+        path = [node_list_f(index, 1:2); path];
+        if isequal(node_list_f(index, 1:2), start)   
             break;
         end
-        for i=1:closeNum
-            if isequal(close(i, 1:2), close(index, 4:5))
+        for i=1:len_f
+            if isequal(node_list_f(i, 1:2), node_list_f(index, 4:5))
+                index = i;
+                break;
+            end
+        end
+    end
+    
+    % backward
+    [len_b, ~] = size(node_list_b);
+    index = 1;
+    while 1
+        path = [path; node_list_b(index, 1:2)];
+        if isequal(node_list_b(index, 1:2), goal)   
+            break;
+        end
+        for i=1:len_b
+            if isequal(node_list_b(i, 1:2), node_list_b(index, 4:5))
                 index = i;
                 break;
             end

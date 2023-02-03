@@ -71,7 +71,7 @@ class RRTStar(RRT):
         node_new = super().getNearest(node_list, node)
         if node_new:
             #  rewire optimization
-            for node_n in self.sample_list:
+            for node_n in node_list:
                 #  inside the optimization circle
                 new_dist = self.dist(node_n, node_new)
                 if new_dist < self.r:
