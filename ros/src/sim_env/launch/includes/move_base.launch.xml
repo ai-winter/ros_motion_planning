@@ -16,7 +16,7 @@
     <!-- global planner name -->
     <arg name="global_planner" default="a_star" />
     <!-- local planner name -->
-    <arg name="local_planner" default="pid" />
+    <arg name="local_planner" default="dwa" />
 
     <!-- move base module -->
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">

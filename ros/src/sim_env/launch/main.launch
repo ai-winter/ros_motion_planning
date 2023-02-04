@@ -11,8 +11,10 @@
 -->
 
 <launch>
-    <!-- global path planner name -->
+    <!-- global planner name -->
     <arg name="global_planner" default="a_star" />
+    <!-- local planner name -->
+    <arg name="local_planner" default="dwa" />
 
     <!-- initial pose -->
     <arg name="x_pos" default="0.0" />
@@ -51,6 +53,7 @@
     <!-- MoveBase模块 -->
     <include file="$(find sim_env)/launch/includes/move_base.launch.xml">
         <arg name="global_planner" value="$(arg global_planner)" />
+        <arg name="local_planner" value="$(arg local_planner)" />
         <arg name="robot" value="$(arg robot)" />
     </include>
 </launch>
