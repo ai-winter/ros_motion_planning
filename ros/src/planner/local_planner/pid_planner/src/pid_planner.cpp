@@ -23,38 +23,37 @@ namespace pid_planner
             costmap_ros_ = costmap_ros;
             initialized_ = true;
 
-            // TODO: improve to parameters
+            ros::NodeHandle nh = ros::NodeHandle("~/" + name);
             // next point distance/turning angle
-            p_window_ = 0.1;
-            o_window_ = M_PI_2;
+            nh.param("p_window", p_window_, 0.1);
+            nh.param("o_window", o_window_, 1.57);
 
             // goal reached tolerance
-            p_precision_ = 0.4;
-            o_precision_ = M_PI_4;
+            nh.param("p_precision", p_precision_, 0.4);
+            nh.param("o_precision", o_precision_, 0.79);
 
             // linear velocity
-            max_v_ = 0.3;
-            min_v_ = 0.0;
-            max_v_inc_ = 0.3;
+            nh.param("max_v", max_v_, 0.3);
+            nh.param("min_v", min_v_, 0.0);
+            nh.param("max_v_inc", max_v_inc_, 0.3);
 
             // angular velocity
-            max_w_ = M_PI_2;
-            min_w_ = 0.0;
-            max_w_inc_ = M_PI_4;
+            nh.param("max_w", max_w_, 1.57);
+            nh.param("min_w", min_w_, 0.0);
+            nh.param("max_w_inc", max_w_inc_, 0.79);
 
             // pid controller params
-            k_v_p_ = 2.00;
-            k_v_i_ = 0.05;
-            k_v_d_ = 0.00;
+            nh.param("k_v_p", k_v_p_, 2.00);
+            nh.param("k_v_i", k_v_i_, 0.05);
+            nh.param("k_v_d", k_v_d_, 0.00);
 
-            k_w_p_ = 2.00;
-            k_w_i_ = 0.00;
-            k_w_d_ = 0.05;
+            nh.param("k_w_p", k_w_p_, 2.00);
+            nh.param("k_w_i", k_w_i_, 0.00);
+            nh.param("k_w_d", k_w_d_, 0.05);
 
             e_v_ = i_v_ = 0.0;
             e_w_ = i_w_ = 0.0;
 
-            ros::NodeHandle nh = ros::NodeHandle("~/" + name);
             odom_helper_ = new base_local_planner::OdometryHelperRos("/odom");
             target_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/target_pose", 10);
             current_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
