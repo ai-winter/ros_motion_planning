@@ -95,5 +95,6 @@
         "dense": "cpp",
         "eigen": "cpp",
         "sparse": "cpp"
-    }
+    },
+    "ros.distro": "noetic"
 }

@@ -1,0 +1,27 @@
+PIDPlanner:
+  # next point distance/turning angle
+  p_window: 0.1
+  o_window: 1.57
+
+  # goal reached tolerance
+  p_precision: 0.4
+  o_precision: 0.79
+
+  # linear velocity
+  max_v: 0.3
+  min_v: 0.0
+  max_v_inc: 0.3
+
+  # angular velocity
+  max_w: 1.57
+  min_w: 0.0
+  max_w_inc: 0.79
+
+  # pid controller params
+  k_v_p: 2.00
+  k_v_i: 0.05
+  k_v_d: 0.00
+
+  k_w_p: 2.00
+  k_w_i: 0.00
+  k_w_d: 0.05
