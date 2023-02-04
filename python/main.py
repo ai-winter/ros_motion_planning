@@ -20,13 +20,13 @@ if __name__ == '__main__':
     # env = Grid(51, 31)
 
     # # creat planner
-    # planner = AStar(start, goal, env)
+    # # planner = AStar(start, goal, env)
     # # planner = Dijkstra(start, goal, env)
     # # planner = GBFS(start, goal, env)
     # # planner = JPS(start, goal, env)
     # # planner = DStar(start, goal, env)
     # # planner = LPAStar(start, goal, env)
-    # # planner = DStarLite(start, goal, env)
+    # planner = DStarLite(start, goal, env)
 
     # # animation
     # planner.run()
@@ -44,8 +44,8 @@ if __name__ == '__main__':
     # creat planner
     # planner = RRT(start, goal, env, max_dist=0.5, sample_num=10000)
     # planner = RRTConnect(start, goal, env, max_dist=0.5, sample_num=10000)
-    # planner = RRTStar(start, goal, env, max_dist=0.5, r=20, sample_num=10000)
-    planner = InformedRRT(start, goal, env, max_dist=0.5, r=12, sample_num=1500)
+    planner = RRTStar(start, goal, env, max_dist=0.5, r=10, sample_num=10000)
+    # planner = InformedRRT(start, goal, env, max_dist=0.5, r=12, sample_num=1500)
 
     # animation
     planner.run()

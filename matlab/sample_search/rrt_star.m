@@ -1,12 +1,14 @@
-function [path, flag, cost, expand] = rrt(map, start, goal)
+function [path, flag, cost, expand] = rrt_star(map, start, goal)
 %%
-% @file: rrt.m
-% @breif: RRT motion planning
-% @paper: Rapidly-Exploring Random Trees: A New Tool for Path Planning
+% @file: rrt_star.m
+% @breif: RRT-Star motion planning
+% @paper: Sampling-based algorithms for optimal motion planning
 % @author: Winter
-% @update: 2023.1.30
+% @update: 2023.2.2
 
 %%
+    % optimal radius
+    param.r = 30;
     % Maximum expansion distance one step
     param.max_dist = 0.5;
     % Maximum number of sample points
@@ -110,6 +112,32 @@ function [new_node, flag] = get_nearest(node_list, node, map, param)
     if is_collision(new_node(1:2), node_near(1:2), map, param)
         return
     end
+    
+    %  rewire optimization
+    [node_num, ~] = size(node_list);
+    for i=1:node_num
+        node_n = node_list(i, :);
+        %  inside the optimization circle
+        new_dist = dist(node_n(1:2), new_node(1:2)');
+        if new_dist < param.r
+            cost = node_n(3) + new_dist;
+            %  update new sample node's cost and parent
+            if new_node(3) > cost && ~is_collision(new_node(1:2), node_n(1:2), map, param)
+                new_node(4:5) = node_n(1:2);
+                new_node(3) = cost;
+            else
+                %  update nodes' cost inside the radius
+                cost = new_node(3) + new_dist;
+                if node_n(3) > cost && ~is_collision(new_node(1:2), node_n(1:2), map, param)
+                    node_list(i, 4:5) = new_node(1:2);
+                    node_list(i, 3) = cost;
+                end
+            end
+        else
+            continue;
+        end
+    end
+    
     flag = true;
 end
 

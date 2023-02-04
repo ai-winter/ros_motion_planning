@@ -101,9 +101,9 @@ namespace graph_planner {
                 this->g_planner_ = new jps_planner::JumpPointSearch(nx, ny, resolution);
             else if (this->planner_name_ == "d_star")
             {
-                this->p_local_costmap_ = new nav_msgs::OccupancyGrid();
-                this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution, this->p_local_costmap_);
-                this->local_costmap_sub_ = private_nh.subscribe("/move_base/local_costmap/costmap", 1, &GraphPlanner::localCostmapCallback, this);
+                // this->p_local_costmap_ = new nav_msgs::OccupancyGrid();
+                this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution); // (, this->p_local_costmap_)
+                // this->local_costmap_sub_ = private_nh.subscribe("/move_base/local_costmap/costmap", 1, &GraphPlanner::localCostmapCallback, this);
             }
 
             ROS_INFO("Using global graph planner: %s", this->planner_name_.c_str());
@@ -229,15 +229,16 @@ namespace graph_planner {
      * @param  resp response from server
      */
     bool GraphPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::GetPlan::Response& resp) {
-        if (this->planner_name_ == "d_star")
-        {
-            delete this->g_planner_;
-            // costmap size
-            unsigned int nx = this->costmap_->getSizeInCellsX(), ny = this->costmap_->getSizeInCellsY();
-            // costmap resolution
-            double resolution = this->costmap_->getResolution();
-            this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution, this->p_local_costmap_);
-        }
+        // if (this->planner_name_ == "d_star")
+        // {
+        //     ROS_INFO("Reset d_star planner.");
+        //     delete this->g_planner_;
+        //     // costmap size
+        //     unsigned int nx = this->costmap_->getSizeInCellsX(), ny = this->costmap_->getSizeInCellsY();
+        //     // costmap resolution
+        //     double resolution = this->costmap_->getResolution();
+        //     this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution);  // (, this->p_local_costmap_)
+        // }
         makePlan(req.start, req.goal, resp.plan.poses);
         resp.plan.header.stamp = ros::Time::now();
         resp.plan.header.frame_id = this->frame_id_;
@@ -247,10 +248,10 @@ namespace graph_planner {
      * @brief  local costmap callback function
      * @param  costmap local costmap data
      */
-    void GraphPlanner::localCostmapCallback(const nav_msgs::OccupancyGrid& local_costmap) {
-        *(this->p_local_costmap_) = local_costmap;
-        // ROS_WARN("this->p_local_costmap_->data.at(10) = %d", this->p_local_costmap_->data.at(10));
-    }
+    // void GraphPlanner::localCostmapCallback(const nav_msgs::OccupancyGrid& local_costmap) {
+    //     *(this->p_local_costmap_) = local_costmap;
+    //     // ROS_WARN("this->p_local_costmap_->data.at(10) = %d", this->p_local_costmap_->data.at(10));
+    // }
 
 
     /**
