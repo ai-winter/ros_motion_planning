@@ -174,3 +174,14 @@ hold off
 Dataset-of-Gazebo-Worlds-Models-and-Maps](https://github.com/mlherd/Dataset-of-Gazebo-Worlds-Models-and-Maps) and [
 aws-robomaker-small-warehouse-world](https://github.com/aws-robotics/aws-robomaker-small-warehouse-world). Thanks for these open source models sincerely.
 * Our visualization and animation framework of Python Version refers to [https://github.com/zhm-real/PathPlanning](https://github.com/zhm-real/PathPlanning). Thanks sincerely.
+
+# Autoformatting of ROS Code
+* ROS tutorials: [CppStyleGuide](http://wiki.ros.org/CppStyleGuide), and its refer file [roscpp_code_format](https://github.com/PickNikRobotics/roscpp_code_format)
+* Usage with Visual Studio Code:
+  * Install the `C/C++` extension.
+  * Put the `.clang-format` file in your workspace.
+  * Select `Format Document` in the right-click context menu, or use the shortcut `Ctrl+Shift+I`.
+* Batch formatting:
+  * Install the `Format Files` extension.
+  * Select `Start Format Files: This Folder`.
+  * Do it!
