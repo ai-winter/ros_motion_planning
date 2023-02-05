@@ -14,37 +14,120 @@
 
 namespace pid_planner
 {
+/**
+ * @brief A class implementing a local planner using the PID
+ */
 class PIDPlanner : public nav_core::BaseLocalPlanner
 {
 public:
+  /**
+   * @brief Construct a new PIDPlanner object
+   */
   PIDPlanner();
+
+  /**
+   * @brief Construct a new PIDPlanner object
+   *
+   * @param name        The name to give this instance of the trajectory planner
+   * @param tf          A pointer to a transform listener
+   * @param costmap_ros The cost map to use for assigning costs to trajectories
+   */
   PIDPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
 
+  /**
+   * @brief Destroy the PIDPlanner object
+   */
   ~PIDPlanner();
 
+  /**
+   * @brief Initialization of the local planner
+   *
+   * @param name        The name to give this instance of the trajectory planner
+   * @param tf          A pointer to a transform listener
+   * @param costmap_ros The cost map to use for assigning costs to trajectories
+   */
   void initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
 
+  /**
+   * @brief  Set the plan that the controller is following
+   *
+   * @param orig_global_plan The plan to pass to the controller
+   * @return True if the plan was updated successfully, false otherwise
+   */
   bool setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan);
 
+  /**
+   * @brief  Given the current position, orientation, and velocity of the robot, compute velocity commands to send to
+   * the base
+   *
+   * @param cmd_vel Will be filled with the velocity command to be passed to the robot base
+   * @return True if a valid trajectory was found, false otherwise
+   */
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
 
+  /**
+   * @brief PID controller in linear
+   *
+   * @param base_odometry odometry of the robot, to get velocity
+   * @param b_x_d         desired x in body frame
+   * @param b_y_d         desired y in body frame
+   * @return linear velocity
+   */
   double LinearPIDController(nav_msgs::Odometry& base_odometry, double b_x_d, double b_y_d);
 
-  double AngularPIDController(nav_msgs::Odometry& base_odometry, double target_th_w, double robot_orien);
+  /**
+   * @brief PID controller in angular
+   *
+   * @param base_odometry odometry of the robot, to get velocity
+   * @param theta_d       desired theta
+   * @param theta         current theta
+   * @return angular velocity
+   */
+  double AngularPIDController(nav_msgs::Odometry& base_odometry, double theta_d, double theta);
 
+  /**
+   * @brief  Check if the goal pose has been achieved
+   *
+   * @return True if achieved, false otherwise
+   */
   bool isGoalReached();
 
+  /**
+   * @brief Get the distance to the goal
+   *
+   * @param g_goal_ps global goal PoseStamped
+   * @param g_x       global current x
+   * @param g_y       global current y
+   * @return the distance to the goal
+   */
   double getGoalPositionDistance(const geometry_msgs::PoseStamped& g_goal_ps, double g_x, double g_y);
 
+  /**
+   * @brief Get the Euler Angles from PoseStamped
+   *
+   * @param ps PoseStamped to calculate
+   * @return roll, pitch and yaw in XYZ order
+   */
   std::vector<double> getEulerAngles(geometry_msgs::PoseStamped& ps);
 
 private:
+  /**
+   * @brief Stop the robot
+   */
   void robotStops()
   {
     goal_reached_ = true;
     ROS_INFO("Robot will stop.");
   }
 
+  /**
+   * @brief Transform pose to body frame
+   *
+   * @param src   src PoseStamped, the object to transform
+   * @param x     result x
+   * @param y     result y
+   * @param theta result theta
+   */
   void getTransformedPosition(geometry_msgs::PoseStamped& src, double* x, double* y, double* theta)
   {
     src.header.stamp = ros::Time(0);
@@ -59,6 +142,8 @@ private:
   tf2_ros::Buffer* tf_;
   bool initialized_, goal_reached_;
   std::vector<geometry_msgs::PoseStamped> global_plan_;
+  geometry_msgs::PoseStamped g_target_ps_;
+  geometry_msgs::PoseStamped g_current_ps_;
   int plan_index_, last_plan_index_;
 
   double g_x_, g_y_, g_theta_;
