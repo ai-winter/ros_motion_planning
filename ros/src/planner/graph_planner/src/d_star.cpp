@@ -2,6 +2,13 @@
 
 namespace d_star_planner
 {
+/**
+ * @brief Construct a new DStar object
+ *
+ * @param nx          pixel number in costmap x direction
+ * @param ny          pixel number in costmap y direction
+ * @param resolution  costmap resolution
+ */
 DStar::DStar(int nx, int ny, double resolution) : global_planner::GlobalPlanner(nx, ny, resolution)
 {
   this->global_costmap = new unsigned char[this->ns_];
@@ -9,6 +16,9 @@ DStar::DStar(int nx, int ny, double resolution) : global_planner::GlobalPlanner(
   initMap();
 }
 
+/**
+ * @brief Init DNodeMap
+ */
 void DStar::initMap()
 {
   this->DNodeMap = new DNodePtr*[this->nx_];
@@ -20,6 +30,9 @@ void DStar::initMap()
   }
 }
 
+/**
+ * @brief Reset the system
+ */
 void DStar::reset()
 {
   this->open_list.clear();
@@ -36,6 +49,12 @@ void DStar::reset()
   initMap();
 }
 
+/**
+ * @brief Insert nodePtr into the open_list with h_new
+ *
+ * @param nodePtr DNode pointer of the DNode to be inserted
+ * @param h_new   new h value
+ */
 void DStar::insert(DNodePtr nodePtr, double h_new)
 {
   if (nodePtr->tag == NEW)
@@ -50,12 +69,25 @@ void DStar::insert(DNodePtr nodePtr, double h_new)
   nodePtr->nodeMapIt = this->open_list.insert(std::make_pair(nodePtr->k, nodePtr));
 }
 
+/**
+ * @brief Judge if there is collision between n1 and n2
+ *
+ * @param n1  DNode pointer of one DNode
+ * @param n2  DNode pointer of the other DNode
+ * @return true if collision
+ */
 bool DStar::isCollision(DNodePtr n1, DNodePtr n2)
 {
   return this->global_costmap[n1->id] > this->lethal_cost_ * this->factor_ ||
          this->global_costmap[n2->id] > this->lethal_cost_ * this->factor_;
 }
 
+/**
+ * @brief Get neighbour DNodePtrs of nodePtr
+ *
+ * @param nodePtr     DNode to expand
+ * @param neighbours  neigbour DNodePtrs in vector
+ */
 void DStar::getNeighbours(DNodePtr nodePtr, std::vector<DNodePtr>& neighbours)
 {
   int x = nodePtr->x, y = nodePtr->y;
@@ -78,6 +110,13 @@ void DStar::getNeighbours(DNodePtr nodePtr, std::vector<DNodePtr>& neighbours)
   }
 }
 
+/**
+ * @brief Get the cost between n1 and n2, return inf if collision
+ *
+ * @param n1 DNode pointer of one DNode
+ * @param n2 DNode pointer of the other DNode
+ * @return cost between n1 and n2
+ */
 double DStar::cost(DNodePtr n1, DNodePtr n2)
 {
   if (isCollision(n1, n2))
@@ -85,6 +124,11 @@ double DStar::cost(DNodePtr n1, DNodePtr n2)
   return std::hypot(n1->x - n2->x, n1->y - n2->y);
 }
 
+/**
+ * @brief Main process of D*
+ *
+ * @return k_min
+ */
 double DStar::processState()
 {
   if (this->open_list.empty())
@@ -151,6 +195,11 @@ double DStar::processState()
   return open_list.begin()->first;
 }
 
+/**
+ * @brief Extract the expanded Nodes (CLOSED)
+ *
+ * @param expand expanded Nodes in vector
+ */
 void DStar::extractExpand(std::vector<Node>& expand)
 {
   for (int i = 0; i < this->nx_; i++)
@@ -164,6 +213,12 @@ void DStar::extractExpand(std::vector<Node>& expand)
   }
 }
 
+/**
+ * @brief Extract path for DNodeMap
+ *
+ * @param start start node
+ * @param goal  goal node
+ */
 void DStar::extractPath(const Node& start, const Node& goal)
 {
   DNodePtr nPtr = this->DNodeMap[start.x][start.y];
@@ -178,6 +233,12 @@ void DStar::extractPath(const Node& start, const Node& goal)
   std::reverse(this->path.begin(), this->path.end());
 }
 
+/**
+ * @brief Get the closest Node of the path to current state
+ *
+ * @param current current state
+ * @return the closest Node
+ */
 Node DStar::getState(const Node& current)
 {
   Node state(this->path[0].x, this->path[0].y);
@@ -198,6 +259,12 @@ Node DStar::getState(const Node& current)
   return state;
 }
 
+/**
+ * @brief Modify the map when collision occur between x and y in path, and then do processState()
+ *
+ * @param x DNode pointer of one DNode
+ * @param y DNode pointer of the other DNode
+ */
 void DStar::modify(DNodePtr x, DNodePtr y)
 {
   if (x->tag == CLOSED)
@@ -211,6 +278,14 @@ void DStar::modify(DNodePtr x, DNodePtr y)
   }
 }
 
+/**
+ * @brief D* implementation
+ * @param costs   costmap
+ * @param start   start node
+ * @param goal    goal node
+ * @param expand  containing the node been search during the process
+ * @return tuple contatining a bool as to whether a path was found, and the path
+ */
 std::tuple<bool, std::vector<Node>> DStar::plan(const unsigned char* costs, const Node& start, const Node& goal,
                                                 std::vector<Node>& expand)
 {
