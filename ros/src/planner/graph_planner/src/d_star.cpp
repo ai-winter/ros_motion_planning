@@ -11,7 +11,7 @@ namespace d_star_planner
  */
 DStar::DStar(int nx, int ny, double resolution) : global_planner::GlobalPlanner(nx, ny, resolution)
 {
-  global_costmap_ = new unsigned char[this->ns_];
+  global_costmap_ = new unsigned char[ns_];
   goal_.x = goal_.y = INF;
   initMap();
 }
