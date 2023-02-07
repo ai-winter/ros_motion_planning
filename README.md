@@ -12,137 +12,106 @@ This repository provides the implement of common `Motion Planning` algorithm, we
 
 The theory analysis can be found at [motion-planning](https://blog.csdn.net/frigidwinter/category_11410243.html)
 
+We also provide Matlab Version at 
+
+
+
 # Quick Start
 
-For ROS C++ version, execute the following commands
-
-```shell
-cd ros/
+To start simulation, compile using `catkin` first. For example, we assume that local workspace name is `~/sim_platform`
+```sh
+mv ./src ~/sim_platform/
+cd ~/sim_platform
 catkin_make
-source devel/setup.bash
-roslaunch sim_env main.launch global_planner:=a_star local_planner:=dwa
 ```
 
-For python version, open `./python/main.py` and select the algorithm, for example
-
-```python
-if __name__ == '__main__':
-    '''
-    sample search
-    '''
-    # build environment
-    start = (18, 8)
-    goal = (37, 18)
-    env = Map(51, 31)
-
-    planner = InformedRRT(start, goal, env, max_dist=0.5, r=12, sample_num=1500)
-
-    # animation
-    planner.run()
+Edit user configure
+```sh
+cd user_config
+touch user_config.yaml
 ```
 
-For matlab version, open `./matlab/simulation_global.mlx` or `./matlab/simulation_local.mlx` and select the algorithm, for example
+Below is the example of `user_config.yaml`
 
-```matlab
-clear all;
-clc;
-
-% load environment
-load("gridmap_20x20_scene1.mat");
-map_size = size(grid_map);
-G = 1;
-
-% start and goal
-start = [3, 2];
-goal = [18, 29];
-
-% planner
-planner_name = "rrt";
-
-planner = str2func(planner_name);
-[path, flag, cost, expand] = planner(grid_map, start, goal);
-
-% visualization
-clf;
-hold on
-
-% plot grid map
-plot_grid(grid_map);
-% plot expand zone
-plot_expand(expand, map_size, G, planner_name);
-% plot path
-plot_path(path, G);
-% plot start and goal
-plot_square(start, map_size, G, "#f00");
-plot_square(goal, map_size, G, "#15c");
-% title
-title([planner_name, "cost:" + num2str(cost)]);
-
-hold off
+```yaml
+map: "warehouse"
+world: "warehouse"
+robots_config:
+  - robot1_type: "turtlebot3_burger"
+    robot1_global_planner: "astar"
+    robot1_local_planner: "dwa"
+    robot1_x_pos: "0.0"
+    robot1_y_pos: "0.0"
+    robot1_z_pos: "0.0"
+    robot1_yaw: "-1.57"
+  - robot2_type: "turtlebot3_burger"
+    robot2_global_planner: "jps"
+    robot2_local_planner: "pid"
+    robot2_x_pos: "-5.0"
+    robot2_y_pos: "-7.5"
+    robot2_z_pos: "0.0"
+    robot2_yaw: "0.0"
+robots_init: "robots_rviz_init.yaml"
+rviz_file: "sim_env.rviz"
 ```
+explanation:
+- map: static map，map files are at `sim_env/sim_env/map/`.
+- world: world，world files are at `sim_env/sim_env/worlds/`
+- robots_config：robotic confiugre
+  - type: robotic type，such as `turtlebot3_burger`、`turtlebot3_waffle`、`turtlebot3_waffle_pi`
+  - global_planner: global algorithm, see chapter `Version`
+  - local_planner: local algorithm, see chapter `Version`
+  - xyz_pos | yaw：initial pose
+- robots_init：initial pose in RVIZ
+- rviz_file: RVIZ configure, dynamic generation if `rviz_file` is none
+
+
+Then creat a new terminal and build environment
+    
+```sh
+cd sim_env/sim_env/scripts
+./main.sh
+```
+
 
 # Version
 ## Global Planner
 
-| Planner | C++ | Python | Matlab |
-| ------- | --- | ------ | ------ |
-| **GBFS** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/ros/src/planner/graph_planner/src/a_star.cpp) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/python/graph_search/gbfs.py) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/matlab/graph_search/gbfs.m) |
-| **Dijkstra** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/ros/src/planner/graph_planner/src/a_star.cpp)  | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/python/graph_search/dijkstra.py) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/matlab/graph_search/dijkstra.m) |
-| **A\*** | [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/ros/src/planner/graph_planner/src/a_star.cpp) | ![Status](https://img.shields.io/badge/done-v1.0-brightgreen) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/matlab/graph_search/a_star.m) |
-| **JPS** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/ros/src/planner/graph_planner/src/jump_point_search.cpp) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/python/graph_search/jps.py) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/matlab/graph_search/jps.m) |
-| **D\*** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/motion_planning/blob/master/ros/src/planner/graph_planner/src/d_star.cpp)) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/python/graph_search/d_star.py) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
-| **LPA\*** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/python/graph_search/lpa_star.py) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
-| **D\* Lite** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/motion_planning/blob/master/python/graph_search/d_star_lite.py)) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
-| **RRT** | [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/ros/src/planner/sample_planner/src/rrt.cpp) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/python/sample_search/rrt.py) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/matlab/sample_search/rrt.m) |
-| **RRT\*** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/ros/src/planner/sample_planner/src/rrt_star.cpp) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/python/sample_search/rrt_star.py) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/matlab/sample_search/rrt_star.m) |
-| **Informed RRT** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/ros/src/planner/sample_planner/src/informed_rrt.cpp) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/python/sample_search/informed_rrt.py) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/matlab/sample_search/informed_rrt.m) |
-| **RRT-Connect** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/ros/src/planner/sample_planner/src/rrt_connect.cpp) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/python/sample_search/rrt_connect.py) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/matlab/sample_search/rrt_connect.m) |
+| Planner | Version | Animation
+| ------- | --- | ------ | 
+| **GBFS** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/a_star.cpp) |![Status](https://img.shields.io/badge/gif-none-yellow)
+| **Dijkstra** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/a_star.cpp)  |![Status](https://img.shields.io/badge/gif-none-yellow)
+| **A\*** | [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/a_star.cpp) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **JPS** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/jump_point_search.cpp) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
+| **D\*** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/d_star.cpp)) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **LPA\*** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **D\* Lite** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **RRT** | [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/sample_planner/src/rrt.cpp) | ![rrt_ros.gif](gif/rrt_ros.gif)
+| **RRT\*** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/sample_planner/src/rrt_star.cpp) |![Status](https://img.shields.io/badge/gif-none-yellow)
+| **Informed RRT** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/sample_planner/src/informed_rrt.cpp) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **RRT-Connect** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/sample_planner/src/rrt_connect.cpp) | ![Status](https://img.shields.io/badge/gif-none-yellow)
 
 ## Local Planner
-| Planner | C++ | Python | Matlab |
-| ------- | --- | ------ | ------ |
-| **PID** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/ros/src/planner/local_planner/pid_planner/src/pid_planner.cpp) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
-| **APF** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
-| **DWA** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/ros/src/planner/local_planner/dwa_planner/src/dwa.cpp) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/motion_planning/blob/master/matlab/local_planner/dwa.m) |
-| **TEB** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
-| **MPC** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
-| **Lattice** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
+| Planner | Version | Animation
+| ------- | --- | ------ 
+| **PID** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/local_planner/pid_planner/src/pid_planner.cpp) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **APF** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **DWA** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/local_planner/dwa_planner/src/dwa.cpp) |![Status](https://img.shields.io/badge/gif-none-yellow)
+| **TEB** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **MPC** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **Lattice** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
 
 ## Intelligent Algorithm
 
-| Planner | C++ | Python | Matlab |
-| ------- | --- | ------ | ------ |
-| **ACO** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
-| **GA**  | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
-| **PSO**  | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
-| **ABC** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/develop-v1.0-red) |
+| Planner |Version | Animation
+| ------- | --- | ------ 
+| **ACO** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **GA**  | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **PSO**  | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **ABC** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
 
 
-# Animation
 
-## Global Planner
-
-| Planner | C++ | Python | Matlab |
-| ------- | --- | ------ | ------ |
-**GBFS** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![gbfs_python.png](gif/gbfs_python.png) | ![gbfs_matlab.png](gif/gbfs_matlab.png) |
-**Dijkstra** | ![Status](https://img.shields.io/badge/gif-none-yellow) |![dijkstra_python.png](gif/dijkstra_python.png) | ![dijkstra_matlab.png](gif/dijkstra_matlab.png) |
-**A\*** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![a_star_python.png](gif/a_star_python.png) | ![a_star.png](gif/a_star_matlab.png) | 
-**JPS** | ![Status](https://img.shields.io/badge/gif-none-yellow) |![jps_python.png](gif/jps_python.png) | ![jps_matlab.png](gif/jps_matlab.png) |
-**D\*** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![d_star_python.png](gif/d_star_python.png)|![Status](https://img.shields.io/badge/gif-none-yellow) |
-**LPA\*** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![lpa_star_python.png](gif/lpa_star_python.png) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
-**D\* Lite** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![d_star_lite_python.png](gif/d_star_lite_python.png) |![Status](https://img.shields.io/badge/gif-none-yellow) |
-**RRT** | ![rrt_ros.gif](gif/rrt_ros.gif) | ![rrt_python.png](gif/rrt_python.png) | ![rrt_matlab.png](gif/rrt_matlab.png) |
-**RRT\*** | ![Status](https://img.shields.io/badge/gif-none-yellow)| ![rrt_star_python.png](gif/rrt_star_python.png) | ![rrt_star_matlab.png](gif/rrt_star_matlab.png)|
-**Informed RRT** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![informed_rrt_python.png](gif/informed_rrt_python.png) | ![informed_rrt_matlab.png](gif/informed_rrt_matlab.png) |
-**RRT-Connect** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![rrt_connect_python.png](gif/rrt_connect_python.png) | ![rrt_connect_matlab.png](gif/rrt_connect_matlab.png) |
-
-
-## Local Planner
-| Planner | C++ | Python | Matlab |
-| ------- | --- | ------ | ------ |
-| **PID** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
-| **APF** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
-| **DWA** | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![Status](https://img.shields.io/badge/gif-none-yellow) | ![dwa_matlab.gif](gif/dwa_matlab.gif) |
 
 
 # Papers
@@ -173,15 +142,3 @@ hold off
 * Our robot and world models are from [
 Dataset-of-Gazebo-Worlds-Models-and-Maps](https://github.com/mlherd/Dataset-of-Gazebo-Worlds-Models-and-Maps) and [
 aws-robomaker-small-warehouse-world](https://github.com/aws-robotics/aws-robomaker-small-warehouse-world). Thanks for these open source models sincerely.
-* Our visualization and animation framework of Python Version refers to [https://github.com/zhm-real/PathPlanning](https://github.com/zhm-real/PathPlanning). Thanks sincerely.
-
-# Autoformatting of ROS Code
-* ROS tutorials: [CppStyleGuide](http://wiki.ros.org/CppStyleGuide), and its refer file [roscpp_code_format](https://github.com/PickNikRobotics/roscpp_code_format)
-* Usage with Visual Studio Code:
-  * Install the `C/C++` extension.
-  * Put the `.clang-format` file in your workspace.
-  * Select `Format Document` in the right-click context menu, or use the shortcut `Ctrl+Shift+I`.
-* Batch formatting:
-  * Install the `Format Files` extension.
-  * Select `Start Format Files: This Folder`.
-  * Do it!
