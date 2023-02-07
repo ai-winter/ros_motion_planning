@@ -11,9 +11,8 @@
 This repository provides the implement of common `Motion Planning` algorithm, welcome your star, fork and PR.
 
 The theory analysis can be found at [motion-planning](https://blog.csdn.net/frigidwinter/category_11410243.html)
-
-We also provide Matlab Version at 
-
+ 
+We also provide Python version at [https://github.com/ai-winter/python_motion_planning](https://github.com/ai-winter/ros_motion_planning) and Matlab Version at [https://github.com/ai-winter/matlab_motion_planning](https://github.com/ai-winter/matlab_motion_planning)
 
 
 # Quick Start
@@ -79,11 +78,11 @@ cd sim_env/sim_env/scripts
 
 | Planner | Version | Animation
 | ------- | --- | ------ | 
-| **GBFS** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/a_star.cpp) |![Status](https://img.shields.io/badge/gif-none-yellow)
-| **Dijkstra** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/a_star.cpp)  |![Status](https://img.shields.io/badge/gif-none-yellow)
-| **A\*** | [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/a_star.cpp) | ![Status](https://img.shields.io/badge/gif-none-yellow)
-| **JPS** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/jump_point_search.cpp) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
-| **D\*** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/d_star.cpp)) | ![Status](https://img.shields.io/badge/gif-none-yellow)
+| **GBFS** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/a_star.cpp) |![gbfs_ros.gif](gif/gbfs_ros.gif)
+| **Dijkstra** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/a_star.cpp)  |![dijkstra_ros.gif](gif/dijkstra_ros.gif)
+| **A\*** | [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/a_star.cpp) | ![a_star_ros.gif](gif/a_star_ros.gif)
+| **JPS** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/jump_point_search.cpp) | ![jps_ros.gif](gif/jps_ros.gif) |
+| **D\*** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/graph_planner/src/d_star.cpp)) | ![d_star_ros.gif](gif/d_star_ros.gif)
 | **LPA\*** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
 | **D\* Lite** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow)
 | **RRT** | [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/sample_planner/src/rrt.cpp) | ![rrt_ros.gif](gif/rrt_ros.gif)
