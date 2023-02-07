@@ -1,0 +1,35 @@
+<!-- 
+******************************************************************************************
+*  Copyright (C) 2022 Yang Haodong, All Rights Reserved                                  *
+*                                                                                        *
+*  @brief    Amcl method module parameter configure.                                     *
+*  @author   Haodong Yang,                                                               *
+*  @version  1.0.0                                                                       *
+*  @date     2022.06.30                                                                  *
+*  @license  GNU General Public License (GPL)                                            *
+******************************************************************************************
+-->
+
+<launch>
+    <!-- 机器人命名空间 -->
+    <arg name="robot_namespace" />
+    <!-- 是否启用命名空间 -->
+    <arg name="start_ns" default="false" />
+    <!-- 机器人属性 -->
+    <arg name="robot_x" />
+    <arg name="robot_y" />
+    <arg name="robot_z" />
+
+    <node pkg="amcl" type="amcl" name="amcl">
+        <!-- 加载初始化默认参数 -->
+        <rosparam file="$(find sim_env)/config/amcl_params.yaml" command="load" />
+        <param name="initial_pose_x" value="$(arg robot_x)"/>
+        <param name="initial_pose_y" value="$(arg robot_y)"/>
+        <param name="initial_pose_z" value="$(arg robot_z)"/>
+        <!-- 为坐标系添加命名空间 -->
+        <param name="odom_frame_id"  value="$(arg robot_namespace)/odom" if="$(arg start_ns)"/>
+        <param name="base_frame_id"  value="$(arg robot_namespace)/base_footprint" if="$(arg start_ns)"/>
+
+        <remap from="static_map" to="/static_map"/>
+    </node>
+</launch>
