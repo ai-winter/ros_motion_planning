@@ -9,8 +9,8 @@
 
 #include "global_planner.h"
 
-#define INF 10000        // infinity, a big enough number
-#define SIM_DISTANCE 50  // simulation distance, like range of the sensor (in grid)
+#define INF 10000       // infinity, a big enough number
+#define WINDOW_SIZE 60  // local costmap window size (in grid, 3m / 0.05 = 60)
 
 enum Tag
 {
@@ -134,7 +134,8 @@ public:
 
 public:
   // global costmap
-  unsigned char* global_costmap_;
+  unsigned char* curr_global_costmap_;
+  unsigned char* last_global_costmap_;
   // grid pointer map
   DNodePtr** map_;
   // open list, ascending order
@@ -156,18 +157,18 @@ public:
    * @param h_cost  Heuritic cost of this node
    * @param id      Node's id
    * @param pid     Node's parent's id
-   * @param tag     Node's tag among enum Tag
+   * @param t       Node's tag among enum Tag
    * @param k       Node's k_min in history
    */
   DNode(const int x = 0, const int y = 0, const double cost = INF, const double h_cost = INF, const int id = 0,
-        const int pid = -1, const int tag = NEW, const double k = INF)
-    : Node(x, y, cost, h_cost, id, pid), tag(tag), k(k)
+        const int pid = -1, const int t = NEW, const double k = INF)
+    : Node(x, y, cost, h_cost, id, pid), t(t), k(k)
   {
   }
 
 public:
   // Node's tag among enum Tag
-  int tag;
+  int t;
   // Node's k_min in history
   double k;
 };
