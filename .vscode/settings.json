@@ -94,7 +94,8 @@
         "*.ipp": "cpp",
         "dense": "cpp",
         "eigen": "cpp",
-        "sparse": "cpp"
+        "sparse": "cpp",
+        "stack": "cpp"
     },
     "ros.distro": "noetic"
 }

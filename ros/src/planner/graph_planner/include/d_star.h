@@ -9,7 +9,8 @@
 
 #include "global_planner.h"
 
-#define inf 10000  // infinity, a big enough number
+#define INF 10000        // infinity, a big enough number
+#define SIM_DISTANCE 50  // simulation distance, like range of the sensor (in grid)
 
 enum Tag
 {
@@ -39,7 +40,7 @@ public:
   DStar(int nx, int ny, double resolution);
 
   /**
-   * @brief Init DNodeMap
+   * @brief Init map
    */
   void initMap();
 
@@ -51,13 +52,13 @@ public:
   /**
    * @brief Insert nodePtr into the open_list with h_new
    *
-   * @param nodePtr DNode pointer of the DNode to be inserted
-   * @param h_new   new h value
+   * @param node_ptr  DNode pointer of the DNode to be inserted
+   * @param h_new     new h value
    */
-  void insert(DNodePtr nodePtr, double h_new);
+  void insert(DNodePtr node_ptr, double h_new);
 
   /**
-   * @brief Judge if there is collision between n1 and n2
+   * @brief Check if there is collision between n1 and n2
    *
    * @param n1  DNode pointer of one DNode
    * @param n2  DNode pointer of the other DNode
@@ -68,19 +69,19 @@ public:
   /**
    * @brief Get neighbour DNodePtrs of nodePtr
    *
-   * @param nodePtr     DNode to expand
+   * @param node_ptr    DNode to expand
    * @param neighbours  neigbour DNodePtrs in vector
    */
-  void getNeighbours(DNodePtr nodePtr, std::vector<DNodePtr>& neighbours);
+  void getNeighbours(DNodePtr node_ptr, std::vector<DNodePtr>& neighbours);
 
   /**
-   * @brief Get the cost between n1 and n2, return inf if collision
+   * @brief Get the cost between n1 and n2, return INF if collision
    *
    * @param n1 DNode pointer of one DNode
    * @param n2 DNode pointer of the other DNode
    * @return cost between n1 and n2
    */
-  double cost(DNodePtr n1, DNodePtr n2);
+  double getCost(DNodePtr n1, DNodePtr n2);
 
   /**
    * @brief Main process of D*
@@ -97,7 +98,7 @@ public:
   void extractExpand(std::vector<Node>& expand);
 
   /**
-   * @brief Extract path for DNodeMap
+   * @brief Extract path for map
    *
    * @param start start node
    * @param goal  goal node
@@ -133,17 +134,15 @@ public:
 
 public:
   // global costmap
-  unsigned char* global_costmap;
+  unsigned char* global_costmap_;
   // grid pointer map
-  DNodePtr** DNodeMap;
+  DNodePtr** map_;
   // open list, ascending order
-  std::multimap<double, DNodePtr> open_list;
+  std::multimap<double, DNodePtr> open_list_;
   // path
-  std::vector<Node> path;
+  std::vector<Node> path_;
   // last goal
   Node goal_;
-  // forward distance, like range of the sensor (in grid)
-  int N_;
 };
 
 class DNode : public Node
@@ -160,8 +159,8 @@ public:
    * @param tag     Node's tag among enum Tag
    * @param k       Node's k_min in history
    */
-  DNode(const int x = 0, const int y = 0, const double cost = inf, const double h_cost = inf, const int id = 0,
-        const int pid = -1, const int tag = NEW, const double k = inf)
+  DNode(const int x = 0, const int y = 0, const double cost = INF, const double h_cost = INF, const int id = 0,
+        const int pid = -1, const int tag = NEW, const double k = INF)
     : Node(x, y, cost, h_cost, id, pid), tag(tag), k(k)
   {
   }
@@ -171,8 +170,6 @@ public:
   int tag;
   // Node's k_min in history
   double k;
-  // Node's iterator from multimap
-  std::multimap<double, DNodePtr>::iterator nodeMapIt;
 };
 }  // namespace d_star_planner
 
