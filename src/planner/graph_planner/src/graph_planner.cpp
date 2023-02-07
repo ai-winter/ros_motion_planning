@@ -17,6 +17,7 @@
 #include "a_star.h"
 #include "jump_point_search.h"
 #include "d_star.h"
+#include "lpa_star.h"
 
 PLUGINLIB_EXPORT_CLASS(graph_planner::GraphPlanner, nav_core::BaseGlobalPlanner)
 
@@ -28,6 +29,7 @@ namespace graph_planner
 GraphPlanner::GraphPlanner() : costmap_(NULL), initialized_(false), g_planner_(NULL)
 {
 }
+
 /**
  * @brief  Constructor
  * @param  name     planner name
@@ -38,6 +40,7 @@ GraphPlanner::GraphPlanner(std::string name, costmap_2d::Costmap2D* costmap, std
 {
   initialize(name, costmap, frame_id);
 }
+
 /**
  * @brief Destructor
  * @return No return value
@@ -61,6 +64,7 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costma
 {
   initialize(name, costmapRos->getCostmap(), costmapRos->getGlobalFrameID());
 }
+
 /**
  * @brief  Planner initialization
  * @param  name     planner name
@@ -105,12 +109,9 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, 
     else if (this->planner_name_ == "jps")
       this->g_planner_ = new jps_planner::JumpPointSearch(nx, ny, resolution);
     else if (this->planner_name_ == "d_star")
-    {
-      // this->p_local_costmap_ = new nav_msgs::OccupancyGrid();
-      this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution);  // (, this->p_local_costmap_)
-      // this->local_costmap_sub_ = private_nh.subscribe("/move_base/local_costmap/costmap", 1,
-      // &GraphPlanner::localCostmapCallback, this);
-    }
+      this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution);
+    else if (this->planner_name_ == "lpa_star")
+      this->g_planner_ = new lpa_star_planner::LPAStar(nx, ny, resolution);
 
     ROS_INFO("Using global graph planner: %s", this->planner_name_.c_str());
 
@@ -121,19 +122,20 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, 
     this->expand_pub_ = private_nh.advertise<nav_msgs::OccupancyGrid>("expand", 1);
     // register planning service
     this->make_plan_srv_ = private_nh.advertiseService("make_plan", &GraphPlanner::makePlanService, this);
-
     // set initialization flag
     this->initialized_ = true;
   }
   else
+  {
     ROS_WARN("This planner has already been initialized, you can't call it twice, doing nothing");
+  }
 }
+
 /**
  * @brief plan a path given start and goal in world map
  * @param start     start in world map
  * @param goal      goal in world map
  * @param plan      plan
- * @param tolerance error tolerance
  * @return true if find a path successfully else false
  */
 bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
@@ -141,6 +143,16 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
 {
   return makePlan(start, goal, this->tolerance_, plan);
 }
+
+/**
+ * @brief plan a path given start and goal in world map
+ *
+ * @param start     start in world map
+ * @param goal      goal in world map
+ * @param plan      plan
+ * @param tolerance error tolerance
+ * @return true if find a path successfully else false
+ */
 bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
                             double tolerance, std::vector<geometry_msgs::PoseStamped>& plan)
 {
@@ -228,6 +240,7 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
   this->publishPlan(plan);
   return !plan.empty();
 }
+
 /**
  * @brief  publish planning path
  * @param  path planning path
@@ -249,6 +262,7 @@ void GraphPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& pl
   // publish plan to rviz
   this->plan_pub_.publish(gui_plan);
 }
+
 /**
  * @brief  regeister planning service
  * @param  req  request from client
@@ -256,29 +270,11 @@ void GraphPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& pl
  */
 bool GraphPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::GetPlan::Response& resp)
 {
-  // if (this->planner_name_ == "d_star")
-  // {
-  //     ROS_INFO("Reset d_star planner.");
-  //     delete this->g_planner_;
-  //     // costmap size
-  //     unsigned int nx = this->costmap_->getSizeInCellsX(), ny = this->costmap_->getSizeInCellsY();
-  //     // costmap resolution
-  //     double resolution = this->costmap_->getResolution();
-  //     this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution);  // (, this->p_local_costmap_)
-  // }
   makePlan(req.start, req.goal, resp.plan.poses);
   resp.plan.header.stamp = ros::Time::now();
   resp.plan.header.frame_id = this->frame_id_;
   return true;
 }
-/**
- * @brief  local costmap callback function
- * @param  costmap local costmap data
- */
-// void GraphPlanner::localCostmapCallback(const nav_msgs::OccupancyGrid& local_costmap) {
-//     *(this->p_local_costmap_) = local_costmap;
-//     // ROS_WARN("this->p_local_costmap_->data.at(10) = %d", this->p_local_costmap_->data.at(10));
-// }
 
 /**
  * @brief  Inflate the boundary of costmap into obstacles to prevent cross planning
@@ -301,6 +297,7 @@ void GraphPlanner::_outlineMap(unsigned char* costarr, int nx, int ny)
   for (int i = 0; i < ny; i++, pc += nx)
     *pc = costmap_2d::LETHAL_OBSTACLE;
 }
+
 /**
  * @brief  publish expand zone
  * @param  expand  set of expand nodes
@@ -331,6 +328,7 @@ void GraphPlanner::_publishExpand(std::vector<Node>& expand)
     grid.data[expand[i].id] = 50;
   this->expand_pub_.publish(grid);
 }
+
 /**
  * @brief  tranform from costmap(x, y) to world map(x, y)
  * @param  mx costmap x
@@ -343,6 +341,7 @@ void GraphPlanner::_mapToWorld(double mx, double my, double& wx, double& wy)
   wx = this->costmap_->getOriginX() + (mx + this->convert_offset_) * this->costmap_->getResolution();
   wy = this->costmap_->getOriginY() + (my + this->convert_offset_) * this->costmap_->getResolution();
 }
+
 /**
  * @brief  tranform from world map(x, y) to costmap(x, y)
  * @param  mx costmap x
@@ -363,6 +362,7 @@ bool GraphPlanner::_worldToMap(double wx, double wy, double& mx, double& my)
 
   return false;
 }
+
 /**
  * @brief  calculate plan from planning path
  * @param  path path generated by global planner

@@ -31,13 +31,15 @@
                     or arg('global_planner')=='jps' 
                     or arg('global_planner')=='gbfs'
                     or arg('global_planner')=='dijkstra'
-                    or arg('global_planner')=='d_star')" />
+                    or arg('global_planner')=='d_star'
+                    or arg('global_planner')=='lpa_star')" />
         <param name="GraphPlanner/planner_name" value="$(arg global_planner)"
             if="$(eval arg('global_planner')=='a_star'
                     or arg('global_planner')=='jps' 
                     or arg('global_planner')=='gbfs'
                     or arg('global_planner')=='dijkstra'
-                    or arg('global_planner')=='d_star')" />
+                    or arg('global_planner')=='d_star'
+                    or arg('global_planner')=='lpa_star')" />
 
         <!-- sample search -->
         <param name="base_global_planner" value="sample_planner/SamplePlanner"
