@@ -2,7 +2,6 @@
 #define D_STAR_H
 
 #include <ros/ros.h>
-#include <nav_msgs/OccupancyGrid.h>
 
 #include <map>
 #include <algorithm>
@@ -10,7 +9,7 @@
 #include "global_planner.h"
 
 #define INF 10000       // infinity, a big enough number
-#define WINDOW_SIZE 60  // local costmap window size (in grid, 3m / 0.05 = 60)
+#define WINDOW_SIZE 70  // local costmap window size (in grid, 3.5m / 0.05 = 70)
 
 enum Tag
 {
@@ -62,7 +61,7 @@ public:
    *
    * @param n1  DNode pointer of one DNode
    * @param n2  DNode pointer of the other DNode
-   * @return true if collision
+   * @return true if collision, else false
    */
   bool isCollision(DNodePtr n1, DNodePtr n2);
 
@@ -142,6 +141,8 @@ public:
   std::multimap<double, DNodePtr> open_list_;
   // path
   std::vector<Node> path_;
+  // expand
+  std::vector<Node> expand_;
   // last goal
   Node goal_;
 };
