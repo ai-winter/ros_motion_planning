@@ -4,7 +4,10 @@ namespace lpa_star_planner
 {
 LPAStar::LPAStar(int nx, int ny, double resolution) : global_planner::GlobalPlanner(nx, ny, resolution)
 {
-  global_costmap_ = new unsigned char[ns_];
+  curr_global_costmap_ = new unsigned char[ns_];
+  last_global_costmap_ = new unsigned char[ns_];
+  goal_.x = goal_.y = INF;
+  factor_ = 0.35;
   initMap();
 }
 
@@ -15,7 +18,10 @@ void LPAStar::initMap()
   {
     map_[i] = new LNodePtr[ny_];
     for (int j = 0; j < ny_; j++)
+    {
       map_[i][j] = new LNode(i, j, INF, INF, this->grid2Index(i, j), -1, INF, INF);
+      map_[i][j]->open_it = open_list_.end();  // allocate empty memory
+    }
   }
 }
 
@@ -35,24 +41,24 @@ void LPAStar::reset()
   initMap();
 }
 
-double LPAStar::calculateKey(LNodePtr node_ptr)
+double LPAStar::getH(LNodePtr s)
 {
-  return std::min(node_ptr->cost, node_ptr->rhs) + this->getH(node_ptr);
+  return std::hypot(s->x - goal_.x, s->y - goal_.y);
 }
 
-double LPAStar::getH(LNodePtr node_ptr)
+double LPAStar::calculateKey(LNodePtr s)
 {
-  return std::hypot(node_ptr->x - goal_.x, node_ptr->y - goal_.y);
+  return std::min(s->cost, s->rhs) + this->getH(s);
 }
 
 bool LPAStar::isCollision(LNodePtr n1, LNodePtr n2)
 {
-  return global_costmap_[n1->id] > lethal_cost_ * factor_ || global_costmap_[n2->id] > lethal_cost_ * factor_;
+  return curr_global_costmap_[n1->id] > lethal_cost_ * factor_ || curr_global_costmap_[n2->id] > lethal_cost_ * factor_;
 }
 
-void LPAStar::getNeighbours(LNodePtr node_ptr, std::vector<LNodePtr>& neighbours)
+void LPAStar::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
 {
-  int x = node_ptr->x, y = node_ptr->y;
+  int x = u->x, y = u->y;
   for (int i = -1; i <= 1; i++)
   {
     for (int j = -1; j <= 1; j++)
@@ -64,8 +70,9 @@ void LPAStar::getNeighbours(LNodePtr node_ptr, std::vector<LNodePtr>& neighbours
       if (x_n < 0 || x_n > nx_ || y_n < 0 || y_n > ny_)
         continue;
       LNodePtr neigbour_ptr = map_[x_n][y_n];
-      if (this->isCollision(node_ptr, neigbour_ptr))
-        continue;
+
+      // if (this->isCollision(u, neigbour_ptr))
+      //   continue;
 
       neighbours.push_back(neigbour_ptr);
     }
@@ -79,27 +86,35 @@ double LPAStar::getCost(LNodePtr n1, LNodePtr n2)
   return std::hypot(n1->x - n2->x, n1->y - n2->y);
 }
 
-void LPAStar::updateVertex(LNodePtr node_ptr)
+void LPAStar::updateVertex(LNodePtr u)
 {
-  std::vector<LNodePtr> neigbours;
-  this->getNeighbours(node_ptr, neigbours);
-
-  // greed correction
-  for (int i = 0; i < (int)neigbours.size(); i++)
+  // u != start
+  if (u->x != start_.x || u->y != start_.y)
   {
-    LNodePtr node_n_ptr = neigbours[i];
-    if (node_n_ptr->cost + this->getCost(node_n_ptr, node_ptr) < node_ptr->rhs)
+    std::vector<LNodePtr> neigbours;
+    this->getNeighbours(u, neigbours);
+    for (LNodePtr s : neigbours)
     {
-      node_ptr->rhs = node_n_ptr->cost + this->getCost(node_n_ptr, node_ptr);
-      node_ptr->pid = node_n_ptr->id;
+      if (s->cost + this->getCost(s, u) < u->rhs)
+      {
+        u->rhs = s->cost + this->getCost(s, u);
+        // u->pid = s->id;
+      }
     }
   }
 
-  // Locally unconsistent nodes should be added into OPEN set (set U)
-  if (node_ptr->cost != node_ptr->rhs)
+  // u in openlist, remove u
+  if (u->open_it != open_list_.end())
   {
-    node_ptr->key = this->calculateKey(node_ptr);
-    open_list_.insert(std::make_pair(node_ptr->key, node_ptr));
+    open_list_.erase(u->open_it);
+    u->open_it = open_list_.end();
+  }
+
+  // g(u) != rhs(u)
+  if (u->cost != u->rhs)
+  {
+    u->key = this->calculateKey(u);
+    u->open_it = open_list_.insert(std::make_pair(u->key, u));
   }
 }
 
@@ -111,17 +126,20 @@ void LPAStar::computeShortestPath()
       break;
 
     LNodePtr u = open_list_.begin()->second;
+    open_list_.erase(open_list_.begin());
+    u->open_it = open_list_.end();
+    expand_.push_back(*u);
+
+    // goal reached
     if (u->key >= this->calculateKey(goal_ptr_) && goal_ptr_->rhs == goal_ptr_->cost)
       break;
-
-    open_list_.erase(open_list_.begin());
-    expand_.push_back(*u);
 
     // Locally over-consistent -> Locally consistent
     if (u->cost > u->rhs)
     {
       u->cost = u->rhs;
     }
+    // Locally under-consistent -> Locally over-consistent
     else
     {
       u->cost = INF;
@@ -130,19 +148,71 @@ void LPAStar::computeShortestPath()
 
     std::vector<LNodePtr> neigbours;
     this->getNeighbours(u, neigbours);
-    for (int i = 0; i < (int)neigbours.size(); i++)
+    for (LNodePtr s : neigbours)
+      this->updateVertex(s);
+  }
+}
+
+void LPAStar::extractPath(const Node& start, const Node& goal)
+{
+  // LNodePtr node_ptr = map_[goal.x][goal.y];
+  // while (node_ptr->x != start.x || node_ptr->y != start.y)
+  // {
+  //   path_.push_back(*node_ptr);
+  //   int x, y;
+  //   this->index2Grid(node_ptr->pid, x, y);
+  //   node_ptr = map_[x][y];
+  // }
+  // std::reverse(path_.begin(), path_.end());
+
+  LNodePtr node_ptr = map_[goal.x][goal.y];
+  while (node_ptr->x != start.x || node_ptr->y != start.y)
+  {
+    path_.push_back(*node_ptr);
+    std::vector<LNodePtr> neigbours;
+    this->getNeighbours(node_ptr, neigbours);
+    double min_cost = INF;
+    LNodePtr next_node_ptr;
+    for (LNodePtr node_n_ptr : neigbours)
     {
-      this->updateVertex(neigbours[i]);
+      if (node_n_ptr->cost < min_cost)
+      {
+        min_cost = node_n_ptr->cost;
+        next_node_ptr = node_n_ptr;
+      }
+    }
+    node_ptr = next_node_ptr;
+  }
+}
+
+Node LPAStar::getState(const Node& current)
+{
+  Node state(path_[0].x, path_[0].y);
+  int dis_min = std::hypot(state.x - current.x, state.y - current.y);
+  int idx_min = 0;
+  for (int i = 1; i < path_.size(); i++)
+  {
+    int dis = std::hypot(path_[i].x - current.x, path_[i].y - current.y);
+    if (dis < dis_min)
+    {
+      dis_min = dis;
+      idx_min = i;
     }
   }
+  state.x = path_[idx_min].x;
+  state.y = path_[idx_min].y;
+
+  return state;
 }
 
 std::tuple<bool, std::vector<Node>> LPAStar::plan(const unsigned char* costs, const Node& start, const Node& goal,
                                                   std::vector<Node>& expand)
 {
   // update costmap
-  memcpy(global_costmap_, costs, ns_);
-  expand_ = expand;
+  memcpy(last_global_costmap_, curr_global_costmap_, ns_);
+  memcpy(curr_global_costmap_, costs, ns_);
+
+  expand_.clear();
 
   if (goal_.x != goal.x || goal_.y != goal.y)
   {
@@ -154,14 +224,49 @@ std::tuple<bool, std::vector<Node>> LPAStar::plan(const unsigned char* costs, co
 
     start_ptr_->rhs = 0;
     start_ptr_->key = this->calculateKey(start_ptr_);
-    open_list_.insert(std::make_pair(start_ptr_->key, start_ptr_));
+    start_ptr_->open_it = open_list_.insert(std::make_pair(start_ptr_->key, start_ptr_));
 
     computeShortestPath();
 
     path_.clear();
-    // this->extractPath();
-    
+    this->extractPath(start, goal);
+
+    expand = expand_;
+
+    return { true, path_ };
+  }
+  else
+  {
+    Node state = this->getState(start);
+
+    for (int i = -WINDOW_SIZE / 2; i < WINDOW_SIZE / 2; i++)
+    {
+      for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; j++)
+      {
+        int x_n = state.x + i, y_n = state.y + j;
+        if (x_n < 0 || x_n > nx_ || y_n < 0 || y_n > ny_)
+          continue;
+
+        int idx = this->grid2Index(x_n, y_n);
+        if (curr_global_costmap_[idx] != last_global_costmap_[idx])
+        {
+          ROS_WARN("(%d, %d) changed!", x_n, y_n);
+          LNodePtr u = map_[x_n][y_n];
+          std::vector<LNodePtr> neigbours;
+          this->updateVertex(u);
+          for (LNodePtr s : neigbours)
+          {
+            this->updateVertex(s);
+          }
+        }
+      }
+    }
+    computeShortestPath();
+
+    path_.clear();
+    this->extractPath(state, goal);
+
+    return { true, path_ };
   }
 }
-
 }  // namespace lpa_star_planner
