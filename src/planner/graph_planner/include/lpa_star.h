@@ -9,6 +9,7 @@
 #include "global_planner.h"
 
 #define INF 10000  // infinity, a big enough number
+#define WINDOW_SIZE 70  // local costmap window size (in grid, 3.5m / 0.05 = 70)
 
 namespace lpa_star_planner
 {
@@ -24,26 +25,31 @@ public:
 
   void reset();
 
-  double calculateKey(LNodePtr node_ptr);
+  double getH(LNodePtr s);
 
-  double getH(LNodePtr node_ptr);
+  double calculateKey(LNodePtr s);
 
   bool isCollision(LNodePtr n1, LNodePtr n2);
 
-  void getNeighbours(LNodePtr node_ptr, std::vector<LNodePtr>& neighbours);
+  void getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours);
 
   double getCost(LNodePtr n1, LNodePtr n2);
 
-  void updateVertex(LNodePtr node_ptr);
+  void updateVertex(LNodePtr u);
+
+  void extractPath(const Node& start, const Node& goal);
 
   void computeShortestPath();
+
+  Node getState(const Node& current);
 
   std::tuple<bool, std::vector<Node>> plan(const unsigned char* costs, const Node& start, const Node& goal,
                                            std::vector<Node>& expand);
 
 public:
   // global costmap
-  unsigned char* global_costmap_;
+  unsigned char* curr_global_costmap_;
+  unsigned char* last_global_costmap_;
   // grid pointer map
   LNodePtr** map_;
   // open list, ascending order
@@ -72,6 +78,8 @@ public:
   double rhs;
   // priority
   double key;
+  // iterator
+  std::multimap<double, LNodePtr>::iterator open_it;
 };
 }  // namespace lpa_star_planner
 
