@@ -78,7 +78,7 @@ void DStar::insert(DNodePtr node_ptr, double h_new)
  *
  * @param n1  DNode pointer of one DNode
  * @param n2  DNode pointer of the other DNode
- * @return true if collision
+ * @return true if collision, else false
  */
 bool DStar::isCollision(DNodePtr n1, DNodePtr n2)
 {
@@ -105,6 +105,7 @@ void DStar::getNeighbours(DNodePtr node_ptr, std::vector<DNodePtr>& neighbours)
       if (x_n < 0 || x_n > nx_ || y_n < 0 || y_n > ny_)
         continue;
       DNodePtr neigbour_ptr = map_[x_n][y_n];
+
       // if (this->isCollision(node_ptr, neigbour_ptr))
       //   continue;
 
@@ -141,6 +142,7 @@ double DStar::processState()
   DNodePtr x = open_list_.begin()->second;
   open_list_.erase(open_list_.begin());
   x->t = CLOSED;
+  expand_.push_back(*x);
 
   std::vector<DNodePtr> neigbours;
   this->getNeighbours(x, neigbours);
@@ -156,15 +158,6 @@ double DStar::processState()
         x->cost = y->cost + this->getCost(y, x);
       }
     }
-    // for (int i = 0; i < (int)neigbours.size(); i++)
-    // {
-    //   DNodePtr y = neigbours[i];
-    //   if (y->cost <= k_old && x->cost > y->cost + this->getCost(y, x))
-    //   {
-    //     x->pid = y->id;
-    //     x->cost = y->cost + this->getCost(y, x);
-    //   }
-    // }
   }
 
   // LOWER state, cost reductions
@@ -179,16 +172,6 @@ double DStar::processState()
         this->insert(y, x->cost + this->getCost(x, y));
       }
     }
-    // for (int i = 0; i < (int)neigbours.size(); i++)
-    // {
-    //   DNodePtr y = neigbours[i];
-    //   if (y->t == NEW || (y->pid == x->id && y->cost != x->cost + this->getCost(x, y)) ||
-    //       (y->pid != x->id && y->cost > x->cost + this->getCost(x, y)))
-    //   {
-    //     y->pid = x->id;
-    //     this->insert(y, x->cost + this->getCost(x, y));
-    //   }
-    // }
   }
   else
   {
@@ -200,40 +183,16 @@ double DStar::processState()
         y->pid = x->id;
         this->insert(y, x->cost + this->getCost(x, y));
       }
-      else
+      else if (y->pid != x->id && (y->cost > x->cost + this->getCost(x, y)))
       {
-        if (y->pid != x->id && (y->cost > x->cost + this->getCost(x, y)))
-        {
-          this->insert(x, x->cost);
-        }
-        else
-        {
-          if (y->pid != x->id && (x->cost > y->cost + this->getCost(y, x)) && y->t == CLOSED && (y->cost > k_old))
-          {
-            this->insert(y, y->cost);
-          }
-        }
+        this->insert(x, x->cost);
+      }
+      else if (y->pid != x->id && (x->cost > y->cost + this->getCost(y, x)) && y->t == CLOSED && (y->cost > k_old))
+      {
+        this->insert(y, y->cost);
       }
     }
-    // for (int i = 0; i < (int)neigbours.size(); i++)
-    // {
-    //   DNodePtr y = neigbours[i];
-    //   if (y->t == NEW || (y->pid == x->id && y->cost != x->cost + this->getCost(x, y)))
-    //   {
-    //     y->pid = x->id;
-    //     this->insert(y, x->cost + this->getCost(x, y));
-    //   }
-    //   else if (y->pid != x->id && y->cost > x->cost + this->getCost(x, y))
-    //   {
-    //     this->insert(x, x->cost);
-    //   }
-    //   else if (y->pid != x->id && x->cost > y->cost + this->getCost(x, y) && y->t == CLOSED && y->cost > k_old)
-    //   {
-    //     this->insert(y, y->cost);
-    //   }
-    // }
   }
-
   return open_list_.begin()->first;
 }
 
@@ -248,9 +207,9 @@ void DStar::extractExpand(std::vector<Node>& expand)
   {
     for (int j = 0; j < ny_; j++)
     {
-      DNodePtr tmp = map_[i][j];
-      if (tmp->t == CLOSED)
-        expand.push_back(*tmp);
+      DNodePtr node_ptr = map_[i][j];
+      if (node_ptr->t == CLOSED)
+        expand.push_back(*node_ptr);
     }
   }
 }
@@ -310,7 +269,6 @@ Node DStar::getState(const Node& current)
 void DStar::modify(DNodePtr x, DNodePtr y)
 {
   if (x->t == CLOSED)
-    // this->insert(x, y->cost + this->getCost(x, y));
     this->insert(x, x->cost);
 }
 
@@ -328,6 +286,8 @@ std::tuple<bool, std::vector<Node>> DStar::plan(const unsigned char* costs, cons
   // update costmap
   memcpy(last_global_costmap_, curr_global_costmap_, ns_);
   memcpy(curr_global_costmap_, costs, ns_);
+
+  expand_.clear();
 
   // new goal set
   if (goal_.x != goal.x || goal_.y != goal.y)
@@ -350,16 +310,16 @@ std::tuple<bool, std::vector<Node>> DStar::plan(const unsigned char* costs, cons
     path_.clear();
     this->extractPath(start, goal);
 
-    expand.clear();
-    this->extractExpand(expand);
+    // expand.clear();
+    // this->extractExpand(expand);
+    expand = expand_;
+
     return { true, path_ };
   }
   else
   {
     // get current state from path, argmin Euler distance
     Node state = this->getState(start);
-    // DNodePtr x = map_[state.x][state.y];
-    // DNodePtr y;
 
     // prepare-repair
     for (int i = -WINDOW_SIZE / 2; i < WINDOW_SIZE / 2; i++)
@@ -430,8 +390,10 @@ std::tuple<bool, std::vector<Node>> DStar::plan(const unsigned char* costs, cons
     path_.clear();
     this->extractPath(state, goal);
 
-    expand.clear();
-    this->extractExpand(expand);
+    // expand.clear();
+    // this->extractExpand(expand);
+    expand = expand_;
+
     return { true, path_ };
   }
 }
