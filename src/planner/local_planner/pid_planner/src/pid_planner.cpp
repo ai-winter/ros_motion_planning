@@ -84,8 +84,7 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 
     base_frame_ = "base_link";
     plan_index_ = 0;
-    last_plan_index_ = 0;
-    g_x_ = g_y_ = g_theta_ = 0.0;
+    x_ = y_ = theta_ = 0.0;
 
     double controller_freqency;
     nh.param("/move_base/controller_frequency", controller_freqency, 10.0);
@@ -93,7 +92,9 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     ROS_INFO("PID planner initialized!");
   }
   else
+  {
     ROS_WARN("PID planner has already been initialized.");
+  }
 }
 
 /**
@@ -144,22 +145,24 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     return true;
   }
 
-  double b_x_d, b_y_d, b_theta_d, g_theta_d;
+  // desired x, y, theta in base frame
+  double b_x_d, b_y_d, b_theta_d;
+  double theta_d_;
   double v = 0, w = 0;
 
   while (plan_index_ < global_plan_.size())
   {
-    g_target_ps_ = global_plan_[plan_index_];
+    target_ps_ = global_plan_[plan_index_];
     int next_plan_index = std::min(((int)global_plan_.size()) - 1, plan_index_ + 1);
-    g_theta_d = atan2((global_plan_[next_plan_index].pose.position.y - global_plan_[plan_index_].pose.position.y),
-                      (global_plan_[next_plan_index].pose.position.x - global_plan_[plan_index_].pose.position.x));
+    theta_d_ = atan2((global_plan_[next_plan_index].pose.position.y - global_plan_[plan_index_].pose.position.y),
+                     (global_plan_[next_plan_index].pose.position.x - global_plan_[plan_index_].pose.position.x));
 
     tf2::Quaternion q;
-    q.setRPY(0, 0, g_theta_d);
-    tf2::convert(q, g_target_ps_.pose.orientation);
+    q.setRPY(0, 0, theta_d_);
+    tf2::convert(q, target_ps_.pose.orientation);
 
     // transform from map into base_frame
-    getTransformedPosition(g_target_ps_, &b_x_d, &b_y_d, &b_theta_d);
+    getTransformedPosition(target_ps_, &b_x_d, &b_y_d, &b_theta_d);
 
     if (hypot(b_x_d, b_y_d) > p_window_ || fabs(b_theta_d) > o_window_)
       break;
@@ -167,64 +170,68 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     plan_index_++;
   }
 
-  if (plan_index_ == global_plan_.size())
-    getTransformedPosition(global_plan_.back(), &b_x_d, &b_y_d, &b_theta_d);
+  // if (plan_index_ == global_plan_.size())
+  //   getTransformedPosition(global_plan_.back(), &b_x_d, &b_y_d, &b_theta_d);
 
-  costmap_ros_->getRobotPose(g_current_ps_);
-  g_x_ = g_current_ps_.pose.position.x;
-  g_y_ = g_current_ps_.pose.position.y;
-  g_theta_ = tf2::getYaw(g_current_ps_.pose.orientation);
+  costmap_ros_->getRobotPose(current_ps_);
+  x_ = current_ps_.pose.position.x;
+  y_ = current_ps_.pose.position.y;
+  theta_ = tf2::getYaw(current_ps_.pose.orientation);
 
   // odometry observation - getting robot velocities in robot frame
   nav_msgs::Odometry base_odom;
   odom_helper_->getOdom(base_odom);
 
   // get final goal orientation - Quaternion to Euler
-  g_final_rpy_ = getEulerAngles(global_plan_.back());
+  final_rpy_ = getEulerAngles(global_plan_.back());
 
-  if (getGoalPositionDistance(global_plan_.back(), g_x_, g_y_) < p_precision_)
+  // position reached
+  if (getGoalPositionDistance(global_plan_.back(), x_, y_) < p_precision_)
   {
-    if (fabs(g_final_rpy_[2] - g_theta_) < o_precision_)
+    // orientation reached
+    if (fabs(final_rpy_[2] - theta_) < o_precision_)
     {
       cmd_vel.linear.x = 0.0;
       cmd_vel.linear.y = 0.0;
       cmd_vel.angular.z = 0.0;
       goal_reached_ = true;
     }
+    // orientation not reached
     else
     {
-      w = AngularPIDController(base_odom, g_final_rpy_[2], g_theta_);
+      w = AngularPIDController(base_odom, final_rpy_[2], theta_);
       cmd_vel.linear.x = 0.0;
       cmd_vel.linear.y = 0.0;
       cmd_vel.angular.z = w;
     }
   }
-  else if (fabs(g_theta_d - g_theta_) > M_PI_2)
+  // large angle, turn first
+  else if (fabs(theta_d_ - theta_) > M_PI_2)
   {
-    // with a large angle, turn first
-    w = AngularPIDController(base_odom, g_theta_d, g_theta_);
+    w = AngularPIDController(base_odom, theta_d_, theta_);
     cmd_vel.linear.x = 0.0;
     cmd_vel.linear.y = 0.0;
     cmd_vel.angular.z = w;
   }
+  // posistion not reached
   else
   {
     v = LinearPIDController(base_odom, b_x_d, b_y_d);
-    w = AngularPIDController(base_odom, g_theta_d, g_theta_);
+    w = AngularPIDController(base_odom, theta_d_, theta_);
     cmd_vel.linear.x = v;
     cmd_vel.linear.y = 0.0;
     cmd_vel.angular.z = w;
   }
 
-  // publish next g_target_ps_ pose
-  g_target_ps_.header.frame_id = "/map";
-  g_target_ps_.header.stamp = ros::Time::now();
-  target_pose_pub_.publish(g_target_ps_);
+  // publish next target_ps_ pose
+  target_ps_.header.frame_id = "map";
+  target_ps_.header.stamp = ros::Time::now();
+  target_pose_pub_.publish(target_ps_);
 
   // publish robot pose
-  g_current_ps_.header.frame_id = "/map";
-  g_current_ps_.header.stamp = ros::Time::now();
-  current_pose_pub_.publish(g_current_ps_);
+  current_ps_.header.frame_id = "map";
+  current_ps_.header.stamp = ros::Time::now();
+  current_pose_pub_.publish(current_ps_);
 
   return true;
 }
@@ -318,7 +325,7 @@ bool PIDPlanner::isGoalReached()
     return false;
   }
 
-  if (!costmap_ros_->getRobotPose(g_current_ps_))
+  if (!costmap_ros_->getRobotPose(current_ps_))
   {
     ROS_ERROR("Could not get robot pose");
     return false;
@@ -332,8 +339,8 @@ bool PIDPlanner::isGoalReached()
 
   if (plan_index_ > global_plan_.size() - 1)
   {
-    if (fabs(g_final_rpy_[2] - g_theta_) < o_precision_ &&
-        getGoalPositionDistance(global_plan_.back(), g_x_, g_y_) < p_precision_)
+    if (fabs(final_rpy_[2] - theta_) < o_precision_ &&
+        getGoalPositionDistance(global_plan_.back(), x_, y_) < p_precision_)
     {
       goal_reached_ = true;
       robotStops();
@@ -346,14 +353,14 @@ bool PIDPlanner::isGoalReached()
 /**
  * @brief Get the distance to the goal
  *
- * @param g_goal_ps global goal PoseStamped
- * @param g_x       global current x
- * @param g_y       global current y
+ * @param goal_ps global goal PoseStamped
+ * @param x       global current x
+ * @param y       global current y
  * @return the distance to the goal
  */
-double PIDPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped& g_goal_ps, double g_x, double g_y)
+double PIDPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped& goal_ps, double x, double y)
 {
-  return hypot(g_x - g_goal_ps.pose.position.x, g_y - g_goal_ps.pose.position.y);
+  return hypot(x - goal_ps.pose.position.x, y - goal_ps.pose.position.y);
 }
 
 /**

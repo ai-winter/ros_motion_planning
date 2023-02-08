@@ -95,12 +95,12 @@ public:
   /**
    * @brief Get the distance to the goal
    *
-   * @param g_goal_ps global goal PoseStamped
-   * @param g_x       global current x
-   * @param g_y       global current y
+   * @param goal_ps global goal PoseStamped
+   * @param x       global current x
+   * @param y       global current y
    * @return the distance to the goal
    */
-  double getGoalPositionDistance(const geometry_msgs::PoseStamped& g_goal_ps, double g_x, double g_y);
+  double getGoalPositionDistance(const geometry_msgs::PoseStamped& goal_ps, double x, double y);
 
   /**
    * @brief Get the Euler Angles from PoseStamped
@@ -142,12 +142,11 @@ private:
   tf2_ros::Buffer* tf_;
   bool initialized_, goal_reached_;
   std::vector<geometry_msgs::PoseStamped> global_plan_;
-  geometry_msgs::PoseStamped g_target_ps_;
-  geometry_msgs::PoseStamped g_current_ps_;
-  int plan_index_, last_plan_index_;
+  geometry_msgs::PoseStamped target_ps_, current_ps_;
+  int plan_index_;
 
-  double g_x_, g_y_, g_theta_;
-  std::vector<double> g_final_rpy_;
+  double x_, y_, theta_;
+  std::vector<double> final_rpy_;
 
   double p_window_, o_window_;
   double p_precision_, o_precision_;
@@ -162,7 +161,6 @@ private:
   std::string base_frame_;
   base_local_planner::OdometryHelperRos* odom_helper_;
   ros::Publisher target_pose_pub_, current_pose_pub_;
-  ros::Subscriber emergency_stop_sub_;
 };
 };  // namespace pid_planner
 
