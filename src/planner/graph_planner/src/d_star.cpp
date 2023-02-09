@@ -243,11 +243,11 @@ void DStar::extractPath(const Node& start, const Node& goal)
 Node DStar::getState(const Node& current)
 {
   Node state(path_[0].x, path_[0].y);
-  int dis_min = std::hypot(state.x - current.x, state.y - current.y);
+  double dis_min = std::hypot(state.x - current.x, state.y - current.y);
   int idx_min = 0;
   for (int i = 1; i < path_.size(); i++)
   {
-    int dis = std::hypot(path_[i].x - current.x, path_[i].y - current.y);
+    double dis = std::hypot(path_[i].x - current.x, path_[i].y - current.y);
     if (dis < dis_min)
     {
       dis_min = dis;
