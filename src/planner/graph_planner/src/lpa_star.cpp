@@ -6,9 +6,9 @@ LPAStar::LPAStar(int nx, int ny, double resolution) : global_planner::GlobalPlan
 {
   curr_global_costmap_ = new unsigned char[ns_];
   last_global_costmap_ = new unsigned char[ns_];
-  goal_.x = goal_.y = INF;
-  factor_ = 0.35;
-  initMap();
+  start_.x = start_.y = goal_.x = goal_.y = INF;
+  factor_ = 0.4;
+  this->initMap();
 }
 
 void LPAStar::initMap()
@@ -38,7 +38,7 @@ void LPAStar::reset()
 
   delete[] map_;
 
-  initMap();
+  this->initMap();
 }
 
 double LPAStar::getH(LNodePtr s)
@@ -48,12 +48,13 @@ double LPAStar::getH(LNodePtr s)
 
 double LPAStar::calculateKey(LNodePtr s)
 {
-  return std::min(s->cost, s->rhs) + this->getH(s);
+  return std::min(s->cost, s->rhs) + 0.9 * this->getH(s);
 }
 
 bool LPAStar::isCollision(LNodePtr n1, LNodePtr n2)
 {
-  return curr_global_costmap_[n1->id] > lethal_cost_ * factor_ || curr_global_costmap_[n2->id] > lethal_cost_ * factor_;
+  return (curr_global_costmap_[n1->id] > lethal_cost_ * factor_) ||
+         (curr_global_costmap_[n2->id] > lethal_cost_ * factor_);
 }
 
 void LPAStar::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
@@ -71,8 +72,8 @@ void LPAStar::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
         continue;
       LNodePtr neigbour_ptr = map_[x_n][y_n];
 
-      // if (this->isCollision(u, neigbour_ptr))
-      //   continue;
+      if (this->isCollision(u, neigbour_ptr))
+        continue;
 
       neighbours.push_back(neigbour_ptr);
     }
@@ -93,12 +94,14 @@ void LPAStar::updateVertex(LNodePtr u)
   {
     std::vector<LNodePtr> neigbours;
     this->getNeighbours(u, neigbours);
+
+    // min_{s\in pred(u)}(g(s) + c(s, u))
+    u->rhs = INF;
     for (LNodePtr s : neigbours)
     {
       if (s->cost + this->getCost(s, u) < u->rhs)
       {
         u->rhs = s->cost + this->getCost(s, u);
-        // u->pid = s->id;
       }
     }
   }
@@ -155,20 +158,13 @@ void LPAStar::computeShortestPath()
 
 void LPAStar::extractPath(const Node& start, const Node& goal)
 {
-  // LNodePtr node_ptr = map_[goal.x][goal.y];
-  // while (node_ptr->x != start.x || node_ptr->y != start.y)
-  // {
-  //   path_.push_back(*node_ptr);
-  //   int x, y;
-  //   this->index2Grid(node_ptr->pid, x, y);
-  //   node_ptr = map_[x][y];
-  // }
-  // std::reverse(path_.begin(), path_.end());
-
   LNodePtr node_ptr = map_[goal.x][goal.y];
+  int count = 0;
   while (node_ptr->x != start.x || node_ptr->y != start.y)
   {
     path_.push_back(*node_ptr);
+
+    // argmin_{s\in pred(u)}
     std::vector<LNodePtr> neigbours;
     this->getNeighbours(node_ptr, neigbours);
     double min_cost = INF;
@@ -182,17 +178,22 @@ void LPAStar::extractPath(const Node& start, const Node& goal)
       }
     }
     node_ptr = next_node_ptr;
+
+    // TODO: it happens to cannnot find a path to start sometimes...
+    // use counter to solve it templately
+    if (count++ > 1000)
+      break;
   }
 }
 
 Node LPAStar::getState(const Node& current)
 {
   Node state(path_[0].x, path_[0].y);
-  int dis_min = std::hypot(state.x - current.x, state.y - current.y);
+  double dis_min = std::hypot(state.x - current.x, state.y - current.y);
   int idx_min = 0;
   for (int i = 1; i < path_.size(); i++)
   {
-    int dis = std::hypot(path_[i].x - current.x, path_[i].y - current.y);
+    double dis = std::hypot(path_[i].x - current.x, path_[i].y - current.y);
     if (dis < dis_min)
     {
       dis_min = dis;
@@ -214,10 +215,12 @@ std::tuple<bool, std::vector<Node>> LPAStar::plan(const unsigned char* costs, co
 
   expand_.clear();
 
-  if (goal_.x != goal.x || goal_.y != goal.y)
+  // new start or goal set
+  if (start_.x != start.x || start_.y != start.y || goal_.x != goal.x || goal_.y != goal.y)
   {
     this->reset();
     goal_ = goal;
+    start_ = start;
 
     start_ptr_ = map_[start.x][start.y];
     goal_ptr_ = map_[goal.x][goal.y];
@@ -235,6 +238,10 @@ std::tuple<bool, std::vector<Node>> LPAStar::plan(const unsigned char* costs, co
 
     return { true, path_ };
   }
+  // NOTE: Unlike D* or D* lite, we cannot use history after the robot moves, 
+  // because we only get the optimal path from original start to goal after environment changed, 
+  // but not the current state to goal. To this end, we have to reset and replan.
+  // Therefore, it is even worse than using A* algorithm.
   else
   {
     Node state = this->getState(start);
@@ -250,9 +257,9 @@ std::tuple<bool, std::vector<Node>> LPAStar::plan(const unsigned char* costs, co
         int idx = this->grid2Index(x_n, y_n);
         if (curr_global_costmap_[idx] != last_global_costmap_[idx])
         {
-          ROS_WARN("(%d, %d) changed!", x_n, y_n);
           LNodePtr u = map_[x_n][y_n];
           std::vector<LNodePtr> neigbours;
+          this->getNeighbours(u, neigbours);
           this->updateVertex(u);
           for (LNodePtr s : neigbours)
           {
@@ -264,7 +271,10 @@ std::tuple<bool, std::vector<Node>> LPAStar::plan(const unsigned char* costs, co
     computeShortestPath();
 
     path_.clear();
-    this->extractPath(state, goal);
+    this->extractPath(start_, goal);
+    state = this->getState(start);
+    std::vector<Node>::iterator state_it = std::find(path_.begin(), path_.end(), state);
+    path_.assign(path_.begin(), state_it);
 
     return { true, path_ };
   }

@@ -8,7 +8,7 @@
 
 #include "global_planner.h"
 
-#define INF 10000  // infinity, a big enough number
+#define INF 10000       // infinity, a big enough number
 #define WINDOW_SIZE 70  // local costmap window size (in grid, 3.5m / 0.05 = 70)
 
 namespace lpa_star_planner
@@ -69,7 +69,7 @@ class LNode : public Node
 public:
   LNode(const int x = 0, const int y = 0, const double cost = INF, const double h_cost = INF, const int id = 0,
         const int pid = -1, const double rhs = INF, const double key = INF)
-    : Node(x, y, cost, h_cost, id, pid)
+    : Node(x, y, cost, h_cost, id, pid), rhs(rhs), key(key)
   {
   }
 
