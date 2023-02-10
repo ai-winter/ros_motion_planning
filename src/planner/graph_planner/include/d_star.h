@@ -152,6 +152,7 @@ class DNode : public Node
 public:
   /**
    * @brief Construct a new DNode object
+   *
    * @param x       X value
    * @param y       Y value
    * @param cost    Cost to get to this node
