@@ -18,6 +18,7 @@
 #include "jump_point_search.h"
 #include "d_star.h"
 #include "lpa_star.h"
+#include "d_star_lite.h"
 
 PLUGINLIB_EXPORT_CLASS(graph_planner::GraphPlanner, nav_core::BaseGlobalPlanner)
 
@@ -112,6 +113,8 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, 
       this->g_planner_ = new d_star_planner::DStar(nx, ny, resolution);
     else if (this->planner_name_ == "lpa_star")
       this->g_planner_ = new lpa_star_planner::LPAStar(nx, ny, resolution);
+    else if (this->planner_name_ == "d_star_lite")
+      this->g_planner_ = new d_star_lite_planner::DStarLite(nx, ny, resolution);
 
     ROS_INFO("Using global graph planner: %s", this->planner_name_.c_str());
 

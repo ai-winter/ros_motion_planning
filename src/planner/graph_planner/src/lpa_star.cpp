@@ -2,6 +2,9 @@
 
 namespace lpa_star_planner
 {
+/**
+ * @brief Class for objects that plan using the LPA* algorithm
+ */
 LPAStar::LPAStar(int nx, int ny, double resolution) : global_planner::GlobalPlanner(nx, ny, resolution)
 {
   curr_global_costmap_ = new unsigned char[ns_];
@@ -11,6 +14,9 @@ LPAStar::LPAStar(int nx, int ny, double resolution) : global_planner::GlobalPlan
   this->initMap();
 }
 
+/**
+ * @brief Init map
+ */
 void LPAStar::initMap()
 {
   map_ = new LNodePtr*[nx_];
@@ -25,6 +31,9 @@ void LPAStar::initMap()
   }
 }
 
+/**
+ * @brief Reset the system
+ */
 void LPAStar::reset()
 {
   open_list_.clear();
@@ -41,22 +50,48 @@ void LPAStar::reset()
   this->initMap();
 }
 
-double LPAStar::getH(LNodePtr s)
+/**
+ * @brief Get heuristics between n1 and n2
+ *
+ * @param n1  LNode pointer of on LNode
+ * @param n2  LNode pointer of the other LNode
+ * @return heuristics between n1 and n2
+ */
+double LPAStar::getH(LNodePtr n1, LNodePtr n2)
 {
-  return std::hypot(s->x - goal_.x, s->y - goal_.y);
+  return std::hypot(n1->x - n2->x, n1->y - n2->y);
 }
 
+/**
+ * @brief Calculate the key of s
+ *
+ * @param s LNode pointer
+ * @return the key value
+ */
 double LPAStar::calculateKey(LNodePtr s)
 {
-  return std::min(s->cost, s->rhs) + 0.9 * this->getH(s);
+  return std::min(s->cost, s->rhs) + 0.9 * this->getH(s, goal_ptr_);
 }
 
+/**
+ * @brief Check if there is collision between n1 and n2
+ *
+ * @param n1  DNode pointer of one DNode
+ * @param n2  DNode pointer of the other DNode
+ * @return true if collision, else false
+ */
 bool LPAStar::isCollision(LNodePtr n1, LNodePtr n2)
 {
   return (curr_global_costmap_[n1->id] > lethal_cost_ * factor_) ||
          (curr_global_costmap_[n2->id] > lethal_cost_ * factor_);
 }
 
+/**
+ * @brief Get neighbour LNodePtrs of nodePtr
+ *
+ * @param node_ptr    DNode to expand
+ * @param neighbours  neigbour LNodePtrs in vector
+ */
 void LPAStar::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
 {
   int x = u->x, y = u->y;
@@ -80,6 +115,13 @@ void LPAStar::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
   }
 }
 
+/**
+ * @brief Get the cost between n1 and n2, return INF if collision
+ *
+ * @param n1 LNode pointer of one LNode
+ * @param n2 LNode pointer of the other LNode
+ * @return cost between n1 and n2
+ */
 double LPAStar::getCost(LNodePtr n1, LNodePtr n2)
 {
   if (this->isCollision(n1, n2))
@@ -87,6 +129,11 @@ double LPAStar::getCost(LNodePtr n1, LNodePtr n2)
   return std::hypot(n1->x - n2->x, n1->y - n2->y);
 }
 
+/**
+ * @brief Update vertex u
+ *
+ * @param u LNode pointer to update
+ */
 void LPAStar::updateVertex(LNodePtr u)
 {
   // u != start
@@ -121,6 +168,9 @@ void LPAStar::updateVertex(LNodePtr u)
   }
 }
 
+/**
+ * @brief Main process of LPA*
+ */
 void LPAStar::computeShortestPath()
 {
   while (1)
@@ -156,6 +206,12 @@ void LPAStar::computeShortestPath()
   }
 }
 
+/**
+ * @brief Extract path for map
+ *
+ * @param start start node
+ * @param goal  goal node
+ */
 void LPAStar::extractPath(const Node& start, const Node& goal)
 {
   LNodePtr node_ptr = map_[goal.x][goal.y];
@@ -186,6 +242,12 @@ void LPAStar::extractPath(const Node& start, const Node& goal)
   }
 }
 
+/**
+ * @brief Get the closest Node of the path to current state
+ *
+ * @param current current state
+ * @return the closest Node
+ */
 Node LPAStar::getState(const Node& current)
 {
   Node state(path_[0].x, path_[0].y);
@@ -206,6 +268,14 @@ Node LPAStar::getState(const Node& current)
   return state;
 }
 
+/**
+ * @brief LPA* implementation
+ * @param costs   costmap
+ * @param start   start node
+ * @param goal    goal node
+ * @param expand  containing the node been search during the process
+ * @return tuple contatining a bool as to whether a path was found, and the path
+ */
 std::tuple<bool, std::vector<Node>> LPAStar::plan(const unsigned char* costs, const Node& start, const Node& goal,
                                                   std::vector<Node>& expand)
 {
@@ -219,17 +289,16 @@ std::tuple<bool, std::vector<Node>> LPAStar::plan(const unsigned char* costs, co
   if (start_.x != start.x || start_.y != start.y || goal_.x != goal.x || goal_.y != goal.y)
   {
     this->reset();
-    goal_ = goal;
     start_ = start;
-
+    goal_ = goal;
     start_ptr_ = map_[start.x][start.y];
     goal_ptr_ = map_[goal.x][goal.y];
 
-    start_ptr_->rhs = 0;
+    start_ptr_->rhs = 0.0;
     start_ptr_->key = this->calculateKey(start_ptr_);
     start_ptr_->open_it = open_list_.insert(std::make_pair(start_ptr_->key, start_ptr_));
 
-    computeShortestPath();
+    this->computeShortestPath();
 
     path_.clear();
     this->extractPath(start, goal);
@@ -238,8 +307,8 @@ std::tuple<bool, std::vector<Node>> LPAStar::plan(const unsigned char* costs, co
 
     return { true, path_ };
   }
-  // NOTE: Unlike D* or D* lite, we cannot use history after the robot moves, 
-  // because we only get the optimal path from original start to goal after environment changed, 
+  // NOTE: Unlike D* or D* lite, we cannot use history after the robot moves,
+  // because we only get the optimal path from original start to goal after environment changed,
   // but not the current state to goal. To this end, we have to reset and replan.
   // Therefore, it is even worse than using A* algorithm.
   else
@@ -268,7 +337,7 @@ std::tuple<bool, std::vector<Node>> LPAStar::plan(const unsigned char* costs, co
         }
       }
     }
-    computeShortestPath();
+    this->computeShortestPath();
 
     path_.clear();
     this->extractPath(start_, goal);
