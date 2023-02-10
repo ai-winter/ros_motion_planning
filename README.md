@@ -12,10 +12,34 @@ This repository provides the implement of common `Motion Planning` algorithm, we
 
 The theory analysis can be found at [motion-planning](https://blog.csdn.net/frigidwinter/category_11410243.html)
  
-We also provide Python version at [https://github.com/ai-winter/python_motion_planning](https://github.com/ai-winter/ros_motion_planning) and Matlab Version at [https://github.com/ai-winter/matlab_motion_planning](https://github.com/ai-winter/matlab_motion_planning)
+We also provide Python version at [https://github.com/ai-winter/python_motion_planning](https://github.com/ai-winter/python_motion_planning) and Matlab Version at [https://github.com/ai-winter/matlab_motion_planning](https://github.com/ai-winter/matlab_motion_planning)
 
 
 # Quick Start
+The file structure is shown below
+
+```
+ros_motion_planner
+├─gif                     # Animation
+└─src
+    ├─planner
+    │  ├─global_utils     # global planner tools
+    │  ├─graph_planner    # global algorithm based on graph searching
+    │  ├─sample_planner   # global algorithm based on sample searching
+    │  └─local_planner    # local algorithm
+    ├─sim_env             # simulation environment
+    │  ├─config
+    │  ├─launch
+    │  ├─maps
+    │  ├─meshes
+    │  ├─models
+    │  ├─rviz
+    │  ├─scripts
+    │  ├─urdf
+    │  └─worlds
+    ├─third_party
+    └─user_config         # user configure file
+```
 
 To start simulation, compile using `catkin` first. For example, we assume that local workspace name is `~/sim_platform`
 ```sh
