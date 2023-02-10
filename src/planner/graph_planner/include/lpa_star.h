@@ -16,33 +16,110 @@ namespace lpa_star_planner
 class LNode;
 typedef LNode* LNodePtr;
 
+/**
+ * @brief Class for objects that plan using the LPA* algorithm
+ */
 class LPAStar : public global_planner::GlobalPlanner
 {
 public:
+  /**
+   * @brief Construct a new LPAStar object
+   *
+   * @param nx          pixel number in costmap x direction
+   * @param ny          pixel number in costmap y direction
+   * @param resolution  costmap resolution
+   */
   LPAStar(int nx, int ny, double resolution);
 
+  /**
+   * @brief Init map
+   */
   void initMap();
 
+  /**
+   * @brief Reset the system
+   */
   void reset();
 
-  double getH(LNodePtr s);
+  /**
+   * @brief Get heuristics between n1 and n2
+   *
+   * @param n1  LNode pointer of on LNode
+   * @param n2  LNode pointer of the other LNode
+   * @return heuristics between n1 and n2
+   */
+  double getH(LNodePtr n1, LNodePtr n2);
 
+  /**
+   * @brief Calculate the key of s
+   *
+   * @param s LNode pointer
+   * @return the key value
+   */
   double calculateKey(LNodePtr s);
 
+  /**
+   * @brief Check if there is collision between n1 and n2
+   *
+   * @param n1  DNode pointer of one DNode
+   * @param n2  DNode pointer of the other DNode
+   * @return true if collision, else false
+   */
   bool isCollision(LNodePtr n1, LNodePtr n2);
 
+  /**
+   * @brief Get neighbour LNodePtrs of nodePtr
+   *
+   * @param node_ptr    DNode to expand
+   * @param neighbours  neigbour LNodePtrs in vector
+   */
   void getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours);
 
+  /**
+   * @brief Get the cost between n1 and n2, return INF if collision
+   *
+   * @param n1 LNode pointer of one LNode
+   * @param n2 LNode pointer of the other LNode
+   * @return cost between n1 and n2
+   */
   double getCost(LNodePtr n1, LNodePtr n2);
 
+  /**
+   * @brief Update vertex u
+   * 
+   * @param u LNode pointer to update 
+   */
   void updateVertex(LNodePtr u);
 
-  void extractPath(const Node& start, const Node& goal);
-
+  /**
+   * @brief Main process of LPA*
+   */
   void computeShortestPath();
 
+  /**
+   * @brief Extract path for map
+   *
+   * @param start start node
+   * @param goal  goal node
+   */
+  void extractPath(const Node& start, const Node& goal);
+
+  /**
+   * @brief Get the closest Node of the path to current state
+   *
+   * @param current current state
+   * @return the closest Node
+   */
   Node getState(const Node& current);
 
+  /**
+   * @brief LPA* implementation
+   * @param costs   costmap
+   * @param start   start node
+   * @param goal    goal node
+   * @param expand  containing the node been search during the process
+   * @return tuple contatining a bool as to whether a path was found, and the path
+   */
   std::tuple<bool, std::vector<Node>> plan(const unsigned char* costs, const Node& start, const Node& goal,
                                            std::vector<Node>& expand);
 
@@ -67,6 +144,18 @@ public:
 class LNode : public Node
 {
 public:
+  /**
+   * @brief Construct a new LNode object
+   * 
+   * @param x       X value
+   * @param y       Y value
+   * @param cost    Cost to get to this node
+   * @param h_cost  Heuritic cost of this node
+   * @param id      Node's id
+   * @param pid     Node's parent's id
+   * @param rhs     Node's right hand side
+   * @param key     Node's key value
+   */
   LNode(const int x = 0, const int y = 0, const double cost = INF, const double h_cost = INF, const int id = 0,
         const int pid = -1, const double rhs = INF, const double key = INF)
     : Node(x, y, cost, h_cost, id, pid), rhs(rhs), key(key)

@@ -34,7 +34,7 @@ add_library(${PROJECT_NAME}
   src/graph_planner.cpp
   src/d_star.cpp
   src/lpa_star.cpp
-  # src/d_star_lite.cpp
+  src/d_star_lite.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
