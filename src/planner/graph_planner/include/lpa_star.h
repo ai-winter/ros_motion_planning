@@ -86,8 +86,8 @@ public:
 
   /**
    * @brief Update vertex u
-   * 
-   * @param u LNode pointer to update 
+   *
+   * @param u LNode pointer to update
    */
   void updateVertex(LNodePtr u);
 
@@ -120,8 +120,8 @@ public:
    * @param expand  containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
-  std::tuple<bool, std::vector<Node>> plan(const unsigned char* costs, const Node& start, const Node& goal,
-                                           std::vector<Node>& expand);
+  bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+            std::vector<Node>& expand);
 
 public:
   // global costmap
@@ -146,7 +146,7 @@ class LNode : public Node
 public:
   /**
    * @brief Construct a new LNode object
-   * 
+   *
    * @param x       X value
    * @param y       Y value
    * @param cost    Cost to get to this node

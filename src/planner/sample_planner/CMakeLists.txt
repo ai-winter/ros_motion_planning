@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(graph_planner)
+project(sample_planner)
 
 find_package(catkin REQUIRED COMPONENTS
   angles
@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   tf2_geometry_msgs
   tf2_ros
+  visualization_msgs
   global_utils
 )
 
@@ -29,12 +30,11 @@ include_directories(
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-  src/graph_planner.cpp
-  src/a_star.cpp
-  src/jump_point_search.cpp
-  src/d_star.cpp
-  src/lpa_star.cpp
-  src/d_star_lite.cpp
+  src/sample_planner.cpp
+  src/rrt.cpp
+  src/rrt_star.cpp
+  src/rrt_connect.cpp
+  src/informed_rrt.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
