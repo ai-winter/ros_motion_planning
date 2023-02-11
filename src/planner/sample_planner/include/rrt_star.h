@@ -43,8 +43,8 @@ public:
    * @param expand    containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
-  std::tuple<bool, std::vector<Node>> plan(const unsigned char* costs, const Node& start, const Node& goal,
-                                           std::vector<Node>& expand);
+  bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+            std::vector<Node>& expand);
 
 protected:
   /**

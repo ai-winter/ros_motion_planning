@@ -15,86 +15,138 @@
 
 #include "utils.h"
 
-// constants
-constexpr int spacing_for_grid = 10;
+/**
+ * @brief Constructor for Node class
+ *
+ * @param x       x value
+ * @param y       y value
+ * @param g       g value, cost to get to this node
+ * @param h       h value, heuritic cost of this node
+ * @param id      node's id
+ * @param pid     node's parent's id
+ */
+Node::Node(int x, int y, double g, double h, int id, int pid) : x_(x), y_(y), g_(g), h_(h), id_(id), pid_(pid)
+{
+}
 
-/******************************** Node Class *************************************/
 /**
  * @brief Overloading operator + for Node class
- * @param p node
- * @return Node with current node's and input node p's values added
+ *
+ * @param n another Node
+ * @return  Node with current node's and input node n's values added
  */
-Node Node::operator+(const Node& p) const
+Node Node::operator+(const Node& n) const
 {
-  Node tmp;
-  tmp.x = this->x + p.x;
-  tmp.y = this->y + p.y;
-  tmp.cost = this->cost + p.cost;
-  return tmp;
+  Node result;
+  result.x_ = this->x_ + n.x_;
+  result.y_ = this->y_ + n.y_;
+  result.g_ = this->g_ + n.g_;
+
+  return result;
 }
 
 /**
  * @brief Overloading operator - for Node class
- * @param p node
- * @return Node with current node's and input node p's values subtracted
+ *
+ * @param n another Node
+ * @return  Node with current node's and input node n's values subtracted
  */
-Node Node::operator-(const Node& p) const
+Node Node::operator-(const Node& n) const
 {
-  Node tmp;
-  tmp.x = this->x - p.x;
-  tmp.y = this->y - p.y;
-  return tmp;
+  Node result;
+  result.x_ = this->x_ - n.x_;
+  result.y_ = this->y_ - n.y_;
+
+  return result;
 }
 
 /**
  * @brief Overloading operator == for Node class
- * @param p node
- * @return bool whether current node equals input node
+ *
+ * @param n another Node
+ * @return  true if current node equals node n, else false
  */
-bool Node::operator==(const Node& p) const
+bool Node::operator==(const Node& n) const
 {
-  return this->x == p.x && this->y == p.y;
+  return this->x_ == n.x_ && this->y_ == n.y_;
 }
 
 /**
  * @brief Overloading operator != for Node class
- * @param p node
- * @return bool whether current node equals input node
+ *
+ * @param n another Node
+ * @return  true if current node equals node n, else false
  */
-bool Node::operator!=(const Node& p) const
+bool Node::operator!=(const Node& n) const
 {
-  return !this->operator==(p);
+  return !this->operator==(n);
 }
-/*********************************************************************************/
 
-/***************************** Node Hash Class ***********************************/
+/**
+ * @brief Construct a new Plane Node object
+ *
+ * @param x   x value
+ * @param y   y value
+ * @param g   g value, cost to get to this node
+ * @param h   h value, heuritic cost of this node
+ * @param id  node's id
+ * @param pid node's parent's id
+ */
+PlaneNode::PlaneNode(int x, int y, double g, double h, int id, int pid) : Node(x, y, g, h, id, pid)
+{
+  (*this)[0] = x;
+  (*this)[1] = y;
+}
+
+/**
+ * @brief Construct a new Plane Node object
+ *
+ * @param n another Node
+ */
+PlaneNode::PlaneNode(const Node& n) : PlaneNode(n.x_, n.y_, n.g_, n.h_, n.id_, n.pid_)
+{
+}
+
 /**
  * @brief Overlaod () operator to calculate the hash of a Node
+ *
  * @param n Node for which the hash is to be calculated
- * @return hash value
- * @details the hash returned is the node id
+ * @return  hash value, node id
  */
 size_t NodeIdAsHash::operator()(const Node& n) const
 {
-  return n.id;
+  return n.id_;
 }
-/*********************************************************************************/
 
-bool compare_cost::operator()(const Node& p1, const Node& p2) const
+/**
+ * @brief Compare cost between 2 nodes
+ *
+ * @param n1  one Node
+ * @param n2  another Node
+ * @return  true if the cost to get to n1 is greater than n2, else false
+ */
+bool compare_cost::operator()(const Node& n1, const Node& n2) const
 {
   // Can modify this to allow tie breaks based on heuristic cost if required
-  return p1.cost + p1.h_cost > p2.cost + p2.h_cost ||
-         (p1.cost + p1.h_cost == p2.cost + p2.h_cost && p1.h_cost > p2.h_cost);
-}
-bool compare_coordinates::operator()(const Node& p1, const Node& p2) const
-{
-  return p1.x == p2.x && p1.y == p2.y;
+  return (n1.g_ + n1.h_ > n2.g_ + n2.h_) || ((n1.g_ + n1.h_ == n2.g_ + n2.h_) && (n1.h_ > n2.h_));
 }
 
-/*************************** Some useful functions ********************************/
 /**
- * @brief Get permissible motion primatives for the bot
- * @return vector of permissible motions
+ * @brief Compare coordinates between 2 nodes
+ *
+ * @param n1  one Node
+ * @param n2  another Node
+ * @return  true if n1 equals n2, else false
+ */
+bool compare_coordinates::operator()(const Node& n1, const Node& n2) const
+{
+  return (n1.x_ == n2.x_) && (n1.y_ == n2.y_);
+}
+
+/**
+ * @brief Get permissible motion
+ *
+ * @return  Node vector of permissible motions
  */
 std::vector<Node> getMotion()
 {
@@ -105,12 +157,12 @@ std::vector<Node> getMotion()
 
 /**
  * @brief compare coordinates between 2 nodes
- * @param p1 node 1
- * @param p2 node 2
- * @return whether the two nodes are for the same coordinates
+ *
+ * @param n1  one Node
+ * @param n2  another Node
+ * @return  true if n1 equals n2, else false
  */
-bool compareCoordinates(const Node& p1, const Node& p2)
+bool compareCoordinates(const Node& n1, const Node& n2)
 {
-  return p1.x == p2.x && p1.y == p2.y;
+  return n1.x_ == n2.x_ && n1.y_ == n2.y_;
 }
-/*********************************************************************************/

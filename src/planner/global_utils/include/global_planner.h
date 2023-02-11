@@ -22,98 +22,120 @@
 
 #include "utils.h"
 
-/**
- *  Abstract class that is inherited by concerete implementaions of global planner
- *  classes. The Plan function is a pure virtual funciton that is overloaded
- */
 namespace global_planner
 {
+/**
+ * @brief Abstract class that is inherited by concerete implementaions of global planner classes.
+ *        The Plan function is a pure virtual funciton that is overloaded
+ */
 class GlobalPlanner
 {
 public:
   /**
-   * @brief  Constructor
-   * @param   nx          pixel number in costmap x direction
-   * @param   ny          pixel number in costmap y direction
-   * @param   resolution  costmap resolution
+   * @brief Construct a new Global Planner object
+   *
+   * @param nx          pixel number in costmap x direction
+   * @param ny          pixel number in costmap y direction
+   * @param resolution  costmap resolution
    */
-  GlobalPlanner(int nx, int ny, double resolution)
-    : lethal_cost_(LETHAL_COST), neutral_cost_(NEUTRAL_COST), factor_(OBSTACLE_FACTOR)
-  {
-    this->setSize(nx, ny);
-    this->setResolution(resolution);
-  }
+  GlobalPlanner(int nx, int ny, double resolution);
 
   /**
-   * @brief Virtual destructor
-   * @return No return value
-   * @details default
+   * @brief Destroy the Global Planner object
    */
   virtual ~GlobalPlanner() = default;
 
+  // /**
+  //  * @brief Pure virtual function that is overloadde by planner implementations
+  //  * @param gloal_costmap global costmap
+  //  * @param start         start node
+  //  * @param goal          goal node
+  //  * @param expand        containing the node been search during the process
+  //  * @return tuple contatining a bool as to whether a path was found, and the path
+  //  */
+  // virtual std::tuple<bool, std::vector<Node>> plan(const unsigned char* gloal_costmap, const Node& start,
+  //                                                  const Node& goal, std::vector<Node>& expand) = 0;
+
   /**
    * @brief Pure virtual function that is overloadde by planner implementations
-   * @param costs     costmap
-   * @param start     start node
-   * @param goal      goal node
-   * @param expand    containing the node been search during the process
-   * @return tuple contatining a bool as to whether a path was found, and the path
+   *
+   * @param gloal_costmap global costmap
+   * @param start         start node
+   * @param goal          goal node
+   * @param path          optimal path consists of Node
+   * @param expand        containing the node been search during the process
+   * @return  true if path found, else false
    */
-  virtual std::tuple<bool, std::vector<Node>> plan(const unsigned char* costs, const Node& start, const Node& goal,
-                                                   std::vector<Node>& expand) = 0;
+  virtual bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+                    std::vector<Node>& expand) = 0;
 
-public:
   /**
-   * @brief  set or reset costmap size
-   * @param   nx  pixel number in costmap x direction
-   * @param   ny  pixel number in costmap y direction
+   * @brief Set or reset costmap size
+   *
+   * @param nx  pixel number in costmap x direction
+   * @param ny  pixel number in costmap y direction
    */
   void setSize(int nx, int ny);
+
   /**
-   * @brief  set or reset costmap resolution
-   * @param resolution costmap resolution
+   * @brief Set or reset costmap resolution
+   *
+   * @param resolution  costmap resolution
    */
   void setResolution(double resolution);
+
   /**
-   * @brief  set or reset lethal cost
+   * @brief Set or reset lethal cost
+   *
    * @param lethal_cost lethal cost
    */
   void setLethalCost(unsigned char lethal_cost);
+
   /**
-   * @brief  set or reset neutral cost
-   * @param neutral_cost neutral cost
+   * @brief Set or reset neutral cost
+   *
+   * @param neutral_cost  neutral cost
    */
   void setNeutralCost(unsigned char neutral_cost);
+
   /**
-   * @brief  set or reset obstacle factor
-   * @param factor obstacle factor
+   * @brief Set or reset obstacle factor
+   *
+   * @param factor  obstacle factor
    */
   void setFactor(double factor);
+
   /**
-   * @brief  transform from grid index(i) to grid map(x, y)
+   * @brief Transform from grid map(x, y) to grid index(i)
+   *
    * @param x grid map x
    * @param y grid map y
-   * @return index grid index
+   * @return  index
    */
   int grid2Index(int x, int y);
+
   /**
-   * @brief  transform from grid map(x, y) to grid index(i)
+   * @brief Transform from grid index(i) to grid map(x, y)
+   *
+   * @param i grid index i
    * @param x grid map x
    * @param y grid map y
-   * @param y grid map y
-   * @return index grid index
    */
-  void index2Grid(int index, int& x, int& y);
+  void index2Grid(int i, int& x, int& y);
+
   /**
-   * @brief  transform from grid map(x, y) to costmap(x, y)
-   * @param gx grid map x
-   * @param gy grid map y
-   * @param mx costmap x
-   * @param my costmap y
+   * @brief Transform from grid map(x, y) to costmap(x, y)
+   *
+   * @param gx  grid map x
+   * @param gy  grid map y
+   * @param mx  costmap x
+   * @param my  costmap y
    */
   void map2Grid(double mx, double my, int& gx, int& gy);
+
   /**
-   * @brief  transform from  costmap(x, y) to grid map(x, y)
+   * @brief Transform from costmap(x, y) to grid map(x, y)
+   *
    * @param gx grid map x
    * @param gy grid map y
    * @param mx costmap x
@@ -122,32 +144,26 @@ public:
   void grid2Map(int gx, int gy, double& mx, double& my);
 
 protected:
-  // lethal cost
-  unsigned char lethal_cost_;
-  // neutral cost
-  unsigned char neutral_cost_;
-  // pixel number in costmap x direction
-  int nx_;
-  // pixel number in costmap y direction
-  int ny_;
-  // total pixel number
-  int ns_;
+  // lethal cost and neutral cost
+  unsigned char lethal_cost_, neutral_cost_;
+  // pixel number in costmap x, y and total
+  int nx_, ny_, ns_;
   // costmap resolution
   double resolution_;
-  // obstacle factor
+  // obstacle factor(greater means obstacles)
   double factor_;
 
   /**
-   * @brief convert closed list to path
-   * @param closed_list   closed list
-   * @param start         start node
-   * @param goal          goal node
-   * @return vector containing path nodes
+   * @brief Convert closed list to path
+   *
+   * @param closed_list closed list
+   * @param start       start node
+   * @param goal        goal node
+   * @return  vector containing path nodes
    */
   std::vector<Node> _convertClosedListToPath(std::unordered_set<Node, NodeIdAsHash, compare_coordinates>& closed_list,
                                              const Node& start, const Node& goal);
-  // std::vector<Node> _convertClosedListToPath(std::vector<Node>& closed_list,
-  //     const Node& start, const Node& goal);
+  // std::vector<Node> _convertClosedListToPath(std::vector<Node>& closed_list, const Node& start, const Node& goal);
 };
 }  // namespace global_planner
 #endif  // PLANNER_HPP

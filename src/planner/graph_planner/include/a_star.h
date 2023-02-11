@@ -28,25 +28,28 @@ class AStar : public global_planner::GlobalPlanner
 {
 public:
   /**
-   * @brief  Constructor
-   * @param   nx          pixel number in costmap x direction
-   * @param   ny          pixel number in costmap y direction
-   * @param   resolution  costmap resolution
-   * @param   dijkstra    using diksktra implementation
-   * @param   gbfs        using gbfs implementation
+   * @brief Construct a new AStar object
+   *
+   * @param nx          pixel number in costmap x direction
+   * @param ny          pixel number in costmap y direction
+   * @param resolution  costmap resolution
+   * @param dijkstra    using diksktra implementation
+   * @param gbfs        using gbfs implementation
    */
   AStar(int nx, int ny, double resolution, bool dijkstra = false, bool gbfs = false);
 
   /**
    * @brief A* implementation
-   * @param costs     costmap
-   * @param start     start node
-   * @param goal      goal node
-   * @param expand    containing the node been search during the process
-   * @return tuple contatining a bool as to whether a path was found, and the path
+   *
+   * @param gloal_costmap global costmap
+   * @param start         start node
+   * @param goal          goal node
+   * @param path          optimal path consists of Node
+   * @param expand        containing the node been search during the process
+   * @return  true if path found, else false
    */
-  std::tuple<bool, std::vector<Node>> plan(const unsigned char* costs, const Node& start, const Node& goal,
-                                           std::vector<Node>& expand);
+  bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+            std::vector<Node>& expand);
 
 private:
   // using diksktra

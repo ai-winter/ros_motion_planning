@@ -30,11 +30,11 @@ include_directories(
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
+  src/sample_planner.cpp
   src/rrt.cpp
   src/rrt_star.cpp
   src/rrt_connect.cpp
   src/informed_rrt.cpp
-  src/sample_planner.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

@@ -31,20 +31,20 @@ RRTConnect::RRTConnect(int nx, int ny, double resolution, int sample_num, double
 
 /**
  * @brief RRT-Connect implementation
- * @param costs     costmap
+ * @param gloal_costmap     costmap
  * @param start     start node
  * @param goal      goal node
  * @param expand    containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-std::tuple<bool, std::vector<Node>> RRTConnect::plan(const unsigned char* costs, const Node& start, const Node& goal,
-                                                     std::vector<Node>& expand)
+bool RRTConnect::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+                      std::vector<Node>& expand)
 {
   this->sample_list_f_.clear();
   this->sample_list_b_.clear();
   // copy
   this->start_ = start, this->goal_ = goal;
-  this->costs_ = costs;
+  this->costs_ = gloal_costmap;
   this->sample_list_f_.insert(start);
   this->sample_list_b_.insert(goal);
   expand.push_back(start);
@@ -58,7 +58,7 @@ std::tuple<bool, std::vector<Node>> RRTConnect::plan(const unsigned char* costs,
     Node sample_node = this->_generateRandomNode();
 
     // obstacle
-    if (costs[sample_node.id] >= this->lethal_cost_ * this->factor_)
+    if (gloal_costmap[sample_node.id_] >= this->lethal_cost_ * this->factor_)
       continue;
 
     // visited
@@ -67,7 +67,7 @@ std::tuple<bool, std::vector<Node>> RRTConnect::plan(const unsigned char* costs,
 
     // regular the sample node
     Node new_node = this->_findNearestPoint(this->sample_list_f_, sample_node);
-    if (new_node.id == -1)
+    if (new_node.id_ == -1)
       continue;
     else
     {
@@ -75,7 +75,7 @@ std::tuple<bool, std::vector<Node>> RRTConnect::plan(const unsigned char* costs,
       expand.push_back(new_node);
       // backward exploring
       Node new_node_b = this->_findNearestPoint(this->sample_list_b_, new_node);
-      if (new_node_b.id != -1)
+      if (new_node_b.id_ != -1)
       {
         this->sample_list_b_.insert(new_node_b);
         expand.push_back(new_node_b);
@@ -85,11 +85,11 @@ std::tuple<bool, std::vector<Node>> RRTConnect::plan(const unsigned char* costs,
           double dist = std::min(this->max_dist_, this->_dist(new_node, new_node_b));
           double theta = this->_angle(new_node_b, new_node);
           Node new_node_b2;
-          new_node_b2.x = new_node_b.x + (int)(dist * cos(theta));
-          new_node_b2.y = new_node_b.y + (int)(dist * sin(theta));
-          new_node_b2.id = this->grid2Index(new_node_b2.x, new_node_b2.y);
-          new_node_b2.pid = new_node_b.id;
-          new_node_b2.cost = dist + new_node_b.cost;
+          new_node_b2.x_ = new_node_b.x_ + (int)(dist * cos(theta));
+          new_node_b2.y_ = new_node_b.y_ + (int)(dist * sin(theta));
+          new_node_b2.id_ = this->grid2Index(new_node_b2.x_, new_node_b2.y_);
+          new_node_b2.pid_ = new_node_b.id_;
+          new_node_b2.g_ = dist + new_node_b.g_;
 
           if (!this->_isAnyObstacleInPath(new_node_b, new_node_b2))
           {
@@ -102,7 +102,10 @@ std::tuple<bool, std::vector<Node>> RRTConnect::plan(const unsigned char* costs,
 
           // connected -> goal found
           if (new_node_b == new_node)
-            return { true, this->_convertClosedListToPath(new_node_b) };
+          {
+            path = this->_convertClosedListToPath(new_node_b);
+            return true;
+          }
         }
       }
     }
@@ -113,7 +116,7 @@ std::tuple<bool, std::vector<Node>> RRTConnect::plan(const unsigned char* costs,
 
     iteration++;
   }
-  return { false, {} };
+  return false;
 }
 
 /**
@@ -134,7 +137,7 @@ std::vector<Node> RRTConnect::_convertClosedListToPath(const Node& boundary)
   while (current != this->goal_)
   {
     path_b.push_back(current);
-    auto it = this->sample_list_b_.find(Node(current.pid % this->nx_, current.pid / this->nx_, 0, 0, current.pid));
+    auto it = this->sample_list_b_.find(Node(current.pid_ % this->nx_, current.pid_ / this->nx_, 0, 0, current.pid_));
     if (it != this->sample_list_b_.end())
     {
       current = *it;
@@ -151,7 +154,7 @@ std::vector<Node> RRTConnect::_convertClosedListToPath(const Node& boundary)
   current = *this->sample_list_f_.find(boundary);
   while (current != this->start_)
   {
-    auto it = this->sample_list_f_.find(Node(current.pid % this->nx_, current.pid / this->nx_, 0, 0, current.pid));
+    auto it = this->sample_list_f_.find(Node(current.pid_ % this->nx_, current.pid_ / this->nx_, 0, 0, current.pid_));
     if (it != this->sample_list_f_.end())
     {
       current = *it;

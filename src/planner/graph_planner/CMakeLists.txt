@@ -29,9 +29,9 @@ include_directories(
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
+  src/graph_planner.cpp
   src/a_star.cpp
   src/jump_point_search.cpp
-  src/graph_planner.cpp
   src/d_star.cpp
   src/lpa_star.cpp
   src/d_star_lite.cpp

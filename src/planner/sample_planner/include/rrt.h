@@ -37,16 +37,19 @@ public:
    * @param   max_dist    max distance between sample points
    */
   RRT(int nx, int ny, double resolution, int sample_num, double max_dist);
+
   /**
    * @brief RRT implementation
-   * @param costs     costmap
-   * @param start     start node
-   * @param goal      goal node
-   * @param expand    containing the node been search during the process
-   * @return tuple contatining a bool as to whether a path was found, and the path
+   *
+   * @param gloal_costmap global costmap
+   * @param start         start node
+   * @param goal          goal node
+   * @param path          optimal path consists of Node
+   * @param expand        containing the node been search during the process
+   * @return  true if path found, else false
    */
-  std::tuple<bool, std::vector<Node>> plan(const unsigned char* costs, const Node& start, const Node& goal,
-                                           std::vector<Node>& expand);
+  bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+            std::vector<Node>& expand);
 
 protected:
   /**

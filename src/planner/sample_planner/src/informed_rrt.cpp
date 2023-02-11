@@ -32,14 +32,14 @@ InformedRRT::InformedRRT(int nx, int ny, double resolution, int sample_num, doub
 
 /**
  * @brief Informed RRT* implementation
- * @param costs     costmap
+ * @param gloal_costmap     costmap
  * @param start     start node
  * @param goal      goal node
  * @param expand    containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-std::tuple<bool, std::vector<Node>> InformedRRT::plan(const unsigned char* costs, const Node& start, const Node& goal,
-                                                      std::vector<Node>& expand)
+bool InformedRRT::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+                       std::vector<Node>& expand)
 {
   // initialization
   this->c_best_ = std::numeric_limits<double>::max();
@@ -49,7 +49,7 @@ std::tuple<bool, std::vector<Node>> InformedRRT::plan(const unsigned char* costs
 
   // copy
   this->start_ = start, this->goal_ = goal;
-  this->costs_ = costs;
+  this->costs_ = gloal_costmap;
   this->sample_list_.insert(start);
   expand.push_back(start);
 
@@ -63,7 +63,7 @@ std::tuple<bool, std::vector<Node>> InformedRRT::plan(const unsigned char* costs
     Node sample_node = this->_generateRandomNode();
 
     // obstacle
-    if (costs[sample_node.id] >= this->lethal_cost_ * this->factor_)
+    if (gloal_costmap[sample_node.id_] >= this->lethal_cost_ * this->factor_)
       continue;
 
     // visited
@@ -72,7 +72,7 @@ std::tuple<bool, std::vector<Node>> InformedRRT::plan(const unsigned char* costs
 
     // regular the sample node
     Node new_node = this->_findNearestPoint(this->sample_list_, sample_node);
-    if (new_node.id == -1)
+    if (new_node.id_ == -1)
       continue;
     else
     {
@@ -84,10 +84,10 @@ std::tuple<bool, std::vector<Node>> InformedRRT::plan(const unsigned char* costs
     auto dist = this->_dist(new_node, this->goal_);
     if (dist <= this->max_dist_ && !_isAnyObstacleInPath(new_node, this->goal_))
     {
-      double cost = dist + new_node.cost;
+      double cost = dist + new_node.g_;
       if (cost < this->c_best_)
       {
-        best_parent = new_node.id;
+        best_parent = new_node.id_;
         this->c_best_ = cost;
       }
     }
@@ -95,12 +95,13 @@ std::tuple<bool, std::vector<Node>> InformedRRT::plan(const unsigned char* costs
 
   if (best_parent != -1)
   {
-    Node goal_(this->goal_.x, this->goal_.y, this->c_best_, 0, this->grid2Index(this->goal_.x, this->goal_.y),
+    Node goal_(this->goal_.x_, this->goal_.y_, this->c_best_, 0, this->grid2Index(this->goal_.x_, this->goal_.y_),
                best_parent);
     this->sample_list_.insert(goal_);
-    return { true, this->_convertClosedListToPath(this->sample_list_, start, goal) };
+    path =  this->_convertClosedListToPath(this->sample_list_, start, goal);
+    return true;
   }
-  return { false, {} };
+  return false;
 }
 
 /**
@@ -128,7 +129,7 @@ Node InformedRRT::_generateRandomNode()
       }
       // transform to ellipse
       Node temp = this->_transform(x, y);
-      if (temp.id < this->ns_ - 1)
+      if (temp.id_ < this->ns_ - 1)
         return temp;
     }
   }
@@ -145,8 +146,8 @@ Node InformedRRT::_generateRandomNode()
 Node InformedRRT::_transform(double x, double y)
 {
   // center
-  double center_x = (this->start_.x + this->goal_.x) / 2;
-  double center_y = (this->start_.y + this->goal_.y) / 2;
+  double center_x = (this->start_.x_ + this->goal_.x_) / 2;
+  double center_y = (this->start_.y_ + this->goal_.y_) / 2;
 
   // rotation
   double theta = -this->_angle(this->start_, this->goal_);

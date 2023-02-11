@@ -32,19 +32,24 @@ RRT::RRT(int nx, int ny, double resolution, int sample_num, double max_dist)
 
 /**
  * @brief RRT implementation
- * @param costs     costmap
- * @param start     start node
- * @param goal      goal node
- * @param expand    containing the node been search during the process
- * @return tuple contatining a bool as to whether a path was found, and the path
+ *
+ * @param gloal_costmap global costmap
+ * @param start         start node
+ * @param goal          goal node
+ * @param path          optimal path consists of Node
+ * @param expand        containing the node been search during the process
+ * @return  true if path found, else false
  */
-std::tuple<bool, std::vector<Node>> RRT::plan(const unsigned char* costs, const Node& start, const Node& goal,
-                                              std::vector<Node>& expand)
+bool RRT::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+               std::vector<Node>& expand)
 {
+  path.clear();
+  expand.clear();
+
   this->sample_list_.clear();
   // copy
   this->start_ = start, this->goal_ = goal;
-  this->costs_ = costs;
+  this->costs_ = gloal_costmap;
   this->sample_list_.insert(start);
   expand.push_back(start);
 
@@ -56,7 +61,7 @@ std::tuple<bool, std::vector<Node>> RRT::plan(const unsigned char* costs, const 
     Node sample_node = this->_generateRandomNode();
 
     // obstacle
-    if (costs[sample_node.id] >= this->lethal_cost_ * this->factor_)
+    if (gloal_costmap[sample_node.id_] >= this->lethal_cost_ * this->factor_)
       continue;
 
     // visited
@@ -65,7 +70,7 @@ std::tuple<bool, std::vector<Node>> RRT::plan(const unsigned char* costs, const 
 
     // regular the sample node
     Node new_node = this->_findNearestPoint(this->sample_list_, sample_node);
-    if (new_node.id == -1)
+    if (new_node.id_ == -1)
       continue;
     else
     {
@@ -75,11 +80,14 @@ std::tuple<bool, std::vector<Node>> RRT::plan(const unsigned char* costs, const 
 
     // goal found
     if (_checkGoal(new_node))
-      return { true, this->_convertClosedListToPath(this->sample_list_, start, goal) };
+    {
+      path = this->_convertClosedListToPath(this->sample_list_, start, goal);
+      return true;
+    }
 
     iteration++;
   }
-  return { false, {} };
+  return false;
 }
 
 /**
@@ -105,7 +113,7 @@ Node RRT::_generateRandomNode()
     return Node(x, y, 0, 0, id, 0);
   }
   else
-    return Node(this->goal_.x, this->goal_.y, 0, 0, this->goal_.id, 0);
+    return Node(this->goal_.x_, this->goal_.y_, 0, 0, this->goal_.id_, 0);
 }
 
 /**
@@ -128,8 +136,8 @@ Node RRT::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coord
     if (new_dist < min_dist)
     {
       nearest_node = node_;
-      new_node.pid = nearest_node.id;
-      new_node.cost = new_dist + node_.cost;
+      new_node.pid_ = nearest_node.id_;
+      new_node.g_ = new_dist + node_.g_;
       min_dist = new_dist;
     }
   }
@@ -140,15 +148,15 @@ Node RRT::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coord
     // connect sample node and nearest node, then move the nearest node
     // forward to sample node with `max_distance` as result
     double theta = this->_angle(nearest_node, new_node);
-    new_node.x = nearest_node.x + (int)(this->max_dist_ * cos(theta));
-    new_node.y = nearest_node.y + (int)(this->max_dist_ * sin(theta));
-    new_node.id = this->grid2Index(new_node.x, new_node.y);
-    new_node.cost = this->max_dist_ + nearest_node.cost;
+    new_node.x_ = nearest_node.x_ + (int)(this->max_dist_ * cos(theta));
+    new_node.y_ = nearest_node.y_ + (int)(this->max_dist_ * sin(theta));
+    new_node.id_ = this->grid2Index(new_node.x_, new_node.y_);
+    new_node.g_ = this->max_dist_ + nearest_node.g_;
   }
 
   // obstacle check
   if (_isAnyObstacleInPath(new_node, nearest_node))
-    new_node.id = -1;
+    new_node.id_ = -1;
 
   return new_node;
 }
@@ -172,8 +180,8 @@ bool RRT::_isAnyObstacleInPath(const Node& n1, const Node& n2)
   int n_step = (int)(dist / this->resolution_);
   for (int i = 0; i < n_step; i++)
   {
-    float line_x = (float)n1.x + (float)(i * this->resolution_ * cos(theta));
-    float line_y = (float)n1.y + (float)(i * this->resolution_ * sin(theta));
+    float line_x = (float)n1.x_ + (float)(i * this->resolution_ * cos(theta));
+    float line_y = (float)n1.y_ + (float)(i * this->resolution_ * sin(theta));
     if (this->costs_[this->grid2Index((int)line_x, (int)line_y)] >= this->lethal_cost_ * this->factor_)
       return true;
   }
@@ -193,8 +201,8 @@ bool RRT::_checkGoal(const Node& new_node)
 
   if (!_isAnyObstacleInPath(new_node, this->goal_))
   {
-    Node goal(this->goal_.x, this->goal_.y, dist + new_node.cost, 0, this->grid2Index(this->goal_.x, this->goal_.y),
-              new_node.id);
+    Node goal(this->goal_.x_, this->goal_.y_, dist + new_node.g_, 0, this->grid2Index(this->goal_.x_, this->goal_.y_),
+              new_node.id_);
     this->sample_list_.insert(goal);
     return true;
   }
@@ -209,7 +217,7 @@ bool RRT::_checkGoal(const Node& new_node)
  */
 double RRT::_dist(const Node& node1, const Node& node2)
 {
-  return std::sqrt(std::pow(node1.x - node2.x, 2) + std::pow(node1.y - node2.y, 2));
+  return std::sqrt(std::pow(node1.x_ - node2.x_, 2) + std::pow(node1.y_ - node2.y_, 2));
 }
 
 /**
@@ -220,6 +228,6 @@ double RRT::_dist(const Node& node1, const Node& node2)
  */
 double RRT::_angle(const Node& node1, const Node& node2)
 {
-  return atan2(node2.y - node1.y, node2.x - node1.x);
+  return atan2(node2.y_ - node1.y_, node2.x_ - node1.x_);
 }
 }  // namespace rrt_planner

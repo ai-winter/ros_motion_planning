@@ -27,17 +27,17 @@ JumpPointSearch::JumpPointSearch(int nx, int ny, double resolution) : GlobalPlan
 
 /**
  * @brief Jump Point Search(JPS) implementation
- * @param costs     costmap
+ * @param gloal_costmap     costmap
  * @param start     start node
  * @param goal      goal node
  * @param expand    containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-std::tuple<bool, std::vector<Node>> JumpPointSearch::plan(const unsigned char* costs, const Node& start,
-                                                          const Node& goal, std::vector<Node>& expand)
+bool JumpPointSearch::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal,
+                           std::vector<Node>& path, std::vector<Node>& expand)
 {
   // copy
-  this->costs_ = costs;
+  this->costs_ = gloal_costmap;
   this->start_ = start, this->goal_ = goal;
 
   // open list
@@ -50,6 +50,8 @@ std::tuple<bool, std::vector<Node>> JumpPointSearch::plan(const unsigned char* c
   // expand list
   expand.clear();
   expand.push_back(start);
+
+  path.clear();
 
   // get all possible motions
   std::vector<Node> motions = getMotion();
@@ -69,7 +71,8 @@ std::tuple<bool, std::vector<Node>> JumpPointSearch::plan(const unsigned char* c
     if (current == goal)
     {
       closed_list.insert(current);
-      return { true, this->_convertClosedListToPath(closed_list, start, goal) };
+      path = this->_convertClosedListToPath(closed_list, start, goal);
+      return true;
     }
 
     // explore neighbor of current node
@@ -79,10 +82,10 @@ std::tuple<bool, std::vector<Node>> JumpPointSearch::plan(const unsigned char* c
       Node jp = this->jump(current, motion);
 
       // exists and not in CLOSED set
-      if (jp.id != -1 && closed_list.find(jp) == closed_list.end())
+      if (jp.id_ != -1 && closed_list.find(jp) == closed_list.end())
       {
-        jp.pid = current.id;
-        jp.h_cost = std::sqrt(std::pow(jp.x - goal.x, 2) + std::pow(jp.y - goal.y, 2));
+        jp.pid_ = current.id_;
+        jp.h_ = std::sqrt(std::pow(jp.x_ - goal.x_, 2) + std::pow(jp.y_ - goal.y_, 2));
         jp_list.push_back(jp);
       }
     }
@@ -99,7 +102,7 @@ std::tuple<bool, std::vector<Node>> JumpPointSearch::plan(const unsigned char* c
 
     closed_list.insert(current);
   }
-  return { false, {} };
+  return false;
 }
 
 /**
@@ -110,10 +113,10 @@ std::tuple<bool, std::vector<Node>> JumpPointSearch::plan(const unsigned char* c
  */
 bool JumpPointSearch::detectForceNeighbor(const Node& point, const Node& motion)
 {
-  int x = point.x;
-  int y = point.y;
-  int x_dir = motion.x;
-  int y_dir = motion.y;
+  int x = point.x_;
+  int y = point.y_;
+  int x_dir = motion.x_;
+  int y_dir = motion.y_;
 
   // horizontal
   if (x_dir && !y_dir)
@@ -160,12 +163,12 @@ bool JumpPointSearch::detectForceNeighbor(const Node& point, const Node& motion)
 Node JumpPointSearch::jump(const Node& point, const Node& motion)
 {
   Node new_point = point + motion;
-  new_point.id = this->grid2Index(new_point.x, new_point.y);
-  new_point.pid = point.id;
-  new_point.h_cost = std::sqrt(std::pow(new_point.x - this->goal_.x, 2) + std::pow(new_point.y - this->goal_.y, 2));
+  new_point.id_ = this->grid2Index(new_point.x_, new_point.y_);
+  new_point.pid_ = point.id_;
+  new_point.h_ = std::sqrt(std::pow(new_point.x_ - this->goal_.x_, 2) + std::pow(new_point.y_ - this->goal_.y_, 2));
 
   // next node hit the boundary or obstacle
-  if (new_point.id < 0 || new_point.id >= this->ns_ || this->costs_[new_point.id] >= this->lethal_cost_ * this->factor_)
+  if (new_point.id_ < 0 || new_point.id_ >= this->ns_ || this->costs_[new_point.id_] >= this->lethal_cost_ * this->factor_)
     return Node(-1, -1, -1, -1, -1, -1);
 
   // goal found
@@ -173,12 +176,12 @@ Node JumpPointSearch::jump(const Node& point, const Node& motion)
     return new_point;
 
   // diagonal
-  if (motion.x && motion.y)
+  if (motion.x_ && motion.y_)
   {
     // if exists jump point at horizontal or vertical
-    Node x_dir = Node(motion.x, 0, 1, 0, 0, 0);
-    Node y_dir = Node(0, motion.y, 1, 0, 0, 0);
-    if (this->jump(new_point, x_dir).id != -1 || this->jump(new_point, y_dir).id != -1)
+    Node x_dir = Node(motion.x_, 0, 1, 0, 0, 0);
+    Node y_dir = Node(0, motion.y_, 1, 0, 0, 0);
+    if (this->jump(new_point, x_dir).id_ != -1 || this->jump(new_point, y_dir).id_ != -1)
       return new_point;
   }
 

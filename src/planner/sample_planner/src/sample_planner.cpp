@@ -204,8 +204,9 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
     this->_outlineMap(this->costmap_->getCharMap(), nx, ny);
 
   // calculate path
+  std::vector<Node> path;
   std::vector<Node> expand;
-  const auto [path_found, path] = this->g_planner_->plan(this->costmap_->getCharMap(), n_start, n_goal, expand);
+  bool path_found = this->g_planner_->plan(this->costmap_->getCharMap(), n_start, n_goal, path, expand);
 
   if (path_found)
   {
@@ -303,8 +304,8 @@ void SamplePlanner::_publishExpand(std::vector<Node>& expand)
 
   // Publish all edges
   for (auto node : expand)
-    if (node.pid != 0)
-      this->_pubLine(&tree_msg, &this->expand_pub_, node.id, node.pid);
+    if (node.pid_ != 0)
+      this->_pubLine(&tree_msg, &this->expand_pub_, node.id_, node.pid_);
 }
 /**
  * @brief  tranform from costmap(x, y) to world map(x, y)
@@ -358,7 +359,7 @@ bool SamplePlanner::_getPlanFromPath(std::vector<Node> path, std::vector<geometr
   for (int i = path.size() - 1; i >= 0; i--)
   {
     double wx, wy;
-    this->_mapToWorld((double)path[i].x, (double)path[i].y, wx, wy);
+    this->_mapToWorld((double)path[i].x_, (double)path[i].y_, wx, wy);
     // coding as message type
     geometry_msgs::PoseStamped pose;
     pose.header.stamp = ros::Time::now();

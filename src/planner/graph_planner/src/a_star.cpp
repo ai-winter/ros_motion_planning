@@ -21,36 +21,41 @@
 namespace a_star_planner
 {
 /**
- * @brief  Constructor
- * @param   nx          pixel number in costmap x direction
- * @param   ny          pixel number in costmap y direction
- * @param   resolution  costmap resolution
+ * @brief Construct a new AStar object
+ *
+ * @param nx          pixel number in costmap x direction
+ * @param ny          pixel number in costmap y direction
+ * @param resolution  costmap resolution
+ * @param dijkstra    using diksktra implementation
+ * @param gbfs        using gbfs implementation
  */
 AStar::AStar(int nx, int ny, double resolution, bool dijkstra, bool gbfs) : GlobalPlanner(nx, ny, resolution)
 {
   // can not using both dijkstra and GBFS at the same time
   if (!(dijkstra && gbfs))
   {
-    this->is_dijkstra_ = dijkstra;
-    this->is_gbfs_ = gbfs;
+    is_dijkstra_ = dijkstra;
+    is_gbfs_ = gbfs;
   }
   else
   {
-    this->is_dijkstra_ = false;
-    this->is_gbfs_ = false;
+    is_dijkstra_ = false;
+    is_gbfs_ = false;
   }
 };
+
 /**
  * @brief A* implementation
- * @param costs     costmap
- * @param start     start node
- * @param goal      goal node
- * @param expand    containing the node been search during the process
- * @return tuple contatining a bool as to whether a path was found, and the
- * path
+ *
+ * @param gloal_costmap global costmap
+ * @param start         start node
+ * @param goal          goal node
+ * @param path          optimal path consists of Node
+ * @param expand        containing the node been search during the process
+ * @return  true if path found, else false
  */
-std::tuple<bool, std::vector<Node>> AStar::plan(const unsigned char* costs, const Node& start, const Node& goal,
-                                                std::vector<Node>& expand)
+bool AStar::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+                 std::vector<Node>& expand)
 {
   // open list
   std::priority_queue<Node, std::vector<Node>, compare_cost> open_list;
@@ -58,6 +63,9 @@ std::tuple<bool, std::vector<Node>> AStar::plan(const unsigned char* costs, cons
 
   // closed list
   std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list;
+
+  // path clear
+  path.clear();
 
   // expand list
   expand.clear();
@@ -72,7 +80,7 @@ std::tuple<bool, std::vector<Node>> AStar::plan(const unsigned char* costs, cons
     // pop current node from open list
     Node current = open_list.top();
     open_list.pop();
-    current.id = this->grid2Index(current.x, current.y);
+    current.id_ = this->grid2Index(current.x_, current.y_);
 
     // current node do not exist in closed list
     if (closed_list.find(current) != closed_list.end())
@@ -82,7 +90,8 @@ std::tuple<bool, std::vector<Node>> AStar::plan(const unsigned char* costs, cons
     if (current == goal)
     {
       closed_list.insert(current);
-      return { true, this->_convertClosedListToPath(closed_list, start, goal) };
+      path = this->_convertClosedListToPath(closed_list, start, goal);
+      return true;
     }
 
     // explore neighbor of current node
@@ -95,16 +104,20 @@ std::tuple<bool, std::vector<Node>> AStar::plan(const unsigned char* costs, cons
         continue;
 
       // explore a new node
-      new_point.id = this->grid2Index(new_point.x, new_point.y);
-      new_point.pid = current.id;
+      new_point.id_ = this->grid2Index(new_point.x_, new_point.y_);
+      new_point.pid_ = current.id_;
+
+      // next node hit the boundary or obstacle
+      if ((new_point.id_ < 0) || (new_point.id_ >= ns_) || (gloal_costmap[new_point.id_] >= lethal_cost_ * factor_))
+        continue;
 
       // if using dijkstra implementation, do not consider heuristics cost
-      if (!this->is_dijkstra_)
-        new_point.h_cost = std::sqrt(std::pow(new_point.x - goal.x, 2) + std::pow(new_point.y - goal.y, 2));
+      if (!is_dijkstra_)
+        new_point.h_ = std::hypot(new_point.x_ - goal.x_, new_point.y_ - goal.y_);
 
       // if using GBFS implementation, only consider heuristics cost
-      if (this->is_gbfs_)
-        new_point.cost = 0;
+      if (is_gbfs_)
+        new_point.g_ = 0.0;
 
       // goal found
       if (new_point == goal)
@@ -113,15 +126,11 @@ std::tuple<bool, std::vector<Node>> AStar::plan(const unsigned char* costs, cons
         break;
       }
 
-      // bext node hit the boundary or obstacle
-      if (new_point.id < 0 || new_point.id >= this->ns_ || costs[new_point.id] >= this->lethal_cost_ * this->factor_)
-        continue;
-
       open_list.push(new_point);
-      expand.push_back(new_point);
     }
+    expand.push_back(current);
     closed_list.insert(current);
   }
-  return { false, {} };
+  return false;
 }
 }  // namespace a_star_planner

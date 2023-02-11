@@ -33,19 +33,19 @@ RRTStar::RRTStar(int nx, int ny, double resolution, int sample_num, double max_d
 }
 /**
  * @brief RRT implementation
- * @param costs     costmap
+ * @param gloal_costmap     costmap
  * @param start     start node
  * @param goal      goal node
  * @param expand    containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-std::tuple<bool, std::vector<Node>> RRTStar::plan(const unsigned char* costs, const Node& start, const Node& goal,
-                                                  std::vector<Node>& expand)
+bool RRTStar::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+                   std::vector<Node>& expand)
 {
   this->sample_list_.clear();
   // copy
   this->start_ = start, this->goal_ = goal;
-  this->costs_ = costs;
+  this->costs_ = gloal_costmap;
   this->sample_list_.insert(start);
   expand.push_back(start);
 
@@ -57,7 +57,7 @@ std::tuple<bool, std::vector<Node>> RRTStar::plan(const unsigned char* costs, co
     Node sample_node = this->_generateRandomNode();
 
     // obstacle
-    if (costs[sample_node.id] >= this->lethal_cost_ * this->factor_)
+    if (gloal_costmap[sample_node.id_] >= this->lethal_cost_ * this->factor_)
       continue;
 
     // visited
@@ -66,7 +66,7 @@ std::tuple<bool, std::vector<Node>> RRTStar::plan(const unsigned char* costs, co
 
     // regular the sample node
     Node new_node = this->_findNearestPoint(this->sample_list_, sample_node);
-    if (new_node.id == -1)
+    if (new_node.id_ == -1)
       continue;
     else
     {
@@ -76,11 +76,14 @@ std::tuple<bool, std::vector<Node>> RRTStar::plan(const unsigned char* costs, co
 
     // goal found
     if (_checkGoal(new_node))
-      return { true, this->_convertClosedListToPath(this->sample_list_, start, goal) };
+    {
+      path = this->_convertClosedListToPath(this->sample_list_, start, goal);
+      return true;
+    }
 
     iteration++;
   }
-  return { false, {} };
+  return false;
 }
 
 /**
@@ -103,8 +106,8 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
     if (new_dist < min_dist)
     {
       nearest_node = node_;
-      new_node.pid = nearest_node.id;
-      new_node.cost = new_dist + node_.cost;
+      new_node.pid_ = nearest_node.id_;
+      new_node.g_ = new_dist + node_.g_;
       min_dist = new_dist;
     }
   }
@@ -115,10 +118,10 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
     // connect sample node and nearest node, then move the nearest node
     // forward to sample node with `max_distance` as result
     double theta = this->_angle(nearest_node, new_node);
-    new_node.x = nearest_node.x + (int)(this->max_dist_ * cos(theta));
-    new_node.y = nearest_node.y + (int)(this->max_dist_ * sin(theta));
-    new_node.id = this->grid2Index(new_node.x, new_node.y);
-    new_node.cost = this->max_dist_ + nearest_node.cost;
+    new_node.x_ = nearest_node.x_ + (int)(this->max_dist_ * cos(theta));
+    new_node.y_ = nearest_node.y_ + (int)(this->max_dist_ * sin(theta));
+    new_node.id_ = this->grid2Index(new_node.x_, new_node.y_);
+    new_node.g_ = this->max_dist_ + nearest_node.g_;
   }
 
   // obstacle check
@@ -131,26 +134,26 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
       double new_dist = this->_dist(node_, new_node);
       if (new_dist < this->r_)
       {
-        double cost = node_.cost + new_dist;
+        double cost = node_.g_ + new_dist;
         // update new sample node's cost and parent
-        if (new_node.cost > cost)
+        if (new_node.g_ > cost)
         {
           if (!_isAnyObstacleInPath(new_node, node_))
           {
-            new_node.pid = node_.id;
-            new_node.cost = cost;
+            new_node.pid_ = node_.id_;
+            new_node.g_ = cost;
           }
         }
         else
         {
           // update nodes' cost inside the radius
-          cost = new_node.cost + new_dist;
-          if (cost < node_.cost)
+          cost = new_node.g_ + new_dist;
+          if (cost < node_.g_)
           {
             if (!_isAnyObstacleInPath(new_node, node_))
             {
-              node_.pid = new_node.id;
-              node_.cost = cost;
+              node_.pid_ = new_node.id_;
+              node_.g_ = cost;
             }
           }
         }
@@ -160,7 +163,7 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
     }
   }
   else
-    new_node.id = -1;
+    new_node.id_ = -1;
   return new_node;
 }
 }  // namespace rrt_planner

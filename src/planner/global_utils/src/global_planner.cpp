@@ -16,84 +16,114 @@
 namespace global_planner
 {
 /**
- * @brief  set or reset costmap size
- * @param   nx  pixel number in costmap x direction
- * @param   ny  pixel number in costmap y direction
+ * @brief Construct a new Global Planner object
+ *
+ * @param nx          pixel number in costmap x direction
+ * @param ny          pixel number in costmap y direction
+ * @param resolution  costmap resolution
+ */
+GlobalPlanner::GlobalPlanner(int nx, int ny, double resolution)
+  : lethal_cost_(LETHAL_COST), neutral_cost_(NEUTRAL_COST), factor_(OBSTACLE_FACTOR)
+{
+  this->setSize(nx, ny);
+  this->setResolution(resolution);
+}
+
+/**
+ * @brief Set or reset costmap size
+ *
+ * @param nx  pixel number in costmap x direction
+ * @param ny  pixel number in costmap y direction
  */
 void GlobalPlanner::setSize(int nx, int ny)
 {
-  this->nx_ = nx;
-  this->ny_ = ny;
-  this->ns_ = nx * ny;
+  nx_ = nx;
+  ny_ = ny;
+  ns_ = nx * ny;
 }
+
 /**
- * @brief  set or reset costmap resolution
- * @param resolution costmap resolution
+ * @brief Set or reset costmap resolution
+ *
+ * @param resolution  costmap resolution
  */
 void GlobalPlanner::setResolution(double resolution)
 {
-  this->resolution_ = resolution;
+  resolution_ = resolution;
 }
+
 /**
- * @brief  set or reset lethal cost
+ * @brief Set or reset lethal cost
+ *
  * @param lethal_cost lethal cost
  */
 void GlobalPlanner::setLethalCost(unsigned char lethal_cost)
 {
-  this->lethal_cost_ = lethal_cost;
+  lethal_cost_ = lethal_cost;
 }
+
 /**
- * @brief  et or reset neutral cost
- * @param neutral_cost neutral cost
+ * @brief Set or reset neutral cost
+ *
+ * @param neutral_cost  neutral cost
  */
 void GlobalPlanner::setNeutralCost(unsigned char neutral_cost)
 {
-  this->neutral_cost_ = neutral_cost;
+  neutral_cost_ = neutral_cost;
 }
+
 /**
- * @brief  set or reset obstacle factor
- * @param factor obstacle factor
+ * @brief Set or reset obstacle factor
+ *
+ * @param factor  obstacle factor
  */
 void GlobalPlanner::setFactor(double factor)
 {
-  this->factor_ = factor;
+  factor_ = factor;
 }
+
 /**
- * @brief  transform between grid index(i) and grid map(x, y)
+ * @brief Transform from grid map(x, y) to grid index(i)
+ *
  * @param x grid map x
  * @param y grid map y
- * @return index grid index
+ * @return  index
  */
 int GlobalPlanner::grid2Index(int x, int y)
 {
-  return x + this->nx_ * y;
+  return x + nx_ * y;
 }
+
 /**
- * @brief  transform from grid map(x, y) to grid index(i)
+ * @brief Transform from grid index(i) to grid map(x, y)
+ *
+ * @param i grid index i
  * @param x grid map x
  * @param y grid map y
- * @param y grid map y
- * @return index grid index
  */
-void GlobalPlanner::index2Grid(int index, int& x, int& y)
+void GlobalPlanner::index2Grid(int i, int& x, int& y)
 {
-  x = index % this->nx_;
-  y = index / this->nx_;
+  x = i % nx_;
+  y = i / nx_;
 }
+
 /**
- * @brief  transform from costmap(x, y) to grid map(x, y)
- * @param gx grid map x
- * @param gy grid map y
- * @param mx costmap x
- * @param my costmap y
+ * @brief Transform from grid map(x, y) to costmap(x, y)
+ *
+ * @param gx  grid map x
+ * @param gy  grid map y
+ * @param mx  costmap x
+ * @param my  costmap y
  */
 void GlobalPlanner::map2Grid(double mx, double my, int& gx, int& gy)
 {
   gx = (int)mx;
   gy = (int)my;
 }
+
 /**
- * @brief  transform from grid map(x, y) to costmap(x, y)
+ * @brief Transform from costmap(x, y) to grid map(x, y)
+ *
  * @param gx grid map x
  * @param gy grid map y
  * @param mx costmap x
@@ -101,16 +131,17 @@ void GlobalPlanner::map2Grid(double mx, double my, int& gx, int& gy)
  */
 void GlobalPlanner::grid2Map(int gx, int gy, double& mx, double& my)
 {
-  mx = this->resolution_ * (gx + 0.5);
-  my = this->resolution_ * (gy + 0.5);
+  mx = resolution_ * (gx + 0.5);
+  my = resolution_ * (gy + 0.5);
 }
 
 /**
- * @brief convert closed list to path
- * @param closed_list   closed list
- * @param start         start node
- * @param goal          goal node
- * @return vector containing path nodes
+ * @brief Convert closed list to path
+ *
+ * @param closed_list closed list
+ * @param start       start node
+ * @param goal        goal node
+ * @return  vector containing path nodes
  */
 std::vector<Node> GlobalPlanner::_convertClosedListToPath(
     std::unordered_set<Node, NodeIdAsHash, compare_coordinates>& closed_list, const Node& start, const Node& goal)
@@ -120,7 +151,7 @@ std::vector<Node> GlobalPlanner::_convertClosedListToPath(
   while (current != start)
   {
     path.push_back(current);
-    auto it = closed_list.find(Node(current.pid % this->nx_, current.pid / this->nx_, 0, 0, current.pid));
+    auto it = closed_list.find(Node(current.pid_ % nx_, current.pid_ / nx_, 0, 0, current.pid_));
     if (it != closed_list.end())
     {
       current = *it;
