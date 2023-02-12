@@ -22,7 +22,6 @@ namespace a_star_planner
 {
 /**
  * @brief Construct a new AStar object
- *
  * @param nx          pixel number in costmap x direction
  * @param ny          pixel number in costmap y direction
  * @param resolution  costmap resolution
@@ -46,7 +45,6 @@ AStar::AStar(int nx, int ny, double resolution, bool dijkstra, bool gbfs) : Glob
 
 /**
  * @brief A* implementation
- *
  * @param gloal_costmap global costmap
  * @param start         start node
  * @param goal          goal node
@@ -57,40 +55,40 @@ AStar::AStar(int nx, int ny, double resolution, bool dijkstra, bool gbfs) : Glob
 bool AStar::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                  std::vector<Node>& expand)
 {
-  // open list
-  std::priority_queue<Node, std::vector<Node>, compare_cost> open_list;
-  open_list.push(start);
+  // clear vector
+  path.clear();
+  expand.clear();
 
-  // closed list
+  // open list and closed list
+  std::priority_queue<Node, std::vector<Node>, compare_cost> open_list;
   std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list;
 
-  // path clear
-  path.clear();
-
-  // expand list
-  expand.clear();
-  expand.push_back(start);
+  open_list.push(start);
 
   // get all possible motions
   const std::vector<Node> motion = getMotion();
 
-  // main loop
-  while (!open_list.empty())
+  // main process
+  while (1)
   {
+    if (open_list.empty())
+      break;
+
     // pop current node from open list
     Node current = open_list.top();
     open_list.pop();
-    current.id_ = this->grid2Index(current.x_, current.y_);
 
     // current node do not exist in closed list
     if (closed_list.find(current) != closed_list.end())
       continue;
 
+    closed_list.insert(current);
+    expand.push_back(current);
+
     // goal found
     if (current == goal)
     {
-      closed_list.insert(current);
-      path = this->_convertClosedListToPath(closed_list, start, goal);
+      path = _convertClosedListToPath(closed_list, start, goal);
       return true;
     }
 
@@ -104,7 +102,7 @@ bool AStar::plan(const unsigned char* gloal_costmap, const Node& start, const No
         continue;
 
       // explore a new node
-      new_point.id_ = this->grid2Index(new_point.x_, new_point.y_);
+      new_point.id_ = grid2Index(new_point.x_, new_point.y_);
       new_point.pid_ = current.id_;
 
       // next node hit the boundary or obstacle
@@ -118,19 +116,12 @@ bool AStar::plan(const unsigned char* gloal_costmap, const Node& start, const No
       // if using GBFS implementation, only consider heuristics cost
       if (is_gbfs_)
         new_point.g_ = 0.0;
-
-      // goal found
-      if (new_point == goal)
-      {
-        open_list.push(new_point);
-        break;
-      }
+      // else, g will be calculate through new_point = current + m
 
       open_list.push(new_point);
     }
-    expand.push_back(current);
-    closed_list.insert(current);
   }
+
   return false;
 }
 }  // namespace a_star_planner
