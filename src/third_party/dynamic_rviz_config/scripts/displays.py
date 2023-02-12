@@ -3,7 +3,7 @@
 
 ''' 
 ******************************************************************************************
-*  Copyright (C) 2022 Yang Haodong, All Rights Reserved                                  *
+*  Copyright (C) 2023 Yang Haodong, All Rights Reserved                                  *
 *                                                                                        *
 *  @brief    rviz display pannel configure class.                                        *
 *  @author   Haodong Yang                                                                *

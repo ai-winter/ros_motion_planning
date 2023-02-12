@@ -2,7 +2,7 @@ map: "warehouse"
 world: "warehouse_with_obstacles"
 robots_config:
   - robot1_type: "turtlebot3_waffle"
-    robot1_global_planner: "a_star"
+    robot1_global_planner: "jps"
     robot1_local_planner: "dwa"
     robot1_x_pos: "0.0"
     robot1_y_pos: "0.0"
