@@ -29,7 +29,6 @@ class AStar : public global_planner::GlobalPlanner
 public:
   /**
    * @brief Construct a new AStar object
-   *
    * @param nx          pixel number in costmap x direction
    * @param ny          pixel number in costmap y direction
    * @param resolution  costmap resolution
@@ -40,7 +39,6 @@ public:
 
   /**
    * @brief A* implementation
-   *
    * @param gloal_costmap global costmap
    * @param start         start node
    * @param goal          goal node

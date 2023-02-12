@@ -98,7 +98,7 @@ bool InformedRRT::plan(const unsigned char* gloal_costmap, const Node& start, co
     Node goal_(this->goal_.x_, this->goal_.y_, this->c_best_, 0, this->grid2Index(this->goal_.x_, this->goal_.y_),
                best_parent);
     this->sample_list_.insert(goal_);
-    path =  this->_convertClosedListToPath(this->sample_list_, start, goal);
+    path = this->_convertClosedListToPath(this->sample_list_, start, goal);
     return true;
   }
   return false;
