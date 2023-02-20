@@ -27,10 +27,9 @@ public:
 
   /**
    * @brief Construct a new PIDPlanner object
-   *
-   * @param name        The name to give this instance of the trajectory planner
-   * @param tf          A pointer to a transform listener
-   * @param costmap_ros The cost map to use for assigning costs to trajectories
+   * @param name        the name to give this instance of the trajectory planner
+   * @param tf          a pointer to a transform listener
+   * @param costmap_ros the cost map to use for assigning costs to trajectories
    */
   PIDPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
 
@@ -41,47 +40,42 @@ public:
 
   /**
    * @brief Initialization of the local planner
-   *
-   * @param name        The name to give this instance of the trajectory planner
-   * @param tf          A pointer to a transform listener
-   * @param costmap_ros The cost map to use for assigning costs to trajectories
+   * @param name        the name to give this instance of the trajectory planner
+   * @param tf          a pointer to a transform listener
+   * @param costmap_ros the cost map to use for assigning costs to trajectories
    */
   void initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
-   * @brief  Set the plan that the controller is following
-   *
-   * @param orig_global_plan The plan to pass to the controller
-   * @return True if the plan was updated successfully, false otherwise
+   * @brief Set the plan that the controller is following
+   * @param orig_global_plan the plan to pass to the controller
+   * @return  true if the plan was updated successfully, else false
    */
   bool setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan);
 
   /**
-   * @brief  Given the current position, orientation, and velocity of the robot, compute velocity commands to send to
+   * @brief Given the current position, orientation, and velocity of the robot, compute velocity commands to send to
    * the base
-   *
-   * @param cmd_vel Will be filled with the velocity command to be passed to the robot base
-   * @return True if a valid trajectory was found, false otherwise
+   * @param cmd_vel will be filled with the velocity command to be passed to the robot base
+   * @return  true if a valid trajectory was found, else false
    */
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
 
   /**
    * @brief PID controller in linear
-   *
    * @param base_odometry odometry of the robot, to get velocity
    * @param b_x_d         desired x in body frame
    * @param b_y_d         desired y in body frame
-   * @return linear velocity
+   * @return  linear velocity
    */
   double LinearPIDController(nav_msgs::Odometry& base_odometry, double b_x_d, double b_y_d);
 
   /**
    * @brief PID controller in angular
-   *
    * @param base_odometry odometry of the robot, to get velocity
    * @param theta_d       desired theta
    * @param theta         current theta
-   * @return angular velocity
+   * @return  angular velocity
    */
   double AngularPIDController(nav_msgs::Odometry& base_odometry, double theta_d, double theta);
 
@@ -94,7 +88,6 @@ public:
 
   /**
    * @brief Get the distance to the goal
-   *
    * @param goal_ps global goal PoseStamped
    * @param x       global current x
    * @param y       global current y
@@ -104,9 +97,8 @@ public:
 
   /**
    * @brief Get the Euler Angles from PoseStamped
-   *
-   * @param ps PoseStamped to calculate
-   * @return roll, pitch and yaw in XYZ order
+   * @param ps  PoseStamped to calculate
+   * @return  roll, pitch and yaw in XYZ order
    */
   std::vector<double> getEulerAngles(geometry_msgs::PoseStamped& ps);
 
@@ -122,7 +114,6 @@ private:
 
   /**
    * @brief Transform pose to body frame
-   *
    * @param src   src PoseStamped, the object to transform
    * @param x     result x
    * @param y     result y
@@ -130,9 +121,11 @@ private:
    */
   void getTransformedPosition(geometry_msgs::PoseStamped& src, double* x, double* y, double* theta)
   {
-    src.header.stamp = ros::Time(0);
     geometry_msgs::PoseStamped dst;
+
+    src.header.stamp = ros::Time(0);
     tf_->transform(src, dst, base_frame_);
+
     *x = dst.pose.position.x;
     *y = dst.pose.position.y;
     *theta = tf2::getYaw(dst.pose.orientation);

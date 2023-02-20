@@ -14,10 +14,9 @@ PIDPlanner::PIDPlanner() : costmap_ros_(NULL), tf_(NULL), initialized_(false)
 
 /**
  * @brief Construct a new PIDPlanner object
- *
- * @param name        The name to give this instance of the trajectory planner
- * @param tf          A pointer to a transform listener
- * @param costmap_ros The cost map to use for assigning costs to trajectories
+ * @param name        the name to give this instance of the trajectory planner
+ * @param tf          a pointer to a transform listener
+ * @param costmap_ros the cost map to use for assigning costs to trajectories
  */
 PIDPlanner::PIDPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
   : costmap_ros_(NULL), tf_(NULL), initialized_(false)
@@ -34,10 +33,9 @@ PIDPlanner::~PIDPlanner()
 
 /**
  * @brief Initialization of the local planner
- *
- * @param name        The name to give this instance of the trajectory planner
- * @param tf          A pointer to a transform listener
- * @param costmap_ros The cost map to use for assigning costs to trajectories
+ * @param name        the name to give this instance of the trajectory planner
+ * @param tf          a pointer to a transform listener
+ * @param costmap_ros the cost map to use for assigning costs to trajectories
  */
 void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
 {
@@ -48,6 +46,7 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     initialized_ = true;
 
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
+
     // next point distance/turning angle
     nh.param("p_window", p_window_, 0.1);
     nh.param("o_window", o_window_, 1.57);
@@ -89,6 +88,7 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     double controller_freqency;
     nh.param("/move_base/controller_frequency", controller_freqency, 10.0);
     d_t_ = 1 / controller_freqency;
+
     ROS_INFO("PID planner initialized!");
   }
   else
@@ -99,9 +99,8 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 
 /**
  * @brief  Set the plan that the controller is following
- *
- * @param orig_global_plan The plan to pass to the controller
- * @return True if the plan was updated successfully, false otherwise
+ * @param orig_global_plan the plan to pass to the controller
+ * @return  true if the plan was updated successfully, else false
  */
 bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
 {
@@ -114,7 +113,6 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
   ROS_INFO("Got new plan");
 
   // set new plan
-  global_plan_.clear();
   global_plan_ = orig_global_plan;
 
   // reset plan parameters
@@ -125,11 +123,10 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
 }
 
 /**
- * @brief  Given the current position, orientation, and velocity of the robot, compute velocity commands to send to
+ * @brief Given the current position, orientation, and velocity of the robot, compute velocity commands to send to
  * the base
- *
- * @param cmd_vel Will be filled with the velocity command to be passed to the robot base
- * @return True if a valid trajectory was found, false otherwise
+ * @param cmd_vel will be filled with the velocity command to be passed to the robot base
+ * @return  true if a valid trajectory was found, else false
  */
 bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 {
@@ -169,9 +166,6 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
     plan_index_++;
   }
-
-  // if (plan_index_ == global_plan_.size())
-  //   getTransformedPosition(global_plan_.back(), &b_x_d, &b_y_d, &b_theta_d);
 
   costmap_ros_->getRobotPose(current_ps_);
   x_ = current_ps_.pose.position.x;
@@ -238,11 +232,10 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
 /**
  * @brief PID controller in linear
- *
  * @param base_odometry odometry of the robot, to get velocity
  * @param b_x_d         desired x in body frame
  * @param b_y_d         desired y in body frame
- * @return linear velocity
+ * @return  linear velocity
  */
 double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double b_x_d, double b_y_d)
 {
@@ -273,11 +266,10 @@ double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double
 
 /**
  * @brief PID controller in angular
- *
  * @param base_odometry odometry of the robot, to get velocity
  * @param theta_d       desired theta
  * @param theta         current theta
- * @return angular velocity
+ * @return  angular velocity
  */
 double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, double theta_d, double theta)
 {
@@ -352,7 +344,6 @@ bool PIDPlanner::isGoalReached()
 
 /**
  * @brief Get the distance to the goal
- *
  * @param goal_ps global goal PoseStamped
  * @param x       global current x
  * @param y       global current y
@@ -365,9 +356,8 @@ double PIDPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped& goa
 
 /**
  * @brief Get the Euler Angles from PoseStamped
- *
- * @param ps PoseStamped to calculate
- * @return roll, pitch and yaw in XYZ order
+ * @param ps  PoseStamped to calculate
+ * @return  roll, pitch and yaw in XYZ order
  */
 std::vector<double> PIDPlanner::getEulerAngles(geometry_msgs::PoseStamped& ps)
 {
