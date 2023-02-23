@@ -154,6 +154,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   double b_x_d, b_y_d, b_theta_d;
   double theta_d_;
   double v = 0, w = 0;
+  double theta_err, theta_trj;
 
   while (plan_index_ < global_plan_.size())
   {
@@ -162,13 +163,13 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     double y_d = target_ps_.pose.position.y;
 
     // from robot to plan point
-    double theta_err = atan2((y_d - y_), (x_d - x_));
+    theta_err = atan2((y_d - y_), (x_d - x_));
 
-    int next_plan_index = std::min(((int)global_plan_.size()) - 1, plan_index_ + 1);
-
-    // theta on the trajectory
-    double theta_trj = atan2((global_plan_[next_plan_index].pose.position.y - y_d),
-                             (global_plan_[next_plan_index].pose.position.x - x_d));
+    int next_plan_index = plan_index_ + 1;
+    if (next_plan_index < global_plan_.size())
+      // theta on the trajectory
+      theta_trj = atan2((global_plan_[next_plan_index].pose.position.y - y_d),
+                        (global_plan_[next_plan_index].pose.position.x - x_d));
 
     // if the difference is greater than PI, it will get a wrong result
     if (fabs(theta_trj - theta_err) > M_PI)
