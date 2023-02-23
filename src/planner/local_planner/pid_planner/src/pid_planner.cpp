@@ -74,6 +74,8 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("k_w_i", k_w_i_, 0.01);
     nh.param("k_w_d", k_w_d_, 0.10);
 
+    nh.param("k_theta", k_theta_, 0.1);
+
     e_v_ = i_v_ = 0.0;
     e_w_ = i_w_ = 0.0;
 
@@ -116,7 +118,7 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
   global_plan_ = orig_global_plan;
 
   // reset plan parameters
-  plan_index_ = 0;
+  plan_index_ = 3;
   goal_reached_ = false;
 
   return true;
@@ -156,11 +158,30 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   while (plan_index_ < global_plan_.size())
   {
     target_ps_ = global_plan_[plan_index_];
-    // int next_plan_index = std::min(((int)global_plan_.size()) - 1, plan_index_ + 1);
-    // theta_d_ = atan2((global_plan_[next_plan_index].pose.position.y - global_plan_[plan_index_].pose.position.y),
-    //                  (global_plan_[next_plan_index].pose.position.x - global_plan_[plan_index_].pose.position.x));
-    theta_d_ = atan2((global_plan_[plan_index_].pose.position.y - y_),
-                     (global_plan_[plan_index_].pose.position.x - x_));
+    double x_d = target_ps_.pose.position.x;
+    double y_d = target_ps_.pose.position.y;
+
+    // from robot to plan point
+    double theta_err = atan2((y_d - y_), (x_d - x_));
+
+    int next_plan_index = std::min(((int)global_plan_.size()) - 1, plan_index_ + 1);
+
+    // theta on the trajectory
+    double theta_trj = atan2((global_plan_[next_plan_index].pose.position.y - y_d),
+                             (global_plan_[next_plan_index].pose.position.x - x_d));
+
+    // if the difference is greater than PI, it will get a wrong result
+    if (fabs(theta_trj - theta_err) > M_PI)
+    {
+      // add 2*PI to the smaller one
+      if (theta_trj > theta_err)
+        theta_err += 2 * M_PI;
+      else
+        theta_trj += 2 * M_PI;
+    }
+
+    // weighting between two angle
+    theta_d_ = (1 - k_theta_) * theta_trj + k_theta_ * theta_err;
 
     tf2::Quaternion q;
     q.setRPY(0, 0, theta_d_);
@@ -169,7 +190,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     // transform from map into base_frame
     getTransformedPosition(target_ps_, &b_x_d, &b_y_d, &b_theta_d);
 
-    if (hypot(b_x_d, b_y_d) > p_window_ || fabs(b_theta_d) > o_window_)
+    if (hypot(b_x_d, b_y_d) > p_window_)  // || fabs(b_theta_d) > o_window_
       break;
 
     plan_index_++;
@@ -189,35 +210,27 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     if (fabs(final_rpy_[2] - theta_) < o_precision_)
     {
       cmd_vel.linear.x = 0.0;
-      cmd_vel.linear.y = 0.0;
       cmd_vel.angular.z = 0.0;
       goal_reached_ = true;
     }
     // orientation not reached
     else
     {
-      w = AngularPIDController(base_odom, final_rpy_[2], theta_);
       cmd_vel.linear.x = 0.0;
-      cmd_vel.linear.y = 0.0;
-      cmd_vel.angular.z = w;
+      cmd_vel.angular.z = AngularPIDController(base_odom, final_rpy_[2], theta_);
     }
   }
   // large angle, turn first
   else if (fabs(theta_d_ - theta_) > M_PI_2)
   {
-    w = AngularPIDController(base_odom, theta_d_, theta_);
     cmd_vel.linear.x = 0.0;
-    cmd_vel.linear.y = 0.0;
-    cmd_vel.angular.z = w;
+    cmd_vel.angular.z = AngularPIDController(base_odom, theta_d_, theta_);
   }
   // posistion not reached
   else
   {
-    v = LinearPIDController(base_odom, b_x_d, b_y_d);
-    w = AngularPIDController(base_odom, theta_d_, theta_);
-    cmd_vel.linear.x = v;
-    cmd_vel.linear.y = 0.0;
-    cmd_vel.angular.z = w;
+    cmd_vel.linear.x = LinearPIDController(base_odom, b_x_d, b_y_d);
+    cmd_vel.angular.z = AngularPIDController(base_odom, theta_d_, theta_);
   }
 
   // publish next target_ps_ pose
@@ -250,8 +263,9 @@ double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double
   double e_v = v_d - v;
   i_v_ += e_v * d_t_;
   double d_v = (e_v - e_v_) / d_t_;
-  double v_inc = k_v_p_ * e_v + k_v_i_ * i_v_ + k_v_d_ * d_v;
   e_v_ = e_v;
+
+  double v_inc = k_v_p_ * e_v + k_v_i_ * i_v_ + k_v_d_ * d_v;
 
   if (fabs(v_inc) > max_v_inc_)
     v_inc = copysign(max_v_inc_, v_inc);
@@ -290,8 +304,9 @@ double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, doubl
   double e_w = w_d - w;
   i_w_ += e_w * d_t_;
   double d_w = (e_w - e_w_) / d_t_;
-  double w_inc = k_w_p_ * e_w + k_w_i_ * i_w_ + k_w_d_ * d_w;
   e_w_ = e_w;
+
+  double w_inc = k_w_p_ * e_w + k_w_i_ * i_w_ + k_w_d_ * d_w;
 
   if (fabs(w_inc) > max_w_inc_)
     w_inc = copysign(max_w_inc_, w_inc);

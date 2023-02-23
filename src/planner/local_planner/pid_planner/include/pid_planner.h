@@ -150,6 +150,7 @@ private:
   double max_w_, min_w_, max_w_inc_;
   double k_v_p_, k_v_i_, k_v_d_;
   double k_w_p_, k_w_i_, k_w_d_;
+  double k_theta_;
 
   std::string base_frame_;
   base_local_planner::OdometryHelperRos* odom_helper_;
