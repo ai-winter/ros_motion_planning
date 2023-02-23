@@ -1,0 +1,9 @@
+rviz_config:
+  - robot1_x_pos: "0.00"
+    robot1_y_pos: "0.00"
+    robot1_z_pos: "0.0"
+    robot1_yaw: "1.57"
+  - robot2_x_pos: "-2.99"
+    robot2_y_pos: "7.0"
+    robot2_z_pos: "0.0"
+    robot2_yaw: "0"
