@@ -48,31 +48,31 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
 
     // next point distance/turning angle
-    nh.param("p_window", p_window_, 0.1);
-    nh.param("o_window", o_window_, 1.57);
+    nh.param("p_window", p_window_, 0.2);
+    nh.param("o_window", o_window_, 4.0);  // disabled
 
     // goal reached tolerance
-    nh.param("p_precision", p_precision_, 0.4);
-    nh.param("o_precision", o_precision_, 0.79);
+    nh.param("p_precision", p_precision_, 0.2);
+    nh.param("o_precision", o_precision_, 0.2);
 
     // linear velocity
-    nh.param("max_v", max_v_, 0.3);
+    nh.param("max_v", max_v_, 0.5);
     nh.param("min_v", min_v_, 0.0);
-    nh.param("max_v_inc", max_v_inc_, 0.3);
+    nh.param("max_v_inc", max_v_inc_, 0.5);
 
     // angular velocity
     nh.param("max_w", max_w_, 1.57);
     nh.param("min_w", min_w_, 0.0);
-    nh.param("max_w_inc", max_w_inc_, 0.79);
+    nh.param("max_w_inc", max_w_inc_, 1.57);
 
     // pid controller params
-    nh.param("k_v_p", k_v_p_, 2.00);
-    nh.param("k_v_i", k_v_i_, 0.05);
-    nh.param("k_v_d", k_v_d_, 0.00);
+    nh.param("k_v_p", k_v_p_, 1.00);
+    nh.param("k_v_i", k_v_i_, 0.01);
+    nh.param("k_v_d", k_v_d_, 0.10);
 
-    nh.param("k_w_p", k_w_p_, 2.00);
-    nh.param("k_w_i", k_w_i_, 0.00);
-    nh.param("k_w_d", k_w_d_, 0.05);
+    nh.param("k_w_p", k_w_p_, 1.00);
+    nh.param("k_w_i", k_w_i_, 0.01);
+    nh.param("k_w_d", k_w_d_, 0.10);
 
     e_v_ = i_v_ = 0.0;
     e_w_ = i_w_ = 0.0;
@@ -142,6 +142,12 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     return true;
   }
 
+  // current pose
+  costmap_ros_->getRobotPose(current_ps_);
+  x_ = current_ps_.pose.position.x;
+  y_ = current_ps_.pose.position.y;
+  theta_ = tf2::getYaw(current_ps_.pose.orientation);
+
   // desired x, y, theta in base frame
   double b_x_d, b_y_d, b_theta_d;
   double theta_d_;
@@ -150,9 +156,11 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   while (plan_index_ < global_plan_.size())
   {
     target_ps_ = global_plan_[plan_index_];
-    int next_plan_index = std::min(((int)global_plan_.size()) - 1, plan_index_ + 1);
-    theta_d_ = atan2((global_plan_[next_plan_index].pose.position.y - global_plan_[plan_index_].pose.position.y),
-                     (global_plan_[next_plan_index].pose.position.x - global_plan_[plan_index_].pose.position.x));
+    // int next_plan_index = std::min(((int)global_plan_.size()) - 1, plan_index_ + 1);
+    // theta_d_ = atan2((global_plan_[next_plan_index].pose.position.y - global_plan_[plan_index_].pose.position.y),
+    //                  (global_plan_[next_plan_index].pose.position.x - global_plan_[plan_index_].pose.position.x));
+    theta_d_ = atan2((global_plan_[plan_index_].pose.position.y - y_),
+                     (global_plan_[plan_index_].pose.position.x - x_));
 
     tf2::Quaternion q;
     q.setRPY(0, 0, theta_d_);
@@ -166,11 +174,6 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
     plan_index_++;
   }
-
-  costmap_ros_->getRobotPose(current_ps_);
-  x_ = current_ps_.pose.position.x;
-  y_ = current_ps_.pose.position.y;
-  theta_ = tf2::getYaw(current_ps_.pose.orientation);
 
   // odometry observation - getting robot velocities in robot frame
   nav_msgs::Odometry base_odom;
