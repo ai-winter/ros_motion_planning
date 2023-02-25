@@ -126,7 +126,7 @@ cd src/sim_env/scripts/
 
 | Planner | Version | Animation |
 | :-----: | :-----: | :-------: |
-| **PID** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/local_planner/pid_planner/src/pid_planner.cpp) | ![pid_ros.gif](gif/pid_ros.gif) |
+| **PID** | [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/local_planner/pid_planner/src/pid_planner.cpp) | ![pid_ros.gif](gif/pid_ros.gif) |
 | **APF** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
 | **DWA** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/local_planner/dwa_planner/src/dwa.cpp) | ![dwa_ros.gif](gif/dwa_ros.gif) |
 | **TEB** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
@@ -167,6 +167,7 @@ cd src/sim_env/scripts/
 | :--: | ------ |
 | 2023.1.13 | cost of motion nodes is set to `NEUTRAL_COST`, which is unequal to that of heuristics, so there is no difference between A* and Dijkstra. This bug has been solved in A* C++ v1.1 |
 | 2023.1.18 | update RRT C++ v1.1, adding heuristic judgement when generating random nodes |
+| 2023.2.25 | update PID C++ v1.1, making desired theta the weighted combination of theta error and theta on the trajectory |
 
 # Acknowledgment
 * Our robot and world models are from [
