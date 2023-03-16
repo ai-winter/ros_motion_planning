@@ -95,6 +95,7 @@
         "*.ipp": "cpp",
         "codecvt": "cpp",
         "future": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "any": "cpp"
     }
 }
