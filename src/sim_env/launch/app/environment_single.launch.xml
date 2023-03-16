@@ -15,7 +15,7 @@
     <arg name="robot" default="turtlebot3_waffle" />
     <!-- robot's namespace -->
     <arg name="robot_namespace" />
-    <!-- 是whether use namespace or not -->
+    <!-- whether use namespace or not -->
     <arg name="start_ns" default="false" />
     <!-- global path planner name -->
     <arg name="global_planner" default="astar"/>

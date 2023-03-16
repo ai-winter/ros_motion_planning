@@ -6,7 +6,7 @@
 
   <maintainer email="winter@todo.todo">winter</maintainer>
 
-  <license>TODO</license>
+  <license>GPL3</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 

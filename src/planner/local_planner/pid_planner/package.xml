@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>The pid_planner package</description>
   <maintainer email="gzy@todo.todo">gzy</maintainer>
-  <license>TODO</license>
+  <license>GPL3</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>angles</build_depend>
