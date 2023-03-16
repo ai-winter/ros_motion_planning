@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>global_utils</name>
+  <version>0.0.0</version>
+  <description>The global_utils package</description>
+
+  <maintainer email="winter@todo.todo">winter</maintainer>
+
+  <license>GPL3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+
+</package>

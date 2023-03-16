@@ -8,5 +8,7 @@ robots_config:
     robot1_y_pos: "0.0"
     robot1_z_pos: "0.0"
     robot1_yaw: "0.0"
+
 robots_init: ""
 rviz_file: "sim_env.rviz"
+pedestrians: "pedestrian_config.yaml"

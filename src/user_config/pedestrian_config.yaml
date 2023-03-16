@@ -1,0 +1,37 @@
+# sfm algorithm configure
+social_force:
+  animation_factor: 5.1
+  # only handle pedestrians within `people_distance`
+  people_distance: 6.0
+  # weights of social force model
+  goal_weight: 2.0
+  obstacle_weight: 80.0
+  social_weight: 15
+  group_gaze_weight: 3.0
+  group_coh_weight: 2.0
+  group_rep_weight: 1.0
+
+# pedestrians setting
+pedestrians:
+  - name: human_1
+    pose: 3 2 1 0 0 0
+    velocity: 0.9
+    radius: 0.4
+    cycle: true
+    ignore:
+      model_1: ground_plane
+      model_2: turtlebot3_waffle
+    trajectory:
+      goal_point_1: 3 2 1 0 0 0
+      goal_point_2: 3 -8 1 0 0 0
+  - name: human_2
+    pose: 3 -8 1 0 0 0
+    velocity: 1.2
+    radius: 0.4
+    cycle: true
+    ignore:
+      model_1: ground_plane
+      model_2: turtlebot3_waffle
+    trajectory:
+      goal_point_1: 3 -8 1 0 0 0
+      goal_point_2: 3 2 1 0 0 0
