@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(global_utils)
+project(utils)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -7,9 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
  INCLUDE_DIRS include
-#  LIBRARIES a_star
-#  CATKIN_DEPENDS global_utils
-#  DEPENDS system_lib
 )
 
 include_directories(

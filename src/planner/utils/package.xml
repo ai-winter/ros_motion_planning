@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>global_utils</name>
+  <name>utils</name>
   <version>0.0.0</version>
-  <description>The global_utils package</description>
+  <description>The utils package</description>
 
   <maintainer email="winter@todo.todo">winter</maintainer>
 
