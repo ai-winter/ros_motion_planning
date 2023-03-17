@@ -1,25 +1,25 @@
 <?xml version='1.0' encoding='utf-8'?>
 <launch>
-	<arg name="robot_number" default="1" />
-	<arg name="robot1_type" value="turtlebot3_waffle" />
-	<arg name="robot1_global_planner" value="d_star" />
-	<arg name="robot1_local_planner" value="pid" />
-	<arg name="robot1_x_pos" value="0.0" />
-	<arg name="robot1_y_pos" value="0.0" />
-	<arg name="robot1_z_pos" value="0.0" />
-	<arg name="robot1_yaw" value="0.0" />
-	<include file="$(find sim_env)/launch/app/environment_single.launch.xml">
-		<arg name="robot" value="$(eval arg('robot' + str(arg('robot_number')) + '_type'))" />
-		<arg name="global_planner" value="$(eval arg('robot' + str(arg('robot_number')) + '_global_planner'))" />
-		<arg name="local_planner" value="$(eval arg('robot' + str(arg('robot_number')) + '_local_planner'))" />
-		<arg name="robot_namespace" value="robot$(arg robot_number)" />
-		<arg name="start_ns" value="false" />
-		<arg name="robot_x" value="$(eval arg('robot' + str(arg('robot_number')) + '_x_pos'))" />
-		<arg name="robot_y" value="$(eval arg('robot' + str(arg('robot_number')) + '_y_pos'))" />
-		<arg name="robot_z" value="$(eval arg('robot' + str(arg('robot_number')) + '_z_pos'))" />
-		<arg name="robot_yaw" value="$(eval arg('robot' + str(arg('robot_number')) + '_yaw'))" />
-	</include>
-	<include file="$(find sim_env)/launch/include/robots/start_robots.launch.xml" if="$(eval arg('robot_number') &gt; 1)">
-		<arg name="robot_number" value="$(eval arg('robot_number') - 1)" />
-	</include>
+  <arg name="robot_number" default="1" />
+  <arg name="robot1_type" value="turtlebot3_waffle" />
+  <arg name="robot1_global_planner" value="d_star" />
+  <arg name="robot1_local_planner" value="pid" />
+  <arg name="robot1_x_pos" value="0.0" />
+  <arg name="robot1_y_pos" value="0.0" />
+  <arg name="robot1_z_pos" value="0.0" />
+  <arg name="robot1_yaw" value="0.0" />
+  <include file="$(find sim_env)/launch/app/environment_single.launch.xml">
+    <arg name="robot" value="$(eval arg('robot' + str(arg('robot_number')) + '_type'))" />
+    <arg name="global_planner" value="$(eval arg('robot' + str(arg('robot_number')) + '_global_planner'))" />
+    <arg name="local_planner" value="$(eval arg('robot' + str(arg('robot_number')) + '_local_planner'))" />
+    <arg name="robot_namespace" value="robot$(arg robot_number)" />
+    <arg name="start_ns" value="false" />
+    <arg name="robot_x" value="$(eval arg('robot' + str(arg('robot_number')) + '_x_pos'))" />
+    <arg name="robot_y" value="$(eval arg('robot' + str(arg('robot_number')) + '_y_pos'))" />
+    <arg name="robot_z" value="$(eval arg('robot' + str(arg('robot_number')) + '_z_pos'))" />
+    <arg name="robot_yaw" value="$(eval arg('robot' + str(arg('robot_number')) + '_yaw'))" />
+  </include>
+  <include file="$(find sim_env)/launch/include/robots/start_robots.launch.xml" if="$(eval arg('robot_number') &gt; 1)">
+    <arg name="robot_number" value="$(eval arg('robot_number') - 1)" />
+  </include>
 </launch>
