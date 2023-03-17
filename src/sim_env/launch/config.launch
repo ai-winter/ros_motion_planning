@@ -1,0 +1,51 @@
+<!--
+  ******************************************************************************************
+*  Copyright (C) 2022 Yang Haodong, All Rights Reserved                                  *
+*                                                                                        *
+*  @brief    Launch gazebo simulation with world and multi robots.                       *
+*  @author   Haodong Yang                                                                *
+*  @version  1.0.1                                                                       *
+*  @date     2022.06.30                                                                  *
+*  @license  GNU General Public License (GPL)                                            *
+****************************************************************************************** 
+-->
+
+<launch>
+
+  <!-- Select the robots , the world and the map -->
+  <arg name="world" default="warehouse" doc="model type [warehouse, workshop, turtlebot3_house, ...]"/>
+  <arg name="map" default="warehouse" doc="map type [warehouse, workshop, turtlebot3_house, ...]" />
+
+  <!-- Select the number of robots -->
+  <arg name="robot_number" default="1" />
+
+  <!-- Tune some other parameters -->
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+
+  <!-- Start Gazebo with a specific world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" unless="$(eval arg('world') == '')">
+    <arg name="world_name" value="$(find sim_env)/worlds/$(arg world).world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+  <!-- start map-server and publish user map -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find sim_env)/maps/$(arg map)/$(arg map).yaml" unless="$(eval arg('map') == '')"/>
+
+  <!-- Spawn multi robots with specific pose, and add robot control and state publisher. -->
+  <!-- Remember to change robot initial poses when using different world in start_robots.launch.xml. -->
+  <include file="$(find sim_env)/launch/include/robots/start_robots.launch.xml" />
+
+  <!-- Open Rviz to visualize information -->
+  <arg name="rviz_file" default="" />
+  <node pkg="dynamic_rviz_config" type="rviz_generate.py" name="rosapp_rviz" args="$(arg robot_number)" output="screen"
+    if="$(eval arg('rviz_file') == '')" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim_env)/rviz/$(arg rviz_file)"
+    unless="$(eval arg('rviz_file') == '')"/>
+
+</launch>
