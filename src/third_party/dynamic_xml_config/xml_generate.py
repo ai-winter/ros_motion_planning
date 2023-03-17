@@ -40,7 +40,7 @@ class XMLGenerator(object):
         # include
         include = XMLGenerator.createElement("include", props={"file": "$(find sim_env)/launch/config.launch"})
 
-        if not "pedestrians" in self.user_cfg or not self.user_cfg["pedestrians"]:
+        if not "pedestrians" in self.user_cfg or not self.user_cfg["pedestrians"] or not self.user_cfg["world"]:
             world_cfg = {"name": "world", "value": self.user_cfg["world"]}
         else:
             world_cfg = {"name": "world", "value": self.user_cfg["world"] + "_with_pedestrians"}
@@ -237,7 +237,7 @@ class XMLGenerator(object):
             return actor
         
 
-        if not "pedestrians" in self.user_cfg or not self.user_cfg["pedestrians"]:
+        if not "pedestrians" in self.user_cfg or not self.user_cfg["pedestrians"] or not self.user_cfg["world"]:
             return
         else:
             ped_cfg = XMLGenerator.yamlParser(self.root_path + "user_config/" + self.user_cfg["pedestrians"])

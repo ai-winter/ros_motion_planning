@@ -25,7 +25,7 @@
   <arg name="headless" default="false"/>
 
   <!-- Start Gazebo with a specific world -->
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" unless="$(eval arg('world') == '')">
     <arg name="world_name" value="$(find sim_env)/worlds/$(arg world).world"/>
     <arg name="debug" value="$(arg debug)" />
     <arg name="gui" value="$(arg gui)" />

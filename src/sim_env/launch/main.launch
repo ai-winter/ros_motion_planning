@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <launch>
 	<include file="$(find sim_env)/launch/config.launch">
-		<arg name="world" value="warehouse_with_obstacles_with_pedestrians" />
+		<arg name="world" value="" />
 		<arg name="map" value="warehouse" />
 		<arg name="robot_number" value="1" />
 		<arg name="rviz_file" value="sim_env.rviz" />

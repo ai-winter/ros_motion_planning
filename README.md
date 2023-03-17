@@ -89,8 +89,8 @@ pedestrians: "pedestrian_config.yaml"
 ```
 
 Explanation:
-- map: static map，located in `src/sim_env/map/`.
-- world: gazebo world，located in `src/sim_env/worlds/`.
+- map: static map，located in `src/sim_env/map/`, if `map: ""`, map_server will not publish map message which often used in SLAM.
+- world: gazebo world，located in `src/sim_env/worlds/`, if `world: ""`, Gazebo will be disabled which often used in real world.
 - robots_config：robotic configuration.
   - type: robotic type，such as `turtlebot3_burger`, `turtlebot3_waffle` and `turtlebot3_waffle_pi`.
   - global_planner: global algorithm, details in Section `Version`.
