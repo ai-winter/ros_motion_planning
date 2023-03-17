@@ -14,10 +14,7 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
-#include <queue>
-
 #include "global_planner.h"
-#include "utils.h"
 
 namespace a_star_planner
 {
@@ -49,11 +46,18 @@ public:
   bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
             std::vector<Node>& expand);
 
+  /**
+   * @brief Get the Heuristics
+   *
+   * @param node  current node
+   * @param goal  goal node
+   * @return  heuristics
+   */
+  double getHeuristics(const Node& node, const Node& goal);
+
 private:
-  // using diksktra
-  bool is_dijkstra_;
-  // using greedy best first search(GBFS)
-  bool is_gbfs_;
+  bool is_dijkstra_;  // using diksktra
+  bool is_gbfs_;      // using greedy best first search(GBFS)
 };
 }  // namespace a_star_planner
 #endif

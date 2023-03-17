@@ -15,9 +15,7 @@
 #ifndef GLOBAL_PLANNER_H
 #define GLOBAL_PLANNER_H
 
-#include <iostream>
-#include <unordered_map>
-#include <vector>
+#include <unordered_set>
 
 #include "utils.h"
 

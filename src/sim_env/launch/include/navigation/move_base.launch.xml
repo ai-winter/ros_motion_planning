@@ -18,7 +18,7 @@
     <!-- robot's type -->
     <arg name="robot" default="turtlebot3_waffle" />
     <!-- global path planner name -->
-    <arg name="global_planner" default="a_star"/>
+    <arg name="global_planner" default="a_star" />
     <!-- local planner name -->
     <arg name="local_planner" default="dwa" />
 
@@ -65,9 +65,9 @@
             if="$(eval arg('local_planner')=='pid')" />
         <rosparam file="$(find sim_env)/config/planner/pid_planner_params.yaml" command="load"
             if="$(eval arg('local_planner')=='pid')" />
-        
+
         <!-- loading navigation parameters -->
-                <rosparam
+        <rosparam
             file="$(eval find('sim_env') + '/config/' + arg('robot') + '/costmap_common_params_' 
                 + arg('robot') + '.yaml')"
             command="load" ns="global_costmap" />
@@ -81,19 +81,26 @@
 
         <rosparam file="$(find sim_env)/config/planner/graph_planner_params.yaml" command="load" />
         <rosparam file="$(find sim_env)/config/planner/sample_planner_params.yaml" command="load" />
-        
-        <!-- set coordinate transformation namespace -->
-        <param name="global_costmap/scan/sensor_frame" value="$(arg robot_namespace)/base_scan" if="$(arg start_ns)"/>
-        <param name="global_costmap/obstacle_layer/scan/sensor_frame" value="$(arg robot_namespace)/base_scan" if="$(arg start_ns)"/>
-        <param name="global_costmap/global_frame" value="map"/>
-        <param name="global_costmap/robot_base_frame" value="$(arg robot_namespace)/base_footprint" if="$(arg start_ns)"/>
 
-        <param name="local_costmap/scan/sensor_frame" value="$(arg robot_namespace)/base_scan" if="$(arg start_ns)"/>
-        <param name="local_costmap/obstacle_layer/scan/sensor_frame" value="$(arg robot_namespace)/base_scan" if="$(arg start_ns)"/>
-        <param name="local_costmap/global_frame" value="$(arg robot_namespace)/odom" if="$(arg start_ns)"/>
-        <param name="local_costmap/robot_base_frame" value="$(arg robot_namespace)/base_footprint" if="$(arg start_ns)"/>
+        <!-- set coordinate transformation namespace -->
+        <param name="global_costmap/scan/sensor_frame" value="$(arg robot_namespace)/base_scan"
+            if="$(arg start_ns)" />
+        <param name="global_costmap/obstacle_layer/scan/sensor_frame"
+            value="$(arg robot_namespace)/base_scan" if="$(arg start_ns)" />
+        <param name="global_costmap/global_frame" value="map" />
+        <param name="global_costmap/robot_base_frame" value="$(arg robot_namespace)/base_footprint"
+            if="$(arg start_ns)" />
+
+        <param name="local_costmap/scan/sensor_frame" value="$(arg robot_namespace)/base_scan"
+            if="$(arg start_ns)" />
+        <param name="local_costmap/obstacle_layer/scan/sensor_frame"
+            value="$(arg robot_namespace)/base_scan" if="$(arg start_ns)" />
+        <param name="local_costmap/global_frame" value="$(arg robot_namespace)/odom"
+            if="$(arg start_ns)" />
+        <param name="local_costmap/robot_base_frame" value="$(arg robot_namespace)/base_footprint"
+            if="$(arg start_ns)" />
 
         <!-- centralize map -->
-        <remap from="map" to="/map"/>
+        <remap from="map" to="/map" />
     </node>
 </launch>

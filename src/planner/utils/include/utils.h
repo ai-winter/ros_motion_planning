@@ -15,9 +15,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <limits>
-#include <queue>
-#include <unordered_set>
+#include <cmath>
+#include <array>
 #include <vector>
 
 #define LETHAL_COST 253      // lethal cost
