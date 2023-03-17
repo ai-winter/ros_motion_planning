@@ -11,12 +11,11 @@
  * --------------------------------------------------------
  *
  **********************************************************/
-#include <cmath>
+#include "a_star.h"
+
 #include <queue>
 #include <unordered_set>
 #include <vector>
-
-#include "a_star.h"
 
 namespace a_star_planner
 {
@@ -95,33 +94,45 @@ bool AStar::plan(const unsigned char* gloal_costmap, const Node& start, const No
     // explore neighbor of current node
     for (const auto& m : motion)
     {
-      Node new_point = current + m;
+      Node node_new = current + m;
 
       // current node do not exist in closed list
-      if (closed_list.find(new_point) != closed_list.end())
+      if (closed_list.find(node_new) != closed_list.end())
         continue;
 
       // explore a new node
-      new_point.id_ = grid2Index(new_point.x_, new_point.y_);
-      new_point.pid_ = current.id_;
+      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
+      node_new.pid_ = current.id_;
 
       // next node hit the boundary or obstacle
-      if ((new_point.id_ < 0) || (new_point.id_ >= ns_) || (gloal_costmap[new_point.id_] >= lethal_cost_ * factor_))
+      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (gloal_costmap[node_new.id_] >= lethal_cost_ * factor_))
         continue;
 
       // if using dijkstra implementation, do not consider heuristics cost
       if (!is_dijkstra_)
-        new_point.h_ = std::hypot(new_point.x_ - goal.x_, new_point.y_ - goal.y_);
+        node_new.h_ = getHeuristics(node_new, goal);
 
       // if using GBFS implementation, only consider heuristics cost
       if (is_gbfs_)
-        new_point.g_ = 0.0;
-      // else, g will be calculate through new_point = current + m
+        node_new.g_ = 0.0;
+      // else, g will be calculate through node_new = current + m
 
-      open_list.push(new_point);
+      open_list.push(node_new);
     }
   }
 
   return false;
+}
+
+/**
+ * @brief Get the Heuristics
+ *
+ * @param node  current node
+ * @param goal  goal node
+ * @return  heuristics
+ */
+double AStar::getHeuristics(const Node& node, const Node& goal)
+{
+  return std::hypot(node.x_ - goal.x_, node.y_ - goal.y_);
 }
 }  // namespace a_star_planner

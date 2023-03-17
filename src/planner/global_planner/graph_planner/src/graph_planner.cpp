@@ -11,9 +11,10 @@
  * --------------------------------------------------------
  *
  **********************************************************/
+#include "graph_planner.h"
+
 #include <pluginlib/class_list_macros.h>
 
-#include "graph_planner.h"
 #include "a_star.h"
 #include "jump_point_search.h"
 #include "d_star.h"
@@ -80,10 +81,10 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, 
     costmap_ = costmap;
     // costmap frame ID
     frame_id_ = frame_id;
-    // costmap size
-    unsigned int nx = costmap->getSizeInCellsX(), ny = costmap->getSizeInCellsY();
-    // costmap resolution
-    double resolution = costmap->getResolution();
+    // get costmap properties
+    nx_ = costmap->getSizeInCellsX(), ny_ = costmap->getSizeInCellsY();
+    origin_x_ = costmap_->getOriginX(), origin_y_ = costmap_->getOriginY();
+    resolution_ = costmap->getResolution();
 
     // offset of transform from world(x,y) to grid map(x,y)
     private_nh.param("convert_offset", convert_offset_, 0.0);
@@ -91,7 +92,7 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, 
     private_nh.param("default_tolerance", tolerance_, 0.0);
     // whether outline the map or not
     private_nh.param("outline_map", is_outline_, false);
-    // obstacle factor,
+    // obstacle factor, NOTE: no use...
     private_nh.param("obstacle_factor", factor_, 0.5);
     // whether publish expand zone or not
     private_nh.param("expand_zone", is_expand_, false);
@@ -99,19 +100,19 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, 
     // planner name
     private_nh.param("planner_name", planner_name_, (std::string) "a_star");
     if (planner_name_ == "a_star")
-      global_planner_ = new a_star_planner::AStar(nx, ny, resolution);
+      global_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_);
     else if (planner_name_ == "dijkstra")
-      global_planner_ = new a_star_planner::AStar(nx, ny, resolution, true);
+      global_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_, true);
     else if (planner_name_ == "gbfs")
-      global_planner_ = new a_star_planner::AStar(nx, ny, resolution, false, true);
+      global_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_, false, true);
     else if (planner_name_ == "jps")
-      global_planner_ = new jps_planner::JumpPointSearch(nx, ny, resolution);
+      global_planner_ = new jps_planner::JumpPointSearch(nx_, ny_, resolution_);
     else if (planner_name_ == "d_star")
-      global_planner_ = new d_star_planner::DStar(nx, ny, resolution);
+      global_planner_ = new d_star_planner::DStar(nx_, ny_, resolution_);
     else if (planner_name_ == "lpa_star")
-      global_planner_ = new lpa_star_planner::LPAStar(nx, ny, resolution);
+      global_planner_ = new lpa_star_planner::LPAStar(nx_, ny_, resolution_);
     else if (planner_name_ == "d_star_lite")
-      global_planner_ = new d_star_lite_planner::DStarLite(nx, ny, resolution);
+      global_planner_ = new d_star_lite_planner::DStarLite(nx_, ny_, resolution_);
 
     ROS_INFO("Using global graph planner: %s", planner_name_.c_str());
 
@@ -163,8 +164,6 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
   }
   // clear existing plan
   plan.clear();
-  // get costmap size
-  int nx = costmap_->getSizeInCellsX(), ny = costmap_->getSizeInCellsY();
 
   // judege whether goal and start node in costmap frame or not
   if (goal.header.frame_id != frame_id_)
@@ -204,6 +203,8 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
   int g_start_x, g_start_y, g_goal_x, g_goal_y;
   global_planner_->map2Grid(m_start_x, m_start_y, g_start_x, g_start_y);
   global_planner_->map2Grid(m_goal_x, m_goal_y, g_goal_x, g_goal_y);
+
+  // NOTE: how to init start and goal?
   Node start_node(g_start_x, g_start_y, 0, 0, global_planner_->grid2Index(g_start_x, g_start_y), 0);
   Node goal_node(g_goal_x, g_goal_y, 0, 0, global_planner_->grid2Index(g_goal_x, g_goal_y), 0);
 
@@ -212,7 +213,7 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
 
   // outline the map
   if (is_outline_)
-    _outlineMap(costmap_->getCharMap(), nx, ny);
+    _outlineMap(costmap_->getCharMap());
 
   // calculate path
   std::vector<Node> path;
@@ -243,6 +244,7 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
 
   // publish visulization plan
   publishPlan(plan);
+
   return !plan.empty();
 }
 
@@ -257,6 +259,7 @@ void GraphPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& pl
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
     return;
   }
+
   // create visulized path plan
   nav_msgs::Path gui_plan;
   gui_plan.poses.resize(plan.size());
@@ -287,22 +290,20 @@ bool GraphPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::Ge
 /**
  * @brief Inflate the boundary of costmap into obstacles to prevent cross planning
  * @param costarr costmap pointer
- * @param nx      pixel number in costmap x direction
- * @param ny      pixel number in costmap y direction
  */
-void GraphPlanner::_outlineMap(unsigned char* costarr, int nx, int ny)
+void GraphPlanner::_outlineMap(unsigned char* costarr)
 {
   unsigned char* pc = costarr;
-  for (int i = 0; i < nx; i++)
+  for (int i = 0; i < nx_; i++)
     *pc++ = costmap_2d::LETHAL_OBSTACLE;
-  pc = costarr + (ny - 1) * nx;
-  for (int i = 0; i < nx; i++)
+  pc = costarr + (ny_ - 1) * nx_;
+  for (int i = 0; i < nx_; i++)
     *pc++ = costmap_2d::LETHAL_OBSTACLE;
   pc = costarr;
-  for (int i = 0; i < ny; i++, pc += nx)
+  for (int i = 0; i < ny_; i++, pc += nx_)
     *pc = costmap_2d::LETHAL_OBSTACLE;
-  pc = costarr + nx - 1;
-  for (int i = 0; i < ny; i++, pc += nx)
+  pc = costarr + nx_ - 1;
+  for (int i = 0; i < ny_; i++, pc += nx_)
     *pc = costmap_2d::LETHAL_OBSTACLE;
 }
 
@@ -312,27 +313,24 @@ void GraphPlanner::_outlineMap(unsigned char* costarr, int nx, int ny)
  */
 void GraphPlanner::_publishExpand(std::vector<Node>& expand)
 {
-  ROS_DEBUG("Expand Zone Size:%ld", expand.size());
+  ROS_DEBUG("Expand Zone Size: %ld", expand.size());
 
-  // get size and resolution of costmap
-  int nx = costmap_->getSizeInCellsX(), ny = costmap_->getSizeInCellsY();
-  double resolution = costmap_->getResolution();
   nav_msgs::OccupancyGrid grid;
 
   // build expand
   grid.header.frame_id = frame_id_;
   grid.header.stamp = ros::Time::now();
-  grid.info.resolution = resolution;
-  grid.info.width = nx;
-  grid.info.height = ny;
+  grid.info.resolution = resolution_;
+  grid.info.width = nx_;
+  grid.info.height = ny_;
 
   double wx, wy;
   costmap_->mapToWorld(0, 0, wx, wy);
-  grid.info.origin.position.x = wx - resolution / 2;
-  grid.info.origin.position.y = wy - resolution / 2;
+  grid.info.origin.position.x = wx - resolution_ / 2;
+  grid.info.origin.position.y = wy - resolution_ / 2;
   grid.info.origin.position.z = 0.0;
   grid.info.origin.orientation.w = 1.0;
-  grid.data.resize(nx * ny);
+  grid.data.resize(nx_ * ny_);
 
   for (unsigned int i = 0; i < grid.data.size(); i++)
     grid.data[i] = 0;
@@ -345,7 +343,7 @@ void GraphPlanner::_publishExpand(std::vector<Node>& expand)
 /**
  * @brief Calculate plan from planning path
  * @param path  path generated by global planner
- * @param plan  plan transfromed from path
+ * @param plan  plan transfromed from path, i.e. [start, ..., goal]
  * @return  bool true if successful, else false
  */
 bool GraphPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometry_msgs::PoseStamped>& plan)
@@ -377,6 +375,7 @@ bool GraphPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometr
     pose.pose.orientation.w = 1.0;
     plan.push_back(pose);
   }
+
   return !plan.empty();
 }
 
@@ -389,8 +388,8 @@ bool GraphPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometr
  */
 void GraphPlanner::_mapToWorld(double mx, double my, double& wx, double& wy)
 {
-  wx = costmap_->getOriginX() + (mx + convert_offset_) * costmap_->getResolution();
-  wy = costmap_->getOriginY() + (my + convert_offset_) * costmap_->getResolution();
+  wx = origin_x_ + (mx + convert_offset_) * resolution_;
+  wy = origin_y_ + (my + convert_offset_) * resolution_;
 }
 
 /**
@@ -403,13 +402,11 @@ void GraphPlanner::_mapToWorld(double mx, double my, double& wx, double& wy)
  */
 bool GraphPlanner::_worldToMap(double wx, double wy, double& mx, double& my)
 {
-  double originX = costmap_->getOriginX(), originY = costmap_->getOriginY();
-  double resolution = costmap_->getResolution();
-  if (wx < originX || wy < originY)
+  if (wx < origin_x_ || wy < origin_y_)
     return false;
 
-  mx = (wx - originX) / resolution - convert_offset_;
-  my = (wy - originY) / resolution - convert_offset_;
+  mx = (wx - origin_x_) / resolution_ - convert_offset_;
+  my = (wy - origin_y_) / resolution_ - convert_offset_;
   if (mx < costmap_->getSizeInCellsX() && my < costmap_->getSizeInCellsY())
     return true;
 
