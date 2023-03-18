@@ -1,4 +1,5 @@
 #include "pid_planner.h"
+
 #include <pluginlib/class_list_macros.h>
 
 PLUGINLIB_EXPORT_CLASS(pid_planner::PIDPlanner, nav_core::BaseLocalPlanner)
@@ -39,6 +40,7 @@ PIDPlanner::~PIDPlanner()
  */
 void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
 {
+  // ROS_WARN("PIDPlanner::initialize");
   if (!initialized_)
   {
     tf_ = tf;
@@ -47,25 +49,20 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
 
-    // next point distance/turning angle
     nh.param("p_window", p_window_, 0.2);
-    nh.param("o_window", o_window_, 4.0);  // disabled
+    nh.param("o_window", o_window_, 1.0);
 
-    // goal reached tolerance
     nh.param("p_precision", p_precision_, 0.2);
-    nh.param("o_precision", o_precision_, 0.2);
+    nh.param("o_precision", o_precision_, 0.5);
 
-    // linear velocity
     nh.param("max_v", max_v_, 0.5);
     nh.param("min_v", min_v_, 0.0);
     nh.param("max_v_inc", max_v_inc_, 0.5);
 
-    // angular velocity
     nh.param("max_w", max_w_, 1.57);
     nh.param("min_w", min_w_, 0.0);
     nh.param("max_w_inc", max_w_inc_, 1.57);
 
-    // pid controller params
     nh.param("k_v_p", k_v_p_, 1.00);
     nh.param("k_v_i", k_v_i_, 0.01);
     nh.param("k_v_d", k_v_d_, 0.10);
@@ -74,7 +71,7 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("k_w_i", k_w_i_, 0.01);
     nh.param("k_w_d", k_w_d_, 0.10);
 
-    nh.param("k_theta", k_theta_, 0.1);
+    nh.param("k_theta", k_theta_, 0.5);
 
     e_v_ = i_v_ = 0.0;
     e_w_ = i_w_ = 0.0;
@@ -106,6 +103,7 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
  */
 bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
 {
+  // ROS_WARN("PIDPlanner::setPlan");
   if (!initialized_)
   {
     ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
@@ -118,7 +116,7 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
   global_plan_ = orig_global_plan;
 
   // reset plan parameters
-  plan_index_ = 3;
+  plan_index_ = 3;  // NOTE: set to 3 to avoid getting wrong closest point on the path
   goal_reached_ = false;
 
   return true;
@@ -132,6 +130,7 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
  */
 bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 {
+  // ROS_WARN("PIDPlanner::computeVelocityCommands");
   if (!initialized_)
   {
     ROS_ERROR("PID planner has not been initialized");
@@ -148,13 +147,14 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   costmap_ros_->getRobotPose(current_ps_);
   x_ = current_ps_.pose.position.x;
   y_ = current_ps_.pose.position.y;
-  theta_ = tf2::getYaw(current_ps_.pose.orientation);
+  theta_ = tf2::getYaw(current_ps_.pose.orientation);  // [-pi, pi]
+  // ROS_WARN("theta_ %.2f", theta_);
 
-  // desired x, y, theta in base frame
-  double b_x_d, b_y_d, b_theta_d;
+  // desired x, y in base frame
+  double b_x_d, b_y_d;
   double theta_d_;
-  double v = 0, w = 0;
   double theta_err, theta_trj;
+  double e_theta;
 
   while (plan_index_ < global_plan_.size())
   {
@@ -163,7 +163,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     double y_d = target_ps_.pose.position.y;
 
     // from robot to plan point
-    theta_err = atan2((y_d - y_), (x_d - x_));
+    theta_err = atan2((y_d - y_), (x_d - x_));  // [-pi, pi]
 
     int next_plan_index = plan_index_ + 1;
     if (next_plan_index < global_plan_.size())
@@ -176,22 +176,31 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     {
       // add 2*PI to the smaller one
       if (theta_trj > theta_err)
-        theta_err += 2 * M_PI;
+        theta_err += (2 * M_PI);
       else
-        theta_trj += 2 * M_PI;
+        theta_trj += (2 * M_PI);
     }
 
     // weighting between two angle
     theta_d_ = (1 - k_theta_) * theta_trj + k_theta_ * theta_err;
+    if (theta_d_ > M_PI)
+      theta_d_ -= (2 * M_PI);
+    else if (theta_d_ < -M_PI)
+      theta_d_ += (2 * M_PI);
 
     tf2::Quaternion q;
     q.setRPY(0, 0, theta_d_);
     tf2::convert(q, target_ps_.pose.orientation);
 
     // transform from map into base_frame
-    getTransformedPosition(target_ps_, &b_x_d, &b_y_d, &b_theta_d);
+    getTransformedPosition(target_ps_, &b_x_d, &b_y_d);
+    e_theta = theta_d_ - theta_;
+    if (e_theta > M_PI)
+      e_theta -= (2 * M_PI);
+    if (e_theta < -M_PI)
+      e_theta += (2 * M_PI);
 
-    if (hypot(b_x_d, b_y_d) > p_window_)  // || fabs(b_theta_d) > o_window_
+    if (std::hypot(b_x_d, b_y_d) > p_window_ || fabs(e_theta) > o_window_)
       break;
 
     plan_index_++;
@@ -203,12 +212,19 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
   // get final goal orientation - Quaternion to Euler
   final_rpy_ = getEulerAngles(global_plan_.back());
+  // ROS_WARN("final_rpy_[2] = %.2f", final_rpy_[2]);
 
   // position reached
   if (getGoalPositionDistance(global_plan_.back(), x_, y_) < p_precision_)
   {
+    double fe_theta = final_rpy_[2] - theta_;
+    if (fe_theta > M_PI)
+      fe_theta -= (2 * M_PI);
+    if (fe_theta < -M_PI)
+      fe_theta += (2 * M_PI);
+
     // orientation reached
-    if (fabs(final_rpy_[2] - theta_) < o_precision_)
+    if (fabs(fe_theta) < o_precision_)
     {
       cmd_vel.linear.x = 0.0;
       cmd_vel.angular.z = 0.0;
@@ -222,7 +238,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     }
   }
   // large angle, turn first
-  else if (fabs(theta_d_ - theta_) > M_PI_2)
+  else if (fabs(e_theta) > M_PI_2)
   {
     cmd_vel.linear.x = 0.0;
     cmd_vel.angular.z = AngularPIDController(base_odom, theta_d_, theta_);
@@ -256,10 +272,11 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
  */
 double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double b_x_d, double b_y_d)
 {
-  double v = hypot(base_odometry.twist.twist.linear.x, base_odometry.twist.twist.linear.y);
-  double v_d = hypot(b_x_d, b_y_d) / d_t_;
+  double v = std::hypot(base_odometry.twist.twist.linear.x, base_odometry.twist.twist.linear.y);
+  double v_d = std::hypot(b_x_d, b_y_d) / d_t_ / 10.0;
   if (fabs(v_d) > max_v_)
     v_d = copysign(max_v_, v_d);
+  // ROS_WARN("v_d: %.2f", v_d);
 
   double e_v = v_d - v;
   i_v_ += e_v * d_t_;
@@ -300,6 +317,7 @@ double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, doubl
   double w_d = e_theta / d_t_;
   if (fabs(w_d) > max_w_)
     w_d = copysign(max_w_, w_d);
+  // ROS_WARN("w_d: %.2f", w_d);
 
   double w = base_odometry.twist.twist.angular.z;
   double e_w = w_d - w;
@@ -345,6 +363,8 @@ bool PIDPlanner::isGoalReached()
   if (goal_reached_)
   {
     ROS_INFO("Goal reached");
+    e_v_ = i_v_ = 0.0;
+    e_w_ = i_w_ = 0.0;
     return true;
   }
 
@@ -355,6 +375,8 @@ bool PIDPlanner::isGoalReached()
     {
       goal_reached_ = true;
       robotStops();
+      e_v_ = i_v_ = 0.0;
+      e_w_ = i_w_ = 0.0;
       ROS_INFO("Goal reached");
     }
   }
@@ -370,7 +392,7 @@ bool PIDPlanner::isGoalReached()
  */
 double PIDPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped& goal_ps, double x, double y)
 {
-  return hypot(x - goal_ps.pose.position.x, y - goal_ps.pose.position.y);
+  return std::hypot(x - goal_ps.pose.position.x, y - goal_ps.pose.position.y);
 }
 
 /**
