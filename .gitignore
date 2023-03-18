@@ -1,3 +1,5 @@
+src/CMakeLists.txt
+
 devel/
 logs/
 build/
