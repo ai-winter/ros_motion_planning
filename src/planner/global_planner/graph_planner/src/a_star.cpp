@@ -40,6 +40,7 @@ AStar::AStar(int nx, int ny, double resolution, bool dijkstra, bool gbfs) : Glob
     is_dijkstra_ = false;
     is_gbfs_ = false;
   }
+  factor_ = 0.35;
 };
 
 /**

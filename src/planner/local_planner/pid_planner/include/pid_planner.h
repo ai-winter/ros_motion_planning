@@ -117,9 +117,8 @@ private:
    * @param src   src PoseStamped, the object to transform
    * @param x     result x
    * @param y     result y
-   * @param theta result theta
    */
-  void getTransformedPosition(geometry_msgs::PoseStamped& src, double* x, double* y, double* theta)
+  void getTransformedPosition(geometry_msgs::PoseStamped& src, double* x, double* y)
   {
     geometry_msgs::PoseStamped dst;
 
@@ -128,7 +127,6 @@ private:
 
     *x = dst.pose.position.x;
     *y = dst.pose.position.y;
-    *theta = tf2::getYaw(dst.pose.orientation);
   }
 
   costmap_2d::Costmap2DROS* costmap_ros_;
@@ -141,16 +139,16 @@ private:
   double x_, y_, theta_;
   std::vector<double> final_rpy_;
 
-  double p_window_, o_window_;
-  double p_precision_, o_precision_;
+  double p_window_, o_window_;        // next point distance/turning angle
+  double p_precision_, o_precision_;  // goal reached tolerance
   double d_t_;
   double e_v_, e_w_;
   double i_v_, i_w_;
-  double max_v_, min_v_, max_v_inc_;
-  double max_w_, min_w_, max_w_inc_;
-  double k_v_p_, k_v_i_, k_v_d_;
-  double k_w_p_, k_w_i_, k_w_d_;
-  double k_theta_;
+  double max_v_, min_v_, max_v_inc_;  // linear velocity
+  double max_w_, min_w_, max_w_inc_;  // angular velocity
+  double k_v_p_, k_v_i_, k_v_d_;      // pid controller params
+  double k_w_p_, k_w_i_, k_w_d_;      // pid controller params
+  double k_theta_;                    // pid controller params
 
   std::string base_frame_;
   base_local_planner::OdometryHelperRos* odom_helper_;
