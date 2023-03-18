@@ -71,12 +71,9 @@ public:
   bool operator!=(const Node& n) const;
 
 public:
-  // x and y value
-  int x_, y_;
-  // g value, cost to reach this node. h value, heuristic cost to reach the goal
-  double g_, h_;
-  // Node's index and parent's index
-  int id_, pid_;
+  int x_, y_;     // x and y value
+  double g_, h_;  // g value, cost to reach this node. h value, heuristic cost to reach the goal
+  int id_, pid_;  // Node's index and parent's index
 };
 
 /**

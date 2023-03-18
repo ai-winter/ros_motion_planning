@@ -22,14 +22,15 @@ The file structure is shown below.
 
 ```
 ros_motion_planner
-├─gif                     # Animation for README
+├─gif                       # Animation for README
 └─src
     ├─planner
-    │  ├─global_utils     # global planner tools
-    │  ├─graph_planner    # global algorithm based on graph searching
-    │  ├─sample_planner   # global algorithm based on sample searching
-    │  └─local_planner    # local algorithm
-    ├─sim_env             # simulation environment
+    │  ├─utils              # planner tools
+    |  ├─global_planner
+    │  |  ├─graph_planner   # global algorithm based on graph searching
+    │  |  └─sample_planner  # global algorithm based on sample searching
+    │  └─local_planner      # local algorithm
+    ├─sim_env               # simulation environment
     │  ├─config
     │  ├─launch
     │  ├─maps
@@ -40,7 +41,7 @@ ros_motion_planner
     │  ├─urdf
     │  └─worlds
     ├─third_party
-    └─user_config         # user configure file
+    └─user_config           # user configure file
 ```
 
 To start simulation, compile using `catkin_make`. You can directly using this folder as workspace.

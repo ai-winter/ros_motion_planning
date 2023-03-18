@@ -1,10 +1,9 @@
 #ifndef D_STAR_H
 #define D_STAR_H
 
-#include <ros/ros.h>
-
 #include <map>
-#include <algorithm>
+
+#include <ros/ros.h>
 
 #include "global_planner.h"
 
@@ -31,7 +30,6 @@ class DStar : public global_planner::GlobalPlanner
 public:
   /**
    * @brief Construct a new DStar object
-   *
    * @param nx          pixel number in costmap x direction
    * @param ny          pixel number in costmap y direction
    * @param resolution  costmap resolution
@@ -50,7 +48,6 @@ public:
 
   /**
    * @brief Insert nodePtr into the open_list with h_new
-   *
    * @param node_ptr  DNode pointer of the DNode to be inserted
    * @param h_new     new h value
    */
@@ -58,7 +55,6 @@ public:
 
   /**
    * @brief Check if there is collision between n1 and n2
-   *
    * @param n1  DNode pointer of one DNode
    * @param n2  DNode pointer of the other DNode
    * @return true if collision, else false
@@ -67,7 +63,6 @@ public:
 
   /**
    * @brief Get neighbour DNodePtrs of nodePtr
-   *
    * @param node_ptr    DNode to expand
    * @param neighbours  neigbour DNodePtrs in vector
    */
@@ -75,7 +70,6 @@ public:
 
   /**
    * @brief Get the cost between n1 and n2, return INF if collision
-   *
    * @param n1 DNode pointer of one DNode
    * @param n2 DNode pointer of the other DNode
    * @return cost between n1 and n2
@@ -84,21 +78,18 @@ public:
 
   /**
    * @brief Main process of D*
-   *
    * @return k_min
    */
   double processState();
 
   /**
    * @brief Extract the expanded Nodes (CLOSED)
-   *
    * @param expand expanded Nodes in vector
    */
   void extractExpand(std::vector<Node>& expand);
 
   /**
    * @brief Extract path for map
-   *
    * @param start start node
    * @param goal  goal node
    */
@@ -106,7 +97,6 @@ public:
 
   /**
    * @brief Get the closest Node of the path to current state
-   *
    * @param current current state
    * @return the closest Node
    */
@@ -114,11 +104,9 @@ public:
 
   /**
    * @brief Modify the map when collision occur between x and y in path, and then do processState()
-   *
    * @param x DNode pointer of one DNode
-   * @param y DNode pointer of the other DNode
    */
-  void modify(DNodePtr x, DNodePtr y);
+  void modify(DNodePtr x);
 
   /**
    * @brief D* implementation
@@ -132,19 +120,13 @@ public:
             std::vector<Node>& expand);
 
 public:
-  // global costmap
-  unsigned char* curr_global_costmap_;
-  unsigned char* last_global_costmap_;
-  // grid pointer map
-  DNodePtr** map_;
-  // open list, ascending order
-  std::multimap<double, DNodePtr> open_list_;
-  // path
-  std::vector<Node> path_;
-  // expand
-  std::vector<Node> expand_;
-  // last goal
-  Node goal_;
+  unsigned char* curr_global_costmap_;         // current global costmap
+  unsigned char* last_global_costmap_;         // last global costmap
+  DNodePtr** map_;                             // grid pointer map
+  std::multimap<double, DNodePtr> open_list_;  // open list, ascending order
+  std::vector<Node> path_;                     // path
+  std::vector<Node> expand_;                   // expand
+  Node goal_;                                  // last goal
 };
 
 class DNode : public Node
@@ -152,7 +134,6 @@ class DNode : public Node
 public:
   /**
    * @brief Construct a new DNode object
-   *
    * @param x       X value
    * @param y       Y value
    * @param cost    Cost to get to this node
@@ -164,15 +145,13 @@ public:
    */
   DNode(const int x = 0, const int y = 0, const double cost = INF, const double h_cost = INF, const int id = 0,
         const int pid = -1, const int t = NEW, const double k = INF)
-    : Node(x, y, cost, h_cost, id, pid), t(t), k(k)
+    : Node(x, y, cost, h_cost, id, pid), t_(t), k_(k)
   {
   }
 
 public:
-  // Node's tag among enum Tag
-  int t;
-  // Node's k_min in history
-  double k;
+  int t_;     // Node's tag among enum Tag
+  double k_;  // Node's k_min in history
 };
 }  // namespace d_star_planner
 
