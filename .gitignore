@@ -1,4 +1,5 @@
 src/CMakeLists.txt
+.catkin_workspace
 
 devel/
 logs/
