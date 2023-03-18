@@ -130,7 +130,7 @@ void PedestrianSFMPlugin::Reset() {
     while (model_elem) {
       ignition::math::Pose3d g = model_elem->Get<ignition::math::Pose3d>();
       sfm::Goal goal;
-      goal.center.set(g.X(), g.Y());
+      goal.center.set(g.Pos().X(), g.Pos().Y());
       goal.radius = 0.3;
       sfm_actor_.goals.push_back(goal);
       model_elem = model_elem->GetNextElement("goalpoint");
