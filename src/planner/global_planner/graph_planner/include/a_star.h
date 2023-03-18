@@ -48,7 +48,6 @@ public:
 
   /**
    * @brief Get the Heuristics
-   *
    * @param node  current node
    * @param goal  goal node
    * @return  heuristics

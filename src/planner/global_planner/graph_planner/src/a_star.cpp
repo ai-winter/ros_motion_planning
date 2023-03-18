@@ -126,7 +126,6 @@ bool AStar::plan(const unsigned char* gloal_costmap, const Node& start, const No
 
 /**
  * @brief Get the Heuristics
- *
  * @param node  current node
  * @param goal  goal node
  * @return  heuristics
