@@ -5,7 +5,7 @@ social_force:
   people_distance: 6.0
   # weights of social force model
   goal_weight: 2.0
-  obstacle_weight: 80.0
+  obstacle_weight: 20.0
   social_weight: 15
   group_gaze_weight: 3.0
   group_coh_weight: 2.0

@@ -2327,7 +2327,7 @@
     <animation_factor>5.1</animation_factor>
     <people_distance>6.0</people_distance>
     <goal_weight>2.0</goal_weight>
-    <obstacle_weight>80.0</obstacle_weight>
+    <obstacle_weight>20.0</obstacle_weight>
     <social_weight>15</social_weight>
     <group_gaze_weight>3.0</group_gaze_weight>
     <group_coh_weight>2.0</group_coh_weight>
@@ -2380,7 +2380,7 @@
     <animation_factor>5.1</animation_factor>
     <people_distance>6.0</people_distance>
     <goal_weight>2.0</goal_weight>
-    <obstacle_weight>80.0</obstacle_weight>
+    <obstacle_weight>20.0</obstacle_weight>
     <social_weight>15</social_weight>
     <group_gaze_weight>3.0</group_gaze_weight>
     <group_coh_weight>2.0</group_coh_weight>
