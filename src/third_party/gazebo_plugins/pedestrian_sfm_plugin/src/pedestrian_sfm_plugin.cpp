@@ -262,13 +262,13 @@ void PedestrianSFMPlugin::handleObstacles() {
       double min_z = model->BoundingBox().Min().Z();
 
       ignition::math::Vector3d closest_point;
-      double center_weight = 0.2;
+      double closest_weight = 0.8;
       closest_point.X() =
-          ignition::math::clamp((1 - center_weight) * actorPos.X() + center_weight * modelPos.X(), min_x, max_x);
+          ignition::math::clamp(closest_weight * actorPos.X() + (1 - closest_weight) * modelPos.X(), min_x, max_x);
       closest_point.Y() =
-          ignition::math::clamp((1 - center_weight) * actorPos.Y() + center_weight * modelPos.Y(), min_y, max_y);
+          ignition::math::clamp(closest_weight * actorPos.Y() + (1 - closest_weight) * modelPos.Y(), min_y, max_y);
       closest_point.Z() =
-          ignition::math::clamp((1 - center_weight) * actorPos.Z() + center_weight * modelPos.Z(), min_z, max_z);
+          ignition::math::clamp(closest_weight * actorPos.Z() + (1 - closest_weight) * modelPos.Z(), min_z, max_z);
       ignition::math::Vector3d offset = closest_point - actorPos;
       double model_dist = offset.Length();
       if (model_dist < min_dist)
