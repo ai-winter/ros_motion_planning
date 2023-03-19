@@ -37,8 +37,8 @@ bool JumpPointSearch::plan(const unsigned char* gloal_costmap, const Node& start
                            std::vector<Node>& path, std::vector<Node>& expand)
 {
   // copy
-  this->costs_ = gloal_costmap;
-  this->start_ = start, this->goal_ = goal;
+  costs_ = gloal_costmap;
+  start_ = start, goal_ = goal;
 
   // open list
   std::priority_queue<Node, std::vector<Node>, compare_cost> open_list;
@@ -71,7 +71,7 @@ bool JumpPointSearch::plan(const unsigned char* gloal_costmap, const Node& start
     if (current == goal)
     {
       closed_list.insert(current);
-      path = this->_convertClosedListToPath(closed_list, start, goal);
+      path = _convertClosedListToPath(closed_list, start, goal);
       return true;
     }
 
@@ -79,7 +79,7 @@ bool JumpPointSearch::plan(const unsigned char* gloal_costmap, const Node& start
     std::vector<Node> jp_list;
     for (const auto& motion : motions)
     {
-      Node jp = this->jump(current, motion);
+      Node jp = jump(current, motion);
 
       // exists and not in CLOSED set
       if (jp.id_ != -1 && closed_list.find(jp) == closed_list.end())
@@ -121,33 +121,33 @@ bool JumpPointSearch::detectForceNeighbor(const Node& point, const Node& motion)
   // horizontal
   if (x_dir && !y_dir)
   {
-    if (this->costs_[this->grid2Index(x, y + 1)] >= this->lethal_cost_ * this->factor_ &&
-        this->costs_[this->grid2Index(x + x_dir, y + 1)] < this->lethal_cost_ * this->factor_)
+    if (costs_[grid2Index(x, y + 1)] >= lethal_cost_ * factor_ &&
+        costs_[grid2Index(x + x_dir, y + 1)] < lethal_cost_ * factor_)
       return true;
-    if (this->costs_[this->grid2Index(x, y - 1)] >= this->lethal_cost_ * this->factor_ &&
-        this->costs_[this->grid2Index(x + x_dir, y - 1)] < this->lethal_cost_ * this->factor_)
+    if (costs_[grid2Index(x, y - 1)] >= lethal_cost_ * factor_ &&
+        costs_[grid2Index(x + x_dir, y - 1)] < lethal_cost_ * factor_)
       return true;
   }
 
   // vertical
   if (!x_dir && y_dir)
   {
-    if (this->costs_[this->grid2Index(x + 1, y)] >= this->lethal_cost_ * this->factor_ &&
-        this->costs_[this->grid2Index(x + 1, y + y_dir)] < this->lethal_cost_ * this->factor_)
+    if (costs_[grid2Index(x + 1, y)] >= lethal_cost_ * factor_ &&
+        costs_[grid2Index(x + 1, y + y_dir)] < lethal_cost_ * factor_)
       return true;
-    if (this->costs_[this->grid2Index(x - 1, y)] >= this->lethal_cost_ * this->factor_ &&
-        this->costs_[this->grid2Index(x - 1, y + y_dir)] < this->lethal_cost_ * this->factor_)
+    if (costs_[grid2Index(x - 1, y)] >= lethal_cost_ * factor_ &&
+        costs_[grid2Index(x - 1, y + y_dir)] < lethal_cost_ * factor_)
       return true;
   }
 
   // diagonal
   if (x_dir && y_dir)
   {
-    if (this->costs_[this->grid2Index(x - x_dir, y)] >= this->lethal_cost_ * this->factor_ &&
-        this->costs_[this->grid2Index(x - x_dir, y + y_dir)] < this->lethal_cost_ * this->factor_)
+    if (costs_[grid2Index(x - x_dir, y)] >= lethal_cost_ * factor_ &&
+        costs_[grid2Index(x - x_dir, y + y_dir)] < lethal_cost_ * factor_)
       return true;
-    if (this->costs_[this->grid2Index(x, y - y_dir)] >= this->lethal_cost_ * this->factor_ &&
-        this->costs_[this->grid2Index(x + x_dir, y - y_dir)] < this->lethal_cost_ * this->factor_)
+    if (costs_[grid2Index(x, y - y_dir)] >= lethal_cost_ * factor_ &&
+        costs_[grid2Index(x + x_dir, y - y_dir)] < lethal_cost_ * factor_)
       return true;
   }
 
@@ -163,16 +163,16 @@ bool JumpPointSearch::detectForceNeighbor(const Node& point, const Node& motion)
 Node JumpPointSearch::jump(const Node& point, const Node& motion)
 {
   Node new_point = point + motion;
-  new_point.id_ = this->grid2Index(new_point.x_, new_point.y_);
+  new_point.id_ = grid2Index(new_point.x_, new_point.y_);
   new_point.pid_ = point.id_;
-  new_point.h_ = std::sqrt(std::pow(new_point.x_ - this->goal_.x_, 2) + std::pow(new_point.y_ - this->goal_.y_, 2));
+  new_point.h_ = std::sqrt(std::pow(new_point.x_ - goal_.x_, 2) + std::pow(new_point.y_ - goal_.y_, 2));
 
   // next node hit the boundary or obstacle
-  if (new_point.id_ < 0 || new_point.id_ >= this->ns_ || this->costs_[new_point.id_] >= this->lethal_cost_ * this->factor_)
+  if (new_point.id_ < 0 || new_point.id_ >= ns_ || costs_[new_point.id_] >= lethal_cost_ * factor_)
     return Node(-1, -1, -1, -1, -1, -1);
 
   // goal found
-  if (new_point == this->goal_)
+  if (new_point == goal_)
     return new_point;
 
   // diagonal
@@ -181,14 +181,14 @@ Node JumpPointSearch::jump(const Node& point, const Node& motion)
     // if exists jump point at horizontal or vertical
     Node x_dir = Node(motion.x_, 0, 1, 0, 0, 0);
     Node y_dir = Node(0, motion.y_, 1, 0, 0, 0);
-    if (this->jump(new_point, x_dir).id_ != -1 || this->jump(new_point, y_dir).id_ != -1)
+    if (jump(new_point, x_dir).id_ != -1 || jump(new_point, y_dir).id_ != -1)
       return new_point;
   }
 
   // exists forced neighbor
-  if (this->detectForceNeighbor(new_point, motion))
+  if (detectForceNeighbor(new_point, motion))
     return new_point;
   else
-    return this->jump(new_point, motion);
+    return jump(new_point, motion);
 }
 }  // namespace jps_planner
