@@ -11,7 +11,7 @@ LPAStar::LPAStar(int nx, int ny, double resolution) : global_planner::GlobalPlan
   last_global_costmap_ = new unsigned char[ns_];
   start_.x_ = start_.y_ = goal_.x_ = goal_.y_ = INF;
   factor_ = 0.4;
-  this->initMap();
+  initMap();
 }
 
 /**
@@ -25,7 +25,7 @@ void LPAStar::initMap()
     map_[i] = new LNodePtr[ny_];
     for (int j = 0; j < ny_; j++)
     {
-      map_[i][j] = new LNode(i, j, INF, INF, this->grid2Index(i, j), -1, INF, INF);
+      map_[i][j] = new LNode(i, j, INF, INF, grid2Index(i, j), -1, INF, INF);
       map_[i][j]->open_it = open_list_.end();  // allocate empty memory
     }
   }
@@ -47,7 +47,7 @@ void LPAStar::reset()
 
   delete[] map_;
 
-  this->initMap();
+  initMap();
 }
 
 /**
@@ -70,7 +70,7 @@ double LPAStar::getH(LNodePtr n1, LNodePtr n2)
  */
 double LPAStar::calculateKey(LNodePtr s)
 {
-  return std::min(s->g_, s->rhs) + 0.9 * this->getH(s, goal_ptr_);
+  return std::min(s->g_, s->rhs) + 0.9 * getH(s, goal_ptr_);
 }
 
 /**
@@ -107,7 +107,7 @@ void LPAStar::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
         continue;
       LNodePtr neigbour_ptr = map_[x_n][y_n];
 
-      if (this->isCollision(u, neigbour_ptr))
+      if (isCollision(u, neigbour_ptr))
         continue;
 
       neighbours.push_back(neigbour_ptr);
@@ -124,7 +124,7 @@ void LPAStar::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
  */
 double LPAStar::getCost(LNodePtr n1, LNodePtr n2)
 {
-  if (this->isCollision(n1, n2))
+  if (isCollision(n1, n2))
     return INF;
   return std::hypot(n1->x_ - n2->x_, n1->y_ - n2->y_);
 }
@@ -140,15 +140,15 @@ void LPAStar::updateVertex(LNodePtr u)
   if (u->x_ != start_.x_ || u->y_ != start_.y_)
   {
     std::vector<LNodePtr> neigbours;
-    this->getNeighbours(u, neigbours);
+    getNeighbours(u, neigbours);
 
     // min_{s\in pred(u)}(g(s) + c(s, u))
     u->rhs = INF;
     for (LNodePtr s : neigbours)
     {
-      if (s->g_ + this->getCost(s, u) < u->rhs)
+      if (s->g_ + getCost(s, u) < u->rhs)
       {
-        u->rhs = s->g_ + this->getCost(s, u);
+        u->rhs = s->g_ + getCost(s, u);
       }
     }
   }
@@ -163,7 +163,7 @@ void LPAStar::updateVertex(LNodePtr u)
   // g(u) != rhs(u)
   if (u->g_ != u->rhs)
   {
-    u->key = this->calculateKey(u);
+    u->key = calculateKey(u);
     u->open_it = open_list_.insert(std::make_pair(u->key, u));
   }
 }
@@ -184,7 +184,7 @@ void LPAStar::computeShortestPath()
     expand_.push_back(*u);
 
     // goal reached
-    if (u->key >= this->calculateKey(goal_ptr_) && goal_ptr_->rhs == goal_ptr_->g_)
+    if (u->key >= calculateKey(goal_ptr_) && goal_ptr_->rhs == goal_ptr_->g_)
       break;
 
     // Locally over-consistent -> Locally consistent
@@ -196,13 +196,13 @@ void LPAStar::computeShortestPath()
     else
     {
       u->g_ = INF;
-      this->updateVertex(u);
+      updateVertex(u);
     }
 
     std::vector<LNodePtr> neigbours;
-    this->getNeighbours(u, neigbours);
+    getNeighbours(u, neigbours);
     for (LNodePtr s : neigbours)
-      this->updateVertex(s);
+      updateVertex(s);
   }
 }
 
@@ -222,7 +222,7 @@ void LPAStar::extractPath(const Node& start, const Node& goal)
 
     // argmin_{s\in pred(u)}
     std::vector<LNodePtr> neigbours;
-    this->getNeighbours(node_ptr, neigbours);
+    getNeighbours(node_ptr, neigbours);
     double min_cost = INF;
     LNodePtr next_node_ptr;
     for (LNodePtr node_n_ptr : neigbours)
@@ -288,20 +288,20 @@ bool LPAStar::plan(const unsigned char* gloal_costmap, const Node& start, const 
   // new start or goal set
   if (start_.x_ != start.x_ || start_.y_ != start.y_ || goal_.x_ != goal.x_ || goal_.y_ != goal.y_)
   {
-    this->reset();
+    reset();
     start_ = start;
     goal_ = goal;
     start_ptr_ = map_[start.x_][start.y_];
     goal_ptr_ = map_[goal.x_][goal.y_];
 
     start_ptr_->rhs = 0.0;
-    start_ptr_->key = this->calculateKey(start_ptr_);
+    start_ptr_->key = calculateKey(start_ptr_);
     start_ptr_->open_it = open_list_.insert(std::make_pair(start_ptr_->key, start_ptr_));
 
-    this->computeShortestPath();
+    computeShortestPath();
 
     path_.clear();
-    this->extractPath(start, goal);
+    extractPath(start, goal);
 
     expand = expand_;
 
@@ -315,7 +315,7 @@ bool LPAStar::plan(const unsigned char* gloal_costmap, const Node& start, const 
   // Therefore, it is even worse than using A* algorithm.
   else
   {
-    Node state = this->getState(start);
+    Node state = getState(start);
 
     for (int i = -WINDOW_SIZE / 2; i < WINDOW_SIZE / 2; i++)
     {
@@ -325,25 +325,25 @@ bool LPAStar::plan(const unsigned char* gloal_costmap, const Node& start, const 
         if (x_n < 0 || x_n > nx_ || y_n < 0 || y_n > ny_)
           continue;
 
-        int idx = this->grid2Index(x_n, y_n);
+        int idx = grid2Index(x_n, y_n);
         if (curr_global_costmap_[idx] != last_global_costmap_[idx])
         {
           LNodePtr u = map_[x_n][y_n];
           std::vector<LNodePtr> neigbours;
-          this->getNeighbours(u, neigbours);
-          this->updateVertex(u);
+          getNeighbours(u, neigbours);
+          updateVertex(u);
           for (LNodePtr s : neigbours)
           {
-            this->updateVertex(s);
+            updateVertex(s);
           }
         }
       }
     }
-    this->computeShortestPath();
+    computeShortestPath();
 
     path_.clear();
-    this->extractPath(start_, goal);
-    state = this->getState(start);
+    extractPath(start_, goal);
+    state = getState(start);
     std::vector<Node>::iterator state_it = std::find(path_.begin(), path_.end(), state);
     path_.assign(path_.begin(), state_it);
 

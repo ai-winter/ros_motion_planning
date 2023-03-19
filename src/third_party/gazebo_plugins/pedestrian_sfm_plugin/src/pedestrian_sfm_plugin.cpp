@@ -108,7 +108,7 @@ void PedestrianSFMPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
       std::bind(&PedestrianSFMPlugin::OnUpdate, this, std::placeholders::_1)));
 
   // Initialize the social force model.
-  this->Reset();
+  Reset();
 }
 
 
@@ -309,16 +309,16 @@ void PedestrianSFMPlugin::OnUpdate(const common::UpdateInfo &_info) {
   ignition::math::Pose3d actor_pose = actor_->WorldPose();
 
   // update closest obstacle
-  this->handleObstacles();
+  handleObstacles();
   // update pedestrian around
-  this->handlePedestrians();
+  handlePedestrians();
 
   // Compute Social Forces
   sfm::SFM.computeForces(sfm_actor_, other_actors_);
   // Update model
   sfm::SFM.updatePosition(sfm_actor_, dt);
 
- utils::Angle h = this->sfm_actor_.yaw;
+ utils::Angle h = sfm_actor_.yaw;
   utils::Angle add = utils::Angle::fromRadian(1.5707);
   h = h + add;
   double yaw = h.toRadian();

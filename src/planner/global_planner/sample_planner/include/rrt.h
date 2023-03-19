@@ -92,16 +92,13 @@ protected:
    */
   double _angle(const Node& node1, const Node& node2);
 
-  // costmap copy
-  const unsigned char* costs_;
-  // start and goal node copy
-  Node start_, goal_;
+protected:
+  const unsigned char* costs_;  // costmap copy
+  Node start_, goal_;           // start and goal node copy
   // set of sample nodes
   std::unordered_set<Node, NodeIdAsHash, compare_coordinates> sample_list_;
-  // max sample number
-  int sample_num_;
-  // max distance threshold
-  double max_dist_;
+  int sample_num_;              // max sample number
+  double max_dist_;             // max distance threshold
 };
 }  // namespace rrt_planner
 #endif  // RRT_H

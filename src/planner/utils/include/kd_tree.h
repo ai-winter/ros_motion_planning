@@ -126,7 +126,7 @@ public:
   std::vector<int> radiusSearch(const PointT& query, double radius) const
   {
     std::vector<int> indices;
-    _radiusSearchRecursive(query, this->root_, indices, radius);
+    _radiusSearchRecursive(query, root_, indices, radius);
 
     return indices;
   }
@@ -199,7 +199,7 @@ private:
      */
     const T& back() const
     {
-      return this->elements_.back();
+      return elements_.back();
     };
 
     /**
@@ -218,7 +218,7 @@ private:
      */
     size_t size() const
     {
-      return this->elements_.size();
+      return elements_.size();
     }
 
   private:
