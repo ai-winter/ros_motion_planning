@@ -108,7 +108,7 @@ void PedestrianSFMPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
       std::bind(&PedestrianSFMPlugin::OnUpdate, this, std::placeholders::_1)));
 
   // Initialize the social force model.
-  this->Reset();
+  Reset();
 }
 
 
@@ -262,13 +262,13 @@ void PedestrianSFMPlugin::handleObstacles() {
       double min_z = model->BoundingBox().Min().Z();
 
       ignition::math::Vector3d closest_point;
-      double center_weight = 0.2;
+      double closest_weight = 0.8;
       closest_point.X() =
-          ignition::math::clamp((1 - center_weight) * actorPos.X() + center_weight * modelPos.X(), min_x, max_x);
+          ignition::math::clamp(closest_weight * actorPos.X() + (1 - closest_weight) * modelPos.X(), min_x, max_x);
       closest_point.Y() =
-          ignition::math::clamp((1 - center_weight) * actorPos.Y() + center_weight * modelPos.Y(), min_y, max_y);
+          ignition::math::clamp(closest_weight * actorPos.Y() + (1 - closest_weight) * modelPos.Y(), min_y, max_y);
       closest_point.Z() =
-          ignition::math::clamp((1 - center_weight) * actorPos.Z() + center_weight * modelPos.Z(), min_z, max_z);
+          ignition::math::clamp(closest_weight * actorPos.Z() + (1 - closest_weight) * modelPos.Z(), min_z, max_z);
       ignition::math::Vector3d offset = closest_point - actorPos;
       double model_dist = offset.Length();
       if (model_dist < min_dist)
@@ -338,16 +338,16 @@ void PedestrianSFMPlugin::OnUpdate(const common::UpdateInfo &_info) {
   ignition::math::Pose3d actor_pose = actor_->WorldPose();
 
   // update closest obstacle
-  this->handleObstacles();
+  handleObstacles();
   // update pedestrian around
-  this->handlePedestrians();
+  handlePedestrians();
 
   // Compute Social Forces
   sfm::SFM.computeForces(sfm_actor_, other_actors_);
   // Update model
   sfm::SFM.updatePosition(sfm_actor_, dt);
 
- utils::Angle h = this->sfm_actor_.yaw;
+ utils::Angle h = sfm_actor_.yaw;
   utils::Angle add = utils::Angle::fromRadian(1.5707);
   h = h + add;
   double yaw = h.toRadian();
