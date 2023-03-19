@@ -11,4 +11,4 @@ robots_config:
 
 robots_init: ""
 rviz_file: "sim_env.rviz"
-# pedestrians: "pedestrian_config.yaml"
+pedestrians: "pedestrian_config.yaml"
