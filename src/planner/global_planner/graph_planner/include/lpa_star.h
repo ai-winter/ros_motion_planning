@@ -124,21 +124,15 @@ public:
             std::vector<Node>& expand);
 
 public:
-  // global costmap
-  unsigned char* curr_global_costmap_;
-  unsigned char* last_global_costmap_;
-  // grid pointer map
-  LNodePtr** map_;
-  // open list, ascending order
-  std::multimap<double, LNodePtr> open_list_;
-  // path
-  std::vector<Node> path_;
-  // expand
-  std::vector<Node> expand_;
-  // start and goal
-  Node start_, goal_;
   // start and goal ptr
-  LNodePtr start_ptr_, goal_ptr_;
+  unsigned char* curr_global_costmap_;        // current global costmap
+  unsigned char* last_global_costmap_;        // last global costmap
+  LNodePtr** map_;                            // grid pointer map
+  std::multimap<double, LNodePtr> open_list_; // open list, ascending order
+  std::vector<Node> path_;                    // path
+  std::vector<Node> expand_;                  // expand
+  Node start_, goal_;                         // start and goal
+  LNodePtr start_ptr_, goal_ptr_, last_ptr_;  // start and goal ptr
 };
 
 class LNode : public Node
@@ -163,10 +157,8 @@ public:
   }
 
 public:
-  // minimum cost moving from start(value)
-  double rhs;
-  // priority
-  double key;
+  double rhs;     // minimum cost moving from start(value)
+  double key;     // priority
   // iterator
   std::multimap<double, LNodePtr>::iterator open_it;
 };

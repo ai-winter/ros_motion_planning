@@ -34,6 +34,7 @@ public:
    * @param   max_dist    max distance between sample points
    */
   RRTConnect(int nx, int ny, double resolution, int sample_num, double max_dist);
+
   /**
    * @brief RRT implementation
    * @param costs     costmap
@@ -46,17 +47,19 @@ public:
             std::vector<Node>& expand);
 
 protected:
-  // Sampled list forward
-  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> sample_list_f_;
-  // Sampled list backward
-  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> sample_list_b_;
-
   /**
    * @brief convert closed list to path
    * @param boundary  connected node that the boudary of forward and backward
    * @return ector containing path nodes
    */
   std::vector<Node> _convertClosedListToPath(const Node& boundary);
+
+protected:
+  // Sampled list forward
+  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> sample_list_f_;
+  // Sampled list backward
+  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> sample_list_b_;
+
 };
 }  // namespace rrt_planner
 

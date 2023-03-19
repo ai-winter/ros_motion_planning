@@ -36,6 +36,7 @@ public:
    * @param   resolution  costmap resolution
    */
   JumpPointSearch(int nx, int ny, double resolution);
+  
   /**
    * @brief Jump Point Search(JPS) implementation
    * @param costs     costmap
@@ -46,6 +47,7 @@ public:
    */
   bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
             std::vector<Node>& expand);
+
   /**
    * @brief detect whether current node has forced neighbor or not
    * @param point     current node
@@ -63,10 +65,8 @@ public:
   Node jump(const Node& point, const Node& motion);
 
 private:
-  // start and goal node
-  Node start_, goal_;
-  // costmap
-  const unsigned char* costs_;
+  Node start_, goal_;             // start and goal node
+  const unsigned char* costs_;    // costmap
 };
-}  // namespace jps_planner
+} 
 #endif  // JUMP_POINT_SEARCH_H

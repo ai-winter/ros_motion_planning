@@ -73,62 +73,63 @@ void SamplePlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
     // initialize ROS node
     ros::NodeHandle private_nh("~/" + name);
     // initialize costmap
-    this->costmap_ = costmap;
+    costmap_ = costmap;
     // costmap frame ID
-    this->frame_id_ = frame_id;
-    // costmap size
-    unsigned int nx = costmap->getSizeInCellsX(), ny = costmap->getSizeInCellsY();
-    // costmap resolution
-    double resolution = costmap->getResolution();
+    frame_id_ = frame_id;
+    // get costmap properties
+    nx_ = costmap->getSizeInCellsX(), ny_ = costmap->getSizeInCellsY();
+    origin_x_ = costmap_->getOriginX(), origin_y_ = costmap_->getOriginY();
+    resolution_ = costmap->getResolution();
 
     /*======================= static parameters loading ==========================*/
     // offset of transform from world(x,y) to grid map(x,y)
-    private_nh.param("convert_offset", this->convert_offset_, 0.0);
+    private_nh.param("convert_offset", convert_offset_, 0.0);
     // error tolerance
-    private_nh.param("default_tolerance", this->tolerance_, 0.0);
+    private_nh.param("default_tolerance", tolerance_, 0.0);
     // whether outline the map or not
-    private_nh.param("outline_map", this->is_outline_, false);
+    private_nh.param("outline_map", is_outline_, false);
     // obstacle inflation factor
-    private_nh.param("obstacle_factor", this->factor_, 0.5);
+    private_nh.param("obstacle_factor", factor_, 0.5);
     // whether publish expand zone or not
-    private_nh.param("expand_zone", this->is_expand_, false);
+    private_nh.param("expand_zone", is_expand_, false);
     // random sample points
-    private_nh.param("sample_points", this->sample_points_, 500);
+    private_nh.param("sample_points", sample_points_, 500);
     // max distance between sample points
-    private_nh.param("sample_max_d", this->sample_max_d_, 5.0);
+    private_nh.param("sample_max_d", sample_max_d_, 5.0);
     // optimization radius
-    private_nh.param("optimization_r", this->opt_r_, 10.0);
+    private_nh.param("optimization_r", opt_r_, 10.0);
 
     // planner name
     std::string planner_name;
     private_nh.param("planner_name", planner_name, (std::string) "rrt");
     if (planner_name == "rrt")
-      this->g_planner_ = new rrt_planner::RRT(nx, ny, resolution, this->sample_points_, this->sample_max_d_);
+      g_planner_ = new rrt_planner::RRT(nx_, ny_, resolution_, sample_points_, sample_max_d_);
     else if (planner_name == "rrt_star")
-      this->g_planner_ =
-          new rrt_planner::RRTStar(nx, ny, resolution, this->sample_points_, this->sample_max_d_, this->opt_r_);
+      g_planner_ =
+          new rrt_planner::RRTStar(nx_, ny_, resolution_, sample_points_, sample_max_d_, opt_r_);
     else if (planner_name == "rrt_connect")
-      this->g_planner_ = new rrt_planner::RRTConnect(nx, ny, resolution, this->sample_points_, this->sample_max_d_);
+      g_planner_ = new rrt_planner::RRTConnect(nx_, ny_, resolution_, sample_points_, sample_max_d_);
     else if (planner_name == "informed_rrt")
-      this->g_planner_ =
-          new rrt_planner::InformedRRT(nx, ny, resolution, this->sample_points_, this->sample_max_d_, this->opt_r_);
+      g_planner_ =
+          new rrt_planner::InformedRRT(nx_, ny_, resolution_, sample_points_, sample_max_d_, opt_r_);
 
     ROS_INFO("Using global sample planner: %s", planner_name.c_str());
 
     /*====================== register topics and services =======================*/
     // register planning publisher
-    this->plan_pub_ = private_nh.advertise<nav_msgs::Path>("plan", 1);
+    plan_pub_ = private_nh.advertise<nav_msgs::Path>("plan", 1);
     // register explorer visualization publisher
-    this->expand_pub_ = private_nh.advertise<visualization_msgs::Marker>("tree", 1);
+    expand_pub_ = private_nh.advertise<visualization_msgs::Marker>("tree", 1);
     // register planning service
-    this->make_plan_srv_ = private_nh.advertiseService("make_plan", &SamplePlanner::makePlanService, this);
+    make_plan_srv_ = private_nh.advertiseService("make_plan", &SamplePlanner::makePlanService, this);
 
     // set initialization flag
-    this->initialized_ = true;
+    initialized_ = true;
   }
   else
     ROS_WARN("This planner has already been initialized, you can't call it twice, doing nothing");
 }
+
 /**
  * @brief plan a path given start and goal in world map
  * @param start     start in world map
@@ -140,41 +141,39 @@ void SamplePlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
 bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
                              std::vector<geometry_msgs::PoseStamped>& plan)
 {
-  return makePlan(start, goal, this->tolerance_, plan);
+  return makePlan(start, goal, tolerance_, plan);
 }
 bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
                              double tolerance, std::vector<geometry_msgs::PoseStamped>& plan)
 {
   // start thread mutex
-  boost::mutex::scoped_lock lock(this->mutex_);
-  if (!this->initialized_)
+  boost::mutex::scoped_lock lock(mutex_);
+  if (!initialized_)
   {
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
     return false;
   }
   // clear existing plan
   plan.clear();
-  // get costmap size
-  int nx = this->costmap_->getSizeInCellsX(), ny = this->costmap_->getSizeInCellsY();
 
   // judege whether goal and start node in costmap frame or not
-  if (goal.header.frame_id != this->frame_id_)
+  if (goal.header.frame_id != frame_id_)
   {
     ROS_ERROR("The goal pose passed to this planner must be in the %s frame.  It is instead in the %s frame.",
-              this->frame_id_.c_str(), goal.header.frame_id.c_str());
+              frame_id_.c_str(), goal.header.frame_id.c_str());
     return false;
   }
-  if (start.header.frame_id != this->frame_id_)
+  if (start.header.frame_id != frame_id_)
   {
     ROS_ERROR("The start pose passed to this planner must be in the %s frame.  It is instead in the %s frame.",
-              this->frame_id_.c_str(), start.header.frame_id.c_str());
+              frame_id_.c_str(), start.header.frame_id.c_str());
     return false;
   }
   // get goal and strat node coordinate
   // tranform from world to costmap
   double wx = start.pose.position.x, wy = start.pose.position.y;
   double m_start_x, m_start_y, m_goal_x, m_goal_y;
-  if (!this->_worldToMap(wx, wy, m_start_x, m_start_y))
+  if (!_worldToMap(wx, wy, m_start_x, m_start_y))
   {
     ROS_WARN(
         "The robot's start position is off the global costmap. Planning will always fail, are you sure the robot has "
@@ -182,7 +181,7 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
     return false;
   }
   wx = goal.pose.position.x, wy = goal.pose.position.y;
-  if (!this->_worldToMap(wx, wy, m_goal_x, m_goal_y))
+  if (!_worldToMap(wx, wy, m_goal_x, m_goal_y))
   {
     ROS_WARN_THROTTLE(1.0,
                       "The goal sent to the global planner is off the global costmap. Planning will always fail to "
@@ -191,26 +190,26 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
   }
   // tranform from costmap to grid map
   int g_start_x, g_start_y, g_goal_x, g_goal_y;
-  this->g_planner_->map2Grid(m_start_x, m_start_y, g_start_x, g_start_y);
-  this->g_planner_->map2Grid(m_goal_x, m_goal_y, g_goal_x, g_goal_y);
-  Node n_start(g_start_x, g_start_y, 0, 0, this->g_planner_->grid2Index(g_start_x, g_start_y), 0);
-  Node n_goal(g_goal_x, g_goal_y, 0, 0, this->g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
+  g_planner_->map2Grid(m_start_x, m_start_y, g_start_x, g_start_y);
+  g_planner_->map2Grid(m_goal_x, m_goal_y, g_goal_x, g_goal_y);
+  Node n_start(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
+  Node n_goal(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
 
   // clear the cost of robot location
-  this->costmap_->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
+  costmap_->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
 
   // outline the map
-  if (this->is_outline_)
-    this->_outlineMap(this->costmap_->getCharMap(), nx, ny);
+  if (is_outline_)
+    _outlineMap(costmap_->getCharMap());
 
   // calculate path
   std::vector<Node> path;
   std::vector<Node> expand;
-  bool path_found = this->g_planner_->plan(this->costmap_->getCharMap(), n_start, n_goal, path, expand);
+  bool path_found = g_planner_->plan(costmap_->getCharMap(), n_start, n_goal, path, expand);
 
   if (path_found)
   {
-    if (this->_getPlanFromPath(path, plan))
+    if (_getPlanFromPath(path, plan))
     {
       geometry_msgs::PoseStamped goalCopy = goal;
       goalCopy.header.stamp = ros::Time::now();
@@ -222,20 +221,21 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
   else
     ROS_ERROR("Failed to get a path.");
   // publish expand zone
-  if (this->is_expand_)
-    this->_publishExpand(expand);
+  if (is_expand_)
+    _publishExpand(expand);
 
   // publish visulization plan
-  this->publishPlan(plan);
+  publishPlan(plan);
   return !plan.empty();
 }
+
 /**
  * @brief  publish planning path
  * @param  path planning path
  */
 void SamplePlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& plan)
 {
-  if (!this->initialized_)
+  if (!initialized_)
   {
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
     return;
@@ -243,13 +243,14 @@ void SamplePlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& p
   // creat visulized path plan
   nav_msgs::Path gui_plan;
   gui_plan.poses.resize(plan.size());
-  gui_plan.header.frame_id = this->frame_id_;
+  gui_plan.header.frame_id = frame_id_;
   gui_plan.header.stamp = ros::Time::now();
   for (unsigned int i = 0; i < plan.size(); i++)
     gui_plan.poses[i] = plan[i];
   // publish plan to rviz
-  this->plan_pub_.publish(gui_plan);
+  plan_pub_.publish(gui_plan);
 }
+
 /**
  * @brief  regeister planning service
  * @param  req  request from client
@@ -259,29 +260,27 @@ bool SamplePlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::G
 {
   makePlan(req.start, req.goal, resp.plan.poses);
   resp.plan.header.stamp = ros::Time::now();
-  resp.plan.header.frame_id = this->frame_id_;
+  resp.plan.header.frame_id = frame_id_;
   return true;
 }
 
 /**
  * @brief  Inflate the boundary of costmap into obstacles to prevent cross planning
  * @param  costarr  costmap pointer
- * @param  nx       pixel number in costmap x direction
- * @param  ny       pixel number in costmap y direction
  */
-void SamplePlanner::_outlineMap(unsigned char* costarr, int nx, int ny)
+void SamplePlanner::_outlineMap(unsigned char* costarr)
 {
   unsigned char* pc = costarr;
-  for (int i = 0; i < nx; i++)
+  for (int i = 0; i < nx_; i++)
     *pc++ = costmap_2d::LETHAL_OBSTACLE;
-  pc = costarr + (ny - 1) * nx;
-  for (int i = 0; i < nx; i++)
+  pc = costarr + (ny_ - 1) * nx_;
+  for (int i = 0; i < nx_; i++)
     *pc++ = costmap_2d::LETHAL_OBSTACLE;
   pc = costarr;
-  for (int i = 0; i < ny; i++, pc += nx)
+  for (int i = 0; i < ny_; i++, pc += nx_)
     *pc = costmap_2d::LETHAL_OBSTACLE;
-  pc = costarr + nx - 1;
-  for (int i = 0; i < ny; i++, pc += nx)
+  pc = costarr + nx_ - 1;
+  for (int i = 0; i < ny_; i++, pc += nx_)
     *pc = costmap_2d::LETHAL_OBSTACLE;
 }
 /**
@@ -305,8 +304,9 @@ void SamplePlanner::_publishExpand(std::vector<Node>& expand)
   // Publish all edges
   for (auto node : expand)
     if (node.pid_ != 0)
-      this->_pubLine(&tree_msg, &this->expand_pub_, node.id_, node.pid_);
+      _pubLine(&tree_msg, &expand_pub_, node.id_, node.pid_);
 }
+
 /**
  * @brief  tranform from costmap(x, y) to world map(x, y)
  * @param  mx costmap x
@@ -316,9 +316,10 @@ void SamplePlanner::_publishExpand(std::vector<Node>& expand)
  */
 void SamplePlanner::_mapToWorld(double mx, double my, double& wx, double& wy)
 {
-  wx = this->costmap_->getOriginX() + (mx + this->convert_offset_) * this->costmap_->getResolution();
-  wy = this->costmap_->getOriginY() + (my + this->convert_offset_) * this->costmap_->getResolution();
+  wx = origin_x_ + (mx + convert_offset_) * resolution_;
+  wy = origin_y_ + (my + convert_offset_) * resolution_;
 }
+
 /**
  * @brief  tranform from world map(x, y) to costmap(x, y)
  * @param  mx costmap x
@@ -328,17 +329,17 @@ void SamplePlanner::_mapToWorld(double mx, double my, double& wx, double& wy)
  */
 bool SamplePlanner::_worldToMap(double wx, double wy, double& mx, double& my)
 {
-  double originX = this->costmap_->getOriginX(), originY = this->costmap_->getOriginY();
-  double resolution = this->costmap_->getResolution();
-  if (wx < originX || wy < originY)
+  if (wx < origin_x_ || wy < origin_y_)
     return false;
-  mx = (wx - originX) / resolution - this->convert_offset_;
-  my = (wy - originY) / resolution - this->convert_offset_;
-  if (mx < this->costmap_->getSizeInCellsX() && my < this->costmap_->getSizeInCellsY())
+  mx = (wx - origin_x_) / resolution_ - convert_offset_;
+  my = (wy - origin_y_) / resolution_ - convert_offset_;
+
+  if (mx < nx_ && my < ny_)
     return true;
 
   return false;
 }
+
 /**
  * @brief  calculate plan from planning path
  * @param  path path generated by global planner
@@ -347,23 +348,24 @@ bool SamplePlanner::_worldToMap(double wx, double wy, double& mx, double& my)
  */
 bool SamplePlanner::_getPlanFromPath(std::vector<Node> path, std::vector<geometry_msgs::PoseStamped>& plan)
 {
-  if (!this->initialized_)
+  if (!initialized_)
   {
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
     return false;
   }
-  std::string globalFrame = this->frame_id_;
+  std::string globalFrame = frame_id_;
   ros::Time planTime = ros::Time::now();
   plan.clear();
 
   for (int i = path.size() - 1; i >= 0; i--)
   {
     double wx, wy;
-    this->_mapToWorld((double)path[i].x_, (double)path[i].y_, wx, wy);
+    _mapToWorld((double)path[i].x_, (double)path[i].y_, wx, wy);
+
     // coding as message type
     geometry_msgs::PoseStamped pose;
     pose.header.stamp = ros::Time::now();
-    pose.header.frame_id = this->frame_id_;
+    pose.header.frame_id = frame_id_;
     pose.pose.position.x = wx;
     pose.pose.position.y = wy;
     pose.pose.position.z = 0.0;
@@ -373,6 +375,7 @@ bool SamplePlanner::_getPlanFromPath(std::vector<Node> path, std::vector<geometr
     pose.pose.orientation.w = 1.0;
     plan.push_back(pose);
   }
+
   return !plan.empty();
 }
 
@@ -393,16 +396,16 @@ void SamplePlanner::_pubLine(visualization_msgs::Marker* line_msg, ros::Publishe
   std_msgs::ColorRGBA c1, c2;
   int p1x, p1y, p2x, p2y;
 
-  this->g_planner_->index2Grid(id, p1x, p1y);
-  this->g_planner_->grid2Map(p1x, p1y, p1.x, p1.y);
-  p1.x = (p1.x + this->convert_offset_) + costmap_->getOriginX();
-  p1.y = (p1.y + this->convert_offset_) + costmap_->getOriginY();
+  g_planner_->index2Grid(id, p1x, p1y);
+  g_planner_->grid2Map(p1x, p1y, p1.x, p1.y);
+  p1.x = (p1.x + convert_offset_) + costmap_->getOriginX();
+  p1.y = (p1.y + convert_offset_) + costmap_->getOriginY();
   p1.z = 1.0;
 
-  this->g_planner_->index2Grid(pid, p2x, p2y);
-  this->g_planner_->grid2Map(p2x, p2y, p2.x, p2.y);
-  p2.x = (p2.x + this->convert_offset_) + costmap_->getOriginX();
-  p2.y = (p2.y + this->convert_offset_) + costmap_->getOriginY();
+  g_planner_->index2Grid(pid, p2x, p2y);
+  g_planner_->grid2Map(p2x, p2y, p2.x, p2.y);
+  p2.x = (p2.x + convert_offset_) + costmap_->getOriginX();
+  p2.y = (p2.y + convert_offset_) + costmap_->getOriginY();
   p2.z = 1.0;
 
   c1.r = 0.43;

@@ -35,6 +35,7 @@ public:
    * @param   r           optimization radius
    */
   InformedRRT(int nx, int ny, double resolution, int sample_num, double max_dist, double r);
+
   /**
    * @brief RRT implementation
    * @param costs     costmap
@@ -47,11 +48,6 @@ public:
             std::vector<Node>& expand);
 
 protected:
-  // best planning cost
-  double c_best_;
-  // distance between start and goal
-  double c_min_;
-
   /**
    * @brief Sample in ellipse
    * @param   x   random sampling x
@@ -65,6 +61,11 @@ protected:
    * @return Generated node
    */
   Node _generateRandomNode();
+
+protected:
+  double c_best_;   // best planning cost
+  double c_min_;    // distance between start and goal
+
 };
 }  // namespace rrt_planner
 #endif
