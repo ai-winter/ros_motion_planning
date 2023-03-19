@@ -235,17 +235,46 @@ void PedestrianSFMPlugin::handleObstacles() {
     physics::ModelPtr model = world_->ModelByIndex(i);
     if (std::find(ignore_models_.begin(), ignore_models_.end(), model->GetName()) == ignore_models_.end())
     {
+      // ignition::math::Vector3d actorPos = actor_->WorldPose().Pos();
+      // ignition::math::Vector3d modelPos = model->WorldPose().Pos();
+      // std::tuple<bool, double, ignition::math::Vector3d> intersect =
+      //     model->BoundingBox().Intersect(modelPos, actorPos, 0.05, 8.0);
+
+      // ignition::math::Vector3d offset = std::get<2>(intersect) - actorPos;
+      // double model_dist = offset.Length();
+
+      // if (model_dist < min_dist)
+      // {
+      //   min_dist = model_dist;
+      //   closest_obs = std::get<2>(intersect);
+      // }
+
+      // simple method, suppose BBs are AABBs
       ignition::math::Vector3d actorPos = actor_->WorldPose().Pos();
       ignition::math::Vector3d modelPos = model->WorldPose().Pos();
-      std::tuple<bool, double, ignition::math::Vector3d> intersect =
-          model->BoundingBox().Intersect(modelPos, actorPos, 0.05, 8.0);
 
-      ignition::math::Vector3d offset = std::get<2>(intersect) - actorPos;
+      // BB border
+      double max_x = model->BoundingBox().Max().X();
+      double min_x = model->BoundingBox().Min().X();
+      double max_y = model->BoundingBox().Max().Y();
+      double min_y = model->BoundingBox().Min().Y();
+      double max_z = model->BoundingBox().Max().Z();
+      double min_z = model->BoundingBox().Min().Z();
+
+      ignition::math::Vector3d closest_point;
+      double center_weight = 0.2;
+      closest_point.X() =
+          ignition::math::clamp((1 - center_weight) * actorPos.X() + center_weight * modelPos.X(), min_x, max_x);
+      closest_point.Y() =
+          ignition::math::clamp((1 - center_weight) * actorPos.Y() + center_weight * modelPos.Y(), min_y, max_y);
+      closest_point.Z() =
+          ignition::math::clamp((1 - center_weight) * actorPos.Z() + center_weight * modelPos.Z(), min_z, max_z);
+      ignition::math::Vector3d offset = closest_point - actorPos;
       double model_dist = offset.Length();
-
-      if (model_dist < min_dist) {
+      if (model_dist < min_dist)
+      {
         min_dist = model_dist;
-        closest_obs = std::get<2>(intersect);
+        closest_obs = closest_point;
       }
     }
   }
