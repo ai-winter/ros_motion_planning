@@ -42,42 +42,42 @@ RRTStar::RRTStar(int nx, int ny, double resolution, int sample_num, double max_d
 bool RRTStar::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                    std::vector<Node>& expand)
 {
-  this->sample_list_.clear();
+  sample_list_.clear();
   // copy
-  this->start_ = start, this->goal_ = goal;
-  this->costs_ = gloal_costmap;
-  this->sample_list_.insert(start);
+  start_ = start, goal_ = goal;
+  costs_ = gloal_costmap;
+  sample_list_.insert(start);
   expand.push_back(start);
 
   // main loop
   int iteration = 0;
-  while (iteration < this->sample_num_)
+  while (iteration < sample_num_)
   {
     // generate a random node in the map
-    Node sample_node = this->_generateRandomNode();
+    Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (gloal_costmap[sample_node.id_] >= this->lethal_cost_ * this->factor_)
+    if (gloal_costmap[sample_node.id_] >= lethal_cost_ * factor_)
       continue;
 
     // visited
-    if (this->sample_list_.find(sample_node) != this->sample_list_.end())
+    if (sample_list_.find(sample_node) != sample_list_.end())
       continue;
 
     // regular the sample node
-    Node new_node = this->_findNearestPoint(this->sample_list_, sample_node);
+    Node new_node = _findNearestPoint(sample_list_, sample_node);
     if (new_node.id_ == -1)
       continue;
     else
     {
-      this->sample_list_.insert(new_node);
+      sample_list_.insert(new_node);
       expand.push_back(new_node);
     }
 
     // goal found
     if (_checkGoal(new_node))
     {
-      path = this->_convertClosedListToPath(this->sample_list_, start, goal);
+      path = _convertClosedListToPath(sample_list_, start, goal);
       return true;
     }
 
@@ -100,7 +100,7 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
   for (const auto node_ : list)
   {
     // calculate distance
-    double new_dist = this->_dist(node_, new_node);
+    double new_dist = _dist(node_, new_node);
 
     // update nearest node
     if (new_dist < min_dist)
@@ -113,26 +113,26 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
   }
 
   // distance longer than the threshold
-  if (min_dist > this->max_dist_)
+  if (min_dist > max_dist_)
   {
     // connect sample node and nearest node, then move the nearest node
     // forward to sample node with `max_distance` as result
-    double theta = this->_angle(nearest_node, new_node);
-    new_node.x_ = nearest_node.x_ + (int)(this->max_dist_ * cos(theta));
-    new_node.y_ = nearest_node.y_ + (int)(this->max_dist_ * sin(theta));
-    new_node.id_ = this->grid2Index(new_node.x_, new_node.y_);
-    new_node.g_ = this->max_dist_ + nearest_node.g_;
+    double theta = _angle(nearest_node, new_node);
+    new_node.x_ = nearest_node.x_ + (int)(max_dist_ * cos(theta));
+    new_node.y_ = nearest_node.y_ + (int)(max_dist_ * sin(theta));
+    new_node.id_ = grid2Index(new_node.x_, new_node.y_);
+    new_node.g_ = max_dist_ + nearest_node.g_;
   }
 
   // obstacle check
   if (!_isAnyObstacleInPath(new_node, nearest_node))
   {
     // rewire optimization
-    for (auto node_ : this->sample_list_)
+    for (auto node_ : sample_list_)
     {
       // inside the optimization circle
-      double new_dist = this->_dist(node_, new_node);
-      if (new_dist < this->r_)
+      double new_dist = _dist(node_, new_node);
+      if (new_dist < r_)
       {
         double cost = node_.g_ + new_dist;
         // update new sample node's cost and parent
