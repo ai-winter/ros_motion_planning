@@ -1,0 +1,103 @@
+<launch>
+    <!-- Planner -->
+    <arg name="global_planner" default="astar" />
+    <arg name="local_planner" default="pid" />
+
+    <!-- Init pose -->
+    <arg name="robot_x" value="0.0" />
+    <arg name="robot_y" value="0.0" />
+    <arg name="robot_z" value="0.0" />
+    <arg name="robot_yaw" value="0.0" />
+    <arg name="robot" default="turtlebot3_waffle" />
+
+    <!-- Map file TODO -->
+    <arg name="map" default="warehouse" doc="map type [warehouse, workshop, turtlebot3_house, ...]" />
+
+    <!-- Load map -->
+    <node name="map_server" pkg="map_server" type="map_server"
+        args="$(find sim_env)/maps/$(arg map)/$(arg map).yaml" />
+
+    <!-- AMCL -->
+    <node pkg="amcl" type="amcl" name="amcl">
+        <rosparam file="$(find sim_env)/config/amcl_params.yaml" command="load" />
+        <param name="initial_pose_x" value="$(arg robot_x)" />
+        <param name="initial_pose_y" value="$(arg robot_y)" />
+        <param name="initial_pose_z" value="$(arg robot_z)" />
+        <remap from="static_map" to="/static_map" />
+    </node>
+
+    <!-- Move base -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <!-- global planner plugin -->
+        <!-- graph search -->
+        <param name="base_global_planner" value="graph_planner/GraphPlanner"
+            if="$(eval arg('global_planner')=='a_star'
+                        or arg('global_planner')=='jps' 
+                        or arg('global_planner')=='gbfs'
+                        or arg('global_planner')=='dijkstra'
+                        or arg('global_planner')=='d_star'
+                        or arg('global_planner')=='lpa_star'
+                        or arg('global_planner')=='d_star_lite')" />
+        <param name="GraphPlanner/planner_name" value="$(arg global_planner)"
+            if="$(eval arg('global_planner')=='a_star'
+                        or arg('global_planner')=='jps' 
+                        or arg('global_planner')=='gbfs'
+                        or arg('global_planner')=='dijkstra'
+                        or arg('global_planner')=='d_star'
+                        or arg('global_planner')=='lpa_star'
+                        or arg('global_planner')=='d_star_lite')" />
+
+        <!-- sample search -->
+        <param name="base_global_planner" value="sample_planner/SamplePlanner"
+            if="$(eval arg('global_planner')=='rrt'
+                        or arg('global_planner')=='rrt_star'
+                        or arg('global_planner')=='informed_rrt'
+                        or arg('global_planner')=='rrt_connect')" />
+        <param name="SamplePlanner/planner_name" value="$(arg global_planner)"
+            if="$(eval arg('global_planner')=='rrt'
+                        or arg('global_planner')=='rrt_star'
+                        or arg('global_planner')=='informed_rrt'
+                        or arg('global_planner')=='rrt_connect')" />
+
+        <!-- local planner plugin -->
+        <param name="base_local_planner" value="dwa_planner/DWAPlanner"
+            if="$(eval arg('local_planner')=='dwa')" />
+        <rosparam file="$(find sim_env)/config/planner/dwa_planner_params.yaml" command="load"
+            if="$(eval arg('local_planner')=='dwa')" />
+
+        <param name="base_local_planner" value="pid_planner/PIDPlanner"
+            if="$(eval arg('local_planner')=='pid')" />
+        <rosparam file="$(find sim_env)/config/planner/pid_planner_params.yaml" command="load"
+            if="$(eval arg('local_planner')=='pid')" />
+
+        <!-- loading navigation parameters -->
+        <rosparam
+            file="$(eval find('sim_env') + '/config/' + arg('robot') + '/costmap_common_params_' 
+                    + arg('robot') + '.yaml')"
+            command="load" ns="global_costmap" />
+        <rosparam
+            file="$(eval find('sim_env') + '/config/' + arg('robot') + '/costmap_common_params_'
+                    + arg('robot') + '.yaml')"
+            command="load" ns="local_costmap" />
+        <rosparam file="$(find sim_env)/config/costmap/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find sim_env)/config/costmap/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find sim_env)/config/move_base_params.yaml" command="load" />
+
+        <rosparam file="$(find sim_env)/config/planner/graph_planner_params.yaml" command="load" />
+        <rosparam file="$(find sim_env)/config/planner/sample_planner_params.yaml" command="load" />
+
+        <!-- set coordinate transformation namespace -->
+        <param name="global_costmap/global_frame" value="map" />
+
+        <!-- centralize map -->
+        <remap from="map" to="/map" />
+
+        <!-- command -->
+        <remap from="/cmd_vel" to="/" />
+    </node>
+
+    <!-- Rviz -->
+    <node name="rviz" pkg="rviz" type="rviz" />
+    <!-- args="-d $(find sim_env)/rviz/$(arg rviz_file)" -->
+
+</launch>
