@@ -1,0 +1,45 @@
+<library path="lib/libspencer_tracking_rviz_plugin">
+
+  <class name="spencer_tracking_rviz_plugin/DetectedPersons" type="spencer_tracking_rviz_plugin::DetectedPersonsDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays detected persons from spencer_tracking_msgs/DetectedPersons messages.
+    </description>
+    <message_type>spencer_tracking_msgs/DetectedPersons</message_type>
+  </class>
+  
+  <class name="spencer_tracking_rviz_plugin/TrackedPersons" type="spencer_tracking_rviz_plugin::TrackedPersonsDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays tracked persons from spencer_tracking_msgs/TrackedPersons messages.
+    </description>
+    <message_type>spencer_tracking_msgs/TrackedPersons</message_type>
+  </class>
+
+  <class name="spencer_tracking_rviz_plugin/TrackedGroups" type="spencer_tracking_rviz_plugin::TrackedGroupsDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays tracked groups from spencer_tracking_msgs/TrackedGroups messages.
+    </description>
+    <message_type>spencer_tracking_msgs/TrackedGroups</message_type>
+  </class>
+
+  <class name="spencer_tracking_rviz_plugin/SocialRelations" type="spencer_tracking_rviz_plugin::SocialRelationsDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays social relations from spencer_social_relation_msgs/SocialRelations messages.
+    </description>
+    <message_type>spencer_social_relation_msgs/SocialRelations</message_type>
+  </class>
+
+  <class name="spencer_tracking_rviz_plugin/SocialActivities" type="spencer_tracking_rviz_plugin::SocialActivitiesDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays social activities from spencer_social_relation_msgs/SocialActivities messages.
+    </description>
+    <message_type>spencer_social_relation_msgs/SocialActivities</message_type>
+  </class>
+
+  <class name="spencer_tracking_rviz_plugin/HumanAttributes" type="spencer_tracking_rviz_plugin::HumanAttributesDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays human attributes from spencer_human_attribute_msgs/HumanAttributes messages.
+    </description>
+    <message_type>spencer_human_attribute_msgs/HumanAttributes</message_type>
+  </class>
+
+</library>

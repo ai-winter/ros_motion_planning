@@ -196,6 +196,11 @@ class XMLGenerator(object):
             animation.append(XMLGenerator.createElement("interpolate_x", text="true"))
 
             # plugin
+            if not index:
+                plugin_visual = XMLGenerator.createElement("plugin", props={"name": "pedestrian_visual", "filename": "libPedestrianVisualPlugin.so"})
+            else:
+                plugin_visual = None
+                
             plugin = XMLGenerator.createElement("plugin", props={"name": human["name"] + "_plugin", "filename": "libPedestrianSFMPlugin.so"})
             plugin.append(createCollision("LHipJoint_LeftUpLeg_collision", [0.01, 0.001, 0.001]))
             plugin.append(createCollision("LeftUpLeg_LeftLeg_collision", [8.0, 8.0, 1.0]))
@@ -245,6 +250,9 @@ class XMLGenerator(object):
             actor.append(skin)
             actor.append(animation)
             actor.append(plugin)
+            if not plugin_visual is None:
+                actor.append(plugin_visual)
+            
             XMLGenerator.indent(actor)
 
             return actor
