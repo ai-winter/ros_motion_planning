@@ -3,9 +3,10 @@ Panels:
     Help Height: 138
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /TrackedPersons1
       Splitter Ratio: 0.5
-    Tree Height: 625
+    Tree Height: 1520
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -21,6 +22,7 @@ Panels:
     Name: Views
     Splitter Ratio: 0.5
   - Class: rviz/Time
+    Experimental: false
     Name: Time
     SyncMode: 0
     SyncSource: LaserScan
@@ -190,38 +192,38 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: true
-      Enabled: true
+      Enabled: false
       Name: Map
       Topic: /move_base/GraphPlanner/expand
       Unreliable: false
       Use Timestamp: false
-      Value: true
+      Value: false
     - Alpha: 0.20000000298023224
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: Map
       Topic: /move_base/local_costmap/costmap
       Unreliable: false
       Use Timestamp: false
-      Value: true
+      Value: false
     - Alpha: 0.20000000298023224
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: Map
       Topic: /move_base/global_costmap/costmap
       Unreliable: false
       Use Timestamp: false
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /move_base/SamplePlanner/tree
       Name: Marker
       Namespaces:
-        {}
+        tree: true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -288,6 +290,50 @@ Visualization Manager:
       Topic: /human_2/pose
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Class: spencer_tracking_rviz_plugin/TrackedPersons
+      Color: 130; 130; 130
+      Color map offset: 0
+      Color transform: Rainbow
+      Delete after no. cycles: 100
+      Enabled: true
+      Excluded person IDs: ""
+      Font color: 255; 255; 255
+      Font color style: Same color
+      Font scale: 2
+      History as line:
+        Line width: 0.05000000074505806
+        Value: true
+      History size: 100
+      Included person IDs: ""
+      Min. history point distance: 0.4000000059604645
+      Missed alpha: 0.5
+      Name: TrackedPersons
+      Occlusion alpha: 0.30000001192092896
+      Queue Size: 10
+      Render covariances:
+        Line width: 0.10000000149011612
+        Value: true
+      Render detection IDs: true
+      Render history: true
+      Render person visual: true
+      Render track IDs: true
+      Render track state: true
+      Render velocities: true
+      Show DELETED tracks: false
+      Show MATCHED tracks: true
+      Show MISSED tracks: true
+      Show OCCLUDED tracks: true
+      Style:
+        Line width: 0.05000000074505806
+        Scaling factor: 1
+        Value: Person meshes
+      Topic: ped_visualization
+      Unreliable: false
+      Value: true
+      Z offset:
+        Use Z position from message: false
+        Value: 0
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -317,10 +363,14 @@ Visualization Manager:
     Current:
       Class: rviz/Orbit
 <<<<<<< HEAD
+<<<<<<< HEAD
       Distance: 27.59101104736328
 =======
       Distance: 26.918121337890625
 >>>>>>> ef13237... rviz saved
+=======
+      Distance: 22.090587615966797
+>>>>>>> bfe63a5... update: pedestrian_plugin
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -328,6 +378,7 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
+<<<<<<< HEAD
 <<<<<<< HEAD
         X: -0.601211667060852
         Y: 0.2386801689863205
@@ -337,26 +388,35 @@ Visualization Manager:
         Y: 0.11986629664897919
         Z: -0.6322429776191711
 >>>>>>> ef13237... rviz saved
+=======
+        X: 0.7231976389884949
+        Y: -0.3990221917629242
+        Z: -0.6317288279533386
+>>>>>>> bfe63a5... update: pedestrian_plugin
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 1.4347964525222778
       Target Frame: <Fixed Frame>
+<<<<<<< HEAD
 <<<<<<< HEAD
       Yaw: 1.5648000240325928
 =======
       Yaw: 1.5647999048233032
 >>>>>>> ef13237... rviz saved
+=======
+      Yaw: 0.5398008823394775
+>>>>>>> bfe63a5... update: pedestrian_plugin
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1016
+  Height: 2032
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001f700000338fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000b0fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000338000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000015f00000338fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d00000338000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073800000060fc0100000002fb0000000800540069006d0065010000000000000738000003bc00fffffffb0000000800540069006d00650100000000000004500000000000000000000003d60000033800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001f7000006e8fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b000000b000fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000b0fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000006e000006e80000018200fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000015f000006e8fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000006e000006e80000013200fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000e7000000060fc0100000002fb0000000800540069006d0065010000000000000e700000057100fffffffb0000000800540069006d0065010000000000000450000000000000000000000b02000006e800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -365,6 +425,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1848
-  X: 72
-  Y: 27
+  Width: 3696
+  X: 144
+  Y: 54

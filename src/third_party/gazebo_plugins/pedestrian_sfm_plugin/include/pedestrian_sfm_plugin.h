@@ -32,16 +32,23 @@
 // Social Force Model
 #include <lightsfm/sfm.hpp>
 
+// message
+#include <gazebo_sfm_plugin/ped_state.h>
+
 namespace gazebo
 {
 class GZ_PLUGIN_VISIBLE PedestrianSFMPlugin : public ModelPlugin
 {
-
 public:
   /**
    * @brief Construct a gazebo plugin
    */
   PedestrianSFMPlugin();
+
+  /**
+   * @brief De-Construct a gazebo plugin
+   */
+  ~PedestrianSFMPlugin();
 
   /**
    * @brief Load the actor plugin.
@@ -55,13 +62,14 @@ public:
    */
   virtual void Reset();
 
-
 private:
   /**
    * @brief Function that is called every update cycle.
    * @param _info Timing information.
    */
-  void OnUpdate(const common::UpdateInfo &_info);
+  void OnUpdate(const common::UpdateInfo& _info);
+
+  bool OnStateCallBack(gazebo_sfm_plugin::ped_state::Request& req, gazebo_sfm_plugin::ped_state::Response& resp);
 
   /**
    * @brief Helper function to detect the closest obstacles.
@@ -73,12 +81,14 @@ private:
    */
   void handlePedestrians();
 
-
 private:
   // Gazebo ROS node
   std::unique_ptr<ros::NodeHandle> node_;
   // topic publisher
   ros::Publisher pose_pub_;
+  ros::Publisher vel_pub_;
+  // pedestrian state server
+  ros::ServiceServer state_server_;
   // this actor as a SFM agent
   sfm::Agent sfm_actor_;
   // names of the other models in my walking group.
@@ -87,6 +97,14 @@ private:
   std::vector<sfm::Agent> other_actors_;
   // Maximum distance to detect nearby pedestrians.
   double people_dist_;
+  // initialized
+  bool pose_init_;
+  // last pose
+  double last_pose_x_, last_pose_y_;
+  // current state
+  double px_, py_, pz_, vx_, vy_, theta_;
+
+
   // Pointer to the parent actor.
   physics::ActorPtr actor_;
   // Pointer to the world, for convenience.
@@ -106,5 +124,5 @@ private:
   // Custom trajectory info.
   physics::TrajectoryInfoPtr trajectory_info_;
 };
-}
+}  // namespace gazebo
 #endif

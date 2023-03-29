@@ -1,0 +1,4 @@
+uint64[] requested_ids           # The IDs of the tracks you are interested in getting the trajectories of. An empty array means all available tracks.
+duration max_age                 # The maximum age of a trajectory you want to get. A duration of 0 means "since the beginning of times."
+---
+PersonTrajectory[] trajectories  # The trajectories of the tracks that have been asked for in requested_ids, in the same order.
