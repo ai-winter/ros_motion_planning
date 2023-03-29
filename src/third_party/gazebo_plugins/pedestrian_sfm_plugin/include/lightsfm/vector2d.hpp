@@ -25,7 +25,7 @@
 
 #include <iostream>
 #include <cmath>
-//#include <geometry_msgs/Point.h>
+// #include <geometry_msgs/Point.h>
 #include <boost/functional/hash.hpp>
 
 #include "angle.hpp"
@@ -114,7 +114,6 @@ public:
     y += inc_y;
     return *this;
   }
-
 
   const Angle angle() const
   {
@@ -214,20 +213,17 @@ public:
     return Vector2d(-x, -y);
   }
 
-
-
   static const Vector2d& Zero()
   {
     static Vector2d zero;
     return zero;
   }
 
-
 private:
   double x;
   double y;
 };
-}
+}  // namespace utils
 
 inline utils::Vector2d operator*(double scalar, const utils::Vector2d& v)
 {
@@ -249,14 +245,14 @@ struct hash<utils::Vector2d>
 {
   size_t operator()(const utils::Vector2d& v) const
   {
-    using boost::hash_value;
     using boost::hash_combine;
+    using boost::hash_value;
     std::size_t seed = 0;
     hash_combine(seed, hash_value(v[0]));
     hash_combine(seed, hash_value(v[1]));
     return seed;
   }
 };
-}
+}  // namespace std
 
 #endif

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>pedestrian_sfm_plugin</name>
+  <name>gazebo_sfm_plugin</name>
   <version>1.0.0</version>
-  <description>The pedestrian_sfm_plugin package</description>
+  <description>The gazebo_sfm_plugin package</description>
 
   <maintainer email="winter@todo.todo">winter</maintainer>
   <license>GPL3</license>
@@ -11,12 +11,15 @@
   <build_depend>lightsfm</build_depend>
   <build_depend>gazebo_ros</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>message_generation</build_depend>
+
   <build_export_depend>gazebo_ros</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
+
   <exec_depend>lightsfm</exec_depend>
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>roscpp</exec_depend>
-
+  <exec_depend>message_runtime</exec_depend>
 
   <export>
     <gazebo_ros plugin_path="${prefix}/../../lib" gazebo_media_path="${prefix}" />
