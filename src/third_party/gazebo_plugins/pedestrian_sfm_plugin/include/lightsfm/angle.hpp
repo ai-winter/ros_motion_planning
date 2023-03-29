@@ -39,7 +39,6 @@ public:
     PositiveNegativeRange
   };
 
-
   Angle() : value(0)
   {
   }
@@ -174,7 +173,6 @@ public:
     return value >= other.value;
   }
 
-
 private:
   Angle(double value)
   {
@@ -192,7 +190,7 @@ private:
 
   double value;
 };
-}
+}  // namespace utils
 namespace std
 {
 inline ostream& operator<<(ostream& stream, const utils::Angle& alpha)
@@ -200,6 +198,6 @@ inline ostream& operator<<(ostream& stream, const utils::Angle& alpha)
   stream << alpha.toRadian();
   return stream;
 }
-}
+}  // namespace std
 
 #endif
