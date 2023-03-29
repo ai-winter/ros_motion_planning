@@ -2341,6 +2341,7 @@
       <goalpoint>3 -8 1 0 0 0</goalpoint>
     </trajectory>
   </plugin>
+  <plugin name="pedestrian_visual" filename="libPedestrianVisualPlugin.so" />
 </actor>
 <actor name="human_2">
   <pose>3 -8 1 0 0 0</pose>
