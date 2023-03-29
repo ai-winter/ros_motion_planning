@@ -23,7 +23,6 @@
 #ifndef _MAP_HPP_
 #define _MAP_HPP_
 
-
 #include "vector2d.hpp"
 
 namespace sfm
@@ -49,8 +48,6 @@ public:
   virtual const Obstacle& getNearestObstacle(const utils::Vector2d& x) = 0;
   virtual bool isObstacle(const utils::Vector2d& x) const = 0;
 };
-}
-
-
+}  // namespace sfm
 
 #endif
