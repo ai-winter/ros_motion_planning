@@ -1,5 +1,6 @@
 src/CMakeLists.txt
 .catkin_workspace
+*/__pycache__
 
 devel/
 logs/
