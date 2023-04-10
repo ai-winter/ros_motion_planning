@@ -37,56 +37,57 @@
 #include <pedsim_msgs/TrackedPerson.h>
 #include <gazebo_sfm_plugin/ped_state.h>
 
-
 namespace gazebo
 {
-  class GZ_PLUGIN_VISIBLE PedestrianVisualPlugin : public ModelPlugin
-  {
-  public:
-    /**
-     * @brief Construct a gazebo plugin
-     */
-    PedestrianVisualPlugin();
+class GZ_PLUGIN_VISIBLE PedestrianVisualPlugin : public ModelPlugin
+{
+public:
+  /**
+   * @brief Construct a gazebo plugin
+   */
+  PedestrianVisualPlugin();
 
-    /**
-     * @brief De-Construct a gazebo plugin
-     */
-    ~PedestrianVisualPlugin();
+  /**
+   * @brief De-Construct a gazebo plugin
+   */
+  ~PedestrianVisualPlugin();
 
-    /**
-     * @brief Load the actor plugin.
-     * @param _model  Pointer to the parent model.
-     * @param _sdf    Pointer to the plugin's SDF elements.
-     */
-    virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
-    
-    /**
-     * @brief Publish pedestrians visualization information
-     */
-    void publishPedVisuals();
+  /**
+   * @brief Load the actor plugin.
+   * @param _model  Pointer to the parent model.
+   * @param _sdf    Pointer to the plugin's SDF elements.
+   */
+  virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
 
-  private:
-    /**
-     * @brief Function that is called every update cycle.
-     * @param _info Timing information.
-     */
-    void OnUpdate(const common::UpdateInfo& _info);
+  /**
+   * @brief Publish pedestrians visualization information
+   */
+  void publishPedVisuals();
 
+private:
+  /**
+   * @brief Function that is called every update cycle.
+   * @param _info Timing information.
+   */
+  void OnUpdate(const common::UpdateInfo& _info);
 
-  private:
-    // Gazebo ROS node
-    std::unique_ptr<ros::NodeHandle> node_;
-    // topic publisher
-    ros::Publisher ped_visual_pub_;
-    // Pointer to the parent actor.
-    physics::ActorPtr actor_;
-    // Pointer to the world, for convenience.
-    physics::WorldPtr world_;
-    // Pointer to the sdf element.
-    sdf::ElementPtr sdf_;
-    // List of connections
-    std::vector<event::ConnectionPtr> connections_;
-
-  };
+private:
+  // Gazebo ROS node
+  std::unique_ptr<ros::NodeHandle> node_;
+  // topic publisher
+  ros::Publisher ped_visual_pub_;
+  // Pointer to the parent actor.
+  physics::ActorPtr actor_;
+  // Pointer to the world, for convenience.
+  physics::WorldPtr world_;
+  // Pointer to the sdf element.
+  sdf::ElementPtr sdf_;
+  // List of connections
+  std::vector<event::ConnectionPtr> connections_;
+  // Update interval
+  size_t update_interval_;
+  // Update counter
+  size_t update_cnt_;
+};
 }  // namespace gazebo
 #endif
