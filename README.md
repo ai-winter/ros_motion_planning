@@ -38,7 +38,7 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
 
 1. Install [ROS](http://wiki.ros.org/cn/noetic/Installation/Ubuntu), (suggested)Desktop-Full.
 
-2. Install git.
+2. Install git. 
 
     ```bash
     sudo apt install git
