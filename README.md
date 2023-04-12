@@ -17,7 +17,9 @@
 This repository provides the implementation of common **Motion Planning** algorithms. The theory analysis can be found at [motion-planning](https://blog.csdn.net/frigidwinter/category_11410243.html).
 Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_planning) and [MATLAB](https://github.com/ai-winter/matlab_motion_planning) version.
 
+
 **Your stars, forks and PRs are welcome!**
+![pedestrians_environment](./assets/pedestrians_environment.gif)
 
 ## Table of Contents
 - [Quick Start within 3 Minutes](#0)
