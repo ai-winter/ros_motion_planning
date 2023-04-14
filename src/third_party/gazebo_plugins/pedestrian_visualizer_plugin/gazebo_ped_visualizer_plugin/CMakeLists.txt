@@ -35,6 +35,7 @@ catkin_package(
 )
 
 add_library(PedestrianVisualPlugin src/pedestrian_visual_plugin.cpp)
+add_dependencies(PedestrianVisualPlugin ${catkin_EXPORTED_TARGETS})
 target_link_libraries(PedestrianVisualPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES}) #${Boost_LIBRARIES
 
 install(TARGETS
