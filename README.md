@@ -69,8 +69,8 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
 
    ```bash
    cd ros_motion_planning/
-   # catkin_make -DCATKIN_WHITELIST_PACKAGES="gazebo_sfm_plugin;pedsim_msgs"
-   # catkin_make -DCATKIN_WHITELIST_PACKAGES=""
+   catkin_make -DCATKIN_WHITELIST_PACKAGES="gazebo_sfm_plugin;pedsim_msgs"
+   catkin_make -DCATKIN_WHITELIST_PACKAGES=""
 
    # Afterwards, everytime you just need to
    catkin_make
