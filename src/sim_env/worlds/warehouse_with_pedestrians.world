@@ -1,6 +1,7 @@
-<sdf version='1.7'>
-  <world name='default'>
-    <light name='sun' type='directional'>
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.7">
+  <world name="default">
+    <light name="sun" type="directional">
       <cast_shadows>1</cast_shadows>
       <pose>0 0 10 0 -0 0</pose>
       <diffuse>0.8 0.8 0.8 1</diffuse>
@@ -18,10 +19,10 @@
         <falloff>0</falloff>
       </spot>
     </light>
-    <model name='ground_plane'>
+    <model name="ground_plane">
       <static>1</static>
-      <link name='link'>
-        <collision name='collision'>
+      <link name="link">
+        <collision name="collision">
           <geometry>
             <plane>
               <normal>0 0 1</normal>
@@ -35,17 +36,17 @@
                 <mu2>50</mu2>
               </ode>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <cast_shadows>0</cast_shadows>
           <geometry>
             <plane>
@@ -67,8 +68,8 @@
     </model>
     <gravity>0 0 -9.8</gravity>
     <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
-    <atmosphere type='adiabatic'/>
-    <physics type='ode'>
+    <atmosphere type="adiabatic" />
+    <physics type="ode">
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>1000</real_time_update_rate>
@@ -78,7 +79,7 @@
       <background>0.7 0.7 0.7 1</background>
       <shadows>1</shadows>
     </scene>
-    <wind/>
+    <wind />
     <spherical_coordinates>
       <surface_model>EARTH_WGS84</surface_model>
       <latitude_deg>0</latitude_deg>
@@ -86,10 +87,10 @@
       <elevation>0</elevation>
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
-    <model name='warehouse'>
+    <model name="warehouse">
       <pose>-0.296665 0.167068 0 0 -0 0</pose>
-      <link name='Wall_0'>
-        <collision name='Wall_0_Collision'>
+      <link name="Wall_0">
+        <collision name="Wall_0_Collision">
           <geometry>
             <box>
               <size>20 0.15 2.5</size>
@@ -99,18 +100,18 @@
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <visual name='Wall_0_Visual'>
+        <visual name="Wall_0_Visual">
           <pose>0 0 1.25 0 -0 0</pose>
           <geometry>
             <box>
@@ -133,8 +134,8 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <link name='Wall_2'>
-        <collision name='Wall_2_Collision'>
+      <link name="Wall_2">
+        <collision name="Wall_2_Collision">
           <geometry>
             <box>
               <size>20.5013 0.15 2.5</size>
@@ -144,18 +145,18 @@
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <visual name='Wall_2_Visual'>
+        <visual name="Wall_2_Visual">
           <pose>0 0 1.25 0 -0 0</pose>
           <geometry>
             <box>
@@ -178,8 +179,8 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <link name='Wall_3'>
-        <collision name='Wall_3_Collision'>
+      <link name="Wall_3">
+        <collision name="Wall_3_Collision">
           <geometry>
             <box>
               <size>20.25 0.15 2.5</size>
@@ -189,18 +190,18 @@
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <visual name='Wall_3_Visual'>
+        <visual name="Wall_3_Visual">
           <pose>0 0 1.25 0 -0 0</pose>
           <geometry>
             <box>
@@ -223,8 +224,8 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <link name='Wall_4'>
-        <collision name='Wall_4_Collision'>
+      <link name="Wall_4">
+        <collision name="Wall_4_Collision">
           <geometry>
             <box>
               <size>20.5 0.15 2.5</size>
@@ -234,18 +235,18 @@
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <visual name='Wall_4_Visual'>
+        <visual name="Wall_4_Visual">
           <pose>0 0 1.25 0 -0 0</pose>
           <geometry>
             <box>
@@ -270,10 +271,10 @@
       </link>
       <static>1</static>
     </model>
-    <model name='warehouse_wall_1'>
+    <model name="warehouse_wall_1">
       <pose>4.90743 -4.85107 0 0 -0 0</pose>
-      <link name='Wall_11'>
-        <collision name='Wall_11_Collision'>
+      <link name="Wall_11">
+        <collision name="Wall_11_Collision">
           <geometry>
             <box>
               <size>1 0.15 2.5</size>
@@ -283,18 +284,18 @@
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <visual name='Wall_11_Visual'>
+        <visual name="Wall_11_Visual">
           <pose>0 0 1.25 0 -0 0</pose>
           <geometry>
             <box>
@@ -317,8 +318,8 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <link name='Wall_13'>
-        <collision name='Wall_13_Collision'>
+      <link name="Wall_13">
+        <collision name="Wall_13_Collision">
           <geometry>
             <box>
               <size>2.25 0.15 2.5</size>
@@ -328,18 +329,18 @@
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <visual name='Wall_13_Visual'>
+        <visual name="Wall_13_Visual">
           <pose>0 0 1.25 0 -0 0</pose>
           <geometry>
             <box>
@@ -362,8 +363,8 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <link name='Wall_6'>
-        <collision name='Wall_6_Collision'>
+      <link name="Wall_6">
+        <collision name="Wall_6_Collision">
           <geometry>
             <box>
               <size>8 0.15 2.5</size>
@@ -373,18 +374,18 @@
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <visual name='Wall_6_Visual'>
+        <visual name="Wall_6_Visual">
           <pose>0 0 1.25 0 -0 0</pose>
           <geometry>
             <box>
@@ -407,8 +408,8 @@
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <link name='Wall_8'>
-        <collision name='Wall_8_Collision'>
+      <link name="Wall_8">
+        <collision name="Wall_8_Collision">
           <geometry>
             <box>
               <size>1.5 0.15 2.5</size>
@@ -418,18 +419,18 @@
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <visual name='Wall_8_Visual'>
+        <visual name="Wall_8_Visual">
           <pose>0 0 1.25 0 -0 0</pose>
           <geometry>
             <box>
@@ -454,10 +455,10 @@
       </link>
       <static>1</static>
     </model>
-    <model name='shipping_container_conveyor_ariac'>
+    <model name="shipping_container_conveyor_ariac">
       <static>1</static>
-      <link name='link'>
-        <collision name='collision_belt_side_front'>
+      <link name="link">
+        <collision name="collision_belt_side_front">
           <pose>1.191 1.6275 0.32 0 -0 0</pose>
           <max_contacts>10</max_contacts>
           <geometry>
@@ -467,18 +468,18 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <collision name='collision_belt_side_back'>
+        <collision name="collision_belt_side_back">
           <pose>0.268 1.6275 0.32 0 -0 0</pose>
           <max_contacts>10</max_contacts>
           <geometry>
@@ -488,22 +489,22 @@
           </geometry>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
               <scale>1.3 0.7 1</scale>
-              <uri>model://shipping_container_conveyor_ariac/meshes/ShippingContainer_Textured.obj</uri>
+              <uri>model://sim_env/models/shipping_container_conveyor_ariac/meshes/ShippingContainer_Textured.obj</uri>
             </mesh>
           </geometry>
         </visual>
@@ -513,8 +514,8 @@
       </link>
       <pose>5.94716 0.254888 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ClutteringA_01'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ClutteringA_01">
+      <link name="link">
         <inertial>
           <mass>2</mass>
           <inertia>
@@ -526,10 +527,10 @@
             <izz>1.422</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -553,16 +554,16 @@
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -576,8 +577,8 @@
       <static>1</static>
       <pose>4.52823 -6.88046 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ClutteringC_01'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ClutteringC_01">
+      <link name="link">
         <inertial>
           <mass>1</mass>
           <inertia>
@@ -589,10 +590,10 @@
             <izz>1.892</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -616,16 +617,16 @@
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -639,8 +640,8 @@
       <static>1</static>
       <pose>6.33701 -4.47589 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ClutteringA_01_0'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ClutteringA_01_0">
+      <link name="link">
         <inertial>
           <mass>2</mass>
           <inertia>
@@ -652,10 +653,10 @@
             <izz>1.422</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -679,16 +680,16 @@
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -702,8 +703,8 @@
       <static>1</static>
       <pose>4.5893 -5.02144 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ShelfE_01'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ShelfE_01">
+      <link name="link">
         <inertial>
           <mass>30</mass>
           <inertia>
@@ -715,10 +716,10 @@
             <izz>824.248</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -732,20 +733,20 @@
                 <slip2>0</slip2>
               </ode>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -759,8 +760,8 @@
       <static>1</static>
       <pose>-5.04941 1.45851 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ShelfE_01_0'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ShelfE_01_0">
+      <link name="link">
         <inertial>
           <mass>30</mass>
           <inertia>
@@ -772,10 +773,10 @@
             <izz>824.248</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -789,20 +790,20 @@
                 <slip2>0</slip2>
               </ode>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -816,8 +817,8 @@
       <static>1</static>
       <pose>-1.18333 1.50059 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ShelfD_01'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ShelfD_01">
+      <link name="link">
         <inertial>
           <mass>30</mass>
           <inertia>
@@ -829,10 +830,10 @@
             <izz>824.248</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -846,20 +847,20 @@
                 <slip2>0</slip2>
               </ode>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -873,8 +874,8 @@
       <static>1</static>
       <pose>-4.88533 5.63287 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ShelfD_01_0'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ShelfD_01_0">
+      <link name="link">
         <inertial>
           <mass>30</mass>
           <inertia>
@@ -886,10 +887,10 @@
             <izz>824.248</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -903,20 +904,20 @@
                 <slip2>0</slip2>
               </ode>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -930,8 +931,8 @@
       <static>1</static>
       <pose>-0.971133 5.73232 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ShelfD_01_1'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ShelfD_01_1">
+      <link name="link">
         <inertial>
           <mass>30</mass>
           <inertia>
@@ -943,10 +944,10 @@
             <izz>824.248</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -960,20 +961,20 @@
                 <slip2>0</slip2>
               </ode>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -987,8 +988,8 @@
       <static>1</static>
       <pose>-5.17553 -7.2624 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ShelfD_01_1_clone'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ShelfD_01_1_clone">
+      <link name="link">
         <inertial>
           <mass>30</mass>
           <inertia>
@@ -1000,10 +1001,10 @@
             <izz>824.248</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1017,20 +1018,20 @@
                 <slip2>0</slip2>
               </ode>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1044,8 +1045,8 @@
       <static>1</static>
       <pose>-6.34944 -3.08532 0 0 -0 1.57</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ShelfD_01_1_clone_0'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ShelfD_01_1_clone_0">
+      <link name="link">
         <inertial>
           <mass>30</mass>
           <inertia>
@@ -1057,10 +1058,10 @@
             <izz>824.248</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1074,20 +1075,20 @@
                 <slip2>0</slip2>
               </ode>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1101,8 +1102,8 @@
       <static>1</static>
       <pose>-2.99674 -5.88998 0 0 -0 1.57</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ShelfD_01_1_clone_1'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ShelfD_01_1_clone_1">
+      <link name="link">
         <inertial>
           <mass>30</mass>
           <inertia>
@@ -1114,10 +1115,10 @@
             <izz>824.248</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1131,20 +1132,20 @@
                 <slip2>0</slip2>
               </ode>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1158,280 +1159,270 @@
       <static>1</static>
       <pose>-6.16639 -5.9682 0 0 -0 1.57</pose>
     </model>
-    <state world_name='default'>
+    <state world_name="default">
       <sim_time>0 0</sim_time>
       <real_time>0 0</real_time>
-      <wall_time>1675824106 845204117</wall_time>
+      <wall_time>1673837831 488549028</wall_time>
       <iterations>0</iterations>
-      <model name='Dumpster'>
-        <pose>7.96718 -2.34692 0.004628 0.010199 0 -0.008267</pose>
+      <model name="Dumpster">
+        <pose>7.96723 -2.34687 0.004667 0.010306 2e-06 -0.008426</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
-          <pose>7.96718 -2.34692 0.004628 0.010199 0 -0.008267</pose>
+        <link name="link">
+          <pose>7.96723 -2.34687 0.004667 0.010306 2e-06 -0.008426</pose>
           <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 -0 -0 -0 -0</acceleration>
-          <wrench>0 0 -0 0 -0 0</wrench>
+          <acceleration>-0.348151 -3.56616 1.10209 0.366208 0.673676 1.72966</acceleration>
+          <wrench>-0.348151 -3.56616 1.10209 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ClutteringA_01'>
+      <model name="aws_robomaker_warehouse_ClutteringA_01">
         <pose>4.52823 -6.5 0 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>4.52823 -6.5 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ClutteringA_01_0'>
+      <model name="aws_robomaker_warehouse_ClutteringA_01_0">
         <pose>4.5893 -4.7 0 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>4.5893 -4.7 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ClutteringC_01'>
+      <model name="aws_robomaker_warehouse_ClutteringC_01">
         <pose>6.33701 -4.2 0 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>6.33701 -4.2 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ClutteringC_01_0'>
+      <model name="aws_robomaker_warehouse_ClutteringC_01_0">
         <pose>6.2 -6.2 0 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>6.2 -6.2 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ClutteringC_01_1'>
+      <model name="aws_robomaker_warehouse_ClutteringC_01_1">
         <pose>6.49861 6.95891 0 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>6.49861 6.95891 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ClutteringD_01'>
+      <model name="aws_robomaker_warehouse_ClutteringD_01">
         <pose>5.56779 -2.61305 -0.5 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>5.56779 -2.61305 -0.5 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ShelfD_01'>
+      <model name="aws_robomaker_warehouse_ShelfD_01">
         <pose>-6 6.63287 -0.7 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>-6 6.63287 -0.7 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ShelfD_01_0'>
+      <model name="aws_robomaker_warehouse_ShelfD_01_0">
         <pose>0 6.5 -0.7 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>0 6.5 -0.7 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ShelfD_01_0_clone'>
-        <pose>3.5 7.5 -0.7 0 -0 0</pose>
-        <scale>1 1 1</scale>
-        <link name='link'>
-          <pose>3.5 7.5 -0.7 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='aws_robomaker_warehouse_ShelfD_01_1'>
+      <model name="aws_robomaker_warehouse_ShelfD_01_1">
         <pose>-2 -0.5 -0.7 0 -0 1.57</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>-2 -0.5 -0.7 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ShelfD_01_1_clone'>
+      <model name="aws_robomaker_warehouse_ShelfD_01_1_clone">
         <pose>-5 -0.5 -0.7 0 -0 1.57</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>-5 -0.5 -0.7 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ShelfD_01_1_clone_0'>
+      <model name="aws_robomaker_warehouse_ShelfD_01_1_clone_0">
         <pose>-2 -5.88998 -0.7 0 -0 1.57</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>-2 -5.88998 -0.7 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ShelfD_01_1_clone_1'>
+      <model name="aws_robomaker_warehouse_ShelfD_01_1_clone_1">
         <pose>-5 -5.9682 -0.7 0 -0 1.57</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>-5 -5.9682 -0.7 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ShelfD_01_1_clone_1_clone'>
+      <model name="aws_robomaker_warehouse_ShelfD_01_1_clone_1_clone">
         <pose>-7.95437 -5.83764 -0.7 0 -0 1.57</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>-7.95437 -5.83764 -0.7 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ShelfD_01_1_clone_1_clone_0'>
+      <model name="aws_robomaker_warehouse_ShelfD_01_1_clone_1_clone_0">
         <pose>-7.82227 -0.391682 -0.7 0 -0 1.57</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>-7.82227 -0.391682 -0.7 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ShelfE_01'>
+      <model name="aws_robomaker_warehouse_ShelfE_01">
         <pose>-6 3.5 -0.7 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>-6 3.5 -0.7 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='aws_robomaker_warehouse_ShelfE_01_0'>
+      <model name="aws_robomaker_warehouse_ShelfE_01_0">
         <pose>0 3.5 -0.7 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>0 3.5 -0.7 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='ground_plane'>
+      <model name="ground_plane">
         <pose>0 0 0 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>0 0 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='shipping_container_conveyor_ariac'>
+      <model name="shipping_container_conveyor_ariac">
         <pose>5.94716 0.254888 -0.15 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
+        <link name="link">
           <pose>5.94716 0.254888 -0.15 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='warehouse'>
+      <model name="warehouse">
         <pose>-0.2967 0.167068 0 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='Wall_0'>
+        <link name="Wall_0">
           <pose>-10.4717 0.273797 0 0 0 -1.5708</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
-        <link name='Wall_2'>
+        <link name="Wall_2">
           <pose>-0.296665 -9.76685 0 0 0 -0.011366</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
-        <link name='Wall_3'>
+        <link name="Wall_3">
           <pose>9.87833 0.167491 0 0 -0 1.5708</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
-        <link name='Wall_4'>
+        <link name="Wall_4">
           <pose>-0.296665 10.2175 0 0 -0 3.14159</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='warehouse_wall_1'>
+      <model name="warehouse_wall_1">
         <pose>4.90744 -4.85107 0 0 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='Wall_11'>
+        <link name="Wall_11">
           <pose>5.36174 -1.79926 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
-        <link name='Wall_13'>
+        <link name="Wall_13">
           <pose>8.68986 -1.76758 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
-        <link name='Wall_6'>
+        <link name="Wall_6">
           <pose>0.73379 -5.70214 0 0 0 -1.5708</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
-        <link name='Wall_8'>
+        <link name="Wall_8">
           <pose>1.40879 -1.77714 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <light name='sun'>
+      <light name="sun">
         <pose>0 0 10 0 -0 0</pose>
       </light>
     </state>
-    <gui fullscreen='0'>
-      <camera name='user_camera'>
+    <gui fullscreen="0">
+      <camera name="user_camera">
         <pose>10.4233 25.0754 20.1626 -0 0.697799 -2.01418</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
     </gui>
-    <model name='aws_robomaker_warehouse_ClutteringC_01_1'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ClutteringC_01_1">
+      <link name="link">
         <inertial>
           <mass>1</mass>
           <inertia>
@@ -1443,10 +1434,10 @@
             <izz>1.892</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1470,16 +1461,16 @@
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1493,8 +1484,8 @@
       <static>1</static>
       <pose>6.49861 6.95891 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ClutteringC_01_0'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ClutteringC_01_0">
+      <link name="link">
         <inertial>
           <mass>1</mass>
           <inertia>
@@ -1506,10 +1497,10 @@
             <izz>1.892</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1533,16 +1524,16 @@
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1556,8 +1547,8 @@
       <static>1</static>
       <pose>6.01431 -6.50899 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ClutteringD_01'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ClutteringD_01">
+      <link name="link">
         <inertial>
           <mass>1</mass>
           <inertia>
@@ -1569,10 +1560,10 @@
             <izz>1.892</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringD_01/meshes/aws_robomaker_warehouse_ClutteringD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringD_01/meshes/aws_robomaker_warehouse_ClutteringD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1596,16 +1587,16 @@
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringD_01/meshes/aws_robomaker_warehouse_ClutteringD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringD_01/meshes/aws_robomaker_warehouse_ClutteringD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1619,38 +1610,38 @@
       <static>1</static>
       <pose>5.5675 -2.73505 0 0 -0 0</pose>
     </model>
-    <model name='Dumpster'>
-      <link name='link'>
-        <collision name='collision'>
+    <model name="Dumpster">
+      <link name="link">
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://dumpster/meshes/dumpster.dae</uri>
+              <uri>model://sim_env/models/dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
             <friction>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
-              <ode/>
+              <ode />
             </friction>
           </surface>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://dumpster/meshes/dumpster.dae</uri>
+              <uri>model://sim_env/models/dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
           <material>
             <script>
-              <uri>model://dumpster/materials/scripts</uri>
-              <uri>model://dumpster/materials/textures</uri>
+              <uri>model://sim_env/models/dumpster/materials/scripts</uri>
+              <uri>model://sim_env/models/dumpster/materials/textures</uri>
               <name>Dumpster/Diffuse</name>
             </script>
           </material>
@@ -1673,8 +1664,8 @@
       </link>
       <pose>8.07649 -2.37718 0 0 -0 0</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ShelfD_01_1_clone_1_clone'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ShelfD_01_1_clone_1_clone">
+      <link name="link">
         <inertial>
           <mass>30</mass>
           <inertia>
@@ -1686,10 +1677,10 @@
             <izz>824.248</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1703,20 +1694,20 @@
                 <slip2>0</slip2>
               </ode>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1730,8 +1721,8 @@
       <static>1</static>
       <pose>-7.95437 -5.83764 -0.7 0 -0 1.57</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ShelfD_01_1_clone_1_clone_0'>
-      <link name='link'>
+    <model name="aws_robomaker_warehouse_ShelfD_01_1_clone_1_clone_0">
+      <link name="link">
         <inertial>
           <mass>30</mass>
           <inertia>
@@ -1743,10 +1734,10 @@
             <izz>824.248</izz>
           </inertia>
         </inertial>
-        <collision name='collision'>
+        <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1760,20 +1751,20 @@
                 <slip2>0</slip2>
               </ode>
               <torsional>
-                <ode/>
+                <ode />
               </torsional>
             </friction>
             <contact>
-              <ode/>
+              <ode />
             </contact>
-            <bounce/>
+            <bounce />
           </surface>
           <max_contacts>10</max_contacts>
         </collision>
-        <visual name='visual'>
+        <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1787,62 +1778,112 @@
       <static>1</static>
       <pose>-7.82227 -0.391682 -0.7 0 -0 1.57</pose>
     </model>
-    <model name='aws_robomaker_warehouse_ShelfD_01_0_clone'>
-      <link name='link'>
-        <inertial>
-          <mass>30</mass>
-          <inertia>
-            <ixx>907.144</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>104.95</iyy>
-            <iyz>0</iyz>
-            <izz>824.248</izz>
-          </inertia>
-        </inertial>
-        <collision name='collision'>
-          <geometry>
-            <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
-              <scale>1 1 1</scale>
-            </mesh>
-          </geometry>
-          <surface>
-            <friction>
-              <ode>
-                <mu>0.2</mu>
-                <mu2>0.2</mu2>
-                <fdir1>0 0 0</fdir1>
-                <slip1>0</slip1>
-                <slip2>0</slip2>
-              </ode>
-              <torsional>
-                <ode/>
-              </torsional>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-          </surface>
-          <max_contacts>10</max_contacts>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
-            </mesh>
-          </geometry>
-          <meta>
-            <layer>1</layer>
-          </meta>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <static>1</static>
-      <pose>3.468 7.51741 -0.7 0 -0 0</pose>
-    </model>
-  </world>
+  <actor name="human_1">
+  <pose>3 2 1 0 0 0</pose>
+  <skin>
+    <filename>walk.dae</filename>
+    <scale>1.0</scale>
+  </skin>
+  <animation name="walking">
+    <filename>walk.dae</filename>
+    <scale>1.0</scale>
+    <interpolate_x>true</interpolate_x>
+  </animation>
+  <plugin name="human_1_plugin" filename="libPedestrianSFMPlugin.so">
+    <collision scale="0.01 0.001 0.001">LHipJoint_LeftUpLeg_collision</collision>
+    <collision scale="8.0 8.0 1.0">LeftUpLeg_LeftLeg_collision</collision>
+    <collision scale="8.0 8.0 1.0">LeftLeg_LeftFoot_collision</collision>
+    <collision scale="4.0 4.0 1.5">LeftFoot_LeftToeBase_collision</collision>
+    <collision scale="0.01 0.001 0.001">RHipJoint_RightUpLeg_collision</collision>
+    <collision scale="8.0 8.0 1.0">RightUpLeg_RightLeg_collision</collision>
+    <collision scale="8.0 8.0 1.0">RightLeg_RightFoot_collision</collision>
+    <collision scale="4.0 4.0 1.5">RightFoot_RightToeBase_collision</collision>
+    <collision scale="0.01 0.001 0.001">Spine_Spine1_collision</collision>
+    <collision scale="0.01 0.001 0.001">Neck_Neck1_collision</collision>
+    <collision scale="5.0 5.0 3.0">Neck1_Head_collision</collision>
+    <collision scale="0.01 0.001 0.001">LeftShoulder_LeftArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">LeftArm_LeftForeArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">LeftForeArm_LeftHand_collision</collision>
+    <collision scale="4.0 4.0 3.0">LeftFingerBase_LeftHandIndex1_collision</collision>
+    <collision scale="0.01 0.001 0.001">RightShoulder_RightArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">RightArm_RightForeArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">RightForeArm_RightHand_collision</collision>
+    <collision scale="4.0 4.0 3.0">RightFingerBase_RightHandIndex1_collision</collision>
+    <collision scale="12.0 20.0 5.0" pose="0.05 0 0 0 -0.2 0">LowerBack_Spine_collision</collision>
+    <velocity>0.9</velocity>
+    <radius>0.4</radius>
+    <cycle>True</cycle>
+    <animation_factor>5.1</animation_factor>
+    <people_distance>6.0</people_distance>
+    <goal_weight>2.0</goal_weight>
+    <obstacle_weight>20.0</obstacle_weight>
+    <social_weight>15</social_weight>
+    <group_gaze_weight>3.0</group_gaze_weight>
+    <group_coh_weight>2.0</group_coh_weight>
+    <group_rep_weight>1.0</group_rep_weight>
+    <ignore_obstacles>
+      <model>ground_plane</model>
+      <model>turtlebot3_waffle</model>
+    </ignore_obstacles>
+    <trajectory>
+      <goalpoint>3 2 1 0 0 0</goalpoint>
+      <goalpoint>3 -8 1 0 0 0</goalpoint>
+    </trajectory>
+  </plugin>
+  <plugin name="pedestrian_visual" filename="libPedestrianVisualPlugin.so" />
+</actor>
+<actor name="human_2">
+  <pose>3 -8 1 0 0 0</pose>
+  <skin>
+    <filename>walk.dae</filename>
+    <scale>1.0</scale>
+  </skin>
+  <animation name="walking">
+    <filename>walk.dae</filename>
+    <scale>1.0</scale>
+    <interpolate_x>true</interpolate_x>
+  </animation>
+  <plugin name="human_2_plugin" filename="libPedestrianSFMPlugin.so">
+    <collision scale="0.01 0.001 0.001">LHipJoint_LeftUpLeg_collision</collision>
+    <collision scale="8.0 8.0 1.0">LeftUpLeg_LeftLeg_collision</collision>
+    <collision scale="8.0 8.0 1.0">LeftLeg_LeftFoot_collision</collision>
+    <collision scale="4.0 4.0 1.5">LeftFoot_LeftToeBase_collision</collision>
+    <collision scale="0.01 0.001 0.001">RHipJoint_RightUpLeg_collision</collision>
+    <collision scale="8.0 8.0 1.0">RightUpLeg_RightLeg_collision</collision>
+    <collision scale="8.0 8.0 1.0">RightLeg_RightFoot_collision</collision>
+    <collision scale="4.0 4.0 1.5">RightFoot_RightToeBase_collision</collision>
+    <collision scale="0.01 0.001 0.001">Spine_Spine1_collision</collision>
+    <collision scale="0.01 0.001 0.001">Neck_Neck1_collision</collision>
+    <collision scale="5.0 5.0 3.0">Neck1_Head_collision</collision>
+    <collision scale="0.01 0.001 0.001">LeftShoulder_LeftArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">LeftArm_LeftForeArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">LeftForeArm_LeftHand_collision</collision>
+    <collision scale="4.0 4.0 3.0">LeftFingerBase_LeftHandIndex1_collision</collision>
+    <collision scale="0.01 0.001 0.001">RightShoulder_RightArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">RightArm_RightForeArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">RightForeArm_RightHand_collision</collision>
+    <collision scale="4.0 4.0 3.0">RightFingerBase_RightHandIndex1_collision</collision>
+    <collision scale="12.0 20.0 5.0" pose="0.05 0 0 0 -0.2 0">LowerBack_Spine_collision</collision>
+    <velocity>1.2</velocity>
+    <radius>0.4</radius>
+    <cycle>True</cycle>
+    <animation_factor>5.1</animation_factor>
+    <people_distance>6.0</people_distance>
+    <goal_weight>2.0</goal_weight>
+    <obstacle_weight>20.0</obstacle_weight>
+    <social_weight>15</social_weight>
+    <group_gaze_weight>3.0</group_gaze_weight>
+    <group_coh_weight>2.0</group_coh_weight>
+    <group_rep_weight>1.0</group_rep_weight>
+    <ignore_obstacles>
+      <model>ground_plane</model>
+      <model>turtlebot3_waffle</model>
+    </ignore_obstacles>
+    <trajectory>
+      <goalpoint>3 -8 1 0 0 0</goalpoint>
+      <goalpoint>3 2 1 0 0 0</goalpoint>
+    </trajectory>
+  </plugin>
+</actor>
+</world>
 </sdf>
