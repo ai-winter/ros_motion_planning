@@ -20,7 +20,7 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
 
 **Your stars, forks and PRs are welcome!**
 
-![pedestrians_environment.gif](./assets/pedestrians_environment.gif)
+![demo.gif](./assets/demo.gif)
 
 ## Table of Contents
 - [Quick Start within 3 Minutes](#0)
@@ -28,18 +28,19 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
 - [Dynamic Configuration](#2)
 - [Version](#3)
 - [Papers](#4)
-- [Important Updates](#5)
-- [Acknowledgments](#6)
-- [License](#7)
-- [Maintenance](#8)
+- [Application on a Real Robot](#5)
+- [Important Updates](#6)
+- [Acknowledgments](#7)
+- [License](#8)
+- [Maintenance](#9)
 
 ## <span id="0">0. Quick Start within 3 Minutes
 
 *Tested on ubuntu 20.04 LTS with ROS Noetic.*
 
-1. Install [ROS](http://wiki.ros.org/cn/noetic/Installation/Ubuntu), (suggested)Desktop-Full.
+1. Install [ROS](http://wiki.ros.org/ROS/Installation) (Desktop-Full *suggested*).
 
-2. Install git. 
+2. Install git.
 
     ```bash
     sudo apt install git
@@ -63,31 +64,25 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
     ros-noetic-navfn
     ```
 
-5. Copy or move model files in `./src/sim_env/models/` into `~/.gazebo/models/`.
-
-6. Compile the code.
+5. Compile the code.
 
    ```bash
    cd ros_motion_planning/
-   # catkin_make -DCATKIN_WHITELIST_PACKAGES="gazebo_sfm_plugin;pedsim_msgs"
-   # catkin_make -DCATKIN_WHITELIST_PACKAGES=""
-
-   # Afterwards, everytime you just need to
    catkin_make
    ```
 
-7. Run the scripts in `./src/sim_env/scripts/`, i.e.
+6. Run the scripts in `./src/sim_env/scripts/`, i.e.
 
     ```bash
     cd ./src/sim_env/scripts/
     ./main.sh
     ```
 
-    **NOTE: Changing launch files DOES NOT work, because some of them are re-generated according to the `user_config.yaml` by our python script when you run `main.sh`. Therefore, you should change configs in `user_config.yaml` instead of launch files.**
+    **NOTE: Changing some launch files DOES NOT work, because some of them are re-generated according to the `./src/user_config/user_config.yaml` by a python script when you run `main.sh`. Therefore, you should change configurations in `user_config.yaml` instead of launch files.**
 
-8. Use **2D Nav Goal** to select the goal.
+7. Use **2D Nav Goal** to select the goal.
 
-9. Moving!
+8. Moving!
 
 ## 1. <span id="1">File Tree
 
@@ -154,7 +149,7 @@ Explanation:
 
 - world: gazebo world，located in `src/sim_env/worlds/`, if `world: ""`, Gazebo will be disabled which often used in real world.
 
-- robots_config：robotic configuration.
+- robots_config: robotic configuration.
 
   - type: robotic type，such as `turtlebot3_burger`, `turtlebot3_waffle` and `turtlebot3_waffle_pi`.
 
@@ -162,15 +157,13 @@ Explanation:
 
   - local_planner: local algorithm, details in Section `Version`.
 
-  - xyz_pos and yaw：initial pose.
+  - xyz_pos and yaw: initial pose.
 
-- robots_init：initial pose in RVIZ.
+- robots_init: initial pose in RVIZ.
 
 - rviz_file: RVIZ configure, automatically generated if `rviz_file` is not set.
 
 - pedestrians: configure file to add dynamic obstacles(e.g. pedestrians).
-
-
 
 ## <span id="3">03. Version
 
@@ -230,7 +223,85 @@ Explanation:
 
 * DWA: [The Dynamic Window Approach to Collision Avoidance](https://www.ri.cmu.edu/pub_files/pub1/fox_dieter_1997_1/fox_dieter_1997_1.pdf).
 
-## <span id="5">05. Important Updates
+## <span id="5">05. Application on a Real Robot
+
+> **In a word, compile our repository and make it visible to the robot, and then replace it just like other planner in `ROS navigation`.**
+
+### Example
+
+We use another [gazebo simulation](https://github.com/ZhanyuGuo/ackermann_ws) as an example, like we have a robot which has the capacity of localization, mapping and navigation (*using move_base*).
+
+1. Download and compile this repository.
+
+    ```bash
+    cd <your_workspace>/
+    git clone https://github.com/ai-winter/ros_motion_planning.git
+
+    cd ros_motion_planning/
+    catkin_make
+    ```
+
+2. Download and compile the 'real robot' software.
+
+    ```bash
+    cd <your_workspace>/
+    git clone https://github.com/ZhanyuGuo/ackermann_ws.git
+
+    cd ackermann_ws/
+    # ---- IMPORTANT HERE, reasons in NOTE ----
+    source <your_workspace>/ros_motion_planning/devel/setup.bash
+
+    catkin_make
+    ```
+
+    **NOTE: Sourcing other workspaces before `catkin_make` will make the current `setup.bash` contain former sourced workspaces, i.e. they are also included when you only source this current workspace later.**
+    
+    **REMEMBER: Remove the old `build/` and `devel/` of current workspace before doing this, otherwise it will not work.**
+
+3. Change the **base_global_planner** and **base_local_planner** in real robot's `move_base` as you need.
+   
+    ```xml
+    <?xml version="1.0"?>
+    <launch>
+        <!-- something else ... -->
+        <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+            <!-- something else ... -->
+
+            <!-- Params -->
+            <!-- for graph_planner -->
+            <rosparam file="$(find sim_env)/config/planner/graph_planner_params.yaml" command="load" />
+            <!-- for sample_planner -->
+            <rosparam file="$(find sim_env)/config/planner/sample_planner_params.yaml" command="load" />
+            <!-- for dwa_planner -->
+            <rosparam file="$(find sim_env)/config/planner/dwa_planner_params.yaml" command="load" />
+            <!-- for pid_planner -->
+            <rosparam file="$(find sim_env)/config/planner/pid_planner_params.yaml" command="load" />
+
+            <!-- Default Global Planner -->
+            <!-- <param name="base_global_planner" value="global_planner/GlobalPlanner" /> -->
+            <!-- GraphPlanner -->
+            <param name="base_global_planner" value="graph_planner/GraphPlanner" />
+            <!-- options: a_star, jps, gbfs, dijkstra, d_star, lpa_star, d_star_lite -->
+            <param name="GraphPlanner/planner_name" value="a_star" />
+            <!-- SamplePlanner -->
+            <!-- <param name="base_global_planner" value="sample_planner/SamplePlanner" /> -->
+            <!-- options: rrt, rrt_star, informed_rrt, rrt_connect -->
+            <!-- <param name="SamplePlanner/planner_name" value="rrt_star" /> -->
+
+            <!-- Default Local Planner -->
+            <!-- <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" /> -->
+            <param name="base_local_planner" value="pid_planner/PIDPlanner" />
+            <!-- <param name="base_local_planner" value="dwa_planner/DWAPlanner" /> -->
+
+            <!-- something else ... -->
+        </node>
+        <!-- something else ... -->
+    </launch>
+    ```
+
+4. Run! But maybe there are still some details that you have to deal with...
+
+## <span id="6">06. Important Updates
 |   Date    | Update                                                                                                                                                                            |
 | :-------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2023.1.13 | cost of motion nodes is set to `NEUTRAL_COST`, which is unequal to that of heuristics, so there is no difference between A* and Dijkstra. This bug has been solved in A* C++ v1.1 |
@@ -238,16 +309,16 @@ Explanation:
 | 2023.2.25 | update PID C++ v1.1, making desired theta the weighted combination of theta error and theta on the trajectory                                                                     |
 | 2023.3.16 | support dynamic simulation environment, user can add pedestrians by modifing `pedestrian_config.yaml`                                                                             |
 
-## <span id="6">06. Acknowledgments
+## <span id="7">07. Acknowledgments
 * Our robot and world models are from [
 Dataset-of-Gazebo-Worlds-Models-and-Maps](https://github.com/mlherd/Dataset-of-Gazebo-Worlds-Models-and-Maps) and [
 aws-robomaker-small-warehouse-world](https://github.com/aws-robotics/aws-robomaker-small-warehouse-world). Thanks for these open source models sincerely.
 * Pedestrians in this environment are using social force model(sfm), which comes from [https://github.com/robotics-upo/lightsfm](https://github.com/robotics-upo/lightsfm).
 
-## <span id="7">07. License
+## <span id="8">08. License
 
 The source code is released under [GPLv3](https://www.gnu.org/licenses/) license.
 
-## <span id="8">08. Maintenance
+## <span id="9">09. Maintenance
 
 Feel free to contact us if you have any question.
