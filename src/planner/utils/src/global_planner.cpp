@@ -49,10 +49,7 @@ void GlobalPlanner::setResolution(double resolution)
   resolution_ = resolution;
 }
 
-/**
- * @brief Set or reset lethal cost
- * @param lethal_cost lethal cost
- */
+/**Laser
 void GlobalPlanner::setLethalCost(unsigned char lethal_cost)
 {
   lethal_cost_ = lethal_cost;

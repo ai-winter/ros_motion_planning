@@ -2303,11 +2303,11 @@
   <plugin name="human_1_plugin" filename="libPedestrianSFMPlugin.so">
     <collision scale="0.01 0.001 0.001">LHipJoint_LeftUpLeg_collision</collision>
     <collision scale="8.0 8.0 1.0">LeftUpLeg_LeftLeg_collision</collision>
-    <collision scale="8.0 8.0 1.0">LeftLeg_LeftFoot_collision</collision>
+    <collision scale="10.0 10.0 1.5">LeftLeg_LeftFoot_collision</collision>
     <collision scale="4.0 4.0 1.5">LeftFoot_LeftToeBase_collision</collision>
     <collision scale="0.01 0.001 0.001">RHipJoint_RightUpLeg_collision</collision>
     <collision scale="8.0 8.0 1.0">RightUpLeg_RightLeg_collision</collision>
-    <collision scale="8.0 8.0 1.0">RightLeg_RightFoot_collision</collision>
+    <collision scale="10.0 10.0 1.5">RightLeg_RightFoot_collision</collision>
     <collision scale="4.0 4.0 1.5">RightFoot_RightToeBase_collision</collision>
     <collision scale="0.01 0.001 0.001">Spine_Spine1_collision</collision>
     <collision scale="0.01 0.001 0.001">Neck_Neck1_collision</collision>
@@ -2357,11 +2357,11 @@
   <plugin name="human_2_plugin" filename="libPedestrianSFMPlugin.so">
     <collision scale="0.01 0.001 0.001">LHipJoint_LeftUpLeg_collision</collision>
     <collision scale="8.0 8.0 1.0">LeftUpLeg_LeftLeg_collision</collision>
-    <collision scale="8.0 8.0 1.0">LeftLeg_LeftFoot_collision</collision>
+    <collision scale="10.0 10.0 1.5">LeftLeg_LeftFoot_collision</collision>
     <collision scale="4.0 4.0 1.5">LeftFoot_LeftToeBase_collision</collision>
     <collision scale="0.01 0.001 0.001">RHipJoint_RightUpLeg_collision</collision>
     <collision scale="8.0 8.0 1.0">RightUpLeg_RightLeg_collision</collision>
-    <collision scale="8.0 8.0 1.0">RightLeg_RightFoot_collision</collision>
+    <collision scale="10.0 10.0 1.5">RightLeg_RightFoot_collision</collision>
     <collision scale="4.0 4.0 1.5">RightFoot_RightToeBase_collision</collision>
     <collision scale="0.01 0.001 0.001">Spine_Spine1_collision</collision>
     <collision scale="0.01 0.001 0.001">Neck_Neck1_collision</collision>
