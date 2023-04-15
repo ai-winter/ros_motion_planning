@@ -64,7 +64,7 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
     ros-noetic-navfn
     ```
 
-5. Copy or move model files in `./src/sim_env/models/` into `~/.gazebo/models/`.
+5. ~~Copy or move model files in `./src/sim_env/models/` into `~/.gazebo/models/`~~.
 
 6. Compile the code.
 

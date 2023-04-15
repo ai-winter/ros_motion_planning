@@ -1,0 +1,40 @@
+<package>
+  <name>sim_env</name>
+  <version>0.0.1</version>
+  <description>
+    A demostration of ROS computing graph and communication using xbot-u simulation.
+  </description>
+  <author>Changkun</author>
+  <maintainer email="chaichangkun@163.com">Chai Changkun</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>gazebo_ros</build_depend>
+  <build_depend>rviz</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>controller_manager</run_depend>
+  <run_depend>urdf</run_depend>
+  <run_depend>effort_controllers</run_depend>
+  <run_depend>gazebo_plugins</run_depend>
+  <run_depend>gazebo_ros</run_depend>
+  <run_depend>gazebo_ros_control</run_depend>
+  <run_depend>joint_state_controller</run_depend>
+  <run_depend>joint_state_publisher</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>yocs_cmd_vel_mux</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>xacro</run_depend>
+  <run_depend>rviz</run_depend>
+
+  <export>
+    <!-- <gazebo_ros gazebo_media_path="${prefix}"/> -->
+    <!-- <gazebo_ros gazebo_model_path="${prefix}/models/"/> -->
+    <gazebo_ros gazebo_model_path="${prefix}/.." />
+  </export>
+</package>
