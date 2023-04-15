@@ -38,9 +38,9 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
 
 *Tested on ubuntu 20.04 LTS with ROS Noetic.*
 
-1. Install [ROS](http://wiki.ros.org/cn/noetic/Installation/Ubuntu), (suggested)Desktop-Full.
+1. Install [ROS](http://wiki.ros.org/ROS/Installation) (Desktop-Full *suggested*).
 
-2. Install git. 
+2. Install git.
 
     ```bash
     sudo apt install git
@@ -64,27 +64,25 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
     ros-noetic-navfn
     ```
 
-5. ~~Copy or move model files in `./src/sim_env/models/` into `~/.gazebo/models/`~~.
-
-6. Compile the code.
+5. Compile the code.
 
    ```bash
    cd ros_motion_planning/
    catkin_make
    ```
 
-7. Run the scripts in `./src/sim_env/scripts/`, i.e.
+6. Run the scripts in `./src/sim_env/scripts/`, i.e.
 
     ```bash
     cd ./src/sim_env/scripts/
     ./main.sh
     ```
 
-    **NOTE: Changing launch files DOES NOT work, because some of them are re-generated according to the `user_config.yaml` by our python script when you run `main.sh`. Therefore, you should change configs in `user_config.yaml` instead of launch files.**
+    **NOTE: Changing some launch files DOES NOT work, because some of them are re-generated according to the `./src/user_config/user_config.yaml` by a python script when you run `main.sh`. Therefore, you should change configurations in `user_config.yaml` instead of launch files.**
 
-8. Use **2D Nav Goal** to select the goal.
+7. Use **2D Nav Goal** to select the goal.
 
-9. Moving!
+8. Moving!
 
 ## 1. <span id="1">File Tree
 
@@ -151,7 +149,7 @@ Explanation:
 
 - world: gazebo world，located in `src/sim_env/worlds/`, if `world: ""`, Gazebo will be disabled which often used in real world.
 
-- robots_config：robotic configuration.
+- robots_config: robotic configuration.
 
   - type: robotic type，such as `turtlebot3_burger`, `turtlebot3_waffle` and `turtlebot3_waffle_pi`.
 
@@ -159,15 +157,13 @@ Explanation:
 
   - local_planner: local algorithm, details in Section `Version`.
 
-  - xyz_pos and yaw：initial pose.
+  - xyz_pos and yaw: initial pose.
 
-- robots_init：initial pose in RVIZ.
+- robots_init: initial pose in RVIZ.
 
 - rviz_file: RVIZ configure, automatically generated if `rviz_file` is not set.
 
 - pedestrians: configure file to add dynamic obstacles(e.g. pedestrians).
-
-
 
 ## <span id="3">03. Version
 
@@ -229,7 +225,7 @@ Explanation:
 
 ## <span id="5">05. Application on a Real Robot
 
-**In a word, compile our repository and make it visible to the robot, and then replace it just like other planner in `ROS navigation`**.
+> **In a word, compile our repository and make it visible to the robot, and then replace it just like other planner in `ROS navigation`.**
 
 ### Example
 
@@ -258,7 +254,9 @@ We use another [gazebo simulation](https://github.com/ZhanyuGuo/ackermann_ws) as
     catkin_make
     ```
 
-    **NOTE: Sourcing other workspaces before `catkin_make` will make the current `setup.bash` contain former sourced workspaces, i.e. they are also included when you only source this current workspace later. REMEMBER to remove the old `build/` and `devel/` of current workspace before doing this, otherwise it will not work.**
+    **NOTE: Sourcing other workspaces before `catkin_make` will make the current `setup.bash` contain former sourced workspaces, i.e. they are also included when you only source this current workspace later.**
+    
+    **REMEMBER: Remove the old `build/` and `devel/` of current workspace before doing this, otherwise it will not work.**
 
 3. Change the **base_global_planner** and **base_local_planner** in real robot's `move_base` as you need.
    
