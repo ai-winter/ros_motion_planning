@@ -20,7 +20,7 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
 
 **Your stars, forks and PRs are welcome!**
 
-![pedestrians_environment.gif](./assets/pedestrians_environment.gif)
+![demo.gif](./assets/demo.gif)
 
 ## Table of Contents
 - [Quick Start within 3 Minutes](#0)
