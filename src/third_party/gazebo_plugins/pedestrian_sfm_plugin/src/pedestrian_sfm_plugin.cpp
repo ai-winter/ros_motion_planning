@@ -37,7 +37,6 @@ PedestrianSFMPlugin::~PedestrianSFMPlugin()
   pose_pub_.shutdown();
 }
 
-
 /**
  * @brief Load the actor plugin.
  * @param _model  Pointer to the parent model.
@@ -221,7 +220,7 @@ void PedestrianSFMPlugin::Reset()
   }
   else
     sfm_actor_.groupId = -1;
-    
+
   // Read in the other obstacles to ignore
   if (sdf_->HasElement("ignore_obstacles"))
   {
@@ -257,7 +256,9 @@ void PedestrianSFMPlugin::handleObstacles()
   for (unsigned int i = 0; i < world_->ModelCount(); ++i)
   {
     physics::ModelPtr model = world_->ModelByIndex(i);
-    if (std::find(ignore_models_.begin(), ignore_models_.end(), model->GetName()) == ignore_models_.end())
+
+    if (((int)model->GetType() != (int)actor_->GetType()) &&
+        std::find(ignore_models_.begin(), ignore_models_.end(), model->GetName()) == ignore_models_.end())
     {
       // simple method, suppose BBs are AABBs
       ignition::math::Vector3d actorPos = actor_->WorldPose().Pos();
@@ -348,7 +349,7 @@ void PedestrianSFMPlugin::OnUpdate(const common::UpdateInfo& _info)
 {
   if (!pose_init_)
     last_update_ = _info.simTime;
-    
+
   // Time delta
   double dt = (_info.simTime - last_update_).Double();
 
@@ -409,7 +410,7 @@ void PedestrianSFMPlugin::OnUpdate(const common::UpdateInfo& _info)
     current_vel.linear.x = 0;
     current_vel.linear.y = 0;
   }
-  else 
+  else
   {
     double dt = (_info.simTime - last_update_).Double();
     double vx = (current_pose.pose.position.x - last_pose_x_) / dt;
@@ -435,7 +436,7 @@ void PedestrianSFMPlugin::OnUpdate(const common::UpdateInfo& _info)
 }
 
 bool PedestrianSFMPlugin::OnStateCallBack(gazebo_sfm_plugin::ped_state::Request& req,
-  gazebo_sfm_plugin::ped_state::Response& resp)
+                                          gazebo_sfm_plugin::ped_state::Response& resp)
 {
   if (req.name == actor_->GetName())
   {
