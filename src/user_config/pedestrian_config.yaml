@@ -35,3 +35,91 @@ pedestrians:
     trajectory:
       goal_point_1: 3 -8 1 0 0 0
       goal_point_2: 3 2 1 0 0 0
+  - name: human_3
+    pose: 0 1 1 0 0 0
+    velocity: 1.2
+    radius: 0.4
+    cycle: true
+    ignore:
+      model_1: ground_plane
+      model_2: turtlebot3_waffle
+    trajectory:
+      goal_point_1: 0 1 1 0 0 0
+      goal_point_2: 0 2 1 0 0 0
+  # - name: human_4
+  #   pose: 0 -1 1 0 0 0
+  #   velocity: 1.2
+  #   radius: 0.4
+  #   cycle: true
+  #   ignore:
+  #     model_1: ground_plane
+  #     model_2: turtlebot3_waffle
+  #   trajectory:
+  #     goal_point_1: 0 -1 1 0 0 0
+  #     goal_point_2: 0 -2 1 0 0 0
+  # - name: human_5
+  #   pose: 1 0 1 0 0 0
+  #   velocity: 1.2
+  #   radius: 0.4
+  #   cycle: true
+  #   ignore:
+  #     model_1: ground_plane
+  #     model_2: turtlebot3_waffle
+  #   trajectory:
+  #     goal_point_1: 1 0 1 0 0 0
+  #     goal_point_2: 1 1 1 0 0 0
+  # - name: human_6
+  #   pose: -5 0 1 0 0 0
+  #   velocity: 1.2
+  #   radius: 0.4
+  #   cycle: true
+  #   ignore:
+  #     model_1: ground_plane
+  #     model_2: turtlebot3_waffle
+  #   trajectory:
+  #     goal_point_1: -5 0 1 0 0 0
+  #     goal_point_2: -5 1 1 0 0 0
+  # - name: human_7
+  #   pose: -6 0 1 0 0 0
+  #   velocity: 1.2
+  #   radius: 0.4
+  #   cycle: true
+  #   ignore:
+  #     model_1: ground_plane
+  #     model_2: turtlebot3_waffle
+  #   trajectory:
+  #     goal_point_1: -6 0 1 0 0 0
+  #     goal_point_2: -6 1 1 0 0 0
+  # - name: human_8
+  #   pose: -7 0 1 0 0 0
+  #   velocity: 1.2
+  #   radius: 0.4
+  #   cycle: true
+  #   ignore:
+  #     model_1: ground_plane
+  #     model_2: turtlebot3_waffle
+  #   trajectory:
+  #     goal_point_1: -7 0 1 0 0 0
+  #     goal_point_2: -7 1 1 0 0 0
+  # - name: human_9
+  #   pose: -5 1 1 0 0 0
+  #   velocity: 1.2
+  #   radius: 0.4
+  #   cycle: true
+  #   ignore:
+  #     model_1: ground_plane
+  #     model_2: turtlebot3_waffle
+  #   trajectory:
+  #     goal_point_1: -5 1 1 0 0 0
+  #     goal_point_2: -5 2 1 0 0 0
+  # - name: human_10
+  #   pose: -7 1 1 0 0 0
+  #   velocity: 1.2
+  #   radius: 0.4
+  #   cycle: true
+  #   ignore:
+  #     model_1: ground_plane
+  #     model_2: turtlebot3_waffle
+  #   trajectory:
+  #     goal_point_1: -7 1 1 0 0 0
+  #     goal_point_2: -7 2 1 0 0 0
