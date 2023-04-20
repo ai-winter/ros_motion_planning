@@ -136,7 +136,7 @@
           <geometry>
             <mesh>
               <scale>1.3 0.7 1</scale>
-              <uri>model://shipping_container_conveyor_ariac/meshes/ShippingContainer_Textured.obj</uri>
+              <uri>model://sim_env/models/shipping_container_conveyor_ariac/meshes/ShippingContainer_Textured.obj</uri>
             </mesh>
           </geometry>
         </visual>
@@ -162,7 +162,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -195,7 +195,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -225,7 +225,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -258,7 +258,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -288,7 +288,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -321,7 +321,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringA_01/meshes/aws_robomaker_warehouse_ClutteringA_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -351,7 +351,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -378,7 +378,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -408,7 +408,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -435,7 +435,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfE_01/meshes/aws_robomaker_warehouse_ShelfE_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -465,7 +465,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -492,7 +492,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -522,7 +522,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -549,7 +549,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -579,7 +579,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -606,7 +606,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -636,7 +636,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -663,7 +663,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -693,7 +693,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -720,7 +720,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -750,7 +750,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -777,7 +777,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1143,7 +1143,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1176,7 +1176,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1206,7 +1206,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1239,7 +1239,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringC_01/meshes/aws_robomaker_warehouse_ClutteringC_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1269,7 +1269,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringD_01/meshes/aws_robomaker_warehouse_ClutteringD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringD_01/meshes/aws_robomaker_warehouse_ClutteringD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1302,7 +1302,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ClutteringD_01/meshes/aws_robomaker_warehouse_ClutteringD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ClutteringD_01/meshes/aws_robomaker_warehouse_ClutteringD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1321,7 +1321,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://dumpster/meshes/dumpster.dae</uri>
+              <uri>model://sim_env/models/dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -1341,13 +1341,13 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://dumpster/meshes/dumpster.dae</uri>
+              <uri>model://sim_env/models/dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
           <material>
             <script>
-              <uri>model://dumpster/materials/scripts</uri>
-              <uri>model://dumpster/materials/textures</uri>
+              <uri>model://sim_env/models/dumpster/materials/scripts</uri>
+              <uri>model://sim_env/models/dumpster/materials/textures</uri>
               <name>Dumpster/Diffuse</name>
             </script>
           </material>
@@ -1386,7 +1386,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1413,7 +1413,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1443,7 +1443,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_collision.DAE</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1470,7 +1470,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>model://aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
+              <uri>model://sim_env/models/aws_robomaker_warehouse_ShelfD_01/meshes/aws_robomaker_warehouse_ShelfD_01_visual.DAE</uri>
             </mesh>
           </geometry>
           <meta>
@@ -1490,7 +1490,7 @@
           <geometry>
             <mesh>
               <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
+              <uri>model://sim_env/models/construction_cone/meshes/construction_cone.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -1511,7 +1511,7 @@
           <geometry>
             <mesh>
               <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
+              <uri>model://sim_env/models/construction_cone/meshes/construction_cone.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -1539,7 +1539,7 @@
           <geometry>
             <mesh>
               <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
+              <uri>model://sim_env/models/construction_cone/meshes/construction_cone.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -1560,7 +1560,7 @@
           <geometry>
             <mesh>
               <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
+              <uri>model://sim_env/models/construction_cone/meshes/construction_cone.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -1588,7 +1588,7 @@
           <geometry>
             <mesh>
               <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
+              <uri>model://sim_env/models/construction_cone/meshes/construction_cone.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -1609,7 +1609,7 @@
           <geometry>
             <mesh>
               <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
+              <uri>model://sim_env/models/construction_cone/meshes/construction_cone.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -1637,7 +1637,7 @@
           <geometry>
             <mesh>
               <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
+              <uri>model://sim_env/models/construction_cone/meshes/construction_cone.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -1658,7 +1658,7 @@
           <geometry>
             <mesh>
               <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
+              <uri>model://sim_env/models/construction_cone/meshes/construction_cone.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -1686,7 +1686,7 @@
           <geometry>
             <mesh>
               <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
+              <uri>model://sim_env/models/construction_cone/meshes/construction_cone.dae</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -1707,7 +1707,7 @@
           <geometry>
             <mesh>
               <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
+              <uri>model://sim_env/models/construction_cone/meshes/construction_cone.dae</uri>
             </mesh>
           </geometry>
         </visual>
@@ -2393,6 +2393,59 @@
     <trajectory>
       <goalpoint>3 -8 1 0 0 0</goalpoint>
       <goalpoint>3 2 1 0 0 0</goalpoint>
+    </trajectory>
+  </plugin>
+</actor>
+<actor name="human_3">
+  <pose>0 1 1 0 0 0</pose>
+  <skin>
+    <filename>walk.dae</filename>
+    <scale>1.0</scale>
+  </skin>
+  <animation name="walking">
+    <filename>walk.dae</filename>
+    <scale>1.0</scale>
+    <interpolate_x>true</interpolate_x>
+  </animation>
+  <plugin name="human_3_plugin" filename="libPedestrianSFMPlugin.so">
+    <collision scale="0.01 0.001 0.001">LHipJoint_LeftUpLeg_collision</collision>
+    <collision scale="8.0 8.0 1.0">LeftUpLeg_LeftLeg_collision</collision>
+    <collision scale="10.0 10.0 1.5">LeftLeg_LeftFoot_collision</collision>
+    <collision scale="4.0 4.0 1.5">LeftFoot_LeftToeBase_collision</collision>
+    <collision scale="0.01 0.001 0.001">RHipJoint_RightUpLeg_collision</collision>
+    <collision scale="8.0 8.0 1.0">RightUpLeg_RightLeg_collision</collision>
+    <collision scale="10.0 10.0 1.5">RightLeg_RightFoot_collision</collision>
+    <collision scale="4.0 4.0 1.5">RightFoot_RightToeBase_collision</collision>
+    <collision scale="0.01 0.001 0.001">Spine_Spine1_collision</collision>
+    <collision scale="0.01 0.001 0.001">Neck_Neck1_collision</collision>
+    <collision scale="5.0 5.0 3.0">Neck1_Head_collision</collision>
+    <collision scale="0.01 0.001 0.001">LeftShoulder_LeftArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">LeftArm_LeftForeArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">LeftForeArm_LeftHand_collision</collision>
+    <collision scale="4.0 4.0 3.0">LeftFingerBase_LeftHandIndex1_collision</collision>
+    <collision scale="0.01 0.001 0.001">RightShoulder_RightArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">RightArm_RightForeArm_collision</collision>
+    <collision scale="5.0 5.0 1.0">RightForeArm_RightHand_collision</collision>
+    <collision scale="4.0 4.0 3.0">RightFingerBase_RightHandIndex1_collision</collision>
+    <collision scale="12.0 20.0 5.0" pose="0.05 0 0 0 -0.2 0">LowerBack_Spine_collision</collision>
+    <velocity>1.2</velocity>
+    <radius>0.4</radius>
+    <cycle>True</cycle>
+    <animation_factor>5.1</animation_factor>
+    <people_distance>6.0</people_distance>
+    <goal_weight>2.0</goal_weight>
+    <obstacle_weight>20.0</obstacle_weight>
+    <social_weight>15</social_weight>
+    <group_gaze_weight>3.0</group_gaze_weight>
+    <group_coh_weight>2.0</group_coh_weight>
+    <group_rep_weight>1.0</group_rep_weight>
+    <ignore_obstacles>
+      <model>ground_plane</model>
+      <model>turtlebot3_waffle</model>
+    </ignore_obstacles>
+    <trajectory>
+      <goalpoint>0 1 1 0 0 0</goalpoint>
+      <goalpoint>0 2 1 0 0 0</goalpoint>
     </trajectory>
   </plugin>
 </actor>
