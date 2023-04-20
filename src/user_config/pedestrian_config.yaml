@@ -36,7 +36,7 @@ pedestrians:
       goal_point_1: 3 -8 1 0 0 0
       goal_point_2: 3 2 1 0 0 0
   - name: human_3
-    pose: 0 1 1 0 0 0
+    pose: 3 -6 1 0 0 0
     velocity: 1.2
     radius: 0.4
     cycle: true
