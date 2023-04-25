@@ -2344,7 +2344,7 @@
   <plugin name="pedestrian_visual" filename="libPedestrianVisualPlugin.so" />
 </actor>
 <actor name="human_2">
-  <pose>3 -8 1 0 0 0</pose>
+  <pose>-0.5 -8.5 1 0 0 0</pose>
   <skin>
     <filename>walk.dae</filename>
     <scale>1.0</scale>
@@ -2391,13 +2391,13 @@
       <model>turtlebot3_waffle</model>
     </ignore_obstacles>
     <trajectory>
-      <goalpoint>3 -8 1 0 0 0</goalpoint>
-      <goalpoint>3 2 1 0 0 0</goalpoint>
+      <goalpoint>-0.5 -8.5 1 0 0 0</goalpoint>
+      <goalpoint>-9 2.5 1 0 0 0</goalpoint>
     </trajectory>
   </plugin>
 </actor>
 <actor name="human_3">
-  <pose>3 -6 1 0 0 0</pose>
+  <pose>-3.5 -8.5 1 0 0 0</pose>
   <skin>
     <filename>walk.dae</filename>
     <scale>1.0</scale>
@@ -2444,8 +2444,8 @@
       <model>turtlebot3_waffle</model>
     </ignore_obstacles>
     <trajectory>
-      <goalpoint>3 -6 1 0 0 0</goalpoint>
-      <goalpoint>3 2 1 0 0 0</goalpoint>
+      <goalpoint>-3.5 -8.5 1 0 0 0</goalpoint>
+      <goalpoint>-3.5 8.5 1 0 0 0</goalpoint>
     </trajectory>
   </plugin>
 </actor>
