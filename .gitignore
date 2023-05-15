@@ -1,3 +1,5 @@
+.vscode/
+
 src/CMakeLists.txt
 .catkin_workspace
 */__pycache__
