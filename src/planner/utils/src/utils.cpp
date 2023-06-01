@@ -34,9 +34,9 @@ Node::Node(int x, int y, double g, double h, int id, int pid) : x_(x), y_(y), g_
 Node Node::operator+(const Node& n) const
 {
   Node result;
-  result.x_ = this->x_ + n.x_;
-  result.y_ = this->y_ + n.y_;
-  result.g_ = this->g_ + n.g_;
+  result.x_ = x_ + n.x_;
+  result.y_ = y_ + n.y_;
+  result.g_ = g_ + n.g_;
 
   return result;
 }
@@ -49,8 +49,8 @@ Node Node::operator+(const Node& n) const
 Node Node::operator-(const Node& n) const
 {
   Node result;
-  result.x_ = this->x_ - n.x_;
-  result.y_ = this->y_ - n.y_;
+  result.x_ = x_ - n.x_;
+  result.y_ = y_ - n.y_;
 
   return result;
 }
@@ -62,7 +62,7 @@ Node Node::operator-(const Node& n) const
  */
 bool Node::operator==(const Node& n) const
 {
-  return this->x_ == n.x_ && this->y_ == n.y_;
+  return x_ == n.x_ && y_ == n.y_;
 }
 
 /**
@@ -72,7 +72,7 @@ bool Node::operator==(const Node& n) const
  */
 bool Node::operator!=(const Node& n) const
 {
-  return !this->operator==(n);
+  return !operator==(n);
 }
 
 /**

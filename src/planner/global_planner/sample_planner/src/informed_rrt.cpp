@@ -42,63 +42,63 @@ bool InformedRRT::plan(const unsigned char* gloal_costmap, const Node& start, co
                        std::vector<Node>& expand)
 {
   // initialization
-  this->c_best_ = std::numeric_limits<double>::max();
-  this->c_min_ = this->_dist(start, goal);
+  c_best_ = std::numeric_limits<double>::max();
+  c_min_ = _dist(start, goal);
   int best_parent = -1;
-  this->sample_list_.clear();
+  sample_list_.clear();
 
   // copy
-  this->start_ = start, this->goal_ = goal;
-  this->costs_ = gloal_costmap;
-  this->sample_list_.insert(start);
+  start_ = start, goal_ = goal;
+  costs_ = gloal_costmap;
+  sample_list_.insert(start);
   expand.push_back(start);
 
   // main loop
   int iteration = 0;
-  while (iteration < this->sample_num_)
+  while (iteration < sample_num_)
   {
     iteration++;
 
     // generate a random node in the map
-    Node sample_node = this->_generateRandomNode();
+    Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (gloal_costmap[sample_node.id_] >= this->lethal_cost_ * this->factor_)
+    if (gloal_costmap[sample_node.id_] >= lethal_cost_ * factor_)
       continue;
 
     // visited
-    if (this->sample_list_.find(sample_node) != this->sample_list_.end())
+    if (sample_list_.find(sample_node) != sample_list_.end())
       continue;
 
     // regular the sample node
-    Node new_node = this->_findNearestPoint(this->sample_list_, sample_node);
+    Node new_node = _findNearestPoint(sample_list_, sample_node);
     if (new_node.id_ == -1)
       continue;
     else
     {
-      this->sample_list_.insert(new_node);
+      sample_list_.insert(new_node);
       expand.push_back(new_node);
     }
 
     // goal found
-    auto dist = this->_dist(new_node, this->goal_);
-    if (dist <= this->max_dist_ && !_isAnyObstacleInPath(new_node, this->goal_))
+    auto dist = _dist(new_node, goal_);
+    if (dist <= max_dist_ && !_isAnyObstacleInPath(new_node, goal_))
     {
       double cost = dist + new_node.g_;
-      if (cost < this->c_best_)
+      if (cost < c_best_)
       {
         best_parent = new_node.id_;
-        this->c_best_ = cost;
+        c_best_ = cost;
       }
     }
   }
 
   if (best_parent != -1)
   {
-    Node goal_(this->goal_.x_, this->goal_.y_, this->c_best_, 0, this->grid2Index(this->goal_.x_, this->goal_.y_),
+    Node goal_(goal_.x_, goal_.y_, c_best_, 0, grid2Index(goal_.x_, goal_.y_),
                best_parent);
-    this->sample_list_.insert(goal_);
-    path = this->_convertClosedListToPath(this->sample_list_, start, goal);
+    sample_list_.insert(goal_);
+    path = _convertClosedListToPath(sample_list_, start, goal);
     return true;
   }
   return false;
@@ -111,7 +111,7 @@ bool InformedRRT::plan(const unsigned char* gloal_costmap, const Node& start, co
 Node InformedRRT::_generateRandomNode()
 {
   // ellipse sample
-  if (this->c_best_ < std::numeric_limits<double>::max())
+  if (c_best_ < std::numeric_limits<double>::max())
   {
     while (true)
     {
@@ -128,8 +128,8 @@ Node InformedRRT::_generateRandomNode()
           break;
       }
       // transform to ellipse
-      Node temp = this->_transform(x, y);
-      if (temp.id_ < this->ns_ - 1)
+      Node temp = _transform(x, y);
+      if (temp.id_ < ns_ - 1)
         return temp;
     }
   }
@@ -146,21 +146,21 @@ Node InformedRRT::_generateRandomNode()
 Node InformedRRT::_transform(double x, double y)
 {
   // center
-  double center_x = (this->start_.x_ + this->goal_.x_) / 2;
-  double center_y = (this->start_.y_ + this->goal_.y_) / 2;
+  double center_x = (start_.x_ + goal_.x_) / 2;
+  double center_y = (start_.y_ + goal_.y_) / 2;
 
   // rotation
-  double theta = -this->_angle(this->start_, this->goal_);
+  double theta = -_angle(start_, goal_);
 
   // ellipse
-  double a = this->c_best_ / 2.0;
-  double c = this->c_min_ / 2.0;
+  double a = c_best_ / 2.0;
+  double c = c_min_ / 2.0;
   double b = std::sqrt(a * a - c * c);
 
   // transform
   int tx = (int)(a * cos(theta) * x + b * sin(theta) * y + center_x);
   int ty = (int)(-a * sin(theta) * x + b * cos(theta) * y + center_y);
-  int id = this->grid2Index(tx, ty);
+  int id = grid2Index(tx, ty);
   return Node(tx, ty, 0, 0, id, 0);
 }
 }  // namespace rrt_planner

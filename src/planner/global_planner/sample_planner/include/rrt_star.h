@@ -55,7 +55,8 @@ protected:
    */
   Node _findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coordinates> list, Node& node);
 
-  double r_;
+protected:
+  double r_;  // optimization radius
 };
 }  // namespace rrt_planner
 #endif  // RRT_H
