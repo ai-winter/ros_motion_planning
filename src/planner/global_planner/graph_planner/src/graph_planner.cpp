@@ -12,7 +12,6 @@
  *
  **********************************************************/
 #include "graph_planner.h"
-
 #include <pluginlib/class_list_macros.h>
 
 #include "a_star.h"
@@ -28,19 +27,18 @@ namespace graph_planner
 /**
  * @brief Construct a new Graph Planner object
  */
-GraphPlanner::GraphPlanner() : costmap_(NULL), initialized_(false), global_planner_(NULL)
+GraphPlanner::GraphPlanner() : initialized_(false), costmap_(nullptr), global_planner_(nullptr)
 {
 }
 
 /**
  * @brief Construct a new Graph Planner object
  * @param name      planner name
- * @param costmap   costmap pointer
- * @param frame_id  costmap frame ID
+ * @param costmap_ros   the cost map to use for assigning costs to trajectories
  */
-GraphPlanner::GraphPlanner(std::string name, costmap_2d::Costmap2D* costmap, std::string frame_id) : GraphPlanner()
+GraphPlanner::GraphPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros) : GraphPlanner()
 {
-  initialize(name, costmap, frame_id);
+  initialize(name, costmap_ros);
 }
 
 /**
@@ -48,11 +46,6 @@ GraphPlanner::GraphPlanner(std::string name, costmap_2d::Costmap2D* costmap, std
  */
 GraphPlanner::~GraphPlanner()
 {
-  if (global_planner_)
-  {
-    delete global_planner_;
-    global_planner_ = NULL;
-  }
 }
 
 /**
@@ -75,55 +68,57 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, 
 {
   if (!initialized_)
   {
+    initialized_ = true;
+
     // initialize ROS node
     ros::NodeHandle private_nh("~/" + name);
+
     // initialize costmap
     costmap_ = costmap;
+
     // costmap frame ID
     frame_id_ = frame_id;
+
     // get costmap properties
     nx_ = costmap->getSizeInCellsX(), ny_ = costmap->getSizeInCellsY();
     origin_x_ = costmap_->getOriginX(), origin_y_ = costmap_->getOriginY();
     resolution_ = costmap->getResolution();
+    // ROS_WARN("nx: %d, origin_x: %f, res: %lf", nx_, origin_x_, resolution_);
 
-    // offset of transform from world(x,y) to grid map(x,y)
-    private_nh.param("convert_offset", convert_offset_, 0.0);
-    // error tolerance
-    private_nh.param("default_tolerance", tolerance_, 0.0);
-    // whether outline the map or not
-    private_nh.param("outline_map", is_outline_, false);
-    // obstacle factor, NOTE: no use...
-    private_nh.param("obstacle_factor", factor_, 0.5);
-    // whether publish expand zone or not
-    private_nh.param("expand_zone", is_expand_, false);
+    private_nh.param("convert_offset", convert_offset_, 0.0);  // offset of transform from world(x,y) to grid map(x,y)
+    private_nh.param("default_tolerance", tolerance_, 0.0);    // error tolerance
+    private_nh.param("outline_map", is_outline_, false);       // whether outline the map or not
+    private_nh.param("obstacle_factor", factor_, 0.5);         // obstacle factor, NOTE: no use...
+    private_nh.param("expand_zone", is_expand_, false);        // whether publish expand zone or not
 
     // planner name
-    private_nh.param("planner_name", planner_name_, (std::string) "a_star");
-    if (planner_name_ == "a_star")
+    std::string planner_name;
+    private_nh.param("planner_name", planner_name, (std::string) "a_star");
+    if (planner_name == "a_star")
       global_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_);
-    else if (planner_name_ == "dijkstra")
+    else if (planner_name == "dijkstra")
       global_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_, true);
-    else if (planner_name_ == "gbfs")
+    else if (planner_name == "gbfs")
       global_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_, false, true);
-    else if (planner_name_ == "jps")
+    else if (planner_name == "jps")
       global_planner_ = new jps_planner::JumpPointSearch(nx_, ny_, resolution_);
-    else if (planner_name_ == "d_star")
+    else if (planner_name == "d_star")
       global_planner_ = new d_star_planner::DStar(nx_, ny_, resolution_);
-    else if (planner_name_ == "lpa_star")
+    else if (planner_name == "lpa_star")
       global_planner_ = new lpa_star_planner::LPAStar(nx_, ny_, resolution_);
-    else if (planner_name_ == "d_star_lite")
+    else if (planner_name == "d_star_lite")
       global_planner_ = new d_star_lite_planner::DStarLite(nx_, ny_, resolution_);
 
-    ROS_INFO("Using global graph planner: %s", planner_name_.c_str());
+    ROS_INFO("Using global graph planner: %s", planner_name.c_str());
 
     // register planning publisher
     plan_pub_ = private_nh.advertise<nav_msgs::Path>("plan", 1);
+
     // register explorer visualization publisher
     expand_pub_ = private_nh.advertise<nav_msgs::OccupancyGrid>("expand", 1);
+
     // register planning service
     make_plan_srv_ = private_nh.advertiseService("make_plan", &GraphPlanner::makePlanService, this);
-    // set initialization flag
-    initialized_ = true;
   }
   else
   {
@@ -162,6 +157,7 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
     return false;
   }
+
   // clear existing plan
   plan.clear();
 

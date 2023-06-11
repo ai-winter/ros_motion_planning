@@ -121,7 +121,7 @@ void DStarLite::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
         continue;
 
       int x_n = x + i, y_n = y + j;
-      if (x_n < 0 || x_n > nx_ || y_n < 0 || y_n > ny_)
+      if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
         continue;
       LNodePtr neigbour_ptr = map_[x_n][y_n];
 
@@ -347,7 +347,7 @@ bool DStarLite::plan(const unsigned char* gloal_costmap, const Node& start, cons
       for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; j++)
       {
         int x_n = start.x_ + i, y_n = start.y_ + j;
-        if (x_n < 0 || x_n > nx_ || y_n < 0 || y_n > ny_)
+        if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
           continue;
 
         int idx = grid2Index(x_n, y_n);

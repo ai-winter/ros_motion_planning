@@ -112,7 +112,7 @@ void DStar::getNeighbours(DNodePtr node_ptr, std::vector<DNodePtr>& neighbours)
         continue;
 
       int x_n = x + i, y_n = y + j;
-      if (x_n < 0 || x_n > nx_ || y_n < 0 || y_n > ny_)
+      if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
         continue;
       DNodePtr neigbour_ptr = map_[x_n][y_n];
 
@@ -331,7 +331,7 @@ bool DStar::plan(const unsigned char* gloal_costmap, const Node& start, const No
       for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; j++)
       {
         int x_n = state.x_ + i, y_n = state.y_ + j;
-        if (x_n < 0 || x_n > nx_ || y_n < 0 || y_n > ny_)
+        if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
           continue;
 
         DNodePtr x = map_[x_n][y_n];

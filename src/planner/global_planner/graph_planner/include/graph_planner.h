@@ -14,11 +14,18 @@
 #ifndef GRAPH_PLANNER_H
 #define GRAPH_PLANNER_H
 
+#include <ros/ros.h>
+#include <costmap_2d/costmap_2d_ros.h>
+#include <costmap_2d/costmap_2d.h>
 #include <nav_core/base_global_planner.h>
-#include <nav_msgs/Path.h>
-#include <nav_msgs/GetPlan.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/Point.h>
+// #include <angles/angles.h>
+// #include <base_local_planner/world_model.h>
+// #include <base_local_planner/costmap_model.h>
+
+// #include <nav_msgs/Path.h>
+#include <nav_msgs/GetPlan.h>
+// #include <geometry_msgs/Point.h>
 
 #include "global_planner.h"
 
@@ -35,10 +42,9 @@ public:
   /**
    * @brief Construct a new Graph Planner object
    * @param name      planner name
-   * @param costmap   costmap pointer
-   * @param frame_id  costmap frame ID
+   * @param costmap_ros   the cost map to use for assigning costs to trajectories
    */
-  GraphPlanner(std::string name, costmap_2d::Costmap2D* costmap, std::string frame_id);
+  GraphPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Destroy the Graph Planner object
@@ -136,9 +142,8 @@ protected:
 
 protected:
   bool initialized_;                               // initialization flag
-  std::string planner_name_;                       // planner name
-  global_planner::GlobalPlanner* global_planner_;  // global graph planner
   costmap_2d::Costmap2D* costmap_;                 // costmap
+  global_planner::GlobalPlanner* global_planner_;  // global graph planner
   std::string frame_id_;                           // costmap frame ID
   unsigned int nx_, ny_;                           // costmap size
   double origin_x_, origin_y_;                     // costmap origin
@@ -146,6 +151,7 @@ protected:
   ros::Publisher plan_pub_;                        // path planning publisher
   ros::Publisher expand_pub_;                      // nodes explorer publisher
   ros::ServiceServer make_plan_srv_;               // planning service
+  // std::string planner_name_;                       // planner name
 
 private:
   boost::mutex mutex_;     // thread mutex

@@ -3,14 +3,16 @@
 
 #include <ros/ros.h>
 #include <nav_core/base_local_planner.h>
-#include <base_local_planner/odometry_helper_ros.h>
-#include <tf2/utils.h>
-// #include <tf2/LinearMath/Matrix3x3.h>
+
 #include <tf2_ros/buffer.h>
 #include <costmap_2d/costmap_2d_ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Twist.h>
+
 #include <nav_msgs/Odometry.h>
+#include <base_local_planner/odometry_helper_ros.h>
+#include <tf2/utils.h>
+// #include <tf2/LinearMath/Matrix3x3.h>
 
 namespace pid_planner
 {
@@ -24,6 +26,11 @@ public:
    * @brief Construct a new PIDPlanner object
    */
   PIDPlanner();
+
+  /**
+   * @brief Construct a new PIDPlanner object
+   */
+  PIDPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Destroy the PIDPlanner object
@@ -131,7 +138,7 @@ private:
   double e_v_, e_w_;
   double i_v_, i_w_;
 
-  std::string base_frame_;
+  std::string base_frame_, map_frame_;
   base_local_planner::OdometryHelperRos* odom_helper_;
   ros::Publisher target_pose_pub_, current_pose_pub_;
 

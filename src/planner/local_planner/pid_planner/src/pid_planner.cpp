@@ -1,5 +1,4 @@
 #include "pid_planner.h"
-
 #include <pluginlib/class_list_macros.h>
 
 PLUGINLIB_EXPORT_CLASS(pid_planner::PIDPlanner, nav_core::BaseLocalPlanner)
@@ -14,11 +13,21 @@ PIDPlanner::PIDPlanner()
   , tf_(nullptr)
   , costmap_ros_(nullptr)
   , goal_reached_(false)
-  , base_frame_("base_link")
   , plan_index_(0)
+  , base_frame_("base_link")
+  , map_frame_("map")
 {
   // ROS_WARN("PIDPlanner::PIDPlanner()");
   // NOTE: afterward, initialize() will be called automatically
+}
+
+/**
+ * @brief Construct a new PIDPlanner object
+ */
+PIDPlanner::PIDPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros) : PIDPlanner()
+{
+  // ROS_WARN("PIDPlanner::PIDPlanner(**)");
+  initialize(name, tf, costmap_ros);
 }
 
 /**
@@ -135,6 +144,11 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
 bool PIDPlanner::isGoalReached()
 {
   // ROS_WARN("PidLocalPlannerROS::isGoalReached()");
+  if (!initialized_)
+  {
+    ROS_ERROR("PID planner has not been initialized");
+    return false;
+  }
 
   if (goal_reached_)
   {
@@ -145,8 +159,7 @@ bool PIDPlanner::isGoalReached()
 }
 
 /**
- * @brief Given the current position, orientation, and velocity of the robot, compute velocity commands to send to
- * the base
+ * @brief Given the current position, orientation, and velocity of the robot, compute the velocity commands
  * @param cmd_vel will be filled with the velocity command to be passed to the robot base
  * @return  true if a valid trajectory was found, else false
  */
@@ -165,7 +178,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   costmap_ros_->getRobotPose(current_ps_odom);
 
   // transform into map
-  tf_->transform(current_ps_odom, current_ps_, "map");
+  tf_->transform(current_ps_odom, current_ps_, map_frame_);
 
   x_ = current_ps_.pose.position.x;
   y_ = current_ps_.pose.position.y;
