@@ -161,11 +161,17 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   }
 
   // current pose
-  costmap_ros_->getRobotPose(current_ps_);
+  geometry_msgs::PoseStamped current_ps_odom;
+  costmap_ros_->getRobotPose(current_ps_odom);
+
+  // transform into map
+  tf_->transform(current_ps_odom, current_ps_, "map");
+
   x_ = current_ps_.pose.position.x;
   y_ = current_ps_.pose.position.y;
   theta_ = tf2::getYaw(current_ps_.pose.orientation);  // [-pi, pi]
   // ROS_WARN("theta_ %.2f", theta_);
+  // ROS_WARN("frame_id: %s", current_ps_.header.frame_id.c_str());  // odom
 
   double theta_d, theta_dir, theta_trj;
   double b_x_d, b_y_d;  // desired x, y in base frame
@@ -218,6 +224,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     ++plan_index_;
   }
   // ROS_WARN("plan index: %d", plan_index_);
+  // ROS_WARN("frame_id: %s", target_ps_.header.frame_id.c_str());  // map
 
   // odometry observation - getting robot velocities in robot frame
   nav_msgs::Odometry base_odom;
@@ -261,13 +268,13 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   }
 
   // publish next target_ps_ pose
-  target_ps_.header.frame_id = "map";
-  target_ps_.header.stamp = ros::Time::now();
+  // target_ps_.header.frame_id = "map";
+  // target_ps_.header.stamp = ros::Time::now();
   target_pose_pub_.publish(target_ps_);
 
   // publish robot pose
-  current_ps_.header.frame_id = "map";
-  current_ps_.header.stamp = ros::Time::now();
+  // current_ps_.header.frame_id = "map";
+  // current_ps_.header.stamp = ros::Time::now();
   current_pose_pub_.publish(current_ps_);
 
   return true;
