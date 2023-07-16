@@ -1,33 +1,30 @@
 /***********************************************************
  *
- * @file: graph_planner.cpp
- * @breif: Contains the graph planner ROS wrapper class
+ * @file: evolutionary_planner.cpp
+ * @breif: Contains the evolutionary planner ROS wrapper class
  * @author: Yang Haodong
- * @update: 2022-10-26
+ * @update: 2023-7-16
  * @version: 1.0
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
  **********************************************************/
-#include "graph_planner.h"
+#include "evolutionary_planner.h"
 #include <pluginlib/class_list_macros.h>
 
-#include "a_star.h"
-#include "jump_point_search.h"
-#include "d_star.h"
-#include "lpa_star.h"
-#include "d_star_lite.h"
+#include "aco.h"
 
-PLUGINLIB_EXPORT_CLASS(graph_planner::GraphPlanner, nav_core::BaseGlobalPlanner)
 
-namespace graph_planner
+PLUGINLIB_EXPORT_CLASS(evolutionary_planner::EvolutionaryPlanner, nav_core::BaseGlobalPlanner)
+
+namespace evolutionary_planner
 {
 /**
  * @brief Construct a new Graph Planner object
  */
-GraphPlanner::GraphPlanner() : initialized_(false), costmap_(nullptr), g_planner_(nullptr)
+EvolutionaryPlanner::EvolutionaryPlanner() : initialized_(false), costmap_(nullptr), g_planner_(nullptr)
 {
 }
 
@@ -36,7 +33,7 @@ GraphPlanner::GraphPlanner() : initialized_(false), costmap_(nullptr), g_planner
  * @param name      planner name
  * @param costmap_ros   the cost map to use for assigning costs to trajectories
  */
-GraphPlanner::GraphPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros) : GraphPlanner()
+EvolutionaryPlanner::EvolutionaryPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros) : EvolutionaryPlanner()
 {
   initialize(name, costmap_ros);
 }
@@ -44,7 +41,7 @@ GraphPlanner::GraphPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_r
 /**
  * @brief Destroy the Graph Planner object
  */
-GraphPlanner::~GraphPlanner()
+EvolutionaryPlanner::~EvolutionaryPlanner()
 {
   if (g_planner_)
   {
@@ -58,7 +55,7 @@ GraphPlanner::~GraphPlanner()
  * @param  name         planner name
  * @param  costmapRos   costmap ROS wrapper
  */
-void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmapRos)
+void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmapRos)
 {
   initialize(name, costmapRos->getCostmap(), costmapRos->getGlobalFrameID());
 }
@@ -69,7 +66,7 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costma
  * @param costmap   costmap pointer
  * @param frame_id  costmap frame ID
  */
-void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, std::string frame_id)
+void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, std::string frame_id)
 {
   if (!initialized_)
   {
@@ -94,36 +91,31 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, 
     private_nh.param("default_tolerance", tolerance_, 0.0);    // error tolerance
     private_nh.param("outline_map", is_outline_, false);       // whether outline the map or not
     private_nh.param("obstacle_factor", factor_, 0.5);         // obstacle factor, NOTE: no use...
-    private_nh.param("expand_zone", is_expand_, false);        // whether publish expand zone or not
 
     // planner name
     std::string planner_name;
-    private_nh.param("planner_name", planner_name, (std::string) "a_star");
-    if (planner_name == "a_star")
-      g_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_);
-    else if (planner_name == "dijkstra")
-      g_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_, true);
-    else if (planner_name == "gbfs")
-      g_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_, false, true);
-    else if (planner_name == "jps")
-      g_planner_ = new jps_planner::JumpPointSearch(nx_, ny_, resolution_);
-    else if (planner_name == "d_star")
-      g_planner_ = new d_star_planner::DStar(nx_, ny_, resolution_);
-    else if (planner_name == "lpa_star")
-      g_planner_ = new lpa_star_planner::LPAStar(nx_, ny_, resolution_);
-    else if (planner_name == "d_star_lite")
-      g_planner_ = new d_star_lite_planner::DStarLite(nx_, ny_, resolution_);
+    private_nh.param("planner_name", planner_name, (std::string) "aco");
+    if (planner_name == "aco")
+    {
+      int n_ants, max_iter;
+      double alpha, beta, rho, Q;
+      private_nh.param("n_ants", n_ants, 50);       // number of ants
+      private_nh.param("alpha", alpha, 1.0);        // pheromone weight coefficient
+      private_nh.param("beta", beta, 5.0);          // heuristic factor weight coefficient
+      private_nh.param("rho", rho, 0.1);            // evaporation coefficient
+      private_nh.param("Q", Q, 1.0);                // pheromone gain
+      private_nh.param("max_iter", max_iter, 100);  // maximum iterations
+      
+      g_planner_ = new aco_planner::ACO(nx_, ny_, resolution_, n_ants, alpha, beta, rho, Q, max_iter);
+    }
 
     ROS_INFO("Using global graph planner: %s", planner_name.c_str());
 
     // register planning publisher
     plan_pub_ = private_nh.advertise<nav_msgs::Path>("plan", 1);
 
-    // register explorer visualization publisher
-    expand_pub_ = private_nh.advertise<nav_msgs::OccupancyGrid>("expand", 1);
-
     // register planning service
-    make_plan_srv_ = private_nh.advertiseService("make_plan", &GraphPlanner::makePlanService, this);
+    make_plan_srv_ = private_nh.advertiseService("make_plan", &EvolutionaryPlanner::makePlanService, this);
   }
   else
   {
@@ -138,7 +130,7 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, 
  * @param plan  plan
  * @return true if find a path successfully, else false
  */
-bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
+bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
                             std::vector<geometry_msgs::PoseStamped>& plan)
 {
   return makePlan(start, goal, tolerance_, plan);
@@ -152,7 +144,7 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
  * @param tolerance error tolerance
  * @return true if find a path successfully, else false
  */
-bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
+bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
                             double tolerance, std::vector<geometry_msgs::PoseStamped>& plan)
 {
   // start thread mutex
@@ -224,9 +216,9 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
   {
     if (_getPlanFromPath(path, plan))
     {
-      geometry_msgs::PoseStamped goalCopy = goal;
-      goalCopy.header.stamp = ros::Time::now();
-      plan.push_back(goalCopy);
+      geometry_msgs::PoseStamped goal_copy = goal;
+      goal_copy.header.stamp = ros::Time::now();
+      plan.push_back(goal_copy);
     }
     else
     {
@@ -238,10 +230,6 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
     ROS_ERROR("Failed to get a path.");
   }
 
-  // publish expand zone
-  if (is_expand_)
-    _publishExpand(expand);
-
   // publish visulization plan
   publishPlan(plan);
 
@@ -252,7 +240,7 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
  * @brief publish planning path
  * @param path  planning path
  */
-void GraphPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& plan)
+void EvolutionaryPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& plan)
 {
   if (!initialized_)
   {
@@ -278,7 +266,7 @@ void GraphPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& pl
  * @param resp  response from server
  * @return true
  */
-bool GraphPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::GetPlan::Response& resp)
+bool EvolutionaryPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::GetPlan::Response& resp)
 {
   makePlan(req.start, req.goal, resp.plan.poses);
   resp.plan.header.stamp = ros::Time::now();
@@ -288,45 +276,12 @@ bool GraphPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::Ge
 }
 
 /**
- * @brief publish expand zone
- * @param expand  set of expand nodes
- */
-void GraphPlanner::_publishExpand(std::vector<Node>& expand)
-{
-  ROS_DEBUG("Expand Zone Size: %ld", expand.size());
-
-  nav_msgs::OccupancyGrid grid;
-
-  // build expand
-  grid.header.frame_id = frame_id_;
-  grid.header.stamp = ros::Time::now();
-  grid.info.resolution = resolution_;
-  grid.info.width = nx_;
-  grid.info.height = ny_;
-
-  double wx, wy;
-  costmap_->mapToWorld(0, 0, wx, wy);
-  grid.info.origin.position.x = wx - resolution_ / 2;
-  grid.info.origin.position.y = wy - resolution_ / 2;
-  grid.info.origin.position.z = 0.0;
-  grid.info.origin.orientation.w = 1.0;
-  grid.data.resize(nx_ * ny_);
-
-  for (unsigned int i = 0; i < grid.data.size(); i++)
-    grid.data[i] = 0;
-  for (unsigned int i = 0; i < expand.size(); i++)
-    grid.data[expand[i].id_] = 50;
-
-  expand_pub_.publish(grid);
-}
-
-/**
  * @brief Calculate plan from planning path
  * @param path  path generated by global planner
  * @param plan  plan transfromed from path, i.e. [start, ..., goal]
  * @return  bool true if successful, else false
  */
-bool GraphPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometry_msgs::PoseStamped>& plan)
+bool EvolutionaryPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometry_msgs::PoseStamped>& plan)
 {
   if (!initialized_)
   {
@@ -366,7 +321,7 @@ bool GraphPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometr
  * @param wx  world map x
  * @param wy  world map y
  */
-void GraphPlanner::_mapToWorld(double mx, double my, double& wx, double& wy)
+void EvolutionaryPlanner::_mapToWorld(double mx, double my, double& wx, double& wy)
 {
   wx = origin_x_ + (mx + convert_offset_) * resolution_;
   wy = origin_y_ + (my + convert_offset_) * resolution_;
@@ -380,7 +335,7 @@ void GraphPlanner::_mapToWorld(double mx, double my, double& wx, double& wy)
  * @param wy  world map y
  * @return true if successfull, else false
  */
-bool GraphPlanner::_worldToMap(double wx, double wy, double& mx, double& my)
+bool EvolutionaryPlanner::_worldToMap(double wx, double wy, double& mx, double& my)
 {
   if (wx < origin_x_ || wy < origin_y_)
     return false;

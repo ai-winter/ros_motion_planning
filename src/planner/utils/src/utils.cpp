@@ -131,21 +131,7 @@ bool compare_coordinates::operator()(const Node& n1, const Node& n2) const
   return (n1.x_ == n2.x_) && (n1.y_ == n2.y_);
 }
 
-/**
- * @brief Get permissible motion
- * @return  Node vector of permissible motions
- */
-std::vector<Node> getMotion()
-{
-  return { Node(0, 1, 1),
-           Node(1, 0, 1),
-           Node(0, -1, 1),
-           Node(-1, 0, 1),
-           Node(1, 1, std::sqrt(2)),
-           Node(1, -1, std::sqrt(2)),
-           Node(-1, 1, std::sqrt(2)),
-           Node(-1, -1, std::sqrt(2)) };
-}
+
 
 /**
  * @brief compare coordinates between 2 nodes

@@ -15,6 +15,7 @@
 #ifndef GLOBAL_PLANNER_H
 #define GLOBAL_PLANNER_H
 
+#include <costmap_2d/cost_values.h>
 #include <unordered_set>
 
 #include "utils.h"
@@ -117,6 +118,18 @@ public:
    * @param my costmap y
    */
   void grid2Map(int gx, int gy, double& mx, double& my);
+
+  /**
+   * @brief Get permissible motion
+   * @return  Node vector of permissible motions
+   */
+  std::vector<Node> getMotion();
+  
+  /**
+   * @brief Inflate the boundary of costmap into obstacles to prevent cross planning
+   * @param costarr costmap pointer
+   */
+  void outlineMap(unsigned char* costarr);
 
 protected:
   /**

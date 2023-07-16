@@ -82,22 +82,14 @@ void SamplePlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
     resolution_ = costmap->getResolution();
 
     /*======================= static parameters loading ==========================*/
-    // offset of transform from world(x,y) to grid map(x,y)
-    private_nh.param("convert_offset", convert_offset_, 0.0);
-    // error tolerance
-    private_nh.param("default_tolerance", tolerance_, 0.0);
-    // whether outline the map or not
-    private_nh.param("outline_map", is_outline_, false);
-    // obstacle inflation factor
-    private_nh.param("obstacle_factor", factor_, 0.5);
-    // whether publish expand zone or not
-    private_nh.param("expand_zone", is_expand_, false);
-    // random sample points
-    private_nh.param("sample_points", sample_points_, 500);
-    // max distance between sample points
-    private_nh.param("sample_max_d", sample_max_d_, 5.0);
-    // optimization radius
-    private_nh.param("optimization_r", opt_r_, 10.0);
+    private_nh.param("convert_offset", convert_offset_, 0.0); // offset of transform from world(x,y) to grid map(x,y)
+    private_nh.param("default_tolerance", tolerance_, 0.0);   // error tolerance
+    private_nh.param("outline_map", is_outline_, false);      // whether outline the map or not
+    private_nh.param("obstacle_factor", factor_, 0.5);        // obstacle inflation factor
+    private_nh.param("expand_zone", is_expand_, false);       // whether publish expand zone or not
+    private_nh.param("sample_points", sample_points_, 500);   // random sample points
+    private_nh.param("sample_max_d", sample_max_d_, 5.0);     // max distance between sample points
+    private_nh.param("optimization_r", opt_r_, 10.0);         // optimization radius
 
     // planner name
     std::string planner_name;
@@ -200,7 +192,7 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
 
   // outline the map
   if (is_outline_)
-    _outlineMap(costmap_->getCharMap());
+    g_planner_->outlineMap(costmap_->getCharMap());
 
   // calculate path
   std::vector<Node> path;
@@ -264,25 +256,6 @@ bool SamplePlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::G
   return true;
 }
 
-/**
- * @brief  Inflate the boundary of costmap into obstacles to prevent cross planning
- * @param  costarr  costmap pointer
- */
-void SamplePlanner::_outlineMap(unsigned char* costarr)
-{
-  unsigned char* pc = costarr;
-  for (int i = 0; i < nx_; i++)
-    *pc++ = costmap_2d::LETHAL_OBSTACLE;
-  pc = costarr + (ny_ - 1) * nx_;
-  for (int i = 0; i < nx_; i++)
-    *pc++ = costmap_2d::LETHAL_OBSTACLE;
-  pc = costarr;
-  for (int i = 0; i < ny_; i++, pc += nx_)
-    *pc = costmap_2d::LETHAL_OBSTACLE;
-  pc = costarr + nx_ - 1;
-  for (int i = 0; i < ny_; i++, pc += nx_)
-    *pc = costmap_2d::LETHAL_OBSTACLE;
-}
 /**
  * @brief  publish expand zone
  * @param  expand  set of expand nodes

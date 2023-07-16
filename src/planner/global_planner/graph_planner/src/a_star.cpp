@@ -78,7 +78,7 @@ bool AStar::plan(const unsigned char* gloal_costmap, const Node& start, const No
     Node current = open_list.top();
     open_list.pop();
 
-    // current node do not exist in closed list
+    // current node does not exist in closed list
     if (closed_list.find(current) != closed_list.end())
       continue;
 

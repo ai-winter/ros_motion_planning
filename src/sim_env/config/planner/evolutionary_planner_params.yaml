@@ -1,0 +1,23 @@
+EvolutionaryPlanner:
+  # offset of transform from world(x,y) to grid map(x,y)
+  convert_offset: 0.0
+  # error tolerance
+  default_tolerance: 0.0
+  # whether outline the map or not
+  outline_map: true
+  # obstacle inflation factor
+  obstacle_factor: 0.5
+
+  ## Ant Colony Optimization(ACO) planner 
+  # number of ants
+  n_ants: 50
+  # pheromone weight coefficient
+  alpha: 1.0
+  # heuristic factor weight coefficient
+  beta: 5.0
+  # evaporation coefficient
+  rho: 0.1
+  # pheromone gain
+  Q: 1.0
+  # maximum iterations
+  max_iter: 100

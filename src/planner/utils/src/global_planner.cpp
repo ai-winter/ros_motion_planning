@@ -123,6 +123,42 @@ void GlobalPlanner::grid2Map(int gx, int gy, double& mx, double& my)
 }
 
 /**
+ * @brief Get permissible motion
+ * @return  Node vector of permissible motions
+ */
+std::vector<Node> GlobalPlanner::getMotion()
+{
+  return { Node(0, 1, 1),
+           Node(1, 0, 1),
+           Node(0, -1, 1),
+           Node(-1, 0, 1),
+           Node(1, 1, std::sqrt(2)),
+           Node(1, -1, std::sqrt(2)),
+           Node(-1, 1, std::sqrt(2)),
+           Node(-1, -1, std::sqrt(2)) };
+}
+
+/**
+ * @brief  Inflate the boundary of costmap into obstacles to prevent cross planning
+ * @param  costarr  costmap pointer
+ */
+void GlobalPlanner::outlineMap(unsigned char* costarr)
+{
+  unsigned char* pc = costarr;
+  for (int i = 0; i < nx_; i++)
+    *pc++ = costmap_2d::LETHAL_OBSTACLE;
+  pc = costarr + (ny_ - 1) * nx_;
+  for (int i = 0; i < nx_; i++)
+    *pc++ = costmap_2d::LETHAL_OBSTACLE;
+  pc = costarr;
+  for (int i = 0; i < ny_; i++, pc += nx_)
+    *pc = costmap_2d::LETHAL_OBSTACLE;
+  pc = costarr + nx_ - 1;
+  for (int i = 0; i < ny_; i++, pc += nx_)
+    *pc = costmap_2d::LETHAL_OBSTACLE;
+}
+
+/**
  * @brief Convert closed list to path
  * @param closed_list closed list
  * @param start       start node
@@ -147,4 +183,6 @@ std::vector<Node> GlobalPlanner::_convertClosedListToPath(
 
   return path;
 }
+
+
 }  // namespace global_planner

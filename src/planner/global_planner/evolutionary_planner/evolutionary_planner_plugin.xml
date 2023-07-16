@@ -1,0 +1,7 @@
+<library path="lib/libevolutionary_planner">
+  <class name="evolutionary_planner/EvolutionaryPlanner" type="evolutionary_planner::EvolutionaryPlanner" base_class_type="nav_core::BaseGlobalPlanner">
+    <description>
+      A implementation of global path planning algorithm: evolutionary planner
+    </description>
+  </class>
+</library>

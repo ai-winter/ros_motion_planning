@@ -93,12 +93,6 @@ public:
 
 protected:
   /**
-   * @brief  Inflate the boundary of costmap into obstacles to prevent cross planning
-   * @param  costarr  costmap pointer
-   */
-  void _outlineMap(unsigned char* costarr);
-
-  /**
    * @brief  publish expand zone
    * @param  expand  set of expand nodes
    */
