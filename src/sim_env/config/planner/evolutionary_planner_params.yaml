@@ -10,14 +10,14 @@ EvolutionaryPlanner:
 
   ## Ant Colony Optimization(ACO) planner 
   # number of ants
-  n_ants: 50
+  n_ants: 40
   # pheromone weight coefficient
   alpha: 1.0
   # heuristic factor weight coefficient
-  beta: 5.0
+  beta: 8.0
   # evaporation coefficient
   rho: 0.1
   # pheromone gain
   Q: 1.0
   # maximum iterations
-  max_iter: 100
+  max_iter: 40

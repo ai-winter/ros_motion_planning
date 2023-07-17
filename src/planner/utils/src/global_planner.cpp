@@ -184,5 +184,4 @@ std::vector<Node> GlobalPlanner::_convertClosedListToPath(
   return path;
 }
 
-
 }  // namespace global_planner
