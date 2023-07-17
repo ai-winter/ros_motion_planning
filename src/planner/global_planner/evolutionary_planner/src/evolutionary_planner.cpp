@@ -16,7 +16,6 @@
 
 #include "aco.h"
 
-
 PLUGINLIB_EXPORT_CLASS(evolutionary_planner::EvolutionaryPlanner, nav_core::BaseGlobalPlanner)
 
 namespace evolutionary_planner
@@ -33,7 +32,8 @@ EvolutionaryPlanner::EvolutionaryPlanner() : initialized_(false), costmap_(nullp
  * @param name      planner name
  * @param costmap_ros   the cost map to use for assigning costs to trajectories
  */
-EvolutionaryPlanner::EvolutionaryPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros) : EvolutionaryPlanner()
+EvolutionaryPlanner::EvolutionaryPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
+  : EvolutionaryPlanner()
 {
   initialize(name, costmap_ros);
 }
@@ -105,7 +105,7 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
       private_nh.param("rho", rho, 0.1);            // evaporation coefficient
       private_nh.param("Q", Q, 1.0);                // pheromone gain
       private_nh.param("max_iter", max_iter, 100);  // maximum iterations
-      
+
       g_planner_ = new aco_planner::ACO(nx_, ny_, resolution_, n_ants, alpha, beta, rho, Q, max_iter);
     }
 
@@ -131,7 +131,7 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
  * @return true if find a path successfully, else false
  */
 bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
-                            std::vector<geometry_msgs::PoseStamped>& plan)
+                                   std::vector<geometry_msgs::PoseStamped>& plan)
 {
   return makePlan(start, goal, tolerance_, plan);
 }
@@ -145,7 +145,7 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
  * @return true if find a path successfully, else false
  */
 bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
-                            double tolerance, std::vector<geometry_msgs::PoseStamped>& plan)
+                                   double tolerance, std::vector<geometry_msgs::PoseStamped>& plan)
 {
   // start thread mutex
   boost::mutex::scoped_lock lock(mutex_);
@@ -348,4 +348,4 @@ bool EvolutionaryPlanner::_worldToMap(double wx, double wy, double& mx, double& 
   return false;
 }
 
-}  // namespace graph_planner
+}  // namespace evolutionary_planner
