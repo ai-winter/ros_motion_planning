@@ -13,36 +13,38 @@ social_force:
 
 # pedestrians setting
 pedestrians:
-  - name: human_1
-    pose: 3 2 1 0 0 0
-    velocity: 0.9
-    radius: 0.4
-    cycle: true
-    ignore:
-      model_1: ground_plane
-      model_2: turtlebot3_waffle
-    trajectory:
-      goal_point_1: 3 2 1 0 0 0
-      goal_point_2: 3 -8 1 0 0 0
-  - name: human_2
-    pose: -0.5 -8.5 1 0 0 0
-    velocity: 1.2
-    radius: 0.4
-    cycle: true
-    ignore:
-      model_1: ground_plane
-      model_2: turtlebot3_waffle
-    trajectory:
-      goal_point_1: -0.5 -8.5 1 0 0 0
-      goal_point_2: -9 2.5 1 0 0 0
-  - name: human_3
-    pose: -3.5 -8.5 1 0 0 0
-    velocity: 1.2
-    radius: 0.4
-    cycle: true
-    ignore:
-      model_1: ground_plane
-      model_2: turtlebot3_waffle
-    trajectory:
-      goal_point_1: -3.5 -8.5 1 0 0 0
-      goal_point_2: -3.5 8.5 1 0 0 0
+  update_rate: 5
+  ped_property:
+    - name: human_1
+      pose: 3 2 1 0 0 0
+      velocity: 0.9
+      radius: 0.4
+      cycle: true
+      ignore:
+        model_1: ground_plane
+        model_2: turtlebot3_waffle
+      trajectory:
+        goal_point_1: 3 2 1 0 0 0
+        goal_point_2: 3 -8 1 0 0 0
+    - name: human_2
+      pose: -0.5 -8.5 1 0 0 0
+      velocity: 1.2
+      radius: 0.4
+      cycle: true
+      ignore:
+        model_1: ground_plane
+        model_2: turtlebot3_waffle
+      trajectory:
+        goal_point_1: -0.5 -8.5 1 0 0 0
+        goal_point_2: -9 2.5 1 0 0 0
+    - name: human_3
+      pose: -3.5 -8.5 1 0 0 0
+      velocity: 1.2
+      radius: 0.4
+      cycle: true
+      ignore:
+        model_1: ground_plane
+        model_2: turtlebot3_waffle
+      trajectory:
+        goal_point_1: -3.5 -8.5 1 0 0 0
+        goal_point_2: -3.5 8.5 1 0 0 0

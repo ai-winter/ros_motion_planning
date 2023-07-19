@@ -1995,164 +1995,166 @@
       <pose>8.68743 -1.85107 0 0 -0 3.14</pose>
     </model>
   <actor name="human_1">
-  <pose>3 2 1 0 0 0</pose>
-  <skin>
-    <filename>walk.dae</filename>
-    <scale>1.0</scale>
-  </skin>
-  <animation name="walking">
-    <filename>walk.dae</filename>
-    <scale>1.0</scale>
-    <interpolate_x>true</interpolate_x>
-  </animation>
-  <plugin name="human_1_plugin" filename="libPedestrianSFMPlugin.so">
-    <collision scale="0.01 0.001 0.001">LHipJoint_LeftUpLeg_collision</collision>
-    <collision scale="8.0 8.0 1.0">LeftUpLeg_LeftLeg_collision</collision>
-    <collision scale="10.0 10.0 1.5">LeftLeg_LeftFoot_collision</collision>
-    <collision scale="4.0 4.0 1.5">LeftFoot_LeftToeBase_collision</collision>
-    <collision scale="0.01 0.001 0.001">RHipJoint_RightUpLeg_collision</collision>
-    <collision scale="8.0 8.0 1.0">RightUpLeg_RightLeg_collision</collision>
-    <collision scale="10.0 10.0 1.5">RightLeg_RightFoot_collision</collision>
-    <collision scale="4.0 4.0 1.5">RightFoot_RightToeBase_collision</collision>
-    <collision scale="0.01 0.001 0.001">Spine_Spine1_collision</collision>
-    <collision scale="0.01 0.001 0.001">Neck_Neck1_collision</collision>
-    <collision scale="5.0 5.0 3.0">Neck1_Head_collision</collision>
-    <collision scale="0.01 0.001 0.001">LeftShoulder_LeftArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">LeftArm_LeftForeArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">LeftForeArm_LeftHand_collision</collision>
-    <collision scale="4.0 4.0 3.0">LeftFingerBase_LeftHandIndex1_collision</collision>
-    <collision scale="0.01 0.001 0.001">RightShoulder_RightArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">RightArm_RightForeArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">RightForeArm_RightHand_collision</collision>
-    <collision scale="4.0 4.0 3.0">RightFingerBase_RightHandIndex1_collision</collision>
-    <collision scale="12.0 20.0 5.0" pose="0.05 0 0 0 -0.2 0">LowerBack_Spine_collision</collision>
-    <velocity>0.9</velocity>
-    <radius>0.4</radius>
-    <cycle>True</cycle>
-    <animation_factor>5.1</animation_factor>
-    <people_distance>6.0</people_distance>
-    <goal_weight>2.0</goal_weight>
-    <obstacle_weight>20.0</obstacle_weight>
-    <social_weight>15</social_weight>
-    <group_gaze_weight>3.0</group_gaze_weight>
-    <group_coh_weight>2.0</group_coh_weight>
-    <group_rep_weight>1.0</group_rep_weight>
-    <ignore_obstacles>
-      <model>ground_plane</model>
-      <model>turtlebot3_waffle</model>
-    </ignore_obstacles>
-    <trajectory>
-      <goalpoint>3 2 1 0 0 0</goalpoint>
-      <goalpoint>3 -8 1 0 0 0</goalpoint>
-    </trajectory>
-  </plugin>
-  <plugin name="pedestrian_visual" filename="libPedestrianVisualPlugin.so" />
+	<pose>3 2 1 0 0 0</pose>
+	<skin>
+		<filename>walk.dae</filename>
+		<scale>1.0</scale>
+	</skin>
+	<animation name="walking">
+		<filename>walk.dae</filename>
+		<scale>1.0</scale>
+		<interpolate_x>true</interpolate_x>
+	</animation>
+	<plugin name="human_1_plugin" filename="libPedestrianSFMPlugin.so">
+		<collision scale="0.01 0.001 0.001">LHipJoint_LeftUpLeg_collision</collision>
+		<collision scale="8.0 8.0 1.0">LeftUpLeg_LeftLeg_collision</collision>
+		<collision scale="10.0 10.0 1.5">LeftLeg_LeftFoot_collision</collision>
+		<collision scale="4.0 4.0 1.5">LeftFoot_LeftToeBase_collision</collision>
+		<collision scale="0.01 0.001 0.001">RHipJoint_RightUpLeg_collision</collision>
+		<collision scale="8.0 8.0 1.0">RightUpLeg_RightLeg_collision</collision>
+		<collision scale="10.0 10.0 1.5">RightLeg_RightFoot_collision</collision>
+		<collision scale="4.0 4.0 1.5">RightFoot_RightToeBase_collision</collision>
+		<collision scale="0.01 0.001 0.001">Spine_Spine1_collision</collision>
+		<collision scale="0.01 0.001 0.001">Neck_Neck1_collision</collision>
+		<collision scale="5.0 5.0 3.0">Neck1_Head_collision</collision>
+		<collision scale="0.01 0.001 0.001">LeftShoulder_LeftArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">LeftArm_LeftForeArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">LeftForeArm_LeftHand_collision</collision>
+		<collision scale="4.0 4.0 3.0">LeftFingerBase_LeftHandIndex1_collision</collision>
+		<collision scale="0.01 0.001 0.001">RightShoulder_RightArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">RightArm_RightForeArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">RightForeArm_RightHand_collision</collision>
+		<collision scale="4.0 4.0 3.0">RightFingerBase_RightHandIndex1_collision</collision>
+		<collision scale="12.0 20.0 5.0" pose="0.05 0 0 0 -0.2 0">LowerBack_Spine_collision</collision>
+		<velocity>0.9</velocity>
+		<radius>0.4</radius>
+		<cycle>True</cycle>
+		<animation_factor>5.1</animation_factor>
+		<people_distance>6.0</people_distance>
+		<goal_weight>2.0</goal_weight>
+		<obstacle_weight>20.0</obstacle_weight>
+		<social_weight>15</social_weight>
+		<group_gaze_weight>3.0</group_gaze_weight>
+		<group_coh_weight>2.0</group_coh_weight>
+		<group_rep_weight>1.0</group_rep_weight>
+		<ignore_obstacles>
+			<model>ground_plane</model>
+			<model>turtlebot3_waffle</model>
+		</ignore_obstacles>
+		<trajectory>
+			<goalpoint>3 2 1 0 0 0</goalpoint>
+			<goalpoint>3 -8 1 0 0 0</goalpoint>
+		</trajectory>
+	</plugin>
+	<plugin name="pedestrian_visual" filename="libPedestrianVisualPlugin.so">
+		<update_rate>5</update_rate>
+	</plugin>
 </actor>
 <actor name="human_2">
-  <pose>3 -8 1 0 0 0</pose>
-  <skin>
-    <filename>walk.dae</filename>
-    <scale>1.0</scale>
-  </skin>
-  <animation name="walking">
-    <filename>walk.dae</filename>
-    <scale>1.0</scale>
-    <interpolate_x>true</interpolate_x>
-  </animation>
-  <plugin name="human_2_plugin" filename="libPedestrianSFMPlugin.so">
-    <collision scale="0.01 0.001 0.001">LHipJoint_LeftUpLeg_collision</collision>
-    <collision scale="8.0 8.0 1.0">LeftUpLeg_LeftLeg_collision</collision>
-    <collision scale="10.0 10.0 1.5">LeftLeg_LeftFoot_collision</collision>
-    <collision scale="4.0 4.0 1.5">LeftFoot_LeftToeBase_collision</collision>
-    <collision scale="0.01 0.001 0.001">RHipJoint_RightUpLeg_collision</collision>
-    <collision scale="8.0 8.0 1.0">RightUpLeg_RightLeg_collision</collision>
-    <collision scale="10.0 10.0 1.5">RightLeg_RightFoot_collision</collision>
-    <collision scale="4.0 4.0 1.5">RightFoot_RightToeBase_collision</collision>
-    <collision scale="0.01 0.001 0.001">Spine_Spine1_collision</collision>
-    <collision scale="0.01 0.001 0.001">Neck_Neck1_collision</collision>
-    <collision scale="5.0 5.0 3.0">Neck1_Head_collision</collision>
-    <collision scale="0.01 0.001 0.001">LeftShoulder_LeftArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">LeftArm_LeftForeArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">LeftForeArm_LeftHand_collision</collision>
-    <collision scale="4.0 4.0 3.0">LeftFingerBase_LeftHandIndex1_collision</collision>
-    <collision scale="0.01 0.001 0.001">RightShoulder_RightArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">RightArm_RightForeArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">RightForeArm_RightHand_collision</collision>
-    <collision scale="4.0 4.0 3.0">RightFingerBase_RightHandIndex1_collision</collision>
-    <collision scale="12.0 20.0 5.0" pose="0.05 0 0 0 -0.2 0">LowerBack_Spine_collision</collision>
-    <velocity>1.2</velocity>
-    <radius>0.4</radius>
-    <cycle>True</cycle>
-    <animation_factor>5.1</animation_factor>
-    <people_distance>6.0</people_distance>
-    <goal_weight>2.0</goal_weight>
-    <obstacle_weight>20.0</obstacle_weight>
-    <social_weight>15</social_weight>
-    <group_gaze_weight>3.0</group_gaze_weight>
-    <group_coh_weight>2.0</group_coh_weight>
-    <group_rep_weight>1.0</group_rep_weight>
-    <ignore_obstacles>
-      <model>ground_plane</model>
-      <model>turtlebot3_waffle</model>
-    </ignore_obstacles>
-    <trajectory>
-      <goalpoint>3 -8 1 0 0 0</goalpoint>
-      <goalpoint>3 2 1 0 0 0</goalpoint>
-    </trajectory>
-  </plugin>
+	<pose>-0.5 -8.5 1 0 0 0</pose>
+	<skin>
+		<filename>walk.dae</filename>
+		<scale>1.0</scale>
+	</skin>
+	<animation name="walking">
+		<filename>walk.dae</filename>
+		<scale>1.0</scale>
+		<interpolate_x>true</interpolate_x>
+	</animation>
+	<plugin name="human_2_plugin" filename="libPedestrianSFMPlugin.so">
+		<collision scale="0.01 0.001 0.001">LHipJoint_LeftUpLeg_collision</collision>
+		<collision scale="8.0 8.0 1.0">LeftUpLeg_LeftLeg_collision</collision>
+		<collision scale="10.0 10.0 1.5">LeftLeg_LeftFoot_collision</collision>
+		<collision scale="4.0 4.0 1.5">LeftFoot_LeftToeBase_collision</collision>
+		<collision scale="0.01 0.001 0.001">RHipJoint_RightUpLeg_collision</collision>
+		<collision scale="8.0 8.0 1.0">RightUpLeg_RightLeg_collision</collision>
+		<collision scale="10.0 10.0 1.5">RightLeg_RightFoot_collision</collision>
+		<collision scale="4.0 4.0 1.5">RightFoot_RightToeBase_collision</collision>
+		<collision scale="0.01 0.001 0.001">Spine_Spine1_collision</collision>
+		<collision scale="0.01 0.001 0.001">Neck_Neck1_collision</collision>
+		<collision scale="5.0 5.0 3.0">Neck1_Head_collision</collision>
+		<collision scale="0.01 0.001 0.001">LeftShoulder_LeftArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">LeftArm_LeftForeArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">LeftForeArm_LeftHand_collision</collision>
+		<collision scale="4.0 4.0 3.0">LeftFingerBase_LeftHandIndex1_collision</collision>
+		<collision scale="0.01 0.001 0.001">RightShoulder_RightArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">RightArm_RightForeArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">RightForeArm_RightHand_collision</collision>
+		<collision scale="4.0 4.0 3.0">RightFingerBase_RightHandIndex1_collision</collision>
+		<collision scale="12.0 20.0 5.0" pose="0.05 0 0 0 -0.2 0">LowerBack_Spine_collision</collision>
+		<velocity>1.2</velocity>
+		<radius>0.4</radius>
+		<cycle>True</cycle>
+		<animation_factor>5.1</animation_factor>
+		<people_distance>6.0</people_distance>
+		<goal_weight>2.0</goal_weight>
+		<obstacle_weight>20.0</obstacle_weight>
+		<social_weight>15</social_weight>
+		<group_gaze_weight>3.0</group_gaze_weight>
+		<group_coh_weight>2.0</group_coh_weight>
+		<group_rep_weight>1.0</group_rep_weight>
+		<ignore_obstacles>
+			<model>ground_plane</model>
+			<model>turtlebot3_waffle</model>
+		</ignore_obstacles>
+		<trajectory>
+			<goalpoint>-0.5 -8.5 1 0 0 0</goalpoint>
+			<goalpoint>-9 2.5 1 0 0 0</goalpoint>
+		</trajectory>
+	</plugin>
 </actor>
 <actor name="human_3">
-  <pose>3 -6 1 0 0 0</pose>
-  <skin>
-    <filename>walk.dae</filename>
-    <scale>1.0</scale>
-  </skin>
-  <animation name="walking">
-    <filename>walk.dae</filename>
-    <scale>1.0</scale>
-    <interpolate_x>true</interpolate_x>
-  </animation>
-  <plugin name="human_3_plugin" filename="libPedestrianSFMPlugin.so">
-    <collision scale="0.01 0.001 0.001">LHipJoint_LeftUpLeg_collision</collision>
-    <collision scale="8.0 8.0 1.0">LeftUpLeg_LeftLeg_collision</collision>
-    <collision scale="10.0 10.0 1.5">LeftLeg_LeftFoot_collision</collision>
-    <collision scale="4.0 4.0 1.5">LeftFoot_LeftToeBase_collision</collision>
-    <collision scale="0.01 0.001 0.001">RHipJoint_RightUpLeg_collision</collision>
-    <collision scale="8.0 8.0 1.0">RightUpLeg_RightLeg_collision</collision>
-    <collision scale="10.0 10.0 1.5">RightLeg_RightFoot_collision</collision>
-    <collision scale="4.0 4.0 1.5">RightFoot_RightToeBase_collision</collision>
-    <collision scale="0.01 0.001 0.001">Spine_Spine1_collision</collision>
-    <collision scale="0.01 0.001 0.001">Neck_Neck1_collision</collision>
-    <collision scale="5.0 5.0 3.0">Neck1_Head_collision</collision>
-    <collision scale="0.01 0.001 0.001">LeftShoulder_LeftArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">LeftArm_LeftForeArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">LeftForeArm_LeftHand_collision</collision>
-    <collision scale="4.0 4.0 3.0">LeftFingerBase_LeftHandIndex1_collision</collision>
-    <collision scale="0.01 0.001 0.001">RightShoulder_RightArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">RightArm_RightForeArm_collision</collision>
-    <collision scale="5.0 5.0 1.0">RightForeArm_RightHand_collision</collision>
-    <collision scale="4.0 4.0 3.0">RightFingerBase_RightHandIndex1_collision</collision>
-    <collision scale="12.0 20.0 5.0" pose="0.05 0 0 0 -0.2 0">LowerBack_Spine_collision</collision>
-    <velocity>1.2</velocity>
-    <radius>0.4</radius>
-    <cycle>True</cycle>
-    <animation_factor>5.1</animation_factor>
-    <people_distance>6.0</people_distance>
-    <goal_weight>2.0</goal_weight>
-    <obstacle_weight>20.0</obstacle_weight>
-    <social_weight>15</social_weight>
-    <group_gaze_weight>3.0</group_gaze_weight>
-    <group_coh_weight>2.0</group_coh_weight>
-    <group_rep_weight>1.0</group_rep_weight>
-    <ignore_obstacles>
-      <model>ground_plane</model>
-      <model>turtlebot3_waffle</model>
-    </ignore_obstacles>
-    <trajectory>
-      <goalpoint>3 -6 1 0 0 0</goalpoint>
-      <goalpoint>3 2 1 0 0 0</goalpoint>
-    </trajectory>
-  </plugin>
+	<pose>-3.5 -8.5 1 0 0 0</pose>
+	<skin>
+		<filename>walk.dae</filename>
+		<scale>1.0</scale>
+	</skin>
+	<animation name="walking">
+		<filename>walk.dae</filename>
+		<scale>1.0</scale>
+		<interpolate_x>true</interpolate_x>
+	</animation>
+	<plugin name="human_3_plugin" filename="libPedestrianSFMPlugin.so">
+		<collision scale="0.01 0.001 0.001">LHipJoint_LeftUpLeg_collision</collision>
+		<collision scale="8.0 8.0 1.0">LeftUpLeg_LeftLeg_collision</collision>
+		<collision scale="10.0 10.0 1.5">LeftLeg_LeftFoot_collision</collision>
+		<collision scale="4.0 4.0 1.5">LeftFoot_LeftToeBase_collision</collision>
+		<collision scale="0.01 0.001 0.001">RHipJoint_RightUpLeg_collision</collision>
+		<collision scale="8.0 8.0 1.0">RightUpLeg_RightLeg_collision</collision>
+		<collision scale="10.0 10.0 1.5">RightLeg_RightFoot_collision</collision>
+		<collision scale="4.0 4.0 1.5">RightFoot_RightToeBase_collision</collision>
+		<collision scale="0.01 0.001 0.001">Spine_Spine1_collision</collision>
+		<collision scale="0.01 0.001 0.001">Neck_Neck1_collision</collision>
+		<collision scale="5.0 5.0 3.0">Neck1_Head_collision</collision>
+		<collision scale="0.01 0.001 0.001">LeftShoulder_LeftArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">LeftArm_LeftForeArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">LeftForeArm_LeftHand_collision</collision>
+		<collision scale="4.0 4.0 3.0">LeftFingerBase_LeftHandIndex1_collision</collision>
+		<collision scale="0.01 0.001 0.001">RightShoulder_RightArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">RightArm_RightForeArm_collision</collision>
+		<collision scale="5.0 5.0 1.0">RightForeArm_RightHand_collision</collision>
+		<collision scale="4.0 4.0 3.0">RightFingerBase_RightHandIndex1_collision</collision>
+		<collision scale="12.0 20.0 5.0" pose="0.05 0 0 0 -0.2 0">LowerBack_Spine_collision</collision>
+		<velocity>1.2</velocity>
+		<radius>0.4</radius>
+		<cycle>True</cycle>
+		<animation_factor>5.1</animation_factor>
+		<people_distance>6.0</people_distance>
+		<goal_weight>2.0</goal_weight>
+		<obstacle_weight>20.0</obstacle_weight>
+		<social_weight>15</social_weight>
+		<group_gaze_weight>3.0</group_gaze_weight>
+		<group_coh_weight>2.0</group_coh_weight>
+		<group_rep_weight>1.0</group_rep_weight>
+		<ignore_obstacles>
+			<model>ground_plane</model>
+			<model>turtlebot3_waffle</model>
+		</ignore_obstacles>
+		<trajectory>
+			<goalpoint>-3.5 -8.5 1 0 0 0</goalpoint>
+			<goalpoint>-3.5 8.5 1 0 0 0</goalpoint>
+		</trajectory>
+	</plugin>
 </actor>
 </world>
 </sdf>

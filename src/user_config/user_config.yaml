@@ -1,14 +1,17 @@
 map: "warehouse"
 world: "warehouse"
+rviz_file: "sim_env.rviz"
+
 robots_config:
   - robot1_type: "turtlebot3_waffle"
-    robot1_global_planner: "aco"
+    robot1_global_planner: "a_star"
     robot1_local_planner: "pid"
     robot1_x_pos: "0.0"
     robot1_y_pos: "0.0"
     robot1_z_pos: "0.0"
     robot1_yaw: "0.0"
 
-robots_init: ""
-rviz_file: "sim_env.rviz"
-# pedestrians: "pedestrian_config.yaml"
+plugins:
+  pedestrians: "pedestrian_config.yaml"
+  obstacles: "obstacles_config.yaml"
+  # map_layers: 

@@ -95,6 +95,9 @@ private:
   std::vector<std::string> group_names_;
   // vector of pedestrians detected.
   std::vector<sfm::Agent> other_actors_;
+  // time delay
+  double time_delay_;
+  bool time_init_;
   // Maximum distance to detect nearby pedestrians.
   double people_dist_;
   // initialized

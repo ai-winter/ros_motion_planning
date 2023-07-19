@@ -25,7 +25,7 @@ GZ_REGISTER_MODEL_PLUGIN(PedestrianSFMPlugin)
 /**
  * @brief Construct a gazebo plugin
  */
-PedestrianSFMPlugin::PedestrianSFMPlugin() : pose_init_(false)
+PedestrianSFMPlugin::PedestrianSFMPlugin() : pose_init_(false), time_delay_(0.0), time_init_(false)
 {
 }
 
@@ -76,6 +76,7 @@ void PedestrianSFMPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     while (elem)
     {
       auto name = elem->Get<std::string>();
+
       if (elem->HasAttribute("scale"))
       {
         auto scale = elem->Get<ignition::math::Vector3d>("scale");
@@ -102,6 +103,7 @@ void PedestrianSFMPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     for (const auto& collision : link->GetCollisions())
     {
       auto name = collision->GetName();
+      // std::cout<<scales[name]<<std::endl;
       if (scales.find(name) != scales.end())
       {
         auto boxShape = boost::dynamic_pointer_cast<gazebo::physics::BoxShape>(collision->GetShape());
@@ -116,6 +118,24 @@ void PedestrianSFMPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
       }
     }
   }
+
+  if (sdf_->HasElement("time_delay"))
+  {
+    time_delay_ = sdf_->GetElement("time_delay")->Get<double>();
+    // std::unique_ptr<std::thread> t_time_delay(new std::thread(&PedestrianSFMPlugin::timeDelay, this));
+    std::unique_ptr<std::thread> t_time_delay(new std::thread([this]() {
+      if (!time_init_)
+      {
+        sleep(time_delay_);
+        time_init_ = true;
+      }
+    }));
+
+    std::unique_ptr<std::thread> d_time_delay = std::move(t_time_delay);
+    d_time_delay->detach();
+  }
+  else
+    time_init_ = true;
 
   // Bind the update callback function
   connections_.push_back(
@@ -167,6 +187,7 @@ void PedestrianSFMPlugin::Reset()
   // Initialize sfm actor position
   ignition::math::Vector3d pos = actor_->WorldPose().Pos();
   ignition::math::Vector3d rpy = actor_->WorldPose().Rot().Euler();
+
   sfm_actor_.position.set(pos.X(), pos.Y());
   sfm_actor_.yaw = utils::Angle::fromRadian(rpy.Z());
   ignition::math::Vector3d linvel = actor_->WorldLinearVel();
@@ -174,6 +195,10 @@ void PedestrianSFMPlugin::Reset()
   sfm_actor_.linearVelocity = linvel.Length();
   ignition::math::Vector3d angvel = actor_->WorldAngularVel();
   sfm_actor_.angularVelocity = angvel.Z();
+
+  ignition::math::Pose3d actor_pose = actor_->WorldPose();
+  actor_pose.Rot() = ignition::math::Quaterniond(1.5707, 0, rpy.Z());
+  actor_->SetWorldPose(actor_pose);
 
   // Read in the maximum velocity of the pedestrian
   if (sdf_->HasElement("velocity"))
@@ -256,9 +281,7 @@ void PedestrianSFMPlugin::handleObstacles()
   for (unsigned int i = 0; i < world_->ModelCount(); ++i)
   {
     physics::ModelPtr model = world_->ModelByIndex(i);
-
-    if (((int)model->GetType() != (int)actor_->GetType()) &&
-        std::find(ignore_models_.begin(), ignore_models_.end(), model->GetName()) == ignore_models_.end())
+    if (std::find(ignore_models_.begin(), ignore_models_.end(), model->GetName()) == ignore_models_.end())
     {
       // simple method, suppose BBs are AABBs
       ignition::math::Vector3d actorPos = actor_->WorldPose().Pos();
@@ -347,92 +370,95 @@ void PedestrianSFMPlugin::handlePedestrians()
  */
 void PedestrianSFMPlugin::OnUpdate(const common::UpdateInfo& _info)
 {
-  if (!pose_init_)
-    last_update_ = _info.simTime;
-
-  // Time delta
-  double dt = (_info.simTime - last_update_).Double();
-
-  ignition::math::Pose3d actor_pose = actor_->WorldPose();
-
-  // update closest obstacle
-  this->handleObstacles();
-  // update pedestrian around
-  this->handlePedestrians();
-
-  // Compute Social Forces
-  sfm::SFM.computeForces(sfm_actor_, other_actors_);
-  // Update model
-  sfm::SFM.updatePosition(sfm_actor_, dt);
-
-  utils::Angle h = this->sfm_actor_.yaw;
-  utils::Angle add = utils::Angle::fromRadian(1.5707);
-  h = h + add;
-  double yaw = h.toRadian();
-
-  ignition::math::Vector3d rpy = actor_pose.Rot().Euler();
-  utils::Angle current = utils::Angle::fromRadian(rpy.Z());
-  double diff = (h - current).toRadian();
-  if (std::fabs(diff) > IGN_DTOR(10))
+  if (time_init_)
   {
-    current = current + utils::Angle::fromRadian(diff * 0.005);
-    yaw = current.toRadian();
-  }
+    if (!pose_init_)
+      last_update_ = _info.simTime;
 
-  actor_pose.Pos().X(sfm_actor_.position.getX());
-  actor_pose.Pos().Y(sfm_actor_.position.getY());
-  actor_pose.Pos().Z(1.0);
-  actor_pose.Rot() = ignition::math::Quaterniond(1.5707, 0, yaw);
-
-  // Distance traveled is used to coordinate motion with the walking
-  double distance_traveled = (actor_pose.Pos() - actor_->WorldPose().Pos()).Length();
-
-  actor_->SetWorldPose(actor_pose);
-  actor_->SetScriptTime(actor_->ScriptTime() + distance_traveled * animation_factor_);
-
-  geometry_msgs::PoseStamped current_pose;
-  current_pose.header.frame_id = "map";
-  current_pose.header.stamp = ros::Time::now();
-  current_pose.pose.position.x = sfm_actor_.position.getX();
-  current_pose.pose.position.y = sfm_actor_.position.getY();
-  current_pose.pose.position.z = 1.0;
-  tf2::Quaternion q;
-  q.setRPY(0, 0, sfm_actor_.yaw.toRadian());
-  tf2::convert(q, current_pose.pose.orientation);
-
-  // set model velocity
-  geometry_msgs::Twist current_vel;
-  if (!pose_init_)
-  {
-    pose_init_ = true;
-    last_pose_x_ = current_pose.pose.position.x;
-    last_pose_y_ = current_pose.pose.position.y;
-    current_vel.linear.x = 0;
-    current_vel.linear.y = 0;
-  }
-  else
-  {
+    // Time delta
     double dt = (_info.simTime - last_update_).Double();
-    double vx = (current_pose.pose.position.x - last_pose_x_) / dt;
-    double vy = (current_pose.pose.position.y - last_pose_y_) / dt;
-    last_pose_x_ = current_pose.pose.position.x;
-    last_pose_y_ = current_pose.pose.position.y;
 
-    current_vel.linear.x = vx;
-    current_vel.linear.y = vy;
+    ignition::math::Pose3d actor_pose = actor_->WorldPose();
+
+    // update closest obstacle
+    this->handleObstacles();
+    // update pedestrian around
+    this->handlePedestrians();
+
+    // Compute Social Forces
+    sfm::SFM.computeForces(sfm_actor_, other_actors_);
+    // Update model
+    sfm::SFM.updatePosition(sfm_actor_, dt);
+
+    utils::Angle h = this->sfm_actor_.yaw;
+    utils::Angle add = utils::Angle::fromRadian(1.5707);
+    h = h + add;
+    double yaw = h.toRadian();
+
+    ignition::math::Vector3d rpy = actor_pose.Rot().Euler();
+    utils::Angle current = utils::Angle::fromRadian(rpy.Z());
+    double diff = (h - current).toRadian();
+    if (std::fabs(diff) > IGN_DTOR(10))
+    {
+      current = current + utils::Angle::fromRadian(diff * 0.005);
+      yaw = current.toRadian();
+    }
+
+    actor_pose.Pos().X(sfm_actor_.position.getX());
+    actor_pose.Pos().Y(sfm_actor_.position.getY());
+    actor_pose.Pos().Z(1.0);
+    actor_pose.Rot() = ignition::math::Quaterniond(1.5707, 0, yaw);
+
+    // Distance traveled is used to coordinate motion with the walking
+    double distance_traveled = (actor_pose.Pos() - actor_->WorldPose().Pos()).Length();
+
+    actor_->SetWorldPose(actor_pose);
+    actor_->SetScriptTime(actor_->ScriptTime() + distance_traveled * animation_factor_);
+
+    geometry_msgs::PoseStamped current_pose;
+    current_pose.header.frame_id = "map";
+    current_pose.header.stamp = ros::Time::now();
+    current_pose.pose.position.x = sfm_actor_.position.getX();
+    current_pose.pose.position.y = sfm_actor_.position.getY();
+    current_pose.pose.position.z = 1.0;
+    tf2::Quaternion q;
+    q.setRPY(0, 0, sfm_actor_.yaw.toRadian());
+    tf2::convert(q, current_pose.pose.orientation);
+
+    // set model velocity
+    geometry_msgs::Twist current_vel;
+    if (!pose_init_)
+    {
+      pose_init_ = true;
+      last_pose_x_ = current_pose.pose.position.x;
+      last_pose_y_ = current_pose.pose.position.y;
+      current_vel.linear.x = 0;
+      current_vel.linear.y = 0;
+    }
+    else
+    {
+      double dt = (_info.simTime - last_update_).Double();
+      double vx = (current_pose.pose.position.x - last_pose_x_) / dt;
+      double vy = (current_pose.pose.position.y - last_pose_y_) / dt;
+      last_pose_x_ = current_pose.pose.position.x;
+      last_pose_y_ = current_pose.pose.position.y;
+
+      current_vel.linear.x = vx;
+      current_vel.linear.y = vy;
+    }
+
+    pose_pub_.publish(current_pose);
+    vel_pub_.publish(current_vel);
+
+    // update
+    px_ = current_pose.pose.position.x;
+    py_ = current_pose.pose.position.y;
+    pz_ = current_pose.pose.position.z;
+    vx_ = current_vel.linear.x;
+    vy_ = current_vel.linear.y;
+    theta_ = yaw;
+    last_update_ = _info.simTime;
   }
-
-  pose_pub_.publish(current_pose);
-  vel_pub_.publish(current_vel);
-
-  // update
-  px_ = current_pose.pose.position.x;
-  py_ = current_pose.pose.position.y;
-  pz_ = current_pose.pose.position.z;
-  vx_ = current_vel.linear.x;
-  vy_ = current_vel.linear.y;
-  theta_ = yaw;
-  last_update_ = _info.simTime;
 }
 
 bool PedestrianSFMPlugin::OnStateCallBack(gazebo_sfm_plugin::ped_state::Request& req,
