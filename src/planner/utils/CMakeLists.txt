@@ -15,11 +15,9 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}
-  src/global_planner.cpp
-  src/utils.cpp
-)
+# add_library(${PROJECT_NAME}
+# )
 
-target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
+# target_link_libraries(${PROJECT_NAME}
+#   ${catkin_LIBRARIES}
+# )

@@ -19,7 +19,7 @@
 
 #include "global_planner.h"
 
-namespace aco_planner
+namespace global_planner
 {
 struct Ant
 {
@@ -41,7 +41,7 @@ struct Ant
 /**
  * @brief Class for objects that plan using the ACO algorithm
  */
-class ACO : public global_planner::GlobalPlanner
+class ACO : public GlobalPlanner
 {
 public:
   /**
@@ -61,17 +61,17 @@ public:
 
   /**
    * @brief ACO implementation
-   * @param gloal_costmap global costmap
+   * @param global_costmap global costmap
    * @param start         start node
    * @param goal          goal node
    * @param path          optimal path consists of Node
    * @param expand        containing the node been search during the process(unused)
    * @return  true if path found, else false
    */
-  bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
             std::vector<Node>& expand);
 
-  void antSearch(const unsigned char* gloal_costmap, const Node& start, const Node& goal);
+  void antSearch(const unsigned char* global_costmap, const Node& start, const Node& goal);
 
 protected:
   int n_ants_;           // number of ants
@@ -89,5 +89,5 @@ protected:
 private:
   std::mutex lock_;
 };
-}  // namespace aco_planner
+}  // namespace global_planner
 #endif

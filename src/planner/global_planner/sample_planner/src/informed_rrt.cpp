@@ -16,7 +16,7 @@
 
 #include "informed_rrt.h"
 
-namespace rrt_planner
+namespace global_planner
 {
 /**
  * @brief  Constructor
@@ -32,14 +32,14 @@ InformedRRT::InformedRRT(int nx, int ny, double resolution, int sample_num, doub
 
 /**
  * @brief Informed RRT* implementation
- * @param gloal_costmap     costmap
+ * @param global_costmap     costmap
  * @param start     start node
  * @param goal      goal node
  * @param expand    containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool InformedRRT::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-                       std::vector<Node>& expand)
+bool InformedRRT::plan(const unsigned char* global_costmap, const Node& start, const Node& goal,
+                       std::vector<Node>& path, std::vector<Node>& expand)
 {
   // initialization
   c_best_ = std::numeric_limits<double>::max();
@@ -49,7 +49,7 @@ bool InformedRRT::plan(const unsigned char* gloal_costmap, const Node& start, co
 
   // copy
   start_ = start, goal_ = goal;
-  costs_ = gloal_costmap;
+  costs_ = global_costmap;
   sample_list_.insert(start);
   expand.push_back(start);
 
@@ -63,7 +63,7 @@ bool InformedRRT::plan(const unsigned char* gloal_costmap, const Node& start, co
     Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (gloal_costmap[sample_node.id_] >= lethal_cost_ * factor_)
+    if (global_costmap[sample_node.id_] >= lethal_cost_ * factor_)
       continue;
 
     // visited
@@ -95,8 +95,7 @@ bool InformedRRT::plan(const unsigned char* gloal_costmap, const Node& start, co
 
   if (best_parent != -1)
   {
-    Node goal_(goal_.x_, goal_.y_, c_best_, 0, grid2Index(goal_.x_, goal_.y_),
-               best_parent);
+    Node goal_(goal_.x_, goal_.y_, c_best_, 0, grid2Index(goal_.x_, goal_.y_), best_parent);
     sample_list_.insert(goal_);
     path = _convertClosedListToPath(sample_list_, start, goal);
     return true;
@@ -163,4 +162,4 @@ Node InformedRRT::_transform(double x, double y)
   int id = grid2Index(tx, ty);
   return Node(tx, ty, 0, 0, id, 0);
 }
-}  // namespace rrt_planner
+}  // namespace global_planner

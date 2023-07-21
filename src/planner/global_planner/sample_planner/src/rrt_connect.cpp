@@ -6,7 +6,7 @@
  * @update: 2023-1-18
  * @version: 1.0
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -15,7 +15,7 @@
 
 #include "rrt_connect.h"
 
-namespace rrt_planner
+namespace global_planner
 {
 /**
  * @brief  Constructor
@@ -31,20 +31,20 @@ RRTConnect::RRTConnect(int nx, int ny, double resolution, int sample_num, double
 
 /**
  * @brief RRT-Connect implementation
- * @param gloal_costmap     costmap
+ * @param global_costmap     costmap
  * @param start     start node
  * @param goal      goal node
  * @param expand    containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool RRTConnect::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+bool RRTConnect::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                       std::vector<Node>& expand)
 {
   sample_list_f_.clear();
   sample_list_b_.clear();
   // copy
   start_ = start, goal_ = goal;
-  costs_ = gloal_costmap;
+  costs_ = global_costmap;
   sample_list_f_.insert(start);
   sample_list_b_.insert(goal);
   expand.push_back(start);
@@ -58,7 +58,7 @@ bool RRTConnect::plan(const unsigned char* gloal_costmap, const Node& start, con
     Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (gloal_costmap[sample_node.id_] >= lethal_cost_ * factor_)
+    if (global_costmap[sample_node.id_] >= lethal_cost_ * factor_)
       continue;
 
     // visited
@@ -166,4 +166,4 @@ std::vector<Node> RRTConnect::_convertClosedListToPath(const Node& boundary)
 
   return path;
 }
-}  // namespace rrt_planner
+}  // namespace global_planner

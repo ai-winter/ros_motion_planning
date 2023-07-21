@@ -15,9 +15,10 @@
 #include <unordered_map>
 #include <algorithm>
 #include <iostream>
+
 #include "aco.h"
 
-namespace aco_planner
+namespace global_planner
 {
 /**
  * @brief Construct a new ACO object
@@ -51,14 +52,14 @@ ACO::~ACO()
 
 /**
  * @brief ACO implementation
- * @param gloal_costmap global costmap
+ * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
  * @param path          optimal path consists of Node
  * @param expand        containing the node been search during the process(unused)
  * @return  true if path found, else false
  */
-bool ACO::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+bool ACO::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                std::vector<Node>& expand)
 {
   // pheromone initialization
@@ -74,7 +75,7 @@ bool ACO::plan(const unsigned char* gloal_costmap, const Node& start, const Node
   {
     std::vector<std::thread> ants_list = std::vector<std::thread>(n_ants_);
     for (size_t j = 0; j < n_ants_; j++)
-      ants_list[j] = std::thread(&ACO::antSearch, this, gloal_costmap, start, goal);
+      ants_list[j] = std::thread(&ACO::antSearch, this, global_costmap, start, goal);
     for (size_t j = 0; j < n_ants_; j++)
       ants_list[j].join();
 
@@ -91,7 +92,7 @@ bool ACO::plan(const unsigned char* gloal_costmap, const Node& start, const Node
   return false;
 }
 
-void ACO::antSearch(const unsigned char* gloal_costmap, const Node& start, const Node& goal)
+void ACO::antSearch(const unsigned char* global_costmap, const Node& start, const Node& goal)
 {
   int max_steps = nx_ * ny_ / 2;
   Ant ant(start);
@@ -111,7 +112,7 @@ void ACO::antSearch(const unsigned char* gloal_costmap, const Node& start, const
       node_n.id_ = grid2Index(node_n.x_, node_n.y_);
 
       // next node hit the boundary or obstacle
-      if ((node_n.id_ < 0) || (node_n.id_ >= ns_) || (gloal_costmap[node_n.id_] >= lethal_cost_ * factor_))
+      if ((node_n.id_ < 0) || (node_n.id_ >= ns_) || (global_costmap[node_n.id_] >= lethal_cost_ * factor_))
         continue;
 
       // current node exists in history path
@@ -146,7 +147,7 @@ void ACO::antSearch(const unsigned char* gloal_costmap, const Node& start, const
     ant.cur_node_ = next_positions[dist(engine)];
     ant.steps_ += 1;
   }
-  
+
   // pheromone update based on successful ants
   lock_.lock();
   if (ant.found_goal_)
@@ -187,4 +188,4 @@ void ACO::antSearch(const unsigned char* gloal_costmap, const Node& start, const
   lock_.unlock();
 }
 
-}  // namespace aco_planner
+}  // namespace global_planner

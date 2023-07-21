@@ -6,7 +6,7 @@
  * @update: 2022-10-26
  * @version: 1.0
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -59,10 +59,8 @@ public:
   /**
    * @brief Planner initialization
    * @param name      planner name
-   * @param costmap   costmap pointer
-   * @param frame_id  costmap frame ID
    */
-  void initialize(std::string name, costmap_2d::Costmap2D* costmap, std::string frame_id);
+  void initialize(std::string name);
 
   /**
    * @brief Plan a path given start and goal in world map
@@ -103,7 +101,7 @@ protected:
    * @brief publish expand zone
    * @param expand  set of expand nodes
    */
-  void _publishExpand(std::vector<Node>& expand);
+  void _publishExpand(std::vector<global_planner::Node>& expand);
 
   /**
    * @brief Calculate plan from planning path
@@ -111,7 +109,7 @@ protected:
    * @param plan  plan transfromed from path, i.e. [start, ..., goal]
    * @return  bool true if successful, else false
    */
-  bool _getPlanFromPath(std::vector<Node>& path, std::vector<geometry_msgs::PoseStamped>& plan);
+  bool _getPlanFromPath(std::vector<global_planner::Node>& path, std::vector<geometry_msgs::PoseStamped>& plan);
 
   /**
    * @brief Tranform from costmap(x, y) to world map(x, y)
@@ -133,17 +131,18 @@ protected:
   bool _worldToMap(double wx, double wy, double& mx, double& my);
 
 protected:
-  bool initialized_;                               // initialization flag
-  costmap_2d::Costmap2D* costmap_;                 // costmap
-  global_planner::GlobalPlanner* g_planner_;       // global graph planner
-  std::string frame_id_;                           // costmap frame ID
-  unsigned int nx_, ny_;                           // costmap size
-  double origin_x_, origin_y_;                     // costmap origin
-  double resolution_;                              // costmap resolution
-  ros::Publisher plan_pub_;                        // path planning publisher
-  ros::Publisher expand_pub_;                      // nodes explorer publisher
-  ros::ServiceServer make_plan_srv_;               // planning service
-  // std::string planner_name_;                       // planner name
+  bool initialized_;                          // initialization flag
+  std::string planner_name_;                  // planner name
+  costmap_2d::Costmap2D* costmap_;            // costmap
+  costmap_2d::Costmap2DROS* costmap_ros_;     // costmap(ROS wrapper)
+  global_planner::GlobalPlanner* g_planner_;  // global graph planner
+  std::string frame_id_;                      // costmap frame ID
+  unsigned int nx_, ny_;                      // costmap size
+  double origin_x_, origin_y_;                // costmap origin
+  double resolution_;                         // costmap resolution
+  ros::Publisher plan_pub_;                   // path planning publisher
+  ros::Publisher expand_pub_;                 // nodes explorer publisher
+  ros::ServiceServer make_plan_srv_;          // planning service
 
 private:
   boost::mutex mutex_;     // thread mutex

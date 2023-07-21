@@ -6,7 +6,7 @@
  * @update: 2022-10-26
  * @version: 1.0
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -82,28 +82,26 @@ void SamplePlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
     resolution_ = costmap->getResolution();
 
     /*======================= static parameters loading ==========================*/
-    private_nh.param("convert_offset", convert_offset_, 0.0); // offset of transform from world(x,y) to grid map(x,y)
-    private_nh.param("default_tolerance", tolerance_, 0.0);   // error tolerance
-    private_nh.param("outline_map", is_outline_, false);      // whether outline the map or not
-    private_nh.param("obstacle_factor", factor_, 0.5);        // obstacle inflation factor
-    private_nh.param("expand_zone", is_expand_, false);       // whether publish expand zone or not
-    private_nh.param("sample_points", sample_points_, 500);   // random sample points
-    private_nh.param("sample_max_d", sample_max_d_, 5.0);     // max distance between sample points
-    private_nh.param("optimization_r", opt_r_, 10.0);         // optimization radius
+    private_nh.param("convert_offset", convert_offset_, 0.0);  // offset of transform from world(x,y) to grid map(x,y)
+    private_nh.param("default_tolerance", tolerance_, 0.0);    // error tolerance
+    private_nh.param("outline_map", is_outline_, false);       // whether outline the map or not
+    private_nh.param("obstacle_factor", factor_, 0.5);         // obstacle inflation factor
+    private_nh.param("expand_zone", is_expand_, false);        // whether publish expand zone or not
+    private_nh.param("sample_points", sample_points_, 500);    // random sample points
+    private_nh.param("sample_max_d", sample_max_d_, 5.0);      // max distance between sample points
+    private_nh.param("optimization_r", opt_r_, 10.0);          // optimization radius
 
     // planner name
     std::string planner_name;
     private_nh.param("planner_name", planner_name, (std::string) "rrt");
     if (planner_name == "rrt")
-      g_planner_ = new rrt_planner::RRT(nx_, ny_, resolution_, sample_points_, sample_max_d_);
+      g_planner_ = new global_planner::RRT(nx_, ny_, resolution_, sample_points_, sample_max_d_);
     else if (planner_name == "rrt_star")
-      g_planner_ =
-          new rrt_planner::RRTStar(nx_, ny_, resolution_, sample_points_, sample_max_d_, opt_r_);
+      g_planner_ = new global_planner::RRTStar(nx_, ny_, resolution_, sample_points_, sample_max_d_, opt_r_);
     else if (planner_name == "rrt_connect")
-      g_planner_ = new rrt_planner::RRTConnect(nx_, ny_, resolution_, sample_points_, sample_max_d_);
+      g_planner_ = new global_planner::RRTConnect(nx_, ny_, resolution_, sample_points_, sample_max_d_);
     else if (planner_name == "informed_rrt")
-      g_planner_ =
-          new rrt_planner::InformedRRT(nx_, ny_, resolution_, sample_points_, sample_max_d_, opt_r_);
+      g_planner_ = new global_planner::InformedRRT(nx_, ny_, resolution_, sample_points_, sample_max_d_, opt_r_);
 
     ROS_INFO("Using global sample planner: %s", planner_name.c_str());
 
@@ -184,8 +182,8 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
   int g_start_x, g_start_y, g_goal_x, g_goal_y;
   g_planner_->map2Grid(m_start_x, m_start_y, g_start_x, g_start_y);
   g_planner_->map2Grid(m_goal_x, m_goal_y, g_goal_x, g_goal_y);
-  Node n_start(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
-  Node n_goal(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
+  global_planner::Node n_start(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
+  global_planner::Node n_goal(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
 
   // clear the cost of robot location
   costmap_->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
@@ -195,8 +193,8 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
     g_planner_->outlineMap(costmap_->getCharMap());
 
   // calculate path
-  std::vector<Node> path;
-  std::vector<Node> expand;
+  std::vector<global_planner::Node> path;
+  std::vector<global_planner::Node> expand;
   bool path_found = g_planner_->plan(costmap_->getCharMap(), n_start, n_goal, path, expand);
 
   if (path_found)
@@ -260,7 +258,7 @@ bool SamplePlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::G
  * @brief  publish expand zone
  * @param  expand  set of expand nodes
  */
-void SamplePlanner::_publishExpand(std::vector<Node>& expand)
+void SamplePlanner::_publishExpand(std::vector<global_planner::Node>& expand)
 {
   ROS_DEBUG("Expand Zone Size:%ld", expand.size());
 
@@ -319,7 +317,7 @@ bool SamplePlanner::_worldToMap(double wx, double wy, double& mx, double& my)
  * @param  plan plan transfromed from path
  * @return bool true if successful else false
  */
-bool SamplePlanner::_getPlanFromPath(std::vector<Node> path, std::vector<geometry_msgs::PoseStamped>& plan)
+bool SamplePlanner::_getPlanFromPath(std::vector<global_planner::Node> path, std::vector<geometry_msgs::PoseStamped>& plan)
 {
   if (!initialized_)
   {

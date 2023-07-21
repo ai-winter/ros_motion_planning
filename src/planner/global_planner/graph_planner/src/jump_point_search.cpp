@@ -6,14 +6,14 @@
  * @update: 2022-10-27
  * @version: 1.0
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
  **********************************************************/
 #include "jump_point_search.h"
 
-namespace jps_planner
+namespace global_planner
 {
 /**
  * @brief  Constructor
@@ -27,17 +27,17 @@ JumpPointSearch::JumpPointSearch(int nx, int ny, double resolution) : GlobalPlan
 
 /**
  * @brief Jump Point Search(JPS) implementation
- * @param gloal_costmap     costmap
+ * @param global_costmap     costmap
  * @param start     start node
  * @param goal      goal node
  * @param expand    containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool JumpPointSearch::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal,
+bool JumpPointSearch::plan(const unsigned char* global_costmap, const Node& start, const Node& goal,
                            std::vector<Node>& path, std::vector<Node>& expand)
 {
   // copy
-  costs_ = gloal_costmap;
+  costs_ = global_costmap;
   start_ = start, goal_ = goal;
 
   // open list
@@ -191,4 +191,4 @@ Node JumpPointSearch::jump(const Node& point, const Node& motion)
   else
     return jump(new_point, motion);
 }
-}  // namespace jps_planner
+}  // namespace global_planner

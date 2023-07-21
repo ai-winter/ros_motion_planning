@@ -7,3 +7,9 @@ global_costmap:
   transform_tolerance: 0.5
 
   static_map: true
+  # plugins:
+  #   - {name: static_map,       type: "costmap_2d::StaticLayer"}
+  # #   - {name: voxel_layer,        type: "costmap_2d::VoxelLayer"}
+  #   - {name: obstacle_layer,        type: "costmap_2d::ObstacleLayer"}
+  #   - {name: voronoi_layer,        type: "costmap_2d::VoronoiLayer"}     
+  #   - {name: inflation_layer,        type: "costmap_2d::InflationLayer"}

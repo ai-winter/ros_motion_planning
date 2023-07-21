@@ -106,7 +106,7 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
       private_nh.param("Q", Q, 1.0);                // pheromone gain
       private_nh.param("max_iter", max_iter, 100);  // maximum iterations
 
-      g_planner_ = new aco_planner::ACO(nx_, ny_, resolution_, n_ants, alpha, beta, rho, Q, max_iter);
+      g_planner_ = new global_planner::ACO(nx_, ny_, resolution_, n_ants, alpha, beta, rho, Q, max_iter);
     }
 
     ROS_INFO("Using global graph planner: %s", planner_name.c_str());
@@ -197,8 +197,8 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
   g_planner_->map2Grid(m_goal_x, m_goal_y, g_goal_x, g_goal_y);
 
   // NOTE: how to init start and goal?
-  Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
-  Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
+  global_planner::Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
+  global_planner::Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
 
   // clear the cost of robot location
   costmap_->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
@@ -208,8 +208,8 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
     g_planner_->outlineMap(costmap_->getCharMap());
 
   // calculate path
-  std::vector<Node> path;
-  std::vector<Node> expand;
+  std::vector<global_planner::Node> path;
+  std::vector<global_planner::Node> expand;
   bool path_found = g_planner_->plan(costmap_->getCharMap(), start_node, goal_node, path, expand);
 
   if (path_found)
@@ -281,7 +281,7 @@ bool EvolutionaryPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_m
  * @param plan  plan transfromed from path, i.e. [start, ..., goal]
  * @return  bool true if successful, else false
  */
-bool EvolutionaryPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometry_msgs::PoseStamped>& plan)
+bool EvolutionaryPlanner::_getPlanFromPath(std::vector<global_planner::Node>& path, std::vector<geometry_msgs::PoseStamped>& plan)
 {
   if (!initialized_)
   {

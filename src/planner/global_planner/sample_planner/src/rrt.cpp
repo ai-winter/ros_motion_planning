@@ -6,7 +6,7 @@
  * @update: 2023-1-19
  * @version: 1.1
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -16,7 +16,7 @@
 
 #include "rrt.h"
 
-namespace rrt_planner
+namespace global_planner
 {
 /**
  * @brief  Constructor
@@ -33,14 +33,14 @@ RRT::RRT(int nx, int ny, double resolution, int sample_num, double max_dist)
 /**
  * @brief RRT implementation
  *
- * @param gloal_costmap global costmap
+ * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
  * @param path          optimal path consists of Node
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool RRT::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+bool RRT::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                std::vector<Node>& expand)
 {
   path.clear();
@@ -49,7 +49,7 @@ bool RRT::plan(const unsigned char* gloal_costmap, const Node& start, const Node
   sample_list_.clear();
   // copy
   start_ = start, goal_ = goal;
-  costs_ = gloal_costmap;
+  costs_ = global_costmap;
   sample_list_.insert(start);
   expand.push_back(start);
 
@@ -61,7 +61,7 @@ bool RRT::plan(const unsigned char* gloal_costmap, const Node& start, const Node
     Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (gloal_costmap[sample_node.id_] >= lethal_cost_ * factor_)
+    if (global_costmap[sample_node.id_] >= lethal_cost_ * factor_)
       continue;
 
     // visited
@@ -201,8 +201,7 @@ bool RRT::_checkGoal(const Node& new_node)
 
   if (!_isAnyObstacleInPath(new_node, goal_))
   {
-    Node goal(goal_.x_, goal_.y_, dist + new_node.g_, 0, grid2Index(goal_.x_, goal_.y_),
-              new_node.id_);
+    Node goal(goal_.x_, goal_.y_, dist + new_node.g_, 0, grid2Index(goal_.x_, goal_.y_), new_node.id_);
     sample_list_.insert(goal);
     return true;
   }
@@ -230,4 +229,4 @@ double RRT::_angle(const Node& node1, const Node& node2)
 {
   return atan2(node2.y_ - node1.y_, node2.x_ - node1.x_);
 }
-}  // namespace rrt_planner
+}  // namespace global_planner

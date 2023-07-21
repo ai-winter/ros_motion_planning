@@ -1,6 +1,6 @@
 <!-- 
 ******************************************************************************************
-*  Copyright (C) 2022 Yang Haodong, All Rights Reserved                                  *
+*  Copyright (c) 2023 Yang Haodong, All Rights Reserved                                  *
 *                                                                                        *
 *  @brief    move base module parameter configure.                                       *
 *  @author   Haodong Yang,                                                               *
@@ -33,6 +33,7 @@
                     or arg('global_planner')=='dijkstra'
                     or arg('global_planner')=='d_star'
                     or arg('global_planner')=='lpa_star'
+                    or arg('global_planner')=='voronoi'
                     or arg('global_planner')=='d_star_lite')" />
         <param name="GraphPlanner/planner_name" value="$(arg global_planner)"
             if="$(eval arg('global_planner')=='a_star'
@@ -41,6 +42,7 @@
                     or arg('global_planner')=='dijkstra'
                     or arg('global_planner')=='d_star'
                     or arg('global_planner')=='lpa_star'
+                    or arg('global_planner')=='voronoi'
                     or arg('global_planner')=='d_star_lite')" />
         <rosparam file="$(find sim_env)/config/planner/graph_planner_params.yaml" command="load"
             if="$(eval arg('global_planner')=='a_star'
@@ -49,6 +51,7 @@
                     or arg('global_planner')=='dijkstra'
                     or arg('global_planner')=='d_star'
                     or arg('global_planner')=='lpa_star'
+                    or arg('global_planner')=='voronoi'
                     or arg('global_planner')=='d_star_lite')"/>
 
         <!-- sample search -->

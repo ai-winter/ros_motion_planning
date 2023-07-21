@@ -6,7 +6,7 @@
  * @update: 2022-10-27
  * @version: 1.0
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -19,14 +19,13 @@
 #include <ros/ros.h>
 
 #include "global_planner.h"
-#include "utils.h"
 
-namespace jps_planner
+namespace global_planner
 {
 /**
  * @brief lass for objects that plan using the Jump Point Search(JPS) algorithm
  */
-class JumpPointSearch : public global_planner::GlobalPlanner
+class JumpPointSearch : public GlobalPlanner
 {
 public:
   /**
@@ -36,7 +35,7 @@ public:
    * @param   resolution  costmap resolution
    */
   JumpPointSearch(int nx, int ny, double resolution);
-  
+
   /**
    * @brief Jump Point Search(JPS) implementation
    * @param costs     costmap
@@ -45,7 +44,7 @@ public:
    * @param expand    containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
-  bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
             std::vector<Node>& expand);
 
   /**
@@ -65,8 +64,8 @@ public:
   Node jump(const Node& point, const Node& motion);
 
 private:
-  Node start_, goal_;             // start and goal node
-  const unsigned char* costs_;    // costmap
+  Node start_, goal_;           // start and goal node
+  const unsigned char* costs_;  // costmap
 };
-} 
+}  // namespace global_planner
 #endif  // JUMP_POINT_SEARCH_H

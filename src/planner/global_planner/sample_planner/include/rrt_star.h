@@ -6,7 +6,7 @@
  * @update: 2022-10-29
  * @version: 1.0
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -15,9 +15,8 @@
 #define RRT_STAR_H
 
 #include "rrt.h"
-#include "utils.h"
 
-namespace rrt_planner
+namespace global_planner
 {
 /**
  * @brief Class for objects that plan using the RRT* algorithm
@@ -43,7 +42,7 @@ public:
    * @param expand    containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
-  bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
             std::vector<Node>& expand);
 
 protected:
@@ -58,5 +57,5 @@ protected:
 protected:
   double r_;  // optimization radius
 };
-}  // namespace rrt_planner
+}  // namespace global_planner
 #endif  // RRT_H

@@ -21,18 +21,16 @@
 
 #include "global_planner.h"
 
-#define INF 10000       // infinity, a big enough number
 #define WINDOW_SIZE 70  // local costmap window size (in grid, 3.5m / 0.05 = 70)
 
-namespace lpa_star_planner
+namespace global_planner
 {
-class LNode;
 typedef LNode* LNodePtr;
 
 /**
  * @brief Class for objects that plan using the LPA* algorithm
  */
-class LPAStar : public global_planner::GlobalPlanner
+class LPAStar : public GlobalPlanner
 {
 public:
   /**
@@ -133,48 +131,21 @@ public:
    * @param expand  containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
-  bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
             std::vector<Node>& expand);
 
 public:
   // start and goal ptr
-  unsigned char* curr_global_costmap_;        // current global costmap
-  unsigned char* last_global_costmap_;        // last global costmap
-  LNodePtr** map_;                            // grid pointer map
-  std::multimap<double, LNodePtr> open_list_; // open list, ascending order
-  std::vector<Node> path_;                    // path
-  std::vector<Node> expand_;                  // expand
-  Node start_, goal_;                         // start and goal
-  LNodePtr start_ptr_, goal_ptr_, last_ptr_;  // start and goal ptr
+  unsigned char* curr_global_costmap_;         // current global costmap
+  unsigned char* last_global_costmap_;         // last global costmap
+  LNodePtr** map_;                             // grid pointer map
+  std::multimap<double, LNodePtr> open_list_;  // open list, ascending order
+  std::vector<Node> path_;                     // path
+  std::vector<Node> expand_;                   // expand
+  Node start_, goal_;                          // start and goal
+  LNodePtr start_ptr_, goal_ptr_, last_ptr_;   // start and goal ptr
 };
 
-class LNode : public Node
-{
-public:
-  /**
-   * @brief Construct a new LNode object
-   *
-   * @param x       X value
-   * @param y       Y value
-   * @param cost    Cost to get to this node
-   * @param h_cost  Heuritic cost of this node
-   * @param id      Node's id
-   * @param pid     Node's parent's id
-   * @param rhs     Node's right hand side
-   * @param key     Node's key value
-   */
-  LNode(const int x = 0, const int y = 0, const double cost = INF, const double h_cost = INF, const int id = 0,
-        const int pid = -1, const double rhs = INF, const double key = INF)
-    : Node(x, y, cost, h_cost, id, pid), rhs(rhs), key(key)
-  {
-  }
-
-public:
-  double rhs;     // minimum cost moving from start(value)
-  double key;     // priority
-  // iterator
-  std::multimap<double, LNodePtr>::iterator open_it;
-};
-}  // namespace lpa_star_planner
+}  // namespace global_planner
 
 #endif

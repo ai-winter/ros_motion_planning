@@ -6,7 +6,7 @@
  * @update: 2022-10-27
  * @version: 1.1
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -17,7 +17,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace a_star_planner
+namespace global_planner
 {
 /**
  * @brief Construct a new AStar object
@@ -45,14 +45,14 @@ AStar::AStar(int nx, int ny, double resolution, bool dijkstra, bool gbfs) : Glob
 
 /**
  * @brief A* implementation
- * @param gloal_costmap global costmap
+ * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
  * @param path          optimal path consists of Node
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool AStar::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+bool AStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                  std::vector<Node>& expand)
 {
   // clear vector
@@ -106,7 +106,7 @@ bool AStar::plan(const unsigned char* gloal_costmap, const Node& start, const No
       node_new.pid_ = current.id_;
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (gloal_costmap[node_new.id_] >= lethal_cost_ * factor_))
+      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (global_costmap[node_new.id_] >= lethal_cost_ * factor_))
         continue;
 
       // if using dijkstra implementation, do not consider heuristics cost
@@ -135,4 +135,4 @@ double AStar::getHeuristics(const Node& node, const Node& goal)
 {
   return std::hypot(node.x_ - goal.x_, node.y_ - goal.y_);
 }
-}  // namespace a_star_planner
+}  // namespace global_planner

@@ -6,7 +6,7 @@
  * @update: 2022-10-26
  * @version: 1.0
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -83,7 +83,7 @@ public:
    * @param  path planning path
    */
   void publishPlan(const std::vector<geometry_msgs::PoseStamped>& plan);
-  
+
   /**
    * @brief  regeister planning service
    * @param  req  request from client
@@ -96,7 +96,7 @@ protected:
    * @brief  publish expand zone
    * @param  expand  set of expand nodes
    */
-  void _publishExpand(std::vector<Node>& expand);
+  void _publishExpand(std::vector<global_planner::Node>& expand);
 
   /**
    * @brief  calculate plan from planning path
@@ -104,7 +104,7 @@ protected:
    * @param  plan plan transfromed from path
    * @return bool true if successful else false
    */
-  bool _getPlanFromPath(std::vector<Node> path, std::vector<geometry_msgs::PoseStamped>& plan);
+  bool _getPlanFromPath(std::vector<global_planner::Node> path, std::vector<geometry_msgs::PoseStamped>& plan);
 
   /**
    * @brief  tranform from costmap(x, y) to world map(x, y)
@@ -146,15 +146,15 @@ protected:
   ros::ServiceServer make_plan_srv_;          // planning service
 
 private:
-  boost::mutex mutex_;      // thread mutex
-  double convert_offset_;   // offset of transform from world(x,y) to grid map(x,y)
-  double tolerance_;        // tolerance
-  bool is_outline_;         // whether outline the boudary of map
-  double factor_;           // obstacle inflation factor
-  bool is_expand_;          // whether publish expand map or not
-  int sample_points_;       // random sample points
-  double sample_max_d_;     // max distance between sample points
-  double opt_r_;            // optimization raidus
+  boost::mutex mutex_;     // thread mutex
+  double convert_offset_;  // offset of transform from world(x,y) to grid map(x,y)
+  double tolerance_;       // tolerance
+  bool is_outline_;        // whether outline the boudary of map
+  double factor_;          // obstacle inflation factor
+  bool is_expand_;         // whether publish expand map or not
+  int sample_points_;      // random sample points
+  double sample_max_d_;    // max distance between sample points
+  double opt_r_;           // optimization raidus
 };
-}
+}  // namespace sample_planner
 #endif

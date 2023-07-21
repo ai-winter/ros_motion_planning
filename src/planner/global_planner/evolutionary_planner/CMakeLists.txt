@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   tf2_geometry_msgs
   tf2_ros
-  utils
+  global_planner
 )
 
 catkin_package(
@@ -32,5 +32,5 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  utils
+  global_planner
 )

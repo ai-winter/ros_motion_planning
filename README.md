@@ -123,6 +123,8 @@ Below is an example of `user_config.yaml`
 ```yaml
 map: "warehouse"
 world: "warehouse"
+rviz_file: "sim_env.rviz"
+
 robots_config:
   - robot1_type: "turtlebot3_burger"
     robot1_global_planner: "astar"
@@ -138,32 +140,122 @@ robots_config:
     robot2_y_pos: "-7.5"
     robot2_z_pos: "0.0"
     robot2_yaw: "0.0"
-robots_init: "robots_rviz_init.yaml"
-rviz_file: "sim_env.rviz"
-pedestrians: "pedestrian_config.yaml"
+
+plugins:
+  pedestrians: "pedestrian_config.yaml"
+  obstacles: "obstacles_config.yaml"
 ```
 
 Explanation:
 
-- map: static map，located in `src/sim_env/map/`, if `map: ""`, map_server will not publish map message which often used in SLAM.
+- `map`: static map，located in `src/sim_env/map/`, if `map: ""`, map_server will not publish map message which often used in SLAM.
 
-- world: gazebo world，located in `src/sim_env/worlds/`, if `world: ""`, Gazebo will be disabled which often used in real world.
+- `world`: gazebo world，located in `src/sim_env/worlds/`, if `world: ""`, Gazebo will be disabled which often used in real world.
 
-- robots_config: robotic configuration.
+- `rviz_file`: RVIZ configure, automatically generated if `rviz_file` is not set.
 
-  - type: robotic type，such as `turtlebot3_burger`, `turtlebot3_waffle` and `turtlebot3_waffle_pi`.
+- `robots_config`: robotic configuration.
 
-  - global_planner: global algorithm, details in Section `Version`.
+  - `type`: robotic type，such as *`turtlebot3_burger`, `turtlebot3_waffle` and `turtlebot3_waffle_pi`*.
 
-  - local_planner: local algorithm, details in Section `Version`.
+  - `global_planner`: global algorithm, details in Section `Version`.
 
-  - xyz_pos and yaw: initial pose.
+  - `local_planner`: local algorithm, details in Section `Version`.
 
-- robots_init: initial pose in RVIZ.
+  - `xyz_pos and yaw`: initial pose.
 
-- rviz_file: RVIZ configure, automatically generated if `rviz_file` is not set.
+- `plugins`: other applications using in simulation
+  - `pedestrians`: configure file to add dynamic obstacles(e.g. pedestrians).
+  - `obstacles`: configure file to add static obstacles.
 
-- pedestrians: configure file to add dynamic obstacles(e.g. pedestrians).
+For *pedestrians* and *obstacles* configuration files, the examples are shown below
+
+```yaml
+## pedestrians_config.yaml
+
+# sfm algorithm configure
+social_force:
+  animation_factor: 5.1
+  # only handle pedestrians within `people_distance`
+  people_distance: 6.0
+  # weights of social force model
+  goal_weight: 2.0
+  obstacle_weight: 80.0
+  social_weight: 15
+  group_gaze_weight: 3.0
+  group_coh_weight: 2.0
+  group_rep_weight: 1.0
+
+# pedestrians setting
+pedestrians:
+  update_rate: 5
+  ped_property:
+    - name: human_1
+      pose: 5 -2 1 0 0 1.57
+      velocity: 0.9
+      radius: 0.4
+      cycle: true
+      time_delay: 5
+      ignore:
+        model_1: ground_plane
+        model_2: turtlebot3_waffle
+      trajectory:
+        goal_point_1: 5 -2 1 0 0 0
+        goal_point_2: 5 2 1 0 0 0
+    - name: human_2
+      pose: 6 -3 1 0 0 0
+      velocity: 1.2
+      radius: 0.4
+      cycle: true
+      time_delay: 3
+      ignore:
+        model_1: ground_plane
+        model_2: turtlebot3_waffle
+      trajectory:
+        goal_point_1: 6 -3 1 0 0 0
+        goal_point_2: 6 4 1 0 0 0
+```
+Explanation:
+
+
+- `social_force`: The weight factors that modify the navigation behavior. See the [Social Force Model](https://github.com/robotics-upo/lightsfm) for further information.
+- `pedestrians/update_rate`: Update rate of pedestrains presentation. The higher `update_rate`, the more sluggish the environment becomes.
+- `pedestrians/ped_property`: Pedestrians property configuration.
+  - `name`: The id for each human.
+  - `pose`: The initial pose for each human.
+  - `velocity`: Maximum velocity (*m/s*) for each human.
+  - `radius`: Approximate radius of the human's body (m).
+  - `cycle`: If *true*, the actor will start the goal point sequence when the last goal point is reached.
+  - `time_delay`: This is time in seconds to wait before starting the human motion.
+  - `ignore_obstacles`: All the models that must be ignored as obstacles, must be indicated here. The other actors in the world are included automatically.
+  - `trajectory`. The list of goal points that the actor must reach must be indicated here. The goals will be post into social force model.
+
+```yaml
+## obstacles_config.yaml 
+
+# static obstacles
+obstacles:
+  - type: BOX
+    pose: 5 2 0 0 0 0
+    color: Grey
+    props:
+      m: 1.00
+      w: 0.25
+      d: 0.50
+      h: 0.80
+```
+Explanation:
+- `type`: model type of specific obstacle, *Optional: `BOX`, `CYLINDER` or `SPHERE`*
+- `pose`: fixed pose of the obstacle
+- `color`: color of the obstacle
+- `props`: property of the obstacle
+  - `m`: mass
+  - `w`: width
+  - `d`: depth
+  - `h`: height
+  - `r`: radius
+
+
 
 ## <span id="3">03. Version
 
@@ -178,6 +270,7 @@ Explanation:
 |     **D\***      |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/d_star.cpp))      |       ![d_star_ros.gif](assets/d_star_ros.gif)       |
 |    **LPA\***     |    [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/lpa_star.cpp))     |     ![lpa_star_ros.gif](assets/lpa_star_ros.gif)     |
 |   **D\* Lite**   |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/d_star_lite.cpp))   |  ![d_star_lite_ros.gif](assets/d_star_lite_ros.gif)  |
+|   **Voronoi**   |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/voronoi.cpp))   |  ![voronoi_ros.gif](assets/voronoi_ros.gif)  |
 |     **RRT**      |       [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/sample_planner/src/rrt.cpp)        |          ![rrt_ros.gif](assets/rrt_ros.gif)          |
 |    **RRT\***     |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/sample_planner/src/rrt_star.cpp)     |     ![rrt_star_ros.gif](assets/rrt_star_ros.gif)     |
 | **Informed RRT** |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/sample_planner/src/informed_rrt.cpp)   | ![informed_rrt_ros.gif](assets/informed_rrt_ros.gif) |
@@ -218,6 +311,9 @@ Explanation:
 * RRT-Connect: [RRT-Connect: An Efficient Approach to Single-Query Path Planning](http://www-cgi.cs.cmu.edu/afs/cs/academic/class/15494-s12/readings/kuffner_icra2000.pdf).
 * RRT*: [Sampling-based algorithms for optimal motion planning](https://journals.sagepub.com/doi/abs/10.1177/0278364911406761).
 * Informed RRT*: [Optimal Sampling-based Path Planning Focused via Direct Sampling of an Admissible Ellipsoidal heuristic](https://arxiv.org/abs/1404.2334).
+
+### Evolutionary-based Planning
+* [ACO: ](http://www.cs.yale.edu/homes/lans/readings/routing/dorigo-ants-1999.pdf) Ant Colony Optimization: A New Meta-Heuristic
 
 ### Local Planning
 
@@ -314,6 +410,7 @@ We use another [gazebo simulation](https://github.com/ZhanyuGuo/ackermann_ws) as
 Dataset-of-Gazebo-Worlds-Models-and-Maps](https://github.com/mlherd/Dataset-of-Gazebo-Worlds-Models-and-Maps) and [
 aws-robomaker-small-warehouse-world](https://github.com/aws-robotics/aws-robomaker-small-warehouse-world). Thanks for these open source models sincerely.
 * Pedestrians in this environment are using social force model(sfm), which comes from [https://github.com/robotics-upo/lightsfm](https://github.com/robotics-upo/lightsfm).
+* A ROS costmap plugin for [dynamicvoronoi](http://www2.informatik.uni-freiburg.de/~lau/dynamicvoronoi/) presented by Boris Lau.
 
 ## <span id="8">08. License
 

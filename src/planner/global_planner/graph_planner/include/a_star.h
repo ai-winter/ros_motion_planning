@@ -6,7 +6,7 @@
  * @update: 2022-10-27
  * @version: 1.1
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -16,12 +16,12 @@
 
 #include "global_planner.h"
 
-namespace a_star_planner
+namespace global_planner
 {
 /**
  * @brief Class for objects that plan using the A* algorithm
  */
-class AStar : public global_planner::GlobalPlanner
+class AStar : public GlobalPlanner
 {
 public:
   /**
@@ -36,14 +36,14 @@ public:
 
   /**
    * @brief A* implementation
-   * @param gloal_costmap global costmap
+   * @param global_costmap global costmap
    * @param start         start node
    * @param goal          goal node
    * @param path          optimal path consists of Node
    * @param expand        containing the node been search during the process
    * @return  true if path found, else false
    */
-  bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
             std::vector<Node>& expand);
 
   /**
@@ -58,5 +58,5 @@ private:
   bool is_dijkstra_;  // using diksktra
   bool is_gbfs_;      // using greedy best first search(GBFS)
 };
-}  // namespace a_star_planner
+}  // namespace global_planner
 #endif

@@ -102,7 +102,7 @@ protected:
    * @param plan  plan transfromed from path, i.e. [start, ..., goal]
    * @return  bool true if successful, else false
    */
-  bool _getPlanFromPath(std::vector<Node>& path, std::vector<geometry_msgs::PoseStamped>& plan);
+  bool _getPlanFromPath(std::vector<global_planner::Node>& path, std::vector<geometry_msgs::PoseStamped>& plan);
 
   /**
    * @brief Tranform from costmap(x, y) to world map(x, y)

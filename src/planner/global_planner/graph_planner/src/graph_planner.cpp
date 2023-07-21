@@ -6,7 +6,7 @@
  * @update: 2022-10-26
  * @version: 1.0
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -19,6 +19,7 @@
 #include "d_star.h"
 #include "lpa_star.h"
 #include "d_star_lite.h"
+#include "voronoi.h"
 
 PLUGINLIB_EXPORT_CLASS(graph_planner::GraphPlanner, nav_core::BaseGlobalPlanner)
 
@@ -60,7 +61,8 @@ GraphPlanner::~GraphPlanner()
  */
 void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmapRos)
 {
-  initialize(name, costmapRos->getCostmap(), costmapRos->getGlobalFrameID());
+  costmap_ros_ = costmapRos;
+  initialize(name);
 }
 
 /**
@@ -69,7 +71,7 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costma
  * @param costmap   costmap pointer
  * @param frame_id  costmap frame ID
  */
-void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, std::string frame_id)
+void GraphPlanner::initialize(std::string name)
 {
   if (!initialized_)
   {
@@ -79,15 +81,15 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, 
     ros::NodeHandle private_nh("~/" + name);
 
     // initialize costmap
-    costmap_ = costmap;
+    costmap_ = costmap_ros_->getCostmap();
 
     // costmap frame ID
-    frame_id_ = frame_id;
+    frame_id_ = costmap_ros_->getGlobalFrameID();
 
     // get costmap properties
-    nx_ = costmap->getSizeInCellsX(), ny_ = costmap->getSizeInCellsY();
+    nx_ = costmap_->getSizeInCellsX(), ny_ = costmap_->getSizeInCellsY();
     origin_x_ = costmap_->getOriginX(), origin_y_ = costmap_->getOriginY();
-    resolution_ = costmap->getResolution();
+    resolution_ = costmap_->getResolution();
     // ROS_WARN("nx: %d, origin_x: %f, res: %lf", nx_, origin_x_, resolution_);
 
     private_nh.param("convert_offset", convert_offset_, 0.0);  // offset of transform from world(x,y) to grid map(x,y)
@@ -97,24 +99,26 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap, 
     private_nh.param("expand_zone", is_expand_, false);        // whether publish expand zone or not
 
     // planner name
-    std::string planner_name;
-    private_nh.param("planner_name", planner_name, (std::string) "a_star");
-    if (planner_name == "a_star")
-      g_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_);
-    else if (planner_name == "dijkstra")
-      g_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_, true);
-    else if (planner_name == "gbfs")
-      g_planner_ = new a_star_planner::AStar(nx_, ny_, resolution_, false, true);
-    else if (planner_name == "jps")
-      g_planner_ = new jps_planner::JumpPointSearch(nx_, ny_, resolution_);
-    else if (planner_name == "d_star")
-      g_planner_ = new d_star_planner::DStar(nx_, ny_, resolution_);
-    else if (planner_name == "lpa_star")
-      g_planner_ = new lpa_star_planner::LPAStar(nx_, ny_, resolution_);
-    else if (planner_name == "d_star_lite")
-      g_planner_ = new d_star_lite_planner::DStarLite(nx_, ny_, resolution_);
+    private_nh.param("planner_name", planner_name_, (std::string) "a_star");
+    if (planner_name_ == "a_star")
+      g_planner_ = new global_planner::AStar(nx_, ny_, resolution_);
+    else if (planner_name_ == "dijkstra")
+      g_planner_ = new global_planner::AStar(nx_, ny_, resolution_, true);
+    else if (planner_name_ == "gbfs")
+      g_planner_ = new global_planner::AStar(nx_, ny_, resolution_, false, true);
+    else if (planner_name_ == "jps")
+      g_planner_ = new global_planner::JumpPointSearch(nx_, ny_, resolution_);
+    else if (planner_name_ == "d_star")
+      g_planner_ = new global_planner::DStar(nx_, ny_, resolution_);
+    else if (planner_name_ == "lpa_star")
+      g_planner_ = new global_planner::LPAStar(nx_, ny_, resolution_);
+    else if (planner_name_ == "d_star_lite")
+      g_planner_ = new global_planner::DStarLite(nx_, ny_, resolution_);
+    else if (planner_name_ == "voronoi")
+      g_planner_ = new global_planner::VoronoiPlanner(nx_, ny_, resolution_,
+                                                      costmap_ros_->getLayeredCostmap()->getCircumscribedRadius());
 
-    ROS_INFO("Using global graph planner: %s", planner_name.c_str());
+    ROS_INFO("Using global graph planner: %s", planner_name_.c_str());
 
     // register planning publisher
     plan_pub_ = private_nh.advertise<nav_msgs::Path>("plan", 1);
@@ -205,8 +209,8 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
   g_planner_->map2Grid(m_goal_x, m_goal_y, g_goal_x, g_goal_y);
 
   // NOTE: how to init start and goal?
-  Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
-  Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
+  global_planner::Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
+  global_planner::Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
 
   // clear the cost of robot location
   costmap_->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
@@ -216,9 +220,47 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
     g_planner_->outlineMap(costmap_->getCharMap());
 
   // calculate path
-  std::vector<Node> path;
-  std::vector<Node> expand;
-  bool path_found = g_planner_->plan(costmap_->getCharMap(), start_node, goal_node, path, expand);
+  std::vector<global_planner::Node> path;
+  std::vector<global_planner::Node> expand;
+  bool path_found = false;
+
+  if (planner_name_ == "voronoi")
+  {
+    bool voronoi_layer_exist = false;
+    // check if the costmap has a Voronoi layer
+    for (auto layer = costmap_ros_->getLayeredCostmap()->getPlugins()->begin();
+         layer != costmap_ros_->getLayeredCostmap()->getPlugins()->end(); ++layer)
+    {
+      boost::shared_ptr<costmap_2d::VoronoiLayer> voronoi_layer =
+          boost::dynamic_pointer_cast<costmap_2d::VoronoiLayer>(*layer);
+      if (voronoi_layer)
+      {
+        voronoi_layer_exist = true;
+        global_planner::VoronoiData** voronoi_diagram;
+        voronoi_diagram = new global_planner::VoronoiData*[nx_];
+        for (unsigned int i = 0; i < nx_; i++)
+          voronoi_diagram[i] = new global_planner::VoronoiData[ny_];
+
+        boost::unique_lock<boost::mutex> lock(voronoi_layer->getMutex());
+        const DynamicVoronoi& voronoi = voronoi_layer->getVoronoi();
+        for (unsigned int j = 0; j < ny_; j++)
+        {
+          for (unsigned int i = 0; i < nx_; i++)
+          {
+            voronoi_diagram[i][j].dist = voronoi.getDistance(i, j) * resolution_;
+            voronoi_diagram[i][j].is_voronoi = voronoi.isVoronoi(i, j);
+          }
+        }
+        path_found = dynamic_cast<global_planner::VoronoiPlanner*>(g_planner_)
+                         ->plan(voronoi_diagram, start_node, goal_node, path);
+        break;
+      }
+    }
+    if (!voronoi_layer_exist)
+      ROS_ERROR("Failed to get a Voronoi layer for Voronoi planner");
+  }
+  else
+    path_found = g_planner_->plan(costmap_->getCharMap(), start_node, goal_node, path, expand);
 
   if (path_found)
   {
@@ -229,14 +271,10 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
       plan.push_back(goalCopy);
     }
     else
-    {
       ROS_ERROR("Failed to get a plan from path when a legal path was found. This shouldn't happen.");
-    }
   }
   else
-  {
     ROS_ERROR("Failed to get a path.");
-  }
 
   // publish expand zone
   if (is_expand_)
@@ -291,7 +329,7 @@ bool GraphPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::Ge
  * @brief publish expand zone
  * @param expand  set of expand nodes
  */
-void GraphPlanner::_publishExpand(std::vector<Node>& expand)
+void GraphPlanner::_publishExpand(std::vector<global_planner::Node>& expand)
 {
   ROS_DEBUG("Expand Zone Size: %ld", expand.size());
 
@@ -326,7 +364,8 @@ void GraphPlanner::_publishExpand(std::vector<Node>& expand)
  * @param plan  plan transfromed from path, i.e. [start, ..., goal]
  * @return  bool true if successful, else false
  */
-bool GraphPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometry_msgs::PoseStamped>& plan)
+bool GraphPlanner::_getPlanFromPath(std::vector<global_planner::Node>& path,
+                                    std::vector<geometry_msgs::PoseStamped>& plan)
 {
   if (!initialized_)
   {

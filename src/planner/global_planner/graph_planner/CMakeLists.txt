@@ -12,7 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   tf2_geometry_msgs
   tf2_ros
-  utils
+  global_planner
+  voronoi_layer
 )
 
 catkin_package(
@@ -32,9 +33,11 @@ add_library(${PROJECT_NAME}
   src/d_star.cpp
   src/lpa_star.cpp
   src/d_star_lite.cpp
+  src/voronoi.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  utils
+  global_planner
+  voronoi_layer
 )

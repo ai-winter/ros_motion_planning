@@ -6,7 +6,7 @@
  * @update: 2022-10-27
  * @version: 1.0
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -18,14 +18,13 @@
 #include <unordered_map>
 
 #include "global_planner.h"
-#include "utils.h"
 
-namespace rrt_planner
+namespace global_planner
 {
 /**
  * @brief Class for objects that plan using the RRT algorithm
  */
-class RRT : public global_planner::GlobalPlanner
+class RRT : public GlobalPlanner
 {
 public:
   /**
@@ -41,14 +40,14 @@ public:
   /**
    * @brief RRT implementation
    *
-   * @param gloal_costmap global costmap
+   * @param global_costmap global costmap
    * @param start         start node
    * @param goal          goal node
    * @param path          optimal path consists of Node
    * @param expand        containing the node been search during the process
    * @return  true if path found, else false
    */
-  bool plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
             std::vector<Node>& expand);
 
 protected:
@@ -97,8 +96,8 @@ protected:
   Node start_, goal_;           // start and goal node copy
   // set of sample nodes
   std::unordered_set<Node, NodeIdAsHash, compare_coordinates> sample_list_;
-  int sample_num_;              // max sample number
-  double max_dist_;             // max distance threshold
+  int sample_num_;   // max sample number
+  double max_dist_;  // max distance threshold
 };
-}  // namespace rrt_planner
+}  // namespace global_planner
 #endif  // RRT_H

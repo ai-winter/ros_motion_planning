@@ -6,7 +6,7 @@
  * @update: 2022-10-29
  * @version: 1.0
  *
- * Copyright (c) 2022， Yang Haodong
+ * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
  * --------------------------------------------------------
  *
@@ -16,7 +16,7 @@
 
 #include "rrt_star.h"
 
-namespace rrt_planner
+namespace global_planner
 {
 /**
  * @brief  Constructor
@@ -33,19 +33,19 @@ RRTStar::RRTStar(int nx, int ny, double resolution, int sample_num, double max_d
 }
 /**
  * @brief RRT implementation
- * @param gloal_costmap     costmap
+ * @param global_costmap     costmap
  * @param start     start node
  * @param goal      goal node
  * @param expand    containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool RRTStar::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+bool RRTStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                    std::vector<Node>& expand)
 {
   sample_list_.clear();
   // copy
   start_ = start, goal_ = goal;
-  costs_ = gloal_costmap;
+  costs_ = global_costmap;
   sample_list_.insert(start);
   expand.push_back(start);
 
@@ -57,7 +57,7 @@ bool RRTStar::plan(const unsigned char* gloal_costmap, const Node& start, const 
     Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (gloal_costmap[sample_node.id_] >= lethal_cost_ * factor_)
+    if (global_costmap[sample_node.id_] >= lethal_cost_ * factor_)
       continue;
 
     // visited
@@ -166,4 +166,4 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
     new_node.id_ = -1;
   return new_node;
 }
-}  // namespace rrt_planner
+}  // namespace global_planner

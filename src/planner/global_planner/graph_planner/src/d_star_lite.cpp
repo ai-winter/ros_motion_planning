@@ -13,7 +13,7 @@
  **********************************************************/
 #include "d_star_lite.h"
 
-namespace d_star_lite_planner
+namespace global_planner
 {
 /**
  * @brief Construct a new DStarLite object
@@ -22,7 +22,7 @@ namespace d_star_lite_planner
  * @param ny          pixel number in costmap y direction
  * @param resolution  costmap resolution
  */
-DStarLite::DStarLite(int nx, int ny, double resolution) : global_planner::GlobalPlanner(nx, ny, resolution)
+DStarLite::DStarLite(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resolution)
 {
   curr_global_costmap_ = new unsigned char[ns_];
   last_global_costmap_ = new unsigned char[ns_];
@@ -296,18 +296,18 @@ Node DStarLite::getState(const Node& current)
 
 /**
  * @brief D* lite implementation
- * @param gloal_costmap   costmap
+ * @param global_costmap   costmap
  * @param start   start node
  * @param goal    goal node
  * @param expand  containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool DStarLite::plan(const unsigned char* gloal_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+bool DStarLite::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                      std::vector<Node>& expand)
 {
   // update costmap
   memcpy(last_global_costmap_, curr_global_costmap_, ns_);
-  memcpy(curr_global_costmap_, gloal_costmap, ns_);
+  memcpy(curr_global_costmap_, global_costmap, ns_);
 
   expand_.clear();
 
@@ -380,4 +380,4 @@ bool DStarLite::plan(const unsigned char* gloal_costmap, const Node& start, cons
   }
 }
 
-}  // namespace d_star_lite_planner
+}  // namespace global_planner
