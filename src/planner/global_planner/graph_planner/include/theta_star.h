@@ -51,15 +51,14 @@ protected:
    * @param node
    * @param parent
    * @param child
-   * @param global_costmap
+   * @param goal
    */
-  void _updateVertex(const Node& node, const Node& parent, Node& child);
+  void _updateVertex(const Node& node, const Node& parent, Node& child, const Node& goal);
 
   /**
    * @brief Bresenham algorithm to check if there is any obstacle between parent and child
    * @param parent
    * @param child
-   * @param global_costmap
    * @return true if no obstacle, else false
    */
   bool _lineOfSight(const Node& parent, const Node& child);

@@ -91,6 +91,7 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
         continue;
 
       // explore a new node
+      node_new.h_ = _getDistance(node_new, goal);
       node_new.id_ = grid2Index(node_new.x_, node_new.y_);
       node_new.pid_ = current.id_;
 
@@ -106,7 +107,7 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
       if (find_parent != closed_list.end())
       {
         parent = *find_parent;
-        _updateVertex(current, parent, node_new);
+        _updateVertex(current, parent, node_new, goal);
       }
 
       // add node to open list
@@ -123,9 +124,8 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
  * @param node
  * @param parent
  * @param child
- * @param global_costmap
  */
-void ThetaStar::_updateVertex(const Node& node, const Node& parent, Node& child){
+void ThetaStar::_updateVertex(const Node& node, const Node& parent, Node& child, const Node& goal){
   if (_lineOfSight(parent, child)){
     // path 2
     if (parent.g_ + _getDistance(parent, child) < child.g_){
@@ -150,7 +150,6 @@ void ThetaStar::_updateVertex(const Node& node, const Node& parent, Node& child)
  * @brief Bresenham algorithm to check if there is any obstacle between parent and child
  * @param parent
  * @param child
- * @param global_costmap
  * @return true if no obstacle, else false
  */
 bool ThetaStar::_lineOfSight(const Node& parent, const Node& child){
