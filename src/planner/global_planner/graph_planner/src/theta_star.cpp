@@ -13,6 +13,7 @@
  **********************************************************/
 #include "theta_star.h"
 
+#include <queue>
 #include <unordered_set>
 
 namespace global_planner
@@ -25,7 +26,6 @@ namespace global_planner
  */
 ThetaStar::ThetaStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resolution)
 {
-  ROS_WARN("ThetaStar::ThetaStar");
   factor_ = 0.35;
 };
 
@@ -38,12 +38,10 @@ ThetaStar::ThetaStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, 
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool ThetaStar::plan(unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                  std::vector<Node>& expand)
 {
-  ROS_WARN("ThetaStar::plan");
   // initialize and clear vector
-  global_costmap_ = global_costmap;
   open_list_.clear();
   path.clear();
   expand.clear();
@@ -85,7 +83,6 @@ bool ThetaStar::plan(unsigned char* global_costmap, const Node& start, const Nod
     // explore neighbor of current node
     for (const auto& m : motion)
     {
-      ROS_WARN("m.x_ = %d, m.y_ = %d", m.x_, m.y_);
       Node node_new = current + m;
 
       // current node do not exist in closed list
@@ -97,7 +94,7 @@ bool ThetaStar::plan(unsigned char* global_costmap, const Node& start, const Nod
       node_new.pid_ = current.id_;
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (global_costmap_[node_new.id_] >= lethal_cost_ * factor_))
+      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (global_costmap[node_new.id_] >= lethal_cost_ * factor_))
         continue;
 
       // update g value
@@ -108,7 +105,7 @@ bool ThetaStar::plan(unsigned char* global_costmap, const Node& start, const Nod
       if (find_parent != closed_list.end())
       {
         parent = *find_parent;
-        updateVertex(current, parent, node_new);
+        updateVertex(current, parent, node_new, global_costmap);
       }
 
       // add node to open list
@@ -125,10 +122,10 @@ bool ThetaStar::plan(unsigned char* global_costmap, const Node& start, const Nod
  * @param node
  * @param parent
  * @param child
+ * @param global_costmap
  */
-void ThetaStar::updateVertex(const Node& node, const Node& parent, Node& child){
-  ROS_WARN("updateVertex");
-  if (lineOfSight(parent, child)){
+void ThetaStar::updateVertex(const Node& node, const Node& parent, Node& child, const unsigned char* global_costmap){
+  if (lineOfSight(parent, child, global_costmap)){
     // path 2
     if (parent.g_ + getDistance(parent, child) < child.g_){
       child.g_ = parent.g_ + getDistance(parent, child);
@@ -152,10 +149,10 @@ void ThetaStar::updateVertex(const Node& node, const Node& parent, Node& child){
  * @brief check if there is any obstacle between parent and child
  * @param parent
  * @param child
+ * @param global_costmap
  * @return true if no obstacle, else false
  */
-bool ThetaStar::lineOfSight(const Node& parent, const Node& child){
-  ROS_WARN("lineOfSight");
+bool ThetaStar::lineOfSight(const Node& parent, const Node& child, const unsigned char* global_costmap){
   int s_x = (parent.x_ - child.x_ == 0)? 0: (parent.x_ - child.x_) / std::abs(parent.x_ - child.x_);
   int s_y = (parent.y_ - child.y_ == 0)? 0: (parent.y_ - child.y_) / std::abs(parent.y_ - child.y_);
   int d_x = std::abs(parent.x_ - child.x_);
@@ -178,7 +175,7 @@ bool ThetaStar::lineOfSight(const Node& parent, const Node& child){
         y += s_y;
         e += d_x - d_y;
       }
-      if (global_costmap_[grid2Index(x, y)] >= lethal_cost_ * factor_)
+      if (global_costmap[grid2Index(x, y)] >= lethal_cost_ * factor_)
         // obstacle detected
         return false;
     }
@@ -200,7 +197,7 @@ bool ThetaStar::lineOfSight(const Node& parent, const Node& child){
         y += s_y;
         e += d_y - d_x;
       }
-      if (global_costmap_[grid2Index(x, y)] >= lethal_cost_ * factor_)
+      if (global_costmap[grid2Index(x, y)] >= lethal_cost_ * factor_)
         // obstacle detected
         return false;
     }

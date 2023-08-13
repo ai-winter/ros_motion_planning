@@ -14,7 +14,6 @@
 #ifndef THETA_STAR_H
 #define THETA_STAR_H
 
-#include <ros/ros.h>
 #include <vector>
 #include "global_planner.h"
 
@@ -43,7 +42,7 @@ public:
    * @param expand        containing the node been search during the process
    * @return  true if path found, else false
    */
-  bool plan(unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
             std::vector<Node>& expand);
 
   /**
@@ -51,16 +50,18 @@ public:
    * @param node
    * @param parent
    * @param child
+   * @param global_costmap
    */
-  void updateVertex(const Node& node, const Node& parent, Node& child);
+  void updateVertex(const Node& node, const Node& parent, Node& child, const unsigned char* global_costmap);
 
   /**
    * @brief check if there is any obstacle between parent and child
    * @param parent
    * @param child
+   * @param global_costmap
    * @return true if no obstacle, else false
    */
-  bool lineOfSight(const Node& parent, const Node& child);
+  bool lineOfSight(const Node& parent, const Node& child, const unsigned char* global_costmap);
 
   /**
    * @brief Get the Euclidean distance between two nodes
@@ -71,7 +72,6 @@ public:
   double getDistance(const Node& node, const Node& goal);
 
 private:
-  unsigned char* global_costmap_;            // global costmap
   std::vector<Node> open_list_;              // open list
 };
 }  // namespace global_planner

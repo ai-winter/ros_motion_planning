@@ -20,6 +20,7 @@
 #include "lpa_star.h"
 #include "d_star_lite.h"
 #include "voronoi.h"
+#include "theta_star.h"
 
 PLUGINLIB_EXPORT_CLASS(graph_planner::GraphPlanner, nav_core::BaseGlobalPlanner)
 
