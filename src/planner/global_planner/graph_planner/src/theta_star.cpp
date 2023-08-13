@@ -41,7 +41,8 @@ ThetaStar::ThetaStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, 
 bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                  std::vector<Node>& expand)
 {
-  // initialize and clear vector
+  // initialize
+  costs_ = global_costmap;
   open_list_.clear();
   path.clear();
   expand.clear();
@@ -94,7 +95,7 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
       node_new.pid_ = current.id_;
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (global_costmap[node_new.id_] >= lethal_cost_ * factor_))
+      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (costs_[node_new.id_] >= lethal_cost_ * factor_))
         continue;
 
       // update g value
@@ -105,7 +106,7 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
       if (find_parent != closed_list.end())
       {
         parent = *find_parent;
-        updateVertex(current, parent, node_new, global_costmap);
+        _updateVertex(current, parent, node_new);
       }
 
       // add node to open list
@@ -124,11 +125,11 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
  * @param child
  * @param global_costmap
  */
-void ThetaStar::updateVertex(const Node& node, const Node& parent, Node& child, const unsigned char* global_costmap){
-  if (lineOfSight(parent, child, global_costmap)){
+void ThetaStar::_updateVertex(const Node& node, const Node& parent, Node& child){
+  if (_lineOfSight(parent, child)){
     // path 2
-    if (parent.g_ + getDistance(parent, child) < child.g_){
-      child.g_ = parent.g_ + getDistance(parent, child);
+    if (parent.g_ + _getDistance(parent, child) < child.g_){
+      child.g_ = parent.g_ + _getDistance(parent, child);
       child.pid_ = parent.id_;
       open_list_.push_back(child);
       std::push_heap(open_list_.begin(), open_list_.end(), compare_cost());
@@ -136,8 +137,8 @@ void ThetaStar::updateVertex(const Node& node, const Node& parent, Node& child, 
 
   }else{
     // path 1
-    if (node.g_ + getDistance(node, child) < child.g_){
-      child.g_ = node.g_ + getDistance(node, child);
+    if (node.g_ + _getDistance(node, child) < child.g_){
+      child.g_ = node.g_ + _getDistance(node, child);
       child.pid_ = node.id_;
       open_list_.push_back(child);
       std::push_heap(open_list_.begin(), open_list_.end(), compare_cost());
@@ -146,13 +147,13 @@ void ThetaStar::updateVertex(const Node& node, const Node& parent, Node& child, 
 }
 
 /**
- * @brief check if there is any obstacle between parent and child
+ * @brief Bresenham algorithm to check if there is any obstacle between parent and child
  * @param parent
  * @param child
  * @param global_costmap
  * @return true if no obstacle, else false
  */
-bool ThetaStar::lineOfSight(const Node& parent, const Node& child, const unsigned char* global_costmap){
+bool ThetaStar::_lineOfSight(const Node& parent, const Node& child){
   int s_x = (parent.x_ - child.x_ == 0)? 0: (parent.x_ - child.x_) / std::abs(parent.x_ - child.x_);
   int s_y = (parent.y_ - child.y_ == 0)? 0: (parent.y_ - child.y_) / std::abs(parent.y_ - child.y_);
   int d_x = std::abs(parent.x_ - child.x_);
@@ -160,14 +161,14 @@ bool ThetaStar::lineOfSight(const Node& parent, const Node& child, const unsigne
 
   // check if any obstacle exists between parent and child
   if (d_x > d_y){
-    double tau = (d_y - d_x) / 2.0;
+    int tau = d_y - d_x;
     int x = child.x_, y = child.y_;
     int e = 0;
     while (x != parent.x_){
-      if (e > tau){
+      if (e * 2 > tau){
         x += s_x;
         e -= d_y;
-      }else if (e < tau){
+      }else if (e * 2 < tau){
         y += s_y;
         e += d_x;
       }else{
@@ -175,21 +176,21 @@ bool ThetaStar::lineOfSight(const Node& parent, const Node& child, const unsigne
         y += s_y;
         e += d_x - d_y;
       }
-      if (global_costmap[grid2Index(x, y)] >= lethal_cost_ * factor_)
+      if (costs_[grid2Index(x, y)] >= lethal_cost_ * factor_)
         // obstacle detected
         return false;
     }
 
-  }else if (d_x < d_y){
+  }else{
     // similar. swap x and y
-    double tau = (d_x - d_y) / 2.0;
+    int tau = d_x - d_y;
     int x = child.x_, y = child.y_;
     int e = 0;
     while (y != parent.y_){
-      if (e > tau){
+      if (e * 2 > tau){
         y += s_y;
         e -= d_x;
-      }else if (e < tau){
+      }else if (e * 2 < tau){
         x += s_x;
         e += d_y;
       }else{
@@ -197,7 +198,7 @@ bool ThetaStar::lineOfSight(const Node& parent, const Node& child, const unsigne
         y += s_y;
         e += d_y - d_x;
       }
-      if (global_costmap[grid2Index(x, y)] >= lethal_cost_ * factor_)
+      if (costs_[grid2Index(x, y)] >= lethal_cost_ * factor_)
         // obstacle detected
         return false;
     }
@@ -211,7 +212,7 @@ bool ThetaStar::lineOfSight(const Node& parent, const Node& child, const unsigne
  * @param goal  goal node
  * @return  Euclidean distance
  */
-double ThetaStar::getDistance(const Node& node, const Node& goal)
+double ThetaStar::_getDistance(const Node& node, const Node& goal)
 {
   return std::hypot(node.x_ - goal.x_, node.y_ - goal.y_);
 }
