@@ -117,6 +117,10 @@ void GraphPlanner::initialize(std::string name)
     else if (planner_name_ == "voronoi")
       g_planner_ = new global_planner::VoronoiPlanner(nx_, ny_, resolution_,
                                                       costmap_ros_->getLayeredCostmap()->getCircumscribedRadius());
+    else if (planner_name_ == "theta_star")
+      g_planner_ = new global_planner::ThetaStar(nx_, ny_, resolution_);
+    else
+      ROS_ERROR("Unknown planner name: %s", planner_name_.c_str());
 
     ROS_INFO("Using global graph planner: %s", planner_name_.c_str());
 
