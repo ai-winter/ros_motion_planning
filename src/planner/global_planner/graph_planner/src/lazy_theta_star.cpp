@@ -1,7 +1,7 @@
 /***********************************************************
  *
- * @file: theta_star.cpp
- * @breif: Contains the Theta* planner class
+ * @file: lazy_theta_star.cpp
+ * @breif: Contains the lazy Theta* planner class
  * @author: Wu Maojia
  * @update: 2023-8-14
  * @version: 1.0
@@ -11,23 +11,23 @@
  * --------------------------------------------------------
  *
  **********************************************************/
-#include "theta_star.h"
+#include "lazy_theta_star.h"
 
 namespace global_planner
 {
 /**
- * @brief Construct a new ThetaStar object
+ * @brief Construct a new LazyThetaStar object
  * @param nx          pixel number in costmap x direction
  * @param ny          pixel number in costmap y direction
  * @param resolution  costmap resolution
  */
-ThetaStar::ThetaStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resolution)
+LazyThetaStar::LazyThetaStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resolution)
 {
   factor_ = 0.35;
 };
 
 /**
- * @brief Theta* implementation
+ * @brief Lazy Theta* implementation
  * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
@@ -35,7 +35,7 @@ ThetaStar::ThetaStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, 
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
+bool LazyThetaStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                  std::vector<Node>& expand)
 {
   // initialize
@@ -44,14 +44,11 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
   closed_list_.clear();
   path.clear();
   expand.clear();
+  motion_ = getMotion();
 
-  // closed list
-
+  // push the start node into open list
   open_list_.push_back(start);
   std::push_heap(open_list_.begin(), open_list_.end(), compare_cost());
-
-  // get all possible motions
-  const std::vector<Node> motion = getMotion();
 
   // main process
   while (1)
@@ -63,6 +60,10 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
     Node current = open_list_.front();
     std::pop_heap(open_list_.begin(), open_list_.end(), compare_cost());
     open_list_.pop_back();
+
+    _setVertex(current);
+    if (current.g_ >= INFINITE_COST)
+      continue;
 
     // current node does not exist in closed list
     if (closed_list_.find(current) != closed_list_.end())
@@ -79,7 +80,7 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
     }
 
     // explore neighbor of current node
-    for (const auto& m : motion)
+    for (const auto& m : motion_)
     {
       Node node_new = current + m;  // add the x_, y_, g_
 
@@ -97,16 +98,15 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
       if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (costs_[node_new.id_] >= lethal_cost_ * factor_))
         continue;
 
-      // get the coordinate of parent node
+      // get parent node
       Node parent;
       parent.id_ = current.pid_;
       index2Grid(parent.id_, parent.x_, parent.y_);
-
-      // update g value
       auto find_parent = closed_list_.find(parent);
       if (find_parent != closed_list_.end())
       {
         parent = *find_parent;
+        // path 2
         _updateVertex(parent, node_new);
       }
 
@@ -124,12 +124,48 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
  * @param parent
  * @param child
  */
-void ThetaStar::_updateVertex(const Node& parent, Node& child){
-  if (_lineOfSight(parent, child)){
-    // path 2
-    if (parent.g_ + _getDistance(parent, child) < child.g_){
-      child.g_ = parent.g_ + _getDistance(parent, child);
-      child.pid_ = parent.id_;
+void LazyThetaStar::_updateVertex(const Node& parent, Node& child){
+  // path 2
+  if (parent.g_ + _getDistance(parent, child) < child.g_){
+    child.g_ = parent.g_ + _getDistance(parent, child);
+    child.pid_ = parent.id_;
+  }
+}
+
+/**
+ * @brief check if the parent of vertex need to be updated. if so, update it
+ * @param node
+ */
+void LazyThetaStar::_setVertex(Node& node){
+  // get the coordinate of parent node
+  Node parent;
+  parent.id_ = node.pid_;
+  index2Grid(parent.id_, parent.x_, parent.y_);
+
+  // if no parent, no need to check the line of sight
+  auto find_parent = closed_list_.find(parent);
+  if (find_parent == closed_list_.end()) return;
+
+  parent = *find_parent;
+
+  if (!_lineOfSight(parent, node)){
+    // path 1
+    node.g_ = INFINITE_COST;
+    for (const auto& m : motion_){
+      Node parent_new = node + m;
+      parent_new.id_ = grid2Index(parent_new.x_, parent_new.y_);
+      auto find_parent_new = closed_list_.find(parent_new);
+
+      if (find_parent_new != closed_list_.end()){   // parent_new exists in closed list
+        parent_new = *find_parent_new;
+
+        double g_new = parent_new.g_ + _getDistance(parent_new, node);
+
+        if (g_new < node.g_){
+          node.g_ = g_new;
+          node.pid_ = parent_new.id_;
+        }
+      }
     }
   }
 }
@@ -140,7 +176,7 @@ void ThetaStar::_updateVertex(const Node& parent, Node& child){
  * @param child
  * @return true if no obstacle, else false
  */
-bool ThetaStar::_lineOfSight(const Node& parent, const Node& child){
+bool LazyThetaStar::_lineOfSight(const Node& parent, const Node& child){
   int s_x = (parent.x_ - child.x_ == 0)? 0: (parent.x_ - child.x_) / std::abs(parent.x_ - child.x_);
   int s_y = (parent.y_ - child.y_ == 0)? 0: (parent.y_ - child.y_) / std::abs(parent.y_ - child.y_);
   int d_x = std::abs(parent.x_ - child.x_);
@@ -199,7 +235,7 @@ bool ThetaStar::_lineOfSight(const Node& parent, const Node& child){
  * @param goal  goal node
  * @return  Euclidean distance
  */
-double ThetaStar::_getDistance(const Node& node, const Node& goal)
+double LazyThetaStar::_getDistance(const Node& node, const Node& goal)
 {
   return std::hypot(node.x_ - goal.x_, node.y_ - goal.y_);
 }

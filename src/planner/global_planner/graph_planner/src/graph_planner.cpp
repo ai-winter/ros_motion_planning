@@ -21,6 +21,7 @@
 #include "d_star_lite.h"
 #include "voronoi.h"
 #include "theta_star.h"
+#include "lazy_theta_star.h"
 
 PLUGINLIB_EXPORT_CLASS(graph_planner::GraphPlanner, nav_core::BaseGlobalPlanner)
 
@@ -120,6 +121,8 @@ void GraphPlanner::initialize(std::string name)
                                                       costmap_ros_->getLayeredCostmap()->getCircumscribedRadius());
     else if (planner_name_ == "theta_star")
       g_planner_ = new global_planner::ThetaStar(nx_, ny_, resolution_);
+    else if (planner_name_ == "lazy_theta_star")
+      g_planner_ = new global_planner::LazyThetaStar(nx_, ny_, resolution_);
     else
       ROS_ERROR("Unknown planner name: %s", planner_name_.c_str());
 

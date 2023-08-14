@@ -1,7 +1,7 @@
 /***********************************************************
  *
- * @file: theta_star.h
- * @breif: Contains the Theta* planner class
+ * @file: lazy_theta_star.h
+ * @breif: Contains the lazy Theta* planner class
  * @author: Wu Maojia
  * @update: 2023-8-14
  * @version: 1.0
@@ -11,8 +11,8 @@
  * --------------------------------------------------------
  *
  **********************************************************/
-#ifndef THETA_STAR_H
-#define THETA_STAR_H
+#ifndef LAZY_THETA_STAR_H
+#define LAZY_THETA_STAR_H
 
 #include <vector>
 #include <queue>
@@ -21,21 +21,21 @@
 namespace global_planner
 {
 /**
- * @brief Class for objects that plan using the Theta* algorithm
+ * @brief Class for objects that plan using the lazy Theta* algorithm
  */
-class ThetaStar : public GlobalPlanner
+class LazyThetaStar : public GlobalPlanner
 {
 public:
   /**
-   * @brief Construct a new ThetaStar object
+   * @brief Construct a new LaztThetaStar object
    * @param nx          pixel number in costmap x direction
    * @param ny          pixel number in costmap y direction
    * @param resolution  costmap resolution
    */
-  ThetaStar(int nx, int ny, double resolution);
+  LazyThetaStar(int nx, int ny, double resolution);
 
   /**
-   * @brief Theta* implementation
+   * @brief Lazy Theta* implementation
    * @param global_costmap global costmap
    * @param start         start node
    * @param goal          goal node
@@ -53,6 +53,12 @@ protected:
    * @param child
    */
   void _updateVertex(const Node& parent, Node& child);
+
+  /**
+   * @brief check if the parent of vertex need to be updated. if so, update it
+   * @param node
+  */
+  void _setVertex(Node& node);
 
   /**
    * @brief Bresenham algorithm to check if there is any obstacle between parent and child
@@ -74,6 +80,7 @@ private:
   const unsigned char* costs_;              // costmap copy
   std::vector<Node> open_list_;             // open list
   std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list_; // closed list
+  std::vector<Node> motion_;          // possible motions
 };
 }  // namespace global_planner
 #endif

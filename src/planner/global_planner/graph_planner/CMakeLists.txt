@@ -35,7 +35,8 @@ add_library(${PROJECT_NAME}
   src/d_star_lite.cpp
   src/voronoi.cpp
   src/theta_star.cpp
-)
+  src/lazy_theta_star.cpp
+        )
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
