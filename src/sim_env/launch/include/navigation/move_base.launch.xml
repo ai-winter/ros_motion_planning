@@ -34,7 +34,9 @@
                     or arg('global_planner')=='d_star'
                     or arg('global_planner')=='lpa_star'
                     or arg('global_planner')=='voronoi'
-                    or arg('global_planner')=='d_star_lite')" />
+                    or arg('global_planner')=='d_star_lite'
+                    or arg('global_planner')=='theta_star'
+                    or arg('global_planner')=='lazy_theta_star')" />
         <param name="GraphPlanner/planner_name" value="$(arg global_planner)"
             if="$(eval arg('global_planner')=='a_star'
                     or arg('global_planner')=='jps' 
@@ -43,7 +45,9 @@
                     or arg('global_planner')=='d_star'
                     or arg('global_planner')=='lpa_star'
                     or arg('global_planner')=='voronoi'
-                    or arg('global_planner')=='d_star_lite')" />
+                    or arg('global_planner')=='d_star_lite'
+                    or arg('global_planner')=='theta_star'
+                    or arg('global_planner')=='lazy_theta_star')" />
         <rosparam file="$(find sim_env)/config/planner/graph_planner_params.yaml" command="load"
             if="$(eval arg('global_planner')=='a_star'
                     or arg('global_planner')=='jps' 
@@ -52,7 +56,9 @@
                     or arg('global_planner')=='d_star'
                     or arg('global_planner')=='lpa_star'
                     or arg('global_planner')=='voronoi'
-                    or arg('global_planner')=='d_star_lite')"/>
+                    or arg('global_planner')=='d_star_lite'
+                    or arg('global_planner')=='theta_star'
+                    or arg('global_planner')=='lazy_theta_star')"/>
 
         <!-- sample search -->
         <param name="base_global_planner" value="sample_planner/SamplePlanner"

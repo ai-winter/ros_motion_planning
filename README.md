@@ -261,20 +261,22 @@ Explanation:
 
 ### Global Planner
 
-|     Planner      |                                                                                      Version                                                                                      |                      Animation                       |
-| :--------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------: |
-|     **GBFS**     |      [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/a_star.cpp)       |         ![gbfs_ros.gif](assets/gbfs_ros.gif)         |
-|   **Dijkstra**   |      [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/a_star.cpp)       |     ![dijkstra_ros.gif](assets/dijkstra_ros.gif)     |
-|     **A\***      |      [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/a_star.cpp)       |       ![a_star_ros.gif](assets/a_star_ros.gif)       |
-|     **JPS**      | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/jump_point_search.cpp) |          ![jps_ros.gif](assets/jps_ros.gif)          |
-|     **D\***      |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/d_star.cpp))      |       ![d_star_ros.gif](assets/d_star_ros.gif)       |
-|    **LPA\***     |    [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/lpa_star.cpp))     |     ![lpa_star_ros.gif](assets/lpa_star_ros.gif)     |
-|   **D\* Lite**   |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/d_star_lite.cpp))   |  ![d_star_lite_ros.gif](assets/d_star_lite_ros.gif)  |
-|   **Voronoi**   |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/voronoi.cpp))   |  ![voronoi_ros.gif](assets/voronoi_ros.gif)  |
-|     **RRT**      |       [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/sample_planner/src/rrt.cpp)        |          ![rrt_ros.gif](assets/rrt_ros.gif)          |
-|    **RRT\***     |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/sample_planner/src/rrt_star.cpp)     |     ![rrt_star_ros.gif](assets/rrt_star_ros.gif)     |
-| **Informed RRT** |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/sample_planner/src/informed_rrt.cpp)   | ![informed_rrt_ros.gif](assets/informed_rrt_ros.gif) |
-| **RRT-Connect**  |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/sample_planner/src/rrt_connect.cpp)    |  ![rrt_connect_ros.gif](assets/rrt_connect_ros.gif)  |
+|     Planner      |                                                                                             Version                                                                                              |                       Animation                       |
+|:----------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------:|
+|     **GBFS**     |      [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/a_star.cpp)       |         ![gbfs_ros.gif](assets/gbfs_ros.gif)          |
+|   **Dijkstra**   |      [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/a_star.cpp)       |     ![dijkstra_ros.gif](assets/dijkstra_ros.gif)      |
+|     **A\***      |      [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/a_star.cpp)       |       ![a_star_ros.gif](assets/a_star_ros.gif)        |
+|     **JPS**      | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/jump_point_search.cpp) |          ![jps_ros.gif](assets/jps_ros.gif)           |
+|     **D\***      |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/d_star.cpp))      |       ![d_star_ros.gif](assets/d_star_ros.gif)        |
+|    **LPA\***     |    [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/lpa_star.cpp))     |     ![lpa_star_ros.gif](assets/lpa_star_ros.gif)      |
+|   **D\* Lite**   |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/d_star_lite.cpp))   |  ![d_star_lite_ros.gif](assets/d_star_lite_ros.gif)   |
+|   **Voronoi**    |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/voronoi.cpp))     |      ![voronoi_ros.gif](assets/voronoi_ros.gif)       |
+|   **Theta\***    |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/theta_star.cpp))    |   ![Status](https://img.shields.io/badge/gif-none-yellow)    |
+| **Lazy Theta\*** |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/lazy_theta_star.cpp))    | ![Status](https://img.shields.io/badge/gif-none-yellow) |
+|     **RRT**      |       [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/sample_planner/src/rrt.cpp)        |          ![rrt_ros.gif](assets/rrt_ros.gif)           |
+|    **RRT\***     |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/sample_planner/src/rrt_star.cpp)     |     ![rrt_star_ros.gif](assets/rrt_star_ros.gif)      |
+| **Informed RRT** |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/sample_planner/src/informed_rrt.cpp)   | ![informed_rrt_ros.gif](assets/informed_rrt_ros.gif)  |
+| **RRT-Connect**  |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/sample_planner/src/rrt_connect.cpp)    |  ![rrt_connect_ros.gif](assets/rrt_connect_ros.gif)   |
 
 ### Local Planner
 
@@ -305,6 +307,8 @@ Explanation:
 * Lifelong Planning A*: [Lifelong Planning A*](https://www.cs.cmu.edu/~maxim/files/aij04.pdf).
 * D*: [Optimal and Efficient Path Planning for Partially-Known Environments](http://web.mit.edu/16.412j/www/html/papers/original_dstar_icra94.pdf).
 * D* Lite: [D* Lite](http://idm-lab.org/bib/abstracts/papers/aaai02b.pdf).
+* Theta*: [Theta*: Any-Angle Path Planning on Grids](https://www.jair.org/index.php/jair/article/view/10676), [Any-angle path planning on non-uniform costmaps](https://ieeexplore.ieee.org/abstract/document/5979769).
+* Lazy Theta*: [Lazy Theta*: Any-Angle Path Planning and Path Length Analysis in 3D](https://ojs.aaai.org/index.php/AAAI/article/view/7566).
 
 ### Sample-based Planning
 * RRT: [Rapidly-Exploring Random Trees: A New Tool for Path Planning](http://msl.cs.uiuc.edu/~lavalle/papers/Lav98c.pdf).
@@ -313,7 +317,7 @@ Explanation:
 * Informed RRT*: [Optimal Sampling-based Path Planning Focused via Direct Sampling of an Admissible Ellipsoidal heuristic](https://arxiv.org/abs/1404.2334).
 
 ### Evolutionary-based Planning
-* [ACO: ](http://www.cs.yale.edu/homes/lans/readings/routing/dorigo-ants-1999.pdf) Ant Colony Optimization: A New Meta-Heuristic
+* ACO: [Ant Colony Optimization: A New Meta-Heuristic](http://www.cs.yale.edu/homes/lans/readings/routing/dorigo-ants-1999.pdf)
 
 ### Local Planning
 

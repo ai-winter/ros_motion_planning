@@ -14,6 +14,7 @@
 #ifndef GLOBAL_PLANNER_H
 #define GLOBAL_PLANNER_H
 
+#define INFINITE_COST 1e10   // infinite cost
 #define LETHAL_COST 253      // lethal cost
 #define NEUTRAL_COST 50      // neutral cost
 #define OBSTACLE_FACTOR 0.5  // obstacle factor
