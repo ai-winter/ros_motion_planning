@@ -69,11 +69,8 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
   const std::vector<Node> motion = getMotion();
 
   // main process
-  while (1)
+  while (!open_list.empty())
   {
-    if (open_list.empty())
-      break;
-
     // pop current node from open list
     Node current = open_list.top();
     open_list.pop();
@@ -111,7 +108,7 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
 
       // if using dijkstra implementation, do not consider heuristics cost
       if (!is_dijkstra_)
-        node_new.h_ = getHeuristics(node_new, goal);
+        node_new.h_ = dist(node_new, goal);
 
       // if using GBFS implementation, only consider heuristics cost
       if (is_gbfs_)
@@ -123,16 +120,5 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
   }
 
   return false;
-}
-
-/**
- * @brief Get the Heuristics
- * @param node  current node
- * @param goal  goal node
- * @return  heuristics
- */
-double AStar::getHeuristics(const Node& node, const Node& goal)
-{
-  return std::hypot(node.x_ - goal.x_, node.y_ - goal.y_);
 }
 }  // namespace global_planner

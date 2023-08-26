@@ -135,6 +135,22 @@ public:
    */
   void outlineMap(unsigned char* costarr);
 
+  /**
+   * @brief Calculate distance between the 2 nodes.
+   * @param n1        Node 1
+   * @param n2        Node 2
+   * @return distance between nodes
+   */
+  double dist(const Node& node1, const Node& node2);
+
+  /**
+   * @brief Calculate the angle of x-axis between the 2 nodes.
+   * @param n1        Node 1
+   * @param n2        Node 2
+   * @return he angle of x-axis between the 2 node
+   */
+  double angle(const Node& node1, const Node& node2);
+
 protected:
   /**
    * @brief Convert closed list to path

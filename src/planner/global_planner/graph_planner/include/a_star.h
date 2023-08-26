@@ -46,14 +46,6 @@ public:
   bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
             std::vector<Node>& expand);
 
-  /**
-   * @brief Get the Heuristics
-   * @param node  current node
-   * @param goal  goal node
-   * @return  heuristics
-   */
-  double getHeuristics(const Node& node, const Node& goal);
-
 private:
   bool is_dijkstra_;  // using diksktra
   bool is_gbfs_;      // using greedy best first search(GBFS)

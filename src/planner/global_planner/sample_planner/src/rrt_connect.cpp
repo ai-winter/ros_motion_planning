@@ -82,14 +82,14 @@ bool RRTConnect::plan(const unsigned char* global_costmap, const Node& start, co
         // greedy extending
         while (true)
         {
-          double dist = std::min(max_dist_, _dist(new_node, new_node_b));
-          double theta = _angle(new_node_b, new_node);
+          double dist_ = std::min(max_dist_, dist(new_node, new_node_b));
+          double theta = angle(new_node_b, new_node);
           Node new_node_b2;
-          new_node_b2.x_ = new_node_b.x_ + (int)(dist * cos(theta));
-          new_node_b2.y_ = new_node_b.y_ + (int)(dist * sin(theta));
+          new_node_b2.x_ = new_node_b.x_ + (int)(dist_ * cos(theta));
+          new_node_b2.y_ = new_node_b.y_ + (int)(dist_ * sin(theta));
           new_node_b2.id_ = grid2Index(new_node_b2.x_, new_node_b2.y_);
           new_node_b2.pid_ = new_node_b.id_;
-          new_node_b2.g_ = dist + new_node_b.g_;
+          new_node_b2.g_ = dist_ + new_node_b.g_;
 
           if (!_isAnyObstacleInPath(new_node_b, new_node_b2))
           {

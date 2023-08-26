@@ -130,7 +130,7 @@ Node RRT::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coord
   for (const auto node_ : list)
   {
     // calculate distance
-    double new_dist = _dist(node_, new_node);
+    double new_dist = dist(node_, new_node);
 
     // update nearest node
     if (new_dist < min_dist)
@@ -147,7 +147,7 @@ Node RRT::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coord
   {
     // connect sample node and nearest node, then move the nearest node
     // forward to sample node with `max_distance` as result
-    double theta = _angle(nearest_node, new_node);
+    double theta = angle(nearest_node, new_node);
     new_node.x_ = nearest_node.x_ + (int)(max_dist_ * cos(theta));
     new_node.y_ = nearest_node.y_ + (int)(max_dist_ * sin(theta));
     new_node.id_ = grid2Index(new_node.x_, new_node.y_);
@@ -169,15 +169,15 @@ Node RRT::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coord
  */
 bool RRT::_isAnyObstacleInPath(const Node& n1, const Node& n2)
 {
-  double theta = _angle(n1, n2);
-  double dist = _dist(n1, n2);
+  double theta = angle(n1, n2);
+  double dist_ = dist(n1, n2);
 
   // distance longer than the threshold
-  if (dist > max_dist_)
+  if (dist_ > max_dist_)
     return true;
 
   // sample the line between two nodes and check obstacle
-  int n_step = (int)(dist / resolution_);
+  int n_step = (int)(dist_ / resolution_);
   for (int i = 0; i < n_step; i++)
   {
     float line_x = (float)n1.x_ + (float)(i * resolution_ * cos(theta));
@@ -195,38 +195,16 @@ bool RRT::_isAnyObstacleInPath(const Node& n1, const Node& n2)
  */
 bool RRT::_checkGoal(const Node& new_node)
 {
-  auto dist = _dist(new_node, goal_);
-  if (dist > max_dist_)
+  auto dist_ = dist(new_node, goal_);
+  if (dist_ > max_dist_)
     return false;
 
   if (!_isAnyObstacleInPath(new_node, goal_))
   {
-    Node goal(goal_.x_, goal_.y_, dist + new_node.g_, 0, grid2Index(goal_.x_, goal_.y_), new_node.id_);
+    Node goal(goal_.x_, goal_.y_, dist_ + new_node.g_, 0, grid2Index(goal_.x_, goal_.y_), new_node.id_);
     sample_list_.insert(goal);
     return true;
   }
   return false;
-}
-
-/**
- * @brief Calculate distance between the 2 nodes.
- * @param n1        Node 1
- * @param n2        Node 2
- * @return distance between nodes
- */
-double RRT::_dist(const Node& node1, const Node& node2)
-{
-  return std::sqrt(std::pow(node1.x_ - node2.x_, 2) + std::pow(node1.y_ - node2.y_, 2));
-}
-
-/**
- * @brief Calculate the angle of x-axis between the 2 nodes.
- * @param n1        Node 1
- * @param n2        Node 2
- * @return he angle of x-axis between the 2 node
- */
-double RRT::_angle(const Node& node1, const Node& node2)
-{
-  return atan2(node2.y_ - node1.y_, node2.x_ - node1.x_);
 }
 }  // namespace global_planner

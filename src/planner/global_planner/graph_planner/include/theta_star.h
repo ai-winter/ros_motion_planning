@@ -2,9 +2,9 @@
  *
  * @file: theta_star.h
  * @breif: Contains the Theta* planner class
- * @author: Wu Maojia
- * @update: 2023-8-14
- * @version: 1.0
+ * @author: Wu Maojia, Yang Haodong
+ * @update: 2023-8-26
+ * @version: 1.1
  *
  * Copyright (c) 2023， Wu Maojia
  * All rights reserved.
@@ -58,22 +58,13 @@ protected:
    * @brief Bresenham algorithm to check if there is any obstacle between parent and child
    * @param parent
    * @param child
+   * @param costs global costmap
    * @return true if no obstacle, else false
    */
-  bool _lineOfSight(const Node& parent, const Node& child);
-
-  /**
-   * @brief Get the Euclidean distance between two nodes
-   * @param node  current node
-   * @param goal  goal node
-   * @return  Euclidean distance
-  */
-  double _getDistance(const Node& node, const Node& goal);
+  bool _lineOfSight(const Node& parent, const Node& child, const unsigned char* costs);
 
 private:
-  const unsigned char* costs_;              // costmap copy
-  std::vector<Node> open_list_;             // open list
-  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list_; // closed list
+  const unsigned char* costs_;  // costmap copy
 };
 }  // namespace global_planner
 #endif

@@ -2,9 +2,9 @@
  *
  * @file: lazy_theta_star.cpp
  * @breif: Contains the lazy Theta* planner class
- * @author: Wu Maojia
- * @update: 2023-8-14
- * @version: 1.0
+ * @author: Wu Maojia, Yang Haodong
+ * @update: 2023-8-26
+ * @version: 1.1
  *
  * Copyright (c) 2023， Wu Maojia
  * All rights reserved.
@@ -21,7 +21,7 @@ namespace global_planner
  * @param ny          pixel number in costmap y direction
  * @param resolution  costmap resolution
  */
-LazyThetaStar::LazyThetaStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resolution)
+LazyThetaStar::LazyThetaStar(int nx, int ny, double resolution) : ThetaStar(nx, ny, resolution)
 {
   factor_ = 0.35;
 };
@@ -35,33 +35,29 @@ LazyThetaStar::LazyThetaStar(int nx, int ny, double resolution) : GlobalPlanner(
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool LazyThetaStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-                 std::vector<Node>& expand)
+bool LazyThetaStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal,
+                         std::vector<Node>& path, std::vector<Node>& expand)
 {
   // initialize
   costs_ = global_costmap;
-  open_list_.clear();
   closed_list_.clear();
   path.clear();
   expand.clear();
   motion_ = getMotion();
 
   // push the start node into open list
-  open_list_.push_back(start);
-  std::push_heap(open_list_.begin(), open_list_.end(), compare_cost());
+  std::priority_queue<Node, std::vector<Node>, compare_cost> open_list;
+  open_list.push(start);
 
   // main process
-  while (1)
+  while (!open_list.empty())
   {
-    if (open_list_.empty())
-      break;
-
     // pop current node from open list
-    Node current = open_list_.front();
-    std::pop_heap(open_list_.begin(), open_list_.end(), compare_cost());
-    open_list_.pop_back();
+    Node current = open_list.top();
+    open_list.pop();
 
     _setVertex(current);
+
     if (current.g_ >= INFINITE_COST)
       continue;
 
@@ -90,7 +86,7 @@ bool LazyThetaStar::plan(const unsigned char* global_costmap, const Node& start,
 
       // explore a new node
       // path 1
-      node_new.h_ = _getDistance(node_new, goal);
+      node_new.h_ = dist(node_new, goal);
       node_new.id_ = grid2Index(node_new.x_, node_new.y_);
       node_new.pid_ = current.id_;
 
@@ -110,9 +106,7 @@ bool LazyThetaStar::plan(const unsigned char* global_costmap, const Node& start,
         _updateVertex(parent, node_new);
       }
 
-      // add node to open list
-      open_list_.push_back(node_new);
-      std::push_heap(open_list_.begin(), open_list_.end(), compare_cost());
+      open_list.push(node_new);
     }
   }
 
@@ -124,10 +118,12 @@ bool LazyThetaStar::plan(const unsigned char* global_costmap, const Node& start,
  * @param parent
  * @param child
  */
-void LazyThetaStar::_updateVertex(const Node& parent, Node& child){
+void LazyThetaStar::_updateVertex(const Node& parent, Node& child)
+{
   // path 2
-  if (parent.g_ + _getDistance(parent, child) < child.g_){
-    child.g_ = parent.g_ + _getDistance(parent, child);
+  if (parent.g_ + dist(parent, child) < child.g_)
+  {
+    child.g_ = parent.g_ + dist(parent, child);
     child.pid_ = parent.id_;
   }
 }
@@ -136,7 +132,8 @@ void LazyThetaStar::_updateVertex(const Node& parent, Node& child){
  * @brief check if the parent of vertex need to be updated. if so, update it
  * @param node
  */
-void LazyThetaStar::_setVertex(Node& node){
+void LazyThetaStar::_setVertex(Node& node)
+{
   // get the coordinate of parent node
   Node parent;
   parent.id_ = node.pid_;
@@ -144,25 +141,27 @@ void LazyThetaStar::_setVertex(Node& node){
 
   // if no parent, no need to check the line of sight
   auto find_parent = closed_list_.find(parent);
-  if (find_parent == closed_list_.end()) return;
-
+  if (find_parent == closed_list_.end())
+    return;
   parent = *find_parent;
 
-  if (!_lineOfSight(parent, node)){
+  if (!_lineOfSight(parent, node, costs_))
+  {
     // path 1
     node.g_ = INFINITE_COST;
-    for (const auto& m : motion_){
+    for (const auto& m : motion_)
+    {
       Node parent_new = node + m;
       parent_new.id_ = grid2Index(parent_new.x_, parent_new.y_);
       auto find_parent_new = closed_list_.find(parent_new);
 
-      if (find_parent_new != closed_list_.end()){   // parent_new exists in closed list
+      if (find_parent_new != closed_list_.end())
+      {
+        // parent_new exists in closed list
         parent_new = *find_parent_new;
-
-        double g_new = parent_new.g_ + _getDistance(parent_new, node);
-
-        if (g_new < node.g_){
-          node.g_ = g_new;
+        if (parent_new.g_ + dist(parent_new, node) < node.g_)
+        {
+          node.g_ = parent_new.g_ + dist(parent_new, node);
           node.pid_ = parent_new.id_;
         }
       }
@@ -170,73 +169,4 @@ void LazyThetaStar::_setVertex(Node& node){
   }
 }
 
-/**
- * @brief Bresenham algorithm to check if there is any obstacle between parent and child
- * @param parent
- * @param child
- * @return true if no obstacle, else false
- */
-bool LazyThetaStar::_lineOfSight(const Node& parent, const Node& child){
-  int s_x = (parent.x_ - child.x_ == 0)? 0: (parent.x_ - child.x_) / std::abs(parent.x_ - child.x_);
-  int s_y = (parent.y_ - child.y_ == 0)? 0: (parent.y_ - child.y_) / std::abs(parent.y_ - child.y_);
-  int d_x = std::abs(parent.x_ - child.x_);
-  int d_y = std::abs(parent.y_ - child.y_);
-
-  // check if any obstacle exists between parent and child
-  if (d_x > d_y){
-    int tau = d_y - d_x;
-    int x = child.x_, y = child.y_;
-    int e = 0;
-    while (x != parent.x_){
-      if (e * 2 > tau){
-        x += s_x;
-        e -= d_y;
-      }else if (e * 2 < tau){
-        y += s_y;
-        e += d_x;
-      }else{
-        x += s_x;
-        y += s_y;
-        e += d_x - d_y;
-      }
-      if (costs_[grid2Index(x, y)] >= lethal_cost_ * factor_)
-        // obstacle detected
-        return false;
-    }
-
-  }else{
-    // similar. swap x and y
-    int tau = d_x - d_y;
-    int x = child.x_, y = child.y_;
-    int e = 0;
-    while (y != parent.y_){
-      if (e * 2 > tau){
-        y += s_y;
-        e -= d_x;
-      }else if (e * 2 < tau){
-        x += s_x;
-        e += d_y;
-      }else{
-        x += s_x;
-        y += s_y;
-        e += d_y - d_x;
-      }
-      if (costs_[grid2Index(x, y)] >= lethal_cost_ * factor_)
-        // obstacle detected
-        return false;
-    }
-  }
-  return true;
-}
-
-/**
- * @brief Get the Euclidean distance between two nodes
- * @param node  current node
- * @param goal  goal node
- * @return  Euclidean distance
- */
-double LazyThetaStar::_getDistance(const Node& node, const Node& goal)
-{
-  return std::hypot(node.x_ - goal.x_, node.y_ - goal.y_);
-}
 }  // namespace global_planner

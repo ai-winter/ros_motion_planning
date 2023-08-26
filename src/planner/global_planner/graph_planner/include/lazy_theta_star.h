@@ -2,9 +2,9 @@
  *
  * @file: lazy_theta_star.h
  * @breif: Contains the lazy Theta* planner class
- * @author: Wu Maojia
- * @update: 2023-8-14
- * @version: 1.0
+ * @author: Wu Maojia, Yang Haodong
+ * @update: 2023-8-26
+ * @version: 1.1
  *
  * Copyright (c) 2023， Wu Maojia
  * All rights reserved.
@@ -16,14 +16,14 @@
 
 #include <vector>
 #include <queue>
-#include "global_planner.h"
+#include "theta_star.h"
 
 namespace global_planner
 {
 /**
  * @brief Class for objects that plan using the lazy Theta* algorithm
  */
-class LazyThetaStar : public GlobalPlanner
+class LazyThetaStar : public ThetaStar
 {
 public:
   /**
@@ -57,30 +57,13 @@ protected:
   /**
    * @brief check if the parent of vertex need to be updated. if so, update it
    * @param node
-  */
+   */
   void _setVertex(Node& node);
 
-  /**
-   * @brief Bresenham algorithm to check if there is any obstacle between parent and child
-   * @param parent
-   * @param child
-   * @return true if no obstacle, else false
-   */
-  bool _lineOfSight(const Node& parent, const Node& child);
-
-  /**
-   * @brief Get the Euclidean distance between two nodes
-   * @param node  current node
-   * @param goal  goal node
-   * @return  Euclidean distance
-  */
-  double _getDistance(const Node& node, const Node& goal);
-
 private:
-  const unsigned char* costs_;              // costmap copy
-  std::vector<Node> open_list_;             // open list
-  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list_; // closed list
-  std::vector<Node> motion_;          // possible motions
+  const unsigned char* costs_;                                               // costmap copy
+  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list_;  // closed list
+  std::vector<Node> motion_;                                                 // possible motions
 };
 }  // namespace global_planner
 #endif

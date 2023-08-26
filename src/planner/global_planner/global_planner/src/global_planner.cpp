@@ -159,6 +159,28 @@ void GlobalPlanner::outlineMap(unsigned char* costarr)
 }
 
 /**
+ * @brief Calculate distance between the 2 nodes.
+ * @param n1        Node 1
+ * @param n2        Node 2
+ * @return distance between nodes
+ */
+double GlobalPlanner::dist(const Node& node1, const Node& node2)
+{
+  return std::hypot(node1.x_ - node2.x_, node1.y_ - node2.y_);
+}
+
+/**
+ * @brief Calculate the angle of x-axis between the 2 nodes.
+ * @param n1        Node 1
+ * @param n2        Node 2
+ * @return he angle of x-axis between the 2 node
+ */
+double GlobalPlanner::angle(const Node& node1, const Node& node2)
+{
+  return atan2(node2.y_ - node1.y_, node2.x_ - node1.x_);
+}
+
+/**
  * @brief Convert closed list to path
  * @param closed_list closed list
  * @param start       start node
@@ -169,6 +191,7 @@ std::vector<Node> GlobalPlanner::_convertClosedListToPath(
     std::unordered_set<Node, NodeIdAsHash, compare_coordinates>& closed_list, const Node& start, const Node& goal)
 {
   auto current = *closed_list.find(goal);
+  
   std::vector<Node> path;
   while (current != start)
   {

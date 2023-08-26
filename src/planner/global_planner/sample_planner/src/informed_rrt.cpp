@@ -13,7 +13,6 @@
  **********************************************************/
 #include <cmath>
 #include <random>
-
 #include "informed_rrt.h"
 
 namespace global_planner
@@ -43,10 +42,9 @@ bool InformedRRT::plan(const unsigned char* global_costmap, const Node& start, c
 {
   // initialization
   c_best_ = std::numeric_limits<double>::max();
-  c_min_ = _dist(start, goal);
+  c_min_ = dist(start, goal);
   int best_parent = -1;
   sample_list_.clear();
-
   // copy
   start_ = start, goal_ = goal;
   costs_ = global_costmap;
@@ -81,10 +79,10 @@ bool InformedRRT::plan(const unsigned char* global_costmap, const Node& start, c
     }
 
     // goal found
-    auto dist = _dist(new_node, goal_);
-    if (dist <= max_dist_ && !_isAnyObstacleInPath(new_node, goal_))
+    auto dist_ = dist(new_node, goal_);
+    if (dist_ <= max_dist_ && !_isAnyObstacleInPath(new_node, goal_))
     {
-      double cost = dist + new_node.g_;
+      double cost = dist_ + new_node.g_;
       if (cost < c_best_)
       {
         best_parent = new_node.id_;
@@ -95,11 +93,13 @@ bool InformedRRT::plan(const unsigned char* global_costmap, const Node& start, c
 
   if (best_parent != -1)
   {
-    Node goal_(goal_.x_, goal_.y_, c_best_, 0, grid2Index(goal_.x_, goal_.y_), best_parent);
-    sample_list_.insert(goal_);
+    Node goal_star(goal_.x_, goal_.y_, c_best_, 0, grid2Index(goal_.x_, goal_.y_), best_parent);
+    sample_list_.insert(goal_star);
+
     path = _convertClosedListToPath(sample_list_, start, goal);
     return true;
   }
+
   return false;
 }
 
@@ -149,7 +149,7 @@ Node InformedRRT::_transform(double x, double y)
   double center_y = (start_.y_ + goal_.y_) / 2;
 
   // rotation
-  double theta = -_angle(start_, goal_);
+  double theta = -angle(start_, goal_);
 
   // ellipse
   double a = c_best_ / 2.0;

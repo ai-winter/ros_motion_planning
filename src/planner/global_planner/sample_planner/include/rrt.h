@@ -76,20 +76,6 @@ protected:
    * @return bool value of whether goal is reachable from current node
    */
   bool _checkGoal(const Node& new_node);
-  /**
-   * @brief Calculate distance between the 2 nodes.
-   * @param n1        Node 1
-   * @param n2        Node 2
-   * @return distance between nodes
-   */
-  double _dist(const Node& node1, const Node& node2);
-  /**
-   * @brief Calculate the angle of x-axis between the 2 nodes.
-   * @param n1        Node 1
-   * @param n2        Node 2
-   * @return he angle of x-axis between the 2 node
-   */
-  double _angle(const Node& node1, const Node& node2);
 
 protected:
   const unsigned char* costs_;  // costmap copy

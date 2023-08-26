@@ -100,7 +100,7 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
   for (const auto node_ : list)
   {
     // calculate distance
-    double new_dist = _dist(node_, new_node);
+    double new_dist = dist(node_, new_node);
 
     // update nearest node
     if (new_dist < min_dist)
@@ -117,7 +117,7 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
   {
     // connect sample node and nearest node, then move the nearest node
     // forward to sample node with `max_distance` as result
-    double theta = _angle(nearest_node, new_node);
+    double theta = angle(nearest_node, new_node);
     new_node.x_ = nearest_node.x_ + (int)(max_dist_ * cos(theta));
     new_node.y_ = nearest_node.y_ + (int)(max_dist_ * sin(theta));
     new_node.id_ = grid2Index(new_node.x_, new_node.y_);
@@ -131,7 +131,7 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
     for (auto node_ : sample_list_)
     {
       // inside the optimization circle
-      double new_dist = _dist(node_, new_node);
+      double new_dist = dist(node_, new_node);
       if (new_dist < r_)
       {
         double cost = node_.g_ + new_dist;
