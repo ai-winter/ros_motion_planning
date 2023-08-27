@@ -78,17 +78,16 @@ bool LazyThetaStar::plan(const unsigned char* global_costmap, const Node& start,
     // explore neighbor of current node
     for (const auto& m : motion_)
     {
+      // explore a new node
+      // path 1
       Node node_new = current + m;  // add the x_, y_, g_
+      node_new.h_ = dist(node_new, goal);
+      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
+      node_new.pid_ = current.id_;
 
       // current node do not exist in closed list
       if (closed_list_.find(node_new) != closed_list_.end())
         continue;
-
-      // explore a new node
-      // path 1
-      node_new.h_ = dist(node_new, goal);
-      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
-      node_new.pid_ = current.id_;
 
       // next node hit the boundary or obstacle
       if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (costs_[node_new.id_] >= lethal_cost_ * factor_))
