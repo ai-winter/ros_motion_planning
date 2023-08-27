@@ -3,8 +3,8 @@
  * @file: theta_star.cpp
  * @breif: Contains the Theta* planner class
  * @author: Wu Maojia, Yang Haodong
- * @update: 2023-8-26
- * @version: 1.1
+ * @update: 2023-8-27
+ * @version: 1.2
  *
  * Copyright (c) 2023， Wu Maojia
  * All rights reserved.
@@ -77,17 +77,16 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
     // explore neighbor of current node
     for (const auto& m : motion)
     {
-      Node node_new = current + m;  // add the x_, y_, g_
-
-      // current node do not exist in closed list
-      if (closed_list.find(node_new) != closed_list.end())
-        continue;
-
       // explore a new node
       // path 1
+      Node node_new = current + m;  // add the x_, y_, g_
       node_new.h_ = dist(node_new, goal);
       node_new.id_ = grid2Index(node_new.x_, node_new.y_);
       node_new.pid_ = current.id_;
+      
+      // current node do not exist in closed list
+      if (closed_list.find(node_new) != closed_list.end())
+        continue;
 
       // next node hit the boundary or obstacle
       if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (costs_[node_new.id_] >= lethal_cost_ * factor_))
