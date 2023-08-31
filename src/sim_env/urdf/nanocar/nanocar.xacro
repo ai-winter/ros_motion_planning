@@ -1,0 +1,12 @@
+<robot  name="NanoCar"   xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:arg name="laser_visual"  default="false"/>
+  <xacro:arg name="camera_visual" default="false"/>
+  <xacro:arg name="imu_visual"    default="false"/>
+
+  <xacro:include filename="$(find sim_env)/urdf/nanocar/nanocar.gazebo.xacro" /> 
+  <xacro:include filename="$(find sim_env)/urdf/nanocar/nanocar.urdf.xacro" /> 
+
+
+  
+</robot>

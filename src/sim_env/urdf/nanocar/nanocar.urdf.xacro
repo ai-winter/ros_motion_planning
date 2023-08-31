@@ -1,0 +1,422 @@
+<?xml version="1.0" ?>
+<robot name="nanocar" xmlns:xacro="http://ros.org/wiki/xacro">
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0.0 0.0 0.012" rpy="0 0 0"/>
+  </joint>
+
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.0555446452540713 0.000671669256433499 0.0266509782546839"
+        rpy="0 0 0" />
+      <mass
+        value="0.360847988626614" />
+      <inertia
+        ixx="0.000516397641128697"
+        ixy="1.1957324992993E-05"
+        ixz="0.000120152725218978"
+        iyy="0.00154603495385803"
+        iyz="-8.72108816656556E-06"
+        izz="0.00169469610791314" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="front_left_wheel_link">
+    <inertial>
+      <origin
+        xyz="-0.00010538637242985 -0.00550462033646019 2.15695517002956E-14"
+        rpy="0 0 0" />
+      <mass
+        value="0.0561341413767672" />
+      <inertia
+        ixx="2.45349618443393E-05"
+        ixy="3.40792909820246E-07"
+        ixz="2.2300311878363E-18"
+        iyy="4.23289891465669E-05"
+        iyz="-2.1064917599381E-17"
+        izz="2.45284373383242E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/front_left_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.109803921568627 0.109803921568627 0.109803921568627 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/front_left_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="front_left_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="0.14398 0.087243 0.0179"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="front_left_wheel_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="front_right_wheel_link">
+    <inertial>
+      <origin
+        xyz="6.76035723146257E-05 0.00550521399163428 2.15868989350554E-14"
+        rpy="0 0 0" />
+      <mass
+        value="0.0561341413761839" />
+      <inertia
+        ixx="2.45311221758638E-05"
+        ixy="2.18636454271762E-07"
+        ixz="-2.52922597607164E-19"
+        iyy="4.23328288149757E-05"
+        iyz="4.02318858428609E-18"
+        izz="2.45284373382953E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/front_right_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.109803921568627 0.109803921568627 0.109803921568627 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/front_right_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="front_right_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="0.14278 -0.087247 0.0179"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="front_right_wheel_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="back_left_wheel_link">
+    <inertial>
+      <origin
+        xyz="-1.11022302462516E-16 -0.00550562905918096 0"
+        rpy="0 0 0" />
+      <mass
+        value="0.0561341413751443" />
+      <inertia
+        ixx="2.45284373382495E-05"
+        ixy="7.62335823185991E-18"
+        ixz="-6.93955014485814E-22"
+        iyy="4.23355136524843E-05"
+        iyz="-1.73414696438044E-17"
+        izz="2.45284373382495E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/back_left_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.109803921568627 0.109803921568627 0.109803921568627 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/back_left_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back_left_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="-0.00015 0.08725 0.0179"
+      rpy="0 0 5.2577E-15" />
+    <parent
+      link="base_link" />
+    <child
+      link="back_left_wheel_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="back_right_wheel_link">
+    <inertial>
+      <origin
+        xyz="5.55111512312578E-17 0.00550562905918101 6.93889390390723E-18"
+        rpy="0 0 0" />
+      <mass
+        value="0.0561341413751443" />
+      <inertia
+        ixx="2.45284373382496E-05"
+        ixy="7.52903077889808E-18"
+        ixz="7.29027186707092E-22"
+        iyy="4.23355136524844E-05"
+        iyz="1.73420673069565E-17"
+        izz="2.45284373382496E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/back_right_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.109803921568627 0.109803921568627 0.109803921568627 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/back_right_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back_right_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="0.00015 -0.08725 0.0179"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="back_right_wheel_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="base_scan">
+    <inertial>
+      <origin
+        xyz="0.0523572786618226 -0.000415129505920292 -0.0724378427604165"
+        rpy="0 0 0" />
+      <mass
+        value="0.587950004839672" />
+      <inertia
+        ixx="0.0021356987454402"
+        ixy="1.06647658432416E-05"
+        ixz="-0.000134594037561808"
+        iyy="0.00294196763294724"
+        iyz="9.42320675642704E-06"
+        izz="0.00449915941190477" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/base_laser_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/base_laser_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="laser_joint"
+    type="fixed">
+    <origin
+      xyz="0.11423 0 0.096"
+      rpy="0 0 3.1416" />
+    <parent
+      link="base_link" />
+    <child
+      link="base_scan" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="base_camera_link">
+    <inertial>
+      <origin
+        xyz="-0.00453469422999369 2.77555756156289E-17 0.00179125965737485"
+        rpy="0 0 0" />
+      <mass
+        value="0.00100487943921971" />
+      <inertia
+        ixx="7.5567739127561E-08"
+        ixy="-4.52878601912423E-25"
+        ixz="1.37755038601046E-09"
+        iyy="3.9493893215179E-08"
+        iyz="3.67972463900956E-24"
+        izz="4.01523294449251E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/base_camera_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/base_camera_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="camera_joint"
+    type="fixed">
+    <origin
+      xyz="0.167 0 0.0723"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="base_camera_link" />
+    <axis
+      xyz="1 0 0" />
+  </joint>
+  <link
+    name="imu_link">
+    <inertial>
+      <origin
+        xyz="2.77555756156289E-17 0 -0.00346762589928058"
+        rpy="0 0 0" />
+      <mass
+        value="0.000834" />
+      <inertia
+        ixx="1.72751258992805E-08"
+        ixy="-1.34149734347123E-23"
+        ixz="8.58268730243352E-26"
+        iyy="1.01251258992806E-08"
+        iyz="1.22503149789368E-25"
+        izz="2.3801E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/imu.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sim_env/meshes/nanocar/imu.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="imu_joint"
+    type="fixed">
+    <origin
+      xyz="-0.006172 -0.0010254 0.08269"
+      rpy="7.5597E-18 -1.1042E-17 -5.8164E-14" />
+    <parent
+      link="base_link" />
+    <child
+      link="imu_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+</robot>
