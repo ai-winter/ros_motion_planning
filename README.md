@@ -74,9 +74,9 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
 
     **NOTE: Changing some launch files DOES NOT work, because some of them are re-generated according to the `./src/user_config/user_config.yaml` by a python script when you run `main.sh`. Therefore, you should change configurations in `user_config.yaml` instead of launch files.**
 
-7. Use **2D Nav Goal** to select the goal.
+6. Use **2D Nav Goal** to select the goal.
 
-8. Moving!
+7. Moving!
 
 ## 1. <span id="1">File Tree
 
