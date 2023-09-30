@@ -1,3 +1,17 @@
+/***********************************************************
+*
+* @file: apf_planner.cpp
+* @breif: Contains the Artificial Potential Field (APF) local planner class
+* @author: Wu Maojia, Yang Haodong
+* @update: 2023-10-1
+* @version: 1.0
+*
+* Copyright (c) 2023，Wu Maojia, Yang Haodong
+* All rights reserved.
+* --------------------------------------------------------
+*
+**********************************************************/
+
 #include "apf_planner.h"
 #include <pluginlib/class_list_macros.h>
 
@@ -54,7 +68,6 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nx_ = costmap_->getSizeInCellsX(), ny_ = costmap_->getSizeInCellsY();
     origin_x_ = costmap_->getOriginX(), origin_y_ = costmap_->getOriginY();
     resolution_ = costmap_->getResolution();
-    ROS_WARN("nx_: %d, ny_: %d, res_: %lf", nx_, ny_, resolution_);
 
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
 
@@ -74,22 +87,15 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("min_w", min_w_, 0.0);
     nh.param("max_w_inc", max_w_inc_, 1.57);
 
-    nh.param("k_v_p", k_v_p_, 1.00);
-    nh.param("k_v_i", k_v_i_, 0.01);
-    nh.param("k_v_d", k_v_d_, 0.10);
-
-    nh.param("k_w_p", k_w_p_, 1.00);
-    nh.param("k_w_i", k_w_i_, 0.01);
-    nh.param("k_w_d", k_w_d_, 0.10);
-
-    nh.param("k_theta", k_theta_, 0.5);
+    nh.param("s_window", s_window_, 5);
 
     nh.param("zeta", zeta_, 1.0);
     nh.param("eta", eta_, 1.0);
-    nh.param("field_r", field_r_, 60);
 
     nh.param("/move_base/controller_frequency", controller_freqency_, 10.0);
     d_t_ = 1 / controller_freqency_;
+
+    hist_nf_.clear();
 
     odom_helper_ = new base_local_planner::OdometryHelperRos("/odom");
     target_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/target_pose", 10);
@@ -110,8 +116,6 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
  */
 bool APFPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
 {
-  // ROS_WARN("APFPlanner::setPlan()");
-
   if (!initialized_)
   {
     ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
@@ -125,7 +129,7 @@ bool APFPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
   global_plan_ = orig_global_plan;
 
   // reset plan parameters
-  plan_index_ = 4;
+  plan_index_ = std::min(4, (int)global_plan_.size() - 1);
 
   if (goal_x_ != global_plan_.back().pose.position.x || goal_y_ != global_plan_.back().pose.position.y)
   {
@@ -197,7 +201,6 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
     attr_force = getAttractiveForce(target_ps_, x_, y_);
     net_force = zeta_ * attr_force + eta_ * rep_force;
-//    ROS_WARN("Fattr: %lf, Frep: %lf", zeta_ * attr_force.norm(), eta_ * rep_force.norm());
 
     // from robot to plan point
     theta_d = atan2(net_force[1], net_force[0]);  // [-pi, pi]
@@ -207,13 +210,13 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     q.setRPY(0, 0, theta_d);
     tf2::convert(q, target_ps_.pose.orientation);
 
-    // transform from map into base_frame
-    getTransformedPosition(target_ps_, b_x_d, b_y_d);
-
     e_theta = theta_d - theta_;
     regularizeAngle(e_theta);
 
     v_inc = net_force.norm() * cos(e_theta);
+
+    // transform from map into base_frame
+    getTransformedPosition(target_ps_, b_x_d, b_y_d);
 
     if (std::hypot(b_x_d, b_y_d) > p_window_ || std::fabs(e_theta) > o_window_)
       break;
@@ -255,6 +258,33 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   // posistion not reached
   else
   {
+    // smoothing the net force with historical net forces in the smoothing window
+    if (!hist_nf_.empty() && hist_nf_.size() >= s_window_)
+    {
+      hist_nf_.pop_front();
+    }
+    hist_nf_.push_back(net_force);
+    net_force = Eigen::Vector2d(0.0, 0.0);
+    for (int i = 0; i < hist_nf_.size(); ++i)
+    {
+      net_force += hist_nf_[i];
+    }
+    net_force /= hist_nf_.size();
+
+    // reset the smoothed e_theta and v_inc
+    // from robot to plan point
+    theta_d = atan2(net_force[1], net_force[0]);  // [-pi, pi]
+    regularizeAngle(theta_d);
+
+    tf2::Quaternion q;
+    q.setRPY(0, 0, theta_d);
+    tf2::convert(q, target_ps_.pose.orientation);
+
+    e_theta = theta_d - theta_;
+    regularizeAngle(e_theta);
+
+    v_inc = net_force.norm() * cos(e_theta);
+
     cmd_vel.linear.x = LinearAPFController(base_odom, v_inc);
     cmd_vel.angular.z = AngularAPFController(base_odom, theta_d, theta_);
   }
@@ -356,31 +386,9 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce(double x, double y)
   int mx, my;
   if (!_worldToMap(0.0, 0.0, mx, my))
   {
-    ROS_WARN("The robot's start position is off the local costmap. Are you sure the robot has been properly localized?");
+    ROS_WARN("Failed to convert the robot's coordinates from world map to costmap.");
     return rep_force;
   }
-
-//  int x_min = std::max(mx - field_r_, 0);
-//  int x_max = std::min(mx + field_r_, (int)nx_ - 1);
-//  int y_min = std::max(my - field_r_, 0);
-//  int y_max = std::min(my + field_r_, (int)ny_ - 1);
-//  double dist;
-//  double k, dx, dy;
-//
-//  for (int i = x_min; i <= x_max; ++i)
-//  {
-//    for (int j = y_min; j <= y_max; ++j)
-//    {
-//      dist = std::hypot(i - mx, j - my);
-//      if (dist > field_r_) continue;  // not taking into account obstacles outside the circular field
-//      if (costmap_char_[i + nx_ * j] >= LETHAL_COST)
-//      {
-//        k = ( 1.0 / (double)field_r_ - 1.0 / dist ) / (dist * dist);
-//        dx = mx - i, dy = my - j;
-//        rep_force += Eigen::Vector2d(k * dx / dist, k * dy / dist);
-//      }
-//    }
-//  }
 
   double current_cost = costmap_char_[mx + nx_ * my];
 
@@ -390,6 +398,7 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce(double x, double y)
     return rep_force;
   }
 
+  // obtain the distance between the robot and obstacles directly through costmap
   double dist = LETHAL_COST - current_cost;
   double k = ( 1.0 / (LETHAL_COST * resolution_) - 1.0 / (dist * resolution_) ) / ((dist * resolution_) * (dist * resolution_));
   double next_x = costmap_char_[std::min(mx + 1, (int)nx_ - 1) + nx_ * my];
@@ -403,7 +412,6 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce(double x, double y)
 
   rep_force = k * grad_dist;
 
-//  ROS_WARN("rep_force: (%lf, %lf), k: %lf, grad_dist: (%lf, %lf)", rep_force[0], rep_force[1], k, grad_dist[0], grad_dist[1]);
   return rep_force;
 }
 

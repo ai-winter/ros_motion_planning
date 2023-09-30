@@ -103,7 +103,8 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
       node_new.pid_ = current.id_;
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (global_costmap[node_new.id_] >= lethal_cost_ * factor_))
+      if ((node_new.id_ < 0) || (node_new.id_ >= ns_)
+          || (global_costmap[node_new.id_] >= lethal_cost_ * factor_ && global_costmap[node_new.id_] >= global_costmap[current.id_]))
         continue;
 
       // if using dijkstra implementation, do not consider heuristics cost

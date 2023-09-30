@@ -120,7 +120,7 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
   global_plan_ = orig_global_plan;
 
   // reset plan parameters
-  plan_index_ = 4;
+  plan_index_ = std::min(4, (int)global_plan_.size() - 1);
 
   if (goal_x_ != global_plan_.back().pose.position.x || goal_y_ != global_plan_.back().pose.position.y)
   {

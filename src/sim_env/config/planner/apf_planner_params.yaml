@@ -20,17 +20,7 @@ APFPlanner:
   min_w: 0.0
   max_w_inc: 1.57
 
-  # pid controller params
-  k_v_p: 1.00
-  k_v_i: 0.10
-  k_v_d: 0.10
+  s_window: 5  # trajectory smoothing window time
 
-  k_w_p: 1.00
-  k_w_i: 0.10
-  k_w_d: 0.10
-
-  k_theta: 0.3
-
-  zeta: 1.0
-  eta: 3000.0
-  field_r: 60
+  zeta: 1.0     # scale factor of attractive force
+  eta: 20000.0   # scale factor of repulsive force

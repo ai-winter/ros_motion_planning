@@ -219,9 +219,6 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
   global_planner::Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
   global_planner::Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
 
-  // clear the cost of robot location
-  costmap_->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
-
   // outline the map
   if (is_outline_)
     g_planner_->outlineMap(costmap_->getCharMap());

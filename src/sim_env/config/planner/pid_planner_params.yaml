@@ -26,4 +26,4 @@ PIDPlanner:
   k_w_i: 0.10
   k_w_d: 0.10
 
-  k_theta: 0.3
+  k_theta: 0.7

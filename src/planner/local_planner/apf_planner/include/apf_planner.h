@@ -1,3 +1,17 @@
+/***********************************************************
+*
+* @file: apf_planner.h
+* @breif: Contains the Artificial Potential Field (APF) local planner class
+* @author: Wu Maojia, Yang Haodong
+* @update: 2023-10-1
+* @version: 1.0
+*
+* Copyright (c) 2023，Wu Maojia, Yang Haodong
+* All rights reserved.
+* --------------------------------------------------------
+*
+**********************************************************/
+
 #ifndef APF_PLANNER_H_
 #define APF_PLANNER_H_
 
@@ -169,13 +183,11 @@ private:
   double max_v_, min_v_, max_v_inc_;  // linear velocity
   double max_w_, min_w_, max_w_inc_;  // angular velocity
 
-  double k_v_p_, k_v_i_, k_v_d_;  // apf controller params
-  double k_w_p_, k_w_i_, k_w_d_;  // apf controller params
-  double k_theta_;                // apf controller params
+  int s_window_;     // trajectory smoothing window time
 
-  double zeta_, eta_;
+  double zeta_, eta_;   // scale factor of attractive and repulsive force
 
-  int field_r_; // radius (unit: grid) of the field around the center of robot in which obstacles are taken into account to calculate repulsive force
+  std::deque<Eigen::Vector2d> hist_nf_; // historical net forces
 
   std::string base_frame_, map_frame_;
   base_local_planner::OdometryHelperRos* odom_helper_;

@@ -61,7 +61,6 @@ protected:
   void _setVertex(Node& node);
 
 private:
-  const unsigned char* costs_;                                               // costmap copy
   std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list_;  // closed list
   std::vector<Node> motion_;                                                 // possible motions
 };

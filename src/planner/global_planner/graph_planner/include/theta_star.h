@@ -58,12 +58,11 @@ protected:
    * @brief Bresenham algorithm to check if there is any obstacle between parent and child
    * @param parent
    * @param child
-   * @param costs global costmap
    * @return true if no obstacle, else false
    */
-  bool _lineOfSight(const Node& parent, const Node& child, const unsigned char* costs);
+  bool _lineOfSight(const Node& parent, const Node& child);
 
-private:
+protected:
   const unsigned char* costs_;  // costmap copy
 };
 }  // namespace global_planner

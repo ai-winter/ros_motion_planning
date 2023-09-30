@@ -89,7 +89,8 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
         continue;
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (costs_[node_new.id_] >= lethal_cost_ * factor_))
+      if ((node_new.id_ < 0) || (node_new.id_ >= ns_)
+          || (costs_[node_new.id_] >= lethal_cost_ * factor_ && costs_[node_new.id_] >= costs_[current.id_]))
         continue;
 
       // get the coordinate of parent node
@@ -119,7 +120,7 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
  */
 void ThetaStar::_updateVertex(const Node& parent, Node& child)
 {
-  if (_lineOfSight(parent, child, costs_))
+  if (_lineOfSight(parent, child))
   {
     // path 2
     if (parent.g_ + dist(parent, child) < child.g_)
@@ -134,10 +135,9 @@ void ThetaStar::_updateVertex(const Node& parent, Node& child)
  * @brief Bresenham algorithm to check if there is any obstacle between parent and child
  * @param parent
  * @param child
- * @param costs global costmap
  * @return true if no obstacle, else false
  */
-bool ThetaStar::_lineOfSight(const Node& parent, const Node& child, const unsigned char* costs)
+bool ThetaStar::_lineOfSight(const Node& parent, const Node& child)
 {
   int s_x = (parent.x_ - child.x_ == 0) ? 0 : (parent.x_ - child.x_) / std::abs(parent.x_ - child.x_);
   int s_y = (parent.y_ - child.y_ == 0) ? 0 : (parent.y_ - child.y_) / std::abs(parent.y_ - child.y_);
@@ -168,7 +168,7 @@ bool ThetaStar::_lineOfSight(const Node& parent, const Node& child, const unsign
         y += s_y;
         e += d_x - d_y;
       }
-      if (costs[grid2Index(x, y)] >= lethal_cost_ * factor_)
+      if (costs_[grid2Index(x, y)] >= lethal_cost_ * factor_ && costs_[grid2Index(x, y)] >= costs_[parent.id_])
         // obstacle detected
         return false;
     }
@@ -197,7 +197,7 @@ bool ThetaStar::_lineOfSight(const Node& parent, const Node& child, const unsign
         y += s_y;
         e += d_y - d_x;
       }
-      if (costs[grid2Index(x, y)] >= lethal_cost_ * factor_)
+      if (costs_[grid2Index(x, y)] >= lethal_cost_ * factor_ && costs_[grid2Index(x, y)] >= costs_[parent.id_])
         // obstacle detected
         return false;
     }
