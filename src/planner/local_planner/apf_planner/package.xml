@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>pid_planner</name>
+  <name>apf_planner</name>
   <version>0.0.0</version>
-  <description>The pid_planner package</description>
-  <maintainer email="gzy@todo.todo">gzy</maintainer>
+  <description>The apf_planner package</description>
+  <maintainer email="omige@mail.nwpu.edu.cn">wmj</maintainer>
   <license>GPL3</license>
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -39,7 +39,7 @@
   <exec_depend>tf2_ros</exec_depend>
 
   <export>
-    <nav_core plugin="${prefix}/pid_planner_plugin.xml" />
+    <nav_core plugin="${prefix}/apf_planner_plugin.xml" />
 
   </export>
 </package>

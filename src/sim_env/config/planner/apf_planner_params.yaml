@@ -1,4 +1,7 @@
-PIDPlanner:
+APFPlanner:
+  # offset of transform from world(x,y) to grid map(x,y)
+  convert_offset: 0.0
+
   # next point distance/turning angle
   p_window: 0.2
   o_window: 1.0
@@ -27,3 +30,7 @@ PIDPlanner:
   k_w_d: 0.10
 
   k_theta: 0.3
+
+  zeta: 1.0
+  eta: 3000.0
+  field_r: 60

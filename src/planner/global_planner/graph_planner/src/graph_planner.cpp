@@ -92,7 +92,6 @@ void GraphPlanner::initialize(std::string name)
     nx_ = costmap_->getSizeInCellsX(), ny_ = costmap_->getSizeInCellsY();
     origin_x_ = costmap_->getOriginX(), origin_y_ = costmap_->getOriginY();
     resolution_ = costmap_->getResolution();
-    // ROS_WARN("nx: %d, origin_x: %f, res: %lf", nx_, origin_x_, resolution_);
 
     private_nh.param("convert_offset", convert_offset_, 0.0);  // offset of transform from world(x,y) to grid map(x,y)
     private_nh.param("default_tolerance", tolerance_, 0.0);    // error tolerance
