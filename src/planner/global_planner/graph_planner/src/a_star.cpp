@@ -2,9 +2,9 @@
  *
  * @file: a_star.cpp
  * @breif: Contains the A* (dijkstra and GBFS) planner class
- * @author: Yang Haodong
- * @update: 2022-10-27
- * @version: 1.1
+ * @author: Yang Haodong, Wu Maojia
+ * @update: 2023-10-01
+ * @version: 1.2
  *
  * Copyright (c) 2023， Yang Haodong
  * All rights reserved.

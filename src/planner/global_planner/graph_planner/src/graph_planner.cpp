@@ -2,9 +2,9 @@
  *
  * @file: graph_planner.cpp
  * @breif: Contains the graph planner ROS wrapper class
- * @author: Yang Haodong
- * @update: 2022-10-26
- * @version: 1.0
+ * @author: Yang Haodong, Wu Maojia
+ * @update: 2023-10-1
+ * @version: 1.1
  *
  * Copyright (c) 2023， Yang Haodong
  * All rights reserved.

@@ -1,3 +1,17 @@
+/***********************************************************
+*
+* @file: pid_planner.h
+* @breif: Contains the Proportional–Integral–Derivative (PID) controller local planner class
+* @author: Yang Haodong, Wu Maojia
+* @update: 2023-10-1
+* @version: 1.1
+*
+* Copyright (c) 2023，Yang Haodong
+* All rights reserved.
+* --------------------------------------------------------
+*
+**********************************************************/
+
 #ifndef PID_PLANNER_H_
 #define PID_PLANNER_H_
 
@@ -11,7 +25,6 @@
 #include <nav_msgs/Odometry.h>
 #include <base_local_planner/odometry_helper_ros.h>
 #include <tf2/utils.h>
-// #include <tf2/LinearMath/Matrix3x3.h>
 
 namespace pid_planner
 {

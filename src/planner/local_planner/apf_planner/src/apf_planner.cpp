@@ -90,7 +90,7 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("s_window", s_window_, 5);
 
     nh.param("zeta", zeta_, 1.0);
-    nh.param("eta", eta_, 1.0);
+    nh.param("eta", eta_, 3000.0);
 
     nh.param("/move_base/controller_frequency", controller_freqency_, 10.0);
     d_t_ = 1 / controller_freqency_;

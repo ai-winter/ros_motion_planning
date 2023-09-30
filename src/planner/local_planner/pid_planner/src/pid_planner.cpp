@@ -1,3 +1,17 @@
+/***********************************************************
+*
+* @file: pid_planner.cpp
+* @breif: Contains the Proportional–Integral–Derivative (PID) controller local planner class
+* @author: Yang Haodong, Wu Maojia
+* @update: 2023-10-1
+* @version: 1.1
+*
+* Copyright (c) 2023，Yang Haodong
+* All rights reserved.
+* --------------------------------------------------------
+*
+**********************************************************/
+
 #include "pid_planner.h"
 #include <pluginlib/class_list_macros.h>
 
@@ -17,8 +31,6 @@ PIDPlanner::PIDPlanner()
   , base_frame_("base_link")
   , map_frame_("map")
 {
-  // ROS_WARN("PIDPlanner::PIDPlanner()");
-  // NOTE: afterward, initialize() will be called automatically
 }
 
 /**
@@ -26,7 +38,6 @@ PIDPlanner::PIDPlanner()
  */
 PIDPlanner::PIDPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros) : PIDPlanner()
 {
-  // ROS_WARN("PIDPlanner::PIDPlanner(**)");
   initialize(name, tf, costmap_ros);
 }
 
@@ -35,7 +46,6 @@ PIDPlanner::PIDPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costma
  */
 PIDPlanner::~PIDPlanner()
 {
-  // ROS_WARN("PIDPlanner::~PIDPlanner()");
 }
 
 /**
@@ -46,8 +56,6 @@ PIDPlanner::~PIDPlanner()
  */
 void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
 {
-  // ROS_WARN("PIDPlanner::initialize()");
-
   if (!initialized_)
   {
     initialized_ = true;
@@ -105,8 +113,6 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
  */
 bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
 {
-  // ROS_WARN("PIDPlanner::setPlan()");
-
   if (!initialized_)
   {
     ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
@@ -134,7 +140,6 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
   }
 
   return true;
-  // NOTE: afterward, isGoalReached() will be called automatically
 }
 
 /**
@@ -143,7 +148,6 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
  */
 bool PIDPlanner::isGoalReached()
 {
-  // ROS_WARN("PidLocalPlannerROS::isGoalReached()");
   if (!initialized_)
   {
     ROS_ERROR("PID planner has not been initialized");
@@ -165,8 +169,6 @@ bool PIDPlanner::isGoalReached()
  */
 bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 {
-  // ROS_WARN("PIDPlanner::computeVelocityCommands()");
-
   if (!initialized_)
   {
     ROS_ERROR("PID planner has not been initialized");
@@ -183,8 +185,6 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   x_ = current_ps_.pose.position.x;
   y_ = current_ps_.pose.position.y;
   theta_ = tf2::getYaw(current_ps_.pose.orientation);  // [-pi, pi]
-  // ROS_WARN("theta_ %.2f", theta_);
-  // ROS_WARN("frame_id: %s", current_ps_.header.frame_id.c_str());  // odom
 
   double theta_d, theta_dir, theta_trj;
   double b_x_d, b_y_d;  // desired x, y in base frame
@@ -236,15 +236,10 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
     ++plan_index_;
   }
-  // ROS_WARN("plan index: %d", plan_index_);
-  // ROS_WARN("frame_id: %s", target_ps_.header.frame_id.c_str());  // map
 
   // odometry observation - getting robot velocities in robot frame
   nav_msgs::Odometry base_odom;
   odom_helper_->getOdom(base_odom);
-
-  // get final goal orientation - Quaternion to Euler
-  // ROS_WARN("goal_rpy_[2] = %.2f", goal_rpy_[2]);
 
   // position reached
   if (getGoalPositionDistance(global_plan_.back(), x_, y_) < p_precision_)
@@ -306,7 +301,6 @@ double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double
   double v_d = std::hypot(b_x_d, b_y_d) / d_t_;
   if (std::fabs(v_d) > max_v_)
     v_d = std::copysign(max_v_, v_d);
-  // ROS_WARN("v_d: %.2f", v_d);
 
   double e_v = v_d - v;
   i_v_ += e_v * d_t_;
@@ -323,8 +317,6 @@ double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double
     v_cmd = std::copysign(max_v_, v_cmd);
   else if (std::fabs(v_cmd) < min_v_)
     v_cmd = std::copysign(min_v_, v_cmd);
-
-  // ROS_INFO("v_d: %.2lf, e_v: %.2lf, i_v: %.2lf, d_v: %.2lf, v_cmd: %.2lf", v_d, e_v, i_v_, d_v, v_cmd);
 
   return v_cmd;
 }
@@ -344,7 +336,6 @@ double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, doubl
   double w_d = e_theta / d_t_;
   if (std::fabs(w_d) > max_w_)
     w_d = std::copysign(max_w_, w_d);
-  // ROS_WARN("w_d: %.2f", w_d);
 
   double w = base_odometry.twist.twist.angular.z;
   double e_w = w_d - w;
@@ -362,8 +353,6 @@ double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, doubl
     w_cmd = std::copysign(max_w_, w_cmd);
   else if (std::fabs(w_cmd) < min_w_)
     w_cmd = std::copysign(min_w_, w_cmd);
-
-  // ROS_INFO("w_d: %.2lf, e_w: %.2lf, i_w: %.2lf, d_w: %.2lf, w_cmd: %.2lf", w_d, e_w, i_w_, d_w, w_cmd);
 
   return w_cmd;
 }
@@ -420,10 +409,6 @@ void PIDPlanner::getTransformedPosition(geometry_msgs::PoseStamped& src, double&
  */
 void PIDPlanner::regularizeAngle(double& angle)
 {
-  // wrong, not real mod
-  // angle = std::fmod(angle + M_PI, 2 * M_PI) - M_PI;
-
-  // angle = (angle + M_PI - 2.0 * M_PI * std::floor((angle + M_PI) / (2.0 * M_PI))) - M_PI;
   angle = angle - 2.0 * M_PI * std::floor((angle + M_PI) / (2.0 * M_PI));
 }
 }  // namespace pid_planner
