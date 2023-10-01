@@ -3,8 +3,8 @@
  * @file: theta_star.h
  * @breif: Contains the Theta* planner class
  * @author: Wu Maojia, Yang Haodong
- * @update: 2023-8-26
- * @version: 1.1
+ * @update: 2023-10-1
+ * @version: 1.3
  *
  * Copyright (c) 2023， Wu Maojia
  * All rights reserved.
@@ -58,12 +58,11 @@ protected:
    * @brief Bresenham algorithm to check if there is any obstacle between parent and child
    * @param parent
    * @param child
-   * @param costs global costmap
    * @return true if no obstacle, else false
    */
-  bool _lineOfSight(const Node& parent, const Node& child, const unsigned char* costs);
+  bool _lineOfSight(const Node& parent, const Node& child);
 
-private:
+protected:
   const unsigned char* costs_;  // costmap copy
 };
 }  // namespace global_planner

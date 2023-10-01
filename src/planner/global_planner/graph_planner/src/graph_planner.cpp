@@ -2,9 +2,9 @@
  *
  * @file: graph_planner.cpp
  * @breif: Contains the graph planner ROS wrapper class
- * @author: Yang Haodong
- * @update: 2022-10-26
- * @version: 1.0
+ * @author: Yang Haodong, Wu Maojia
+ * @update: 2023-10-1
+ * @version: 1.1
  *
  * Copyright (c) 2023， Yang Haodong
  * All rights reserved.
@@ -92,7 +92,6 @@ void GraphPlanner::initialize(std::string name)
     nx_ = costmap_->getSizeInCellsX(), ny_ = costmap_->getSizeInCellsY();
     origin_x_ = costmap_->getOriginX(), origin_y_ = costmap_->getOriginY();
     resolution_ = costmap_->getResolution();
-    // ROS_WARN("nx: %d, origin_x: %f, res: %lf", nx_, origin_x_, resolution_);
 
     private_nh.param("convert_offset", convert_offset_, 0.0);  // offset of transform from world(x,y) to grid map(x,y)
     private_nh.param("default_tolerance", tolerance_, 0.0);    // error tolerance
@@ -219,9 +218,6 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
   // NOTE: how to init start and goal?
   global_planner::Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
   global_planner::Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
-
-  // clear the cost of robot location
-  costmap_->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
 
   // outline the map
   if (is_outline_)

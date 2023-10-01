@@ -3,8 +3,8 @@
  * @file: lazy_theta_star.cpp
  * @breif: Contains the lazy Theta* planner class
  * @author: Wu Maojia, Yang Haodong
- * @update: 2023-8-27
- * @version: 1.2
+ * @update: 2023-10-1
+ * @version: 1.3
  *
  * Copyright (c) 2023， Wu Maojia
  * All rights reserved.
@@ -90,7 +90,8 @@ bool LazyThetaStar::plan(const unsigned char* global_costmap, const Node& start,
         continue;
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (costs_[node_new.id_] >= lethal_cost_ * factor_))
+      if ((node_new.id_ < 0) || (node_new.id_ >= ns_)
+          || (costs_[node_new.id_] >= lethal_cost_ * factor_ && costs_[node_new.id_] >= costs_[current.id_]))
         continue;
 
       // get parent node
@@ -144,7 +145,7 @@ void LazyThetaStar::_setVertex(Node& node)
     return;
   parent = *find_parent;
 
-  if (!_lineOfSight(parent, node, costs_))
+  if (!_lineOfSight(parent, node))
   {
     // path 1
     node.g_ = INFINITE_COST;

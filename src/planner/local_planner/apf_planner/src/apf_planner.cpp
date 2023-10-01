@@ -1,28 +1,28 @@
 /***********************************************************
 *
-* @file: pid_planner.cpp
-* @breif: Contains the Proportional–Integral–Derivative (PID) controller local planner class
-* @author: Yang Haodong, Wu Maojia
+* @file: apf_planner.cpp
+* @breif: Contains the Artificial Potential Field (APF) local planner class
+* @author: Wu Maojia, Yang Haodong
 * @update: 2023-10-1
-* @version: 1.1
+* @version: 1.0
 *
-* Copyright (c) 2023，Yang Haodong
+* Copyright (c) 2023，Wu Maojia, Yang Haodong
 * All rights reserved.
 * --------------------------------------------------------
 *
 **********************************************************/
 
-#include "pid_planner.h"
+#include "apf_planner.h"
 #include <pluginlib/class_list_macros.h>
 
-PLUGINLIB_EXPORT_CLASS(pid_planner::PIDPlanner, nav_core::BaseLocalPlanner)
+PLUGINLIB_EXPORT_CLASS(apf_planner::APFPlanner, nav_core::BaseLocalPlanner)
 
-namespace pid_planner
+namespace apf_planner
 {
 /**
- * @brief Construct a new PIDPlanner object
+ * @brief Construct a new APFPlanner object
  */
-PIDPlanner::PIDPlanner()
+APFPlanner::APFPlanner()
   : initialized_(false)
   , tf_(nullptr)
   , costmap_ros_(nullptr)
@@ -34,17 +34,17 @@ PIDPlanner::PIDPlanner()
 }
 
 /**
- * @brief Construct a new PIDPlanner object
+ * @brief Construct a new APFPlanner object
  */
-PIDPlanner::PIDPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros) : PIDPlanner()
+APFPlanner::APFPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros) : APFPlanner()
 {
   initialize(name, tf, costmap_ros);
 }
 
 /**
- * @brief Destroy the PIDPlanner object
+ * @brief Destroy the APFPlanner object
  */
-PIDPlanner::~PIDPlanner()
+APFPlanner::~APFPlanner()
 {
 }
 
@@ -54,15 +54,24 @@ PIDPlanner::~PIDPlanner()
  * @param tf          a pointer to a transform listener
  * @param costmap_ros the cost map to use for assigning costs to trajectories
  */
-void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
+void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
 {
   if (!initialized_)
   {
     initialized_ = true;
     tf_ = tf;
     costmap_ros_ = costmap_ros;
+    costmap_ = costmap_ros_->getCostmap();
+    costmap_char_ = costmap_->getCharMap();
+
+    // get costmap properties
+    nx_ = costmap_->getSizeInCellsX(), ny_ = costmap_->getSizeInCellsY();
+    origin_x_ = costmap_->getOriginX(), origin_y_ = costmap_->getOriginY();
+    resolution_ = costmap_->getResolution();
 
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
+
+    nh.param("convert_offset", convert_offset_, 0.0);
 
     nh.param("p_window", p_window_, 0.5);
 
@@ -77,31 +86,28 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("min_w", min_w_, 0.0);
     nh.param("max_w_inc", max_w_inc_, 1.57);
 
-    nh.param("k_v_p", k_v_p_, 1.00);
-    nh.param("k_v_i", k_v_i_, 0.01);
-    nh.param("k_v_d", k_v_d_, 0.10);
+    nh.param("s_window", s_window_, 5);
 
-    nh.param("k_w_p", k_w_p_, 1.00);
-    nh.param("k_w_i", k_w_i_, 0.01);
-    nh.param("k_w_d", k_w_d_, 0.10);
+    nh.param("zeta", zeta_, 1.0);
+    nh.param("eta", eta_, 1.0);
 
-    nh.param("k_theta", k_theta_, 0.5);
+    nh.param("cost_ub", cost_ub_, 253);
+    nh.param("cost_lb", cost_lb_, 0);
 
     nh.param("/move_base/controller_frequency", controller_freqency_, 10.0);
     d_t_ = 1 / controller_freqency_;
 
-    e_v_ = i_v_ = 0.0;
-    e_w_ = i_w_ = 0.0;
+    hist_nf_.clear();
 
     odom_helper_ = new base_local_planner::OdometryHelperRos("/odom");
     target_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/target_pose", 10);
     current_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
 
-    ROS_INFO("PID planner initialized!");
+    ROS_INFO("APF planner initialized!");
   }
   else
   {
-    ROS_WARN("PID planner has already been initialized.");
+    ROS_WARN("APF planner has already been initialized.");
   }
 }
 
@@ -110,7 +116,7 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
  * @param orig_global_plan the plan to pass to the controller
  * @return  true if the plan was updated successfully, else false
  */
-bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
+bool APFPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
 {
   if (!initialized_)
   {
@@ -133,9 +139,6 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
     goal_y_ = global_plan_.back().pose.position.y;
     goal_rpy_ = getEulerAngles(global_plan_.back());
     goal_reached_ = false;
-
-    e_v_ = i_v_ = 0.0;
-    e_w_ = i_w_ = 0.0;
   }
 
   return true;
@@ -145,11 +148,11 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
  * @brief  Check if the goal pose has been achieved
  * @return True if achieved, false otherwise
  */
-bool PIDPlanner::isGoalReached()
+bool APFPlanner::isGoalReached()
 {
   if (!initialized_)
   {
-    ROS_ERROR("PID planner has not been initialized");
+    ROS_ERROR("APF planner has not been initialized");
     return false;
   }
 
@@ -166,13 +169,17 @@ bool PIDPlanner::isGoalReached()
  * @param cmd_vel will be filled with the velocity command to be passed to the robot base
  * @return  true if a valid trajectory was found, else false
  */
-bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
+bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 {
   if (!initialized_)
   {
-    ROS_ERROR("PID planner has not been initialized");
+    ROS_ERROR("APF planner has not been initialized");
     return false;
   }
+
+  // odometry observation - getting robot velocities in robot frame
+  nav_msgs::Odometry base_odom;
+  odom_helper_->getOdom(base_odom);
 
   // current pose
   geometry_msgs::PoseStamped current_ps_odom;
@@ -188,6 +195,9 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   double theta_d, theta_dir, theta_trj;
   double b_x_d, b_y_d;  // desired x, y in base frame
   double e_theta;
+  Eigen::Vector2d attr_force, rep_force, net_force, new_v;
+
+  rep_force = getRepulsiveForce();
 
   while (plan_index_ < global_plan_.size())
   {
@@ -195,50 +205,33 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     double x_d = target_ps_.pose.position.x;
     double y_d = target_ps_.pose.position.y;
 
-    // from robot to plan point
-    theta_dir = atan2((y_d - y_), (x_d - x_));  // [-pi, pi]
+    attr_force = getAttractiveForce(target_ps_, x_, y_);
+    net_force = zeta_ * attr_force + eta_ * rep_force;
 
-    int next_plan_index = plan_index_ + 1;
-    if (next_plan_index < global_plan_.size())
-    {
-      // theta on the trajectory
-      theta_trj = atan2((global_plan_[next_plan_index].pose.position.y - y_d),
-                        (global_plan_[next_plan_index].pose.position.x - x_d));
-    }
+    // set the new_v
+    new_v = Eigen::Vector2d(base_odom.twist.twist.linear.x, base_odom.twist.twist.linear.y);
+    new_v += net_force;
+    new_v /= new_v.norm();
+    new_v *= max_v_;
 
-    // if the difference is greater than PI, it will get a wrong result
-    if (fabs(theta_trj - theta_dir) > M_PI)
-    {
-      // add 2*PI to the smaller one
-      if (theta_trj > theta_dir)
-        theta_dir += 2 * M_PI;
-      else
-        theta_trj += 2 * M_PI;
-    }
-
-    // weighting between two angle
-    theta_d = (1 - k_theta_) * theta_trj + k_theta_ * theta_dir;
+    theta_d = atan2(new_v[1], new_v[0]);  // [-pi, pi]
     regularizeAngle(theta_d);
 
     tf2::Quaternion q;
     q.setRPY(0, 0, theta_d);
     tf2::convert(q, target_ps_.pose.orientation);
 
-    // transform from map into base_frame
-    getTransformedPosition(target_ps_, b_x_d, b_y_d);
-
     e_theta = theta_d - theta_;
     regularizeAngle(e_theta);
+
+    // transform from map into base_frame
+    getTransformedPosition(target_ps_, b_x_d, b_y_d);
 
     if (std::hypot(b_x_d, b_y_d) > p_window_)
       break;
 
     ++plan_index_;
   }
-  ROS_WARN("%d %lf", plan_index_, std::hypot(b_x_d, b_y_d));
-  // odometry observation - getting robot velocities in robot frame
-  nav_msgs::Odometry base_odom;
-  odom_helper_->getOdom(base_odom);
 
   // position reached
   if (getGoalPositionDistance(global_plan_.back(), x_, y_) < p_precision_)
@@ -258,55 +251,71 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     else
     {
       cmd_vel.linear.x = 0.0;
-      cmd_vel.angular.z = AngularPIDController(base_odom, goal_rpy_[2], theta_);
+      cmd_vel.angular.z = AngularAPFController(base_odom, goal_rpy_[2], theta_);
     }
   }
   // large angle, turn first
   else if (std::fabs(e_theta) > M_PI_2)
   {
     cmd_vel.linear.x = 0.0;
-    cmd_vel.angular.z = AngularPIDController(base_odom, theta_d, theta_);
+    cmd_vel.angular.z = AngularAPFController(base_odom, theta_d, theta_);
   }
   // posistion not reached
   else
   {
-    cmd_vel.linear.x = LinearPIDController(base_odom, b_x_d, b_y_d);
-    cmd_vel.angular.z = AngularPIDController(base_odom, theta_d, theta_);
+    // smoothing the net force with historical net forces in the smoothing window
+    if (!hist_nf_.empty() && hist_nf_.size() >= s_window_)
+    {
+      hist_nf_.pop_front();
+    }
+    hist_nf_.push_back(net_force);
+    net_force = Eigen::Vector2d(0.0, 0.0);
+    for (int i = 0; i < hist_nf_.size(); ++i)
+    {
+      net_force += hist_nf_[i];
+    }
+    net_force /= hist_nf_.size();
+
+    // reset the smoothed new_v
+    new_v = Eigen::Vector2d(base_odom.twist.twist.linear.x, base_odom.twist.twist.linear.y);
+    new_v += net_force;
+    new_v /= new_v.norm();
+    new_v *= max_v_;
+
+    theta_d = atan2(new_v[1], new_v[0]);  // [-pi, pi]
+    regularizeAngle(theta_d);
+
+    tf2::Quaternion q;
+    q.setRPY(0, 0, theta_d);
+    tf2::convert(q, target_ps_.pose.orientation);
+
+    e_theta = theta_d - theta_;
+    regularizeAngle(e_theta);
+
+    cmd_vel.linear.x = LinearAPFController(base_odom, new_v.norm());
+    cmd_vel.angular.z = AngularAPFController(base_odom, theta_d, theta_);
   }
 
   // publish next target_ps_ pose
-  // target_ps_.header.frame_id = "map";
-  // target_ps_.header.stamp = ros::Time::now();
   target_pose_pub_.publish(target_ps_);
 
   // publish robot pose
-  // current_ps_.header.frame_id = "map";
-  // current_ps_.header.stamp = ros::Time::now();
   current_pose_pub_.publish(current_ps_);
 
   return true;
 }
 
 /**
- * @brief PID controller in linear
+ * @brief APF controller in linear
  * @param base_odometry odometry of the robot, to get velocity
  * @param b_x_d         desired x in body frame
  * @param b_y_d         desired y in body frame
  * @return  linear velocity
  */
-double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double b_x_d, double b_y_d)
+double APFPlanner::LinearAPFController(nav_msgs::Odometry& base_odometry, double v_d)
 {
   double v = std::hypot(base_odometry.twist.twist.linear.x, base_odometry.twist.twist.linear.y);
-  double v_d = std::hypot(b_x_d, b_y_d) / d_t_;
-  if (std::fabs(v_d) > max_v_)
-    v_d = std::copysign(max_v_, v_d);
-
-  double e_v = v_d - v;
-  i_v_ += e_v * d_t_;
-  double d_v = (e_v - e_v_) / d_t_;
-  e_v_ = e_v;
-
-  double v_inc = k_v_p_ * e_v + k_v_i_ * i_v_ + k_v_d_ * d_v;
+  double v_inc = v_d - v;
 
   if (std::fabs(v_inc) > max_v_inc_)
     v_inc = std::copysign(max_v_inc_, v_inc);
@@ -321,13 +330,13 @@ double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double
 }
 
 /**
- * @brief PID controller in angular
+ * @brief APF controller in angular
  * @param base_odometry odometry of the robot, to get velocity
  * @param theta_d       desired theta
  * @param theta         current theta
  * @return  angular velocity
  */
-double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, double theta_d, double theta)
+double APFPlanner::AngularAPFController(nav_msgs::Odometry& base_odometry, double theta_d, double theta)
 {
   double e_theta = theta_d - theta;
   regularizeAngle(e_theta);
@@ -337,12 +346,7 @@ double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, doubl
     w_d = std::copysign(max_w_, w_d);
 
   double w = base_odometry.twist.twist.angular.z;
-  double e_w = w_d - w;
-  i_w_ += e_w * d_t_;
-  double d_w = (e_w - e_w_) / d_t_;
-  e_w_ = e_w;
-
-  double w_inc = k_w_p_ * e_w + k_w_i_ * i_w_ + k_w_d_ * d_w;
+  double w_inc = w_d - w;
 
   if (std::fabs(w_inc) > max_w_inc_)
     w_inc = std::copysign(max_w_inc_, w_inc);
@@ -363,9 +367,65 @@ double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, doubl
  * @param y       global current y
  * @return the distance to the goal
  */
-double PIDPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped& goal_ps, double x, double y)
+double APFPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped& goal_ps, double x, double y)
 {
   return std::hypot(x - goal_ps.pose.position.x, y - goal_ps.pose.position.y);
+}
+
+/**
+   * @brief Get the attractive force of APF
+   * @param ps      global target PoseStamped
+   * @param x       global current x
+   * @param y       global current y
+   * @return the attractive force
+ */
+Eigen::Vector2d APFPlanner::getAttractiveForce(const geometry_msgs::PoseStamped& ps, double x, double y)
+{
+  Eigen::Vector2d attr_force = Eigen::Vector2d(ps.pose.position.x - x, ps.pose.position.y - y);
+  return attr_force / attr_force.norm();  // normalization
+}
+
+/**
+   * @brief Get the repulsive force of APF
+   * @return the repulsive force
+ */
+Eigen::Vector2d APFPlanner::getRepulsiveForce()
+{
+  Eigen::Vector2d rep_force(0.0, 0.0);
+  int mx, my;
+  if (!_worldToMap(0.0, 0.0, mx, my))
+  {
+    ROS_WARN("Failed to convert the robot's coordinates from world map to costmap.");
+    return rep_force;
+  }
+
+  double current_cost = costmap_char_[mx + nx_ * my];
+
+  if (current_cost >= cost_ub_ || current_cost < cost_lb_)
+  {
+    ROS_WARN("The cost of robot's position is out of bound! Are you sure the robot has been properly"
+             " localized and the cost bound is right?");
+    return rep_force;
+  }
+
+  // obtain the distance between the robot and obstacles directly through costmap
+  // mapping from cost_ub_ to distance 0
+  // mapping from cost_lb_ to distance 1  (normalized)
+  double bound_diff = cost_ub_ - cost_lb_;
+  double cost_diff = (cost_ub_ - current_cost) / bound_diff;
+  double k = ( 1.0 - 1.0 / cost_diff ) / (cost_diff * cost_diff);
+  double next_x = costmap_char_[std::min(mx + 1, (int)nx_ - 1) + nx_ * my];
+  double prev_x = costmap_char_[std::max(mx - 1, 0) + nx_ * my];
+  double next_y = costmap_char_[mx + nx_ * std::min(my + 1, (int)ny_ - 1)];
+  double prev_y = costmap_char_[mx + nx_ * std::max(my - 1, 0)];
+  Eigen::Vector2d grad_dist(
+      ( (next_x - prev_x) / (2.0 * bound_diff) ) / cost_diff,
+      ( (next_y - prev_y) / (2.0 * bound_diff) ) / cost_diff
+      );
+
+  rep_force = k * grad_dist;
+
+  return rep_force;
 }
 
 /**
@@ -373,7 +433,7 @@ double PIDPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped& goa
  * @param ps  PoseStamped to calculate
  * @return  roll, pitch and yaw in XYZ order
  */
-std::vector<double> PIDPlanner::getEulerAngles(geometry_msgs::PoseStamped& ps)
+std::vector<double> APFPlanner::getEulerAngles(geometry_msgs::PoseStamped& ps)
 {
   std::vector<double> EulerAngles;
   EulerAngles.resize(3, 0);
@@ -391,7 +451,7 @@ std::vector<double> PIDPlanner::getEulerAngles(geometry_msgs::PoseStamped& ps)
  * @param x     result x
  * @param y     result y
  */
-void PIDPlanner::getTransformedPosition(geometry_msgs::PoseStamped& src, double& x, double& y)
+void APFPlanner::getTransformedPosition(geometry_msgs::PoseStamped& src, double& x, double& y)
 {
   geometry_msgs::PoseStamped dst;
 
@@ -406,8 +466,29 @@ void PIDPlanner::getTransformedPosition(geometry_msgs::PoseStamped& src, double&
  * @brief Regularize angle to [-pi, pi]
  * @param angle the angle (rad) to regularize
  */
-void PIDPlanner::regularizeAngle(double& angle)
+void APFPlanner::regularizeAngle(double& angle)
 {
   angle = angle - 2.0 * M_PI * std::floor((angle + M_PI) / (2.0 * M_PI));
 }
-}  // namespace pid_planner
+
+/**
+ * @brief Tranform from world map(x, y) to costmap(x, y)
+ * @param mx  costmap x
+ * @param my  costmap y
+ * @param wx  world map x
+ * @param wy  world map y
+ * @return true if successfull, else false
+ */
+bool APFPlanner::_worldToMap(double wx, double wy, int& mx, int& my)
+{
+  if (wx < origin_x_ || wy < origin_y_)
+  return false;
+
+  mx = (int) ( (wx - origin_x_) / resolution_ - convert_offset_ );
+  my = (int) ( (wy - origin_y_) / resolution_ - convert_offset_ );
+  if (mx < costmap_->getSizeInCellsX() && my < costmap_->getSizeInCellsY())
+  return true;
+
+  return false;
+}
+}  // namespace apf_planner

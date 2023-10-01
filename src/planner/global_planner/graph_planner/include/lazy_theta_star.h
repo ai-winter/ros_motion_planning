@@ -3,8 +3,8 @@
  * @file: lazy_theta_star.h
  * @breif: Contains the lazy Theta* planner class
  * @author: Wu Maojia, Yang Haodong
- * @update: 2023-8-26
- * @version: 1.1
+ * @update: 2023-10-1
+ * @version: 1.3
  *
  * Copyright (c) 2023， Wu Maojia
  * All rights reserved.
@@ -61,7 +61,6 @@ protected:
   void _setVertex(Node& node);
 
 private:
-  const unsigned char* costs_;                                               // costmap copy
   std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list_;  // closed list
   std::vector<Node> motion_;                                                 // possible motions
 };
