@@ -119,11 +119,9 @@ public:
 
   /**
    * @brief Get the repulsive force of APF
-   * @param x       global current x
-   * @param y       global current y
    * @return the repulsive force
    */
-  Eigen::Vector2d getRepulsiveForce(double x, double y);
+  Eigen::Vector2d getRepulsiveForce();
 
   /**
    * @brief Get the Euler Angles from PoseStamped

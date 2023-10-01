@@ -191,7 +191,7 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   double e_theta;
   Eigen::Vector2d attr_force, rep_force, net_force;
 
-  rep_force = getRepulsiveForce(x_, y_);
+  rep_force = getRepulsiveForce();
 
   while (plan_index_ < global_plan_.size())
   {
@@ -376,11 +376,9 @@ Eigen::Vector2d APFPlanner::getAttractiveForce(const geometry_msgs::PoseStamped&
 
 /**
    * @brief Get the repulsive force of APF
-   * @param x       global current x
-   * @param y       global current y
    * @return the repulsive force
  */
-Eigen::Vector2d APFPlanner::getRepulsiveForce(double x, double y)
+Eigen::Vector2d APFPlanner::getRepulsiveForce()
 {
   Eigen::Vector2d rep_force(0.0, 0.0);
   int mx, my;
