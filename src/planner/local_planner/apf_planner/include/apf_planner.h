@@ -15,8 +15,6 @@
 #ifndef APF_PLANNER_H_
 #define APF_PLANNER_H_
 
-#define LETHAL_COST 253      // lethal cost
-
 #include <ros/ros.h>
 #include <nav_core/base_local_planner.h>
 #include <tf2_ros/buffer.h>
@@ -184,6 +182,8 @@ private:
   int s_window_;     // trajectory smoothing window time
 
   double zeta_, eta_;   // scale factor of attractive and repulsive force
+
+  int cost_ub_, cost_lb_;  // the upper and lower bound of costmap used to calculate repulsive force potential field
 
   std::deque<Eigen::Vector2d> hist_nf_; // historical net forces
 

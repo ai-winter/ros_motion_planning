@@ -90,7 +90,10 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("s_window", s_window_, 5);
 
     nh.param("zeta", zeta_, 1.0);
-    nh.param("eta", eta_, 3000.0);
+    nh.param("eta", eta_, 1.0);
+
+    nh.param("cost_ub", cost_ub_, 253);
+    nh.param("cost_lb", cost_lb_, 0);
 
     nh.param("/move_base/controller_frequency", controller_freqency_, 10.0);
     d_t_ = 1 / controller_freqency_;
@@ -201,6 +204,7 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
     attr_force = getAttractiveForce(target_ps_, x_, y_);
     net_force = zeta_ * attr_force + eta_ * rep_force;
+    ROS_WARN("attr: %lf, rep: %lf", zeta_ * attr_force.norm(), eta_ * rep_force.norm());
 
     // from robot to plan point
     theta_d = atan2(net_force[1], net_force[0]);  // [-pi, pi]
@@ -371,7 +375,7 @@ double APFPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped& goa
 Eigen::Vector2d APFPlanner::getAttractiveForce(const geometry_msgs::PoseStamped& ps, double x, double y)
 {
   Eigen::Vector2d attr_force = Eigen::Vector2d(ps.pose.position.x - x, ps.pose.position.y - y);
-  return attr_force / attr_force.norm();
+  return attr_force / attr_force.norm();  // normalization
 }
 
 /**
@@ -390,22 +394,26 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
 
   double current_cost = costmap_char_[mx + nx_ * my];
 
-  if (current_cost >= LETHAL_COST)
+  if (current_cost >= cost_ub_ || current_cost < cost_lb_)
   {
-    ROS_WARN("The robot's position is abnormal! Are you sure the robot has been properly localized?");
+    ROS_WARN("The cost of robot's position is out of bound! Are you sure the robot has been properly"
+             " localized and the cost bound is right?");
     return rep_force;
   }
 
   // obtain the distance between the robot and obstacles directly through costmap
-  double dist = LETHAL_COST - current_cost;
-  double k = ( 1.0 / (LETHAL_COST * resolution_) - 1.0 / (dist * resolution_) ) / ((dist * resolution_) * (dist * resolution_));
+  // mapping from cost_ub_ to distance 0
+  // mapping from cost_lb_ to distance 1  (normalized)
+  double bound_diff = cost_ub_ - cost_lb_;
+  double cost_diff = (cost_ub_ - current_cost) / bound_diff;
+  double k = ( 1.0 - 1.0 / cost_diff ) / (cost_diff * cost_diff);
   double next_x = costmap_char_[std::min(mx + 1, (int)nx_ - 1) + nx_ * my];
   double prev_x = costmap_char_[std::max(mx - 1, 0) + nx_ * my];
   double next_y = costmap_char_[mx + nx_ * std::min(my + 1, (int)ny_ - 1)];
   double prev_y = costmap_char_[mx + nx_ * std::max(my - 1, 0)];
   Eigen::Vector2d grad_dist(
-      ( (next_x - prev_x) / 2 ) / dist,
-      ( (next_y - prev_y) / 2 ) / dist
+      ( (next_x - prev_x) / (2.0 * bound_diff) ) / cost_diff,
+      ( (next_y - prev_y) / (2.0 * bound_diff) ) / cost_diff
       );
 
   rep_force = k * grad_dist;

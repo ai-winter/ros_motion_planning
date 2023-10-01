@@ -23,4 +23,7 @@ APFPlanner:
   s_window: 5  # trajectory smoothing window time
 
   zeta: 1.0     # scale factor of attractive force
-  eta: 20000.0   # scale factor of repulsive force
+  eta: 10.0   # scale factor of repulsive force
+
+  cost_ub: 253  # the upper bound of costmap used to calculate repulsive force potential field
+  cost_lb: 0    # the lower bound of costmap used to calculate repulsive force potential field
