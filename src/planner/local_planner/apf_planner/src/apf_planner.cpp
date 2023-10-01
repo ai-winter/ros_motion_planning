@@ -73,8 +73,7 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 
     nh.param("convert_offset", convert_offset_, 0.0);
 
-    nh.param("p_window", p_window_, 0.2);
-    nh.param("o_window", o_window_, 1.0);
+    nh.param("p_window", p_window_, 0.5);
 
     nh.param("p_precision", p_precision_, 0.2);
     nh.param("o_precision", o_precision_, 0.5);
@@ -132,7 +131,7 @@ bool APFPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
   global_plan_ = orig_global_plan;
 
   // reset plan parameters
-  plan_index_ = std::min(4, (int)global_plan_.size() - 1);
+  plan_index_ = std::min(1, (int)global_plan_.size() - 1);
 
   if (goal_x_ != global_plan_.back().pose.position.x || goal_y_ != global_plan_.back().pose.position.y)
   {
@@ -178,6 +177,10 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     return false;
   }
 
+  // odometry observation - getting robot velocities in robot frame
+  nav_msgs::Odometry base_odom;
+  odom_helper_->getOdom(base_odom);
+
   // current pose
   geometry_msgs::PoseStamped current_ps_odom;
   costmap_ros_->getRobotPose(current_ps_odom);
@@ -189,10 +192,10 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   y_ = current_ps_.pose.position.y;
   theta_ = tf2::getYaw(current_ps_.pose.orientation);  // [-pi, pi]
 
-  double theta_d, theta_dir, theta_trj, v_inc;
+  double theta_d, theta_dir, theta_trj;
   double b_x_d, b_y_d;  // desired x, y in base frame
   double e_theta;
-  Eigen::Vector2d attr_force, rep_force, net_force;
+  Eigen::Vector2d attr_force, rep_force, net_force, new_v;
 
   rep_force = getRepulsiveForce();
 
@@ -204,10 +207,14 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
     attr_force = getAttractiveForce(target_ps_, x_, y_);
     net_force = zeta_ * attr_force + eta_ * rep_force;
-    ROS_WARN("attr: %lf, rep: %lf", zeta_ * attr_force.norm(), eta_ * rep_force.norm());
 
-    // from robot to plan point
-    theta_d = atan2(net_force[1], net_force[0]);  // [-pi, pi]
+    // set the new_v
+    new_v = Eigen::Vector2d(base_odom.twist.twist.linear.x, base_odom.twist.twist.linear.y);
+    new_v += net_force;
+    new_v /= new_v.norm();
+    new_v *= max_v_;
+
+    theta_d = atan2(new_v[1], new_v[0]);  // [-pi, pi]
     regularizeAngle(theta_d);
 
     tf2::Quaternion q;
@@ -217,20 +224,14 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     e_theta = theta_d - theta_;
     regularizeAngle(e_theta);
 
-    v_inc = net_force.norm() * cos(e_theta);
-
     // transform from map into base_frame
     getTransformedPosition(target_ps_, b_x_d, b_y_d);
 
-    if (std::hypot(b_x_d, b_y_d) > p_window_ || std::fabs(e_theta) > o_window_)
+    if (std::hypot(b_x_d, b_y_d) > p_window_)
       break;
 
     ++plan_index_;
   }
-
-  // odometry observation - getting robot velocities in robot frame
-  nav_msgs::Odometry base_odom;
-  odom_helper_->getOdom(base_odom);
 
   // position reached
   if (getGoalPositionDistance(global_plan_.back(), x_, y_) < p_precision_)
@@ -275,9 +276,13 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     }
     net_force /= hist_nf_.size();
 
-    // reset the smoothed e_theta and v_inc
-    // from robot to plan point
-    theta_d = atan2(net_force[1], net_force[0]);  // [-pi, pi]
+    // reset the smoothed new_v
+    new_v = Eigen::Vector2d(base_odom.twist.twist.linear.x, base_odom.twist.twist.linear.y);
+    new_v += net_force;
+    new_v /= new_v.norm();
+    new_v *= max_v_;
+
+    theta_d = atan2(new_v[1], new_v[0]);  // [-pi, pi]
     regularizeAngle(theta_d);
 
     tf2::Quaternion q;
@@ -287,13 +292,14 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     e_theta = theta_d - theta_;
     regularizeAngle(e_theta);
 
-    v_inc = net_force.norm() * cos(e_theta);
-
-    cmd_vel.linear.x = LinearAPFController(base_odom, v_inc);
+    cmd_vel.linear.x = LinearAPFController(base_odom, new_v.norm());
     cmd_vel.angular.z = AngularAPFController(base_odom, theta_d, theta_);
   }
 
+  // publish next target_ps_ pose
   target_pose_pub_.publish(target_ps_);
+
+  // publish robot pose
   current_pose_pub_.publish(current_ps_);
 
   return true;
@@ -306,9 +312,10 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
  * @param b_y_d         desired y in body frame
  * @return  linear velocity
  */
-double APFPlanner::LinearAPFController(nav_msgs::Odometry& base_odometry, double v_inc)
+double APFPlanner::LinearAPFController(nav_msgs::Odometry& base_odometry, double v_d)
 {
   double v = std::hypot(base_odometry.twist.twist.linear.x, base_odometry.twist.twist.linear.y);
+  double v_inc = v_d - v;
 
   if (std::fabs(v_inc) > max_v_inc_)
     v_inc = std::copysign(max_v_inc_, v_inc);

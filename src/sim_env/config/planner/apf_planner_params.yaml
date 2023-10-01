@@ -2,9 +2,8 @@ APFPlanner:
   # offset of transform from world(x,y) to grid map(x,y)
   convert_offset: 0.0
 
-  # next point distance/turning angle
-  p_window: 0.2
-  o_window: 1.0
+  # next point distance
+  p_window: 0.5
 
   # goal reached tolerance
   p_precision: 0.2
@@ -23,7 +22,7 @@ APFPlanner:
   s_window: 5  # trajectory smoothing window time
 
   zeta: 1.0     # scale factor of attractive force
-  eta: 10.0   # scale factor of repulsive force
+  eta: 1.0   # scale factor of repulsive force
 
   cost_ub: 253  # the upper bound of costmap used to calculate repulsive force potential field
   cost_lb: 0    # the lower bound of costmap used to calculate repulsive force potential field

@@ -136,7 +136,7 @@ private:
 
   double x_, y_, theta_;
 
-  double p_window_, o_window_;        // next point distance/turning angle
+  double p_window_;                   // next point distance
   double p_precision_, o_precision_;  // goal reached tolerance
   double controller_freqency_, d_t_;
 

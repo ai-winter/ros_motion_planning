@@ -82,11 +82,10 @@ public:
   /**
    * @brief APF controller in linear
    * @param base_odometry odometry of the robot, to get velocity
-   * @param b_x_d         desired x in body frame
-   * @param b_y_d         desired y in body frame
+   * @param v_d           desired velocity magnitude
    * @return  linear velocity
    */
-  double LinearAPFController(nav_msgs::Odometry& base_odometry, double v_inc);
+  double LinearAPFController(nav_msgs::Odometry& base_odometry, double v_d);
 
   /**
    * @brief APF controller in angular
@@ -172,7 +171,7 @@ private:
 
   double convert_offset_;  // offset of transform from world(x,y) to grid map(x,y)
 
-  double p_window_, o_window_;        // next point distance/turning angle
+  double p_window_;                   // next point distance
   double p_precision_, o_precision_;  // goal reached tolerance
   double controller_freqency_, d_t_;
 

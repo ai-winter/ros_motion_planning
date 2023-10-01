@@ -1,7 +1,6 @@
 PIDPlanner:
-  # next point distance/turning angle
-  p_window: 0.2
-  o_window: 1.0
+  # next point distance
+  p_window: 0.5
 
   # goal reached tolerance
   p_precision: 0.2

@@ -64,8 +64,7 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
 
-    nh.param("p_window", p_window_, 0.2);
-    nh.param("o_window", o_window_, 1.0);
+    nh.param("p_window", p_window_, 0.5);
 
     nh.param("p_precision", p_precision_, 0.2);
     nh.param("o_precision", o_precision_, 0.5);
@@ -126,7 +125,7 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
   global_plan_ = orig_global_plan;
 
   // reset plan parameters
-  plan_index_ = std::min(4, (int)global_plan_.size() - 1);
+  plan_index_ = std::min(1, (int)global_plan_.size() - 1);
 
   if (goal_x_ != global_plan_.back().pose.position.x || goal_y_ != global_plan_.back().pose.position.y)
   {
@@ -231,12 +230,12 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     e_theta = theta_d - theta_;
     regularizeAngle(e_theta);
 
-    if (std::hypot(b_x_d, b_y_d) > p_window_ || std::fabs(e_theta) > o_window_)
+    if (std::hypot(b_x_d, b_y_d) > p_window_)
       break;
 
     ++plan_index_;
   }
-
+  ROS_WARN("%d %lf", plan_index_, std::hypot(b_x_d, b_y_d));
   // odometry observation - getting robot velocities in robot frame
   nav_msgs::Odometry base_odom;
   odom_helper_->getOdom(base_odom);
