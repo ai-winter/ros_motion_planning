@@ -412,15 +412,15 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
   // mapping from cost_ub_ to distance 0
   // mapping from cost_lb_ to distance 1  (normalized)
   double bound_diff = cost_ub_ - cost_lb_;
-  double cost_diff = (cost_ub_ - current_cost) / bound_diff;
-  double k = ( 1.0 - 1.0 / cost_diff ) / (cost_diff * cost_diff);
+  double dist = (cost_ub_ - current_cost) / bound_diff;
+  double k = ( 1.0 - 1.0 / dist ) / (dist * dist);
   double next_x = costmap_char_[std::min(mx + 1, (int)nx_ - 1) + nx_ * my];
   double prev_x = costmap_char_[std::max(mx - 1, 0) + nx_ * my];
   double next_y = costmap_char_[mx + nx_ * std::min(my + 1, (int)ny_ - 1)];
   double prev_y = costmap_char_[mx + nx_ * std::max(my - 1, 0)];
   Eigen::Vector2d grad_dist(
-      ( (next_x - prev_x) / (2.0 * bound_diff) ) / cost_diff,
-      ( (next_y - prev_y) / (2.0 * bound_diff) ) / cost_diff
+      (next_x - prev_x) / (2.0 * bound_diff),
+      (next_y - prev_y) / (2.0 * bound_diff)
       );
 
   rep_force = k * grad_dist;
