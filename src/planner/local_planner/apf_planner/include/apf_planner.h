@@ -1,16 +1,16 @@
 /***********************************************************
-*
-* @file: apf_planner.h
-* @breif: Contains the Artificial Potential Field (APF) local planner class
-* @author: Wu Maojia, Yang Haodong
-* @update: 2023-10-1
-* @version: 1.0
-*
-* Copyright (c) 2023，Wu Maojia, Yang Haodong
-* All rights reserved.
-* --------------------------------------------------------
-*
-**********************************************************/
+ *
+ * @file: apf_planner.h
+ * @breif: Contains the Artificial Potential Field (APF) local planner class
+ * @author: Wu Maojia, Yang Haodong
+ * @update: 2023-10-1
+ * @version: 1.0
+ *
+ * Copyright (c) 2023，Wu Maojia, Yang Haodong
+ * All rights reserved.
+ * --------------------------------------------------------
+ *
+ **********************************************************/
 
 #ifndef APF_PLANNER_H_
 #define APF_PLANNER_H_
@@ -28,12 +28,14 @@
 
 #include <Eigen/Dense>
 
+#include "local_planner.h"
+
 namespace apf_planner
 {
 /**
  * @brief A class implementing a local planner using the APF
  */
-class APFPlanner : public nav_core::BaseLocalPlanner
+class APFPlanner : public nav_core::BaseLocalPlanner, local_planner::LocalPlanner
 {
 public:
   /**
@@ -90,20 +92,10 @@ public:
   /**
    * @brief APF controller in angular
    * @param base_odometry odometry of the robot, to get velocity
-   * @param theta_d       desired theta
-   * @param theta         current theta
+   * @param e_theta       the error between the current and desired theta
    * @return  angular velocity
    */
-  double AngularAPFController(nav_msgs::Odometry& base_odometry, double theta_d, double theta);
-
-  /**
-   * @brief Get the distance to the goal
-   * @param goal_ps global goal PoseStamped
-   * @param x       global current x
-   * @param y       global current y
-   * @return the distance to the goal
-   */
-  double getGoalPositionDistance(const geometry_msgs::PoseStamped& goal_ps, double x, double y);
+  double AngularAPFController(nav_msgs::Odometry& base_odometry, double e_theta);
 
   /**
    * @brief Get the attractive force of APF
@@ -120,56 +112,19 @@ public:
    */
   Eigen::Vector2d getRepulsiveForce();
 
-  /**
-   * @brief Get the Euler Angles from PoseStamped
-   * @param ps  PoseStamped to calculate
-   * @return  roll, pitch and yaw in XYZ order
-   */
-  std::vector<double> getEulerAngles(geometry_msgs::PoseStamped& ps);
-
-  /**
-   * @brief Transform pose to body frame
-   * @param src   src PoseStamped, the object to transform
-   * @param x     result x
-   * @param y     result y
-   */
-  void getTransformedPosition(geometry_msgs::PoseStamped& src, double& x, double& y);
-
-  /**
-   * @brief Regularize angle to [-pi, pi]
-   * @param angle the angle (rad) to regularize
-   */
-  void regularizeAngle(double& angle);
-
-protected:
-  /**
-   * @brief Tranform from world map(x, y) to costmap(x, y)
-   * @param mx  costmap x
-   * @param my  costmap y
-   * @param wx  world map x
-   * @param wy  world map y
-   * @return true if successfull, else false
-   */
-  bool _worldToMap(double wx, double wy, int& mx, int& my);
 
 private:
   bool initialized_, goal_reached_;
   tf2_ros::Buffer* tf_;
-  costmap_2d::Costmap2DROS* costmap_ros_;     // costmap(ROS wrapper)
-  costmap_2d::Costmap2D* costmap_;            // costmap
-  unsigned char* costmap_char_;               // costmap char map
-
-  unsigned int nx_, ny_;                      // costmap size
-  double origin_x_, origin_y_;                // costmap origin
-  double resolution_;                         // costmap resolution
+  costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
+  costmap_2d::Costmap2D* costmap_;         // costmap
+  unsigned char* costmap_char_;            // costmap char map
 
   int plan_index_;
   std::vector<geometry_msgs::PoseStamped> global_plan_;
   geometry_msgs::PoseStamped target_ps_, current_ps_;
 
   double x_, y_, theta_;
-
-  double convert_offset_;  // offset of transform from world(x,y) to grid map(x,y)
 
   double p_window_;                   // next point distance
   double p_precision_, o_precision_;  // goal reached tolerance
@@ -178,20 +133,19 @@ private:
   double max_v_, min_v_, max_v_inc_;  // linear velocity
   double max_w_, min_w_, max_w_inc_;  // angular velocity
 
-  int s_window_;     // trajectory smoothing window time
+  int s_window_;  // trajectory smoothing window time
 
-  double zeta_, eta_;   // scale factor of attractive and repulsive force
+  double zeta_, eta_;  // scale factor of attractive and repulsive force
 
   int cost_ub_, cost_lb_;  // the upper and lower bound of costmap used to calculate repulsive force potential field
 
-  std::deque<Eigen::Vector2d> hist_nf_; // historical net forces
+  std::deque<Eigen::Vector2d> hist_nf_;  // historical net forces
 
-  std::string base_frame_, map_frame_;
   base_local_planner::OdometryHelperRos* odom_helper_;
   ros::Publisher target_pose_pub_, current_pose_pub_;
 
   double goal_x_, goal_y_;
-  std::vector<double> goal_rpy_;
+  Eigen::Vector3d goal_rpy_;
 };
 };  // namespace apf_planner
 

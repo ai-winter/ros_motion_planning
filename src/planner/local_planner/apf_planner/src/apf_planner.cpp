@@ -1,16 +1,16 @@
 /***********************************************************
-*
-* @file: apf_planner.cpp
-* @breif: Contains the Artificial Potential Field (APF) local planner class
-* @author: Wu Maojia, Yang Haodong
-* @update: 2023-10-1
-* @version: 1.0
-*
-* Copyright (c) 2023，Wu Maojia, Yang Haodong
-* All rights reserved.
-* --------------------------------------------------------
-*
-**********************************************************/
+ *
+ * @file: apf_planner.cpp
+ * @breif: Contains the Artificial Potential Field (APF) local planner class
+ * @author: Wu Maojia, Yang Haodong
+ * @update: 2023-10-2
+ * @version: 1.1
+ *
+ * Copyright (c) 2023，Wu Maojia, Yang Haodong
+ * All rights reserved.
+ * --------------------------------------------------------
+ *
+ **********************************************************/
 
 #include "apf_planner.h"
 #include <pluginlib/class_list_macros.h>
@@ -23,13 +23,7 @@ namespace apf_planner
  * @brief Construct a new APFPlanner object
  */
 APFPlanner::APFPlanner()
-  : initialized_(false)
-  , tf_(nullptr)
-  , costmap_ros_(nullptr)
-  , goal_reached_(false)
-  , plan_index_(0)
-  , base_frame_("base_link")
-  , map_frame_("map")
+  : initialized_(false), tf_(nullptr), costmap_ros_(nullptr), goal_reached_(false), plan_index_(0)
 {
 }
 
@@ -64,10 +58,10 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     costmap_ = costmap_ros_->getCostmap();
     costmap_char_ = costmap_->getCharMap();
 
-    // get costmap properties
-    nx_ = costmap_->getSizeInCellsX(), ny_ = costmap_->getSizeInCellsY();
-    origin_x_ = costmap_->getOriginX(), origin_y_ = costmap_->getOriginY();
-    resolution_ = costmap_->getResolution();
+    // set costmap properties
+    setSize(costmap_->getSizeInCellsX(), costmap_->getSizeInCellsY());
+    setOrigin(costmap_->getOriginX(), costmap_->getOriginY());
+    setResolution(costmap_->getResolution());
 
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
 
@@ -91,8 +85,11 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("zeta", zeta_, 1.0);
     nh.param("eta", eta_, 1.0);
 
-    nh.param("cost_ub", cost_ub_, 253);
+    nh.param("cost_ub", cost_ub_, (int)lethal_cost_);
     nh.param("cost_lb", cost_lb_, 0);
+
+    nh.param("base_frame", base_frame_, base_frame_);
+    nh.param("map_frame", map_frame_, map_frame_);
 
     nh.param("/move_base/controller_frequency", controller_freqency_, 10.0);
     d_t_ = 1 / controller_freqency_;
@@ -106,9 +103,7 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     ROS_INFO("APF planner initialized!");
   }
   else
-  {
     ROS_WARN("APF planner has already been initialized.");
-  }
 }
 
 /**
@@ -132,7 +127,6 @@ bool APFPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
 
   // reset plan parameters
   plan_index_ = std::min(1, (int)global_plan_.size() - 1);
-
   if (goal_x_ != global_plan_.back().pose.position.x || goal_y_ != global_plan_.back().pose.position.y)
   {
     goal_x_ = global_plan_.back().pose.position.x;
@@ -192,40 +186,23 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   y_ = current_ps_.pose.position.y;
   theta_ = tf2::getYaw(current_ps_.pose.orientation);  // [-pi, pi]
 
-  double theta_d, theta_dir, theta_trj;
-  double b_x_d, b_y_d;  // desired x, y in base frame
-  double e_theta;
-  Eigen::Vector2d attr_force, rep_force, net_force, new_v;
-
+  // compute the tatget pose and force at the current step
+  Eigen::Vector2d attr_force, rep_force, net_force;
   rep_force = getRepulsiveForce();
-
   while (plan_index_ < global_plan_.size())
   {
     target_ps_ = global_plan_[plan_index_];
-    double x_d = target_ps_.pose.position.x;
-    double y_d = target_ps_.pose.position.y;
-
     attr_force = getAttractiveForce(target_ps_, x_, y_);
     net_force = zeta_ * attr_force + eta_ * rep_force;
 
-    // set the new_v
-    new_v = Eigen::Vector2d(base_odom.twist.twist.linear.x, base_odom.twist.twist.linear.y);
-    new_v += net_force;
-    new_v /= new_v.norm();
-    new_v *= max_v_;
-
-    theta_d = atan2(new_v[1], new_v[0]);  // [-pi, pi]
-    regularizeAngle(theta_d);
-
-    tf2::Quaternion q;
-    q.setRPY(0, 0, theta_d);
-    tf2::convert(q, target_ps_.pose.orientation);
-
-    e_theta = theta_d - theta_;
-    regularizeAngle(e_theta);
-
     // transform from map into base_frame
-    getTransformedPosition(target_ps_, b_x_d, b_y_d);
+    geometry_msgs::PoseStamped dst;
+    target_ps_.header.stamp = ros::Time(0);
+    tf_->transform(target_ps_, dst, base_frame_);
+
+    // desired x, y in base frame
+    double b_x_d = dst.pose.position.x;
+    double b_y_d = dst.pose.position.y;
 
     if (std::hypot(b_x_d, b_y_d) > p_window_)
       break;
@@ -233,10 +210,35 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     ++plan_index_;
   }
 
+  // smoothing the net force with historical net forces in the smoothing window
+  if (!hist_nf_.empty() && hist_nf_.size() >= s_window_)
+    hist_nf_.pop_front();
+  hist_nf_.push_back(net_force);
+  net_force = Eigen::Vector2d(0.0, 0.0);
+  for (int i = 0; i < hist_nf_.size(); ++i)
+    net_force += hist_nf_[i];
+  net_force /= hist_nf_.size();
+
+  // set the smoothed new_v
+  Eigen::Vector2d new_v = Eigen::Vector2d(base_odom.twist.twist.linear.x, base_odom.twist.twist.linear.y);
+  new_v += net_force;
+  new_v /= new_v.norm();
+  new_v *= max_v_;
+
+  // set the desired angle and the angle error
+  double theta_d = atan2(new_v[1], new_v[0]);  // [-pi, pi]
+  regularizeAngle(theta_d);
+  tf2::Quaternion q;
+  q.setRPY(0, 0, theta_d);
+  tf2::convert(q, target_ps_.pose.orientation);
+  double e_theta = theta_d - theta_;
+  regularizeAngle(e_theta);
+
   // position reached
-  if (getGoalPositionDistance(global_plan_.back(), x_, y_) < p_precision_)
+  if (dist(Eigen::Vector2d(global_plan_.back().pose.position.x, global_plan_.back().pose.position.y),
+           Eigen::Vector2d(x_, y_)) < p_precision_)
   {
-    e_theta = goal_rpy_[2] - theta_;
+    e_theta = goal_rpy_.z() - theta_;
     regularizeAngle(e_theta);
 
     // orientation reached
@@ -244,56 +246,26 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     {
       cmd_vel.linear.x = 0.0;
       cmd_vel.angular.z = 0.0;
-
       goal_reached_ = true;
     }
     // orientation not reached
     else
     {
       cmd_vel.linear.x = 0.0;
-      cmd_vel.angular.z = AngularAPFController(base_odom, goal_rpy_[2], theta_);
+      cmd_vel.angular.z = AngularAPFController(base_odom, e_theta);
     }
   }
   // large angle, turn first
   else if (std::fabs(e_theta) > M_PI_2)
   {
     cmd_vel.linear.x = 0.0;
-    cmd_vel.angular.z = AngularAPFController(base_odom, theta_d, theta_);
+    cmd_vel.angular.z = AngularAPFController(base_odom, e_theta);
   }
   // posistion not reached
   else
   {
-    // smoothing the net force with historical net forces in the smoothing window
-    if (!hist_nf_.empty() && hist_nf_.size() >= s_window_)
-    {
-      hist_nf_.pop_front();
-    }
-    hist_nf_.push_back(net_force);
-    net_force = Eigen::Vector2d(0.0, 0.0);
-    for (int i = 0; i < hist_nf_.size(); ++i)
-    {
-      net_force += hist_nf_[i];
-    }
-    net_force /= hist_nf_.size();
-
-    // reset the smoothed new_v
-    new_v = Eigen::Vector2d(base_odom.twist.twist.linear.x, base_odom.twist.twist.linear.y);
-    new_v += net_force;
-    new_v /= new_v.norm();
-    new_v *= max_v_;
-
-    theta_d = atan2(new_v[1], new_v[0]);  // [-pi, pi]
-    regularizeAngle(theta_d);
-
-    tf2::Quaternion q;
-    q.setRPY(0, 0, theta_d);
-    tf2::convert(q, target_ps_.pose.orientation);
-
-    e_theta = theta_d - theta_;
-    regularizeAngle(e_theta);
-
     cmd_vel.linear.x = LinearAPFController(base_odom, new_v.norm());
-    cmd_vel.angular.z = AngularAPFController(base_odom, theta_d, theta_);
+    cmd_vel.angular.z = AngularAPFController(base_odom, e_theta);
   }
 
   // publish next target_ps_ pose
@@ -332,13 +304,11 @@ double APFPlanner::LinearAPFController(nav_msgs::Odometry& base_odometry, double
 /**
  * @brief APF controller in angular
  * @param base_odometry odometry of the robot, to get velocity
- * @param theta_d       desired theta
- * @param theta         current theta
+ * @param e_theta       the error between the current and desired theta
  * @return  angular velocity
  */
-double APFPlanner::AngularAPFController(nav_msgs::Odometry& base_odometry, double theta_d, double theta)
+double APFPlanner::AngularAPFController(nav_msgs::Odometry& base_odometry, double e_theta)
 {
-  double e_theta = theta_d - theta;
   regularizeAngle(e_theta);
 
   double w_d = e_theta / d_t_;
@@ -361,23 +331,11 @@ double APFPlanner::AngularAPFController(nav_msgs::Odometry& base_odometry, doubl
 }
 
 /**
- * @brief Get the distance to the goal
- * @param goal_ps global goal PoseStamped
+ * @brief Get the attractive force of APF
+ * @param ps      global target PoseStamped
  * @param x       global current x
  * @param y       global current y
- * @return the distance to the goal
- */
-double APFPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped& goal_ps, double x, double y)
-{
-  return std::hypot(x - goal_ps.pose.position.x, y - goal_ps.pose.position.y);
-}
-
-/**
-   * @brief Get the attractive force of APF
-   * @param ps      global target PoseStamped
-   * @param x       global current x
-   * @param y       global current y
-   * @return the attractive force
+ * @return the attractive force
  */
 Eigen::Vector2d APFPlanner::getAttractiveForce(const geometry_msgs::PoseStamped& ps, double x, double y)
 {
@@ -386,14 +344,14 @@ Eigen::Vector2d APFPlanner::getAttractiveForce(const geometry_msgs::PoseStamped&
 }
 
 /**
-   * @brief Get the repulsive force of APF
-   * @return the repulsive force
+ * @brief Get the repulsive force of APF
+ * @return the repulsive force
  */
 Eigen::Vector2d APFPlanner::getRepulsiveForce()
 {
   Eigen::Vector2d rep_force(0.0, 0.0);
   int mx, my;
-  if (!_worldToMap(0.0, 0.0, mx, my))
+  if (!worldToMap(0.0, 0.0, mx, my))
   {
     ROS_WARN("Failed to convert the robot's coordinates from world map to costmap.");
     return rep_force;
@@ -403,8 +361,9 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
 
   if (current_cost >= cost_ub_ || current_cost < cost_lb_)
   {
-    ROS_WARN("The cost of robot's position is out of bound! Are you sure the robot has been properly"
-             " localized and the cost bound is right?");
+    ROS_WARN(
+        "The cost of robot's position is out of bound! Are you sure the robot has been properly"
+        " localized and the cost bound is right?");
     return rep_force;
   }
 
@@ -413,82 +372,15 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
   // mapping from cost_lb_ to distance 1  (normalized)
   double bound_diff = cost_ub_ - cost_lb_;
   double dist = (cost_ub_ - current_cost) / bound_diff;
-  double k = ( 1.0 - 1.0 / dist ) / (dist * dist);
+  double k = (1.0 - 1.0 / dist) / (dist * dist);
   double next_x = costmap_char_[std::min(mx + 1, (int)nx_ - 1) + nx_ * my];
   double prev_x = costmap_char_[std::max(mx - 1, 0) + nx_ * my];
   double next_y = costmap_char_[mx + nx_ * std::min(my + 1, (int)ny_ - 1)];
   double prev_y = costmap_char_[mx + nx_ * std::max(my - 1, 0)];
-  Eigen::Vector2d grad_dist(
-      (next_x - prev_x) / (2.0 * bound_diff),
-      (next_y - prev_y) / (2.0 * bound_diff)
-      );
+  Eigen::Vector2d grad_dist((next_x - prev_x) / (2.0 * bound_diff), (next_y - prev_y) / (2.0 * bound_diff));
 
   rep_force = k * grad_dist;
 
   return rep_force;
-}
-
-/**
- * @brief Get the Euler Angles from PoseStamped
- * @param ps  PoseStamped to calculate
- * @return  roll, pitch and yaw in XYZ order
- */
-std::vector<double> APFPlanner::getEulerAngles(geometry_msgs::PoseStamped& ps)
-{
-  std::vector<double> EulerAngles;
-  EulerAngles.resize(3, 0);
-
-  tf2::Quaternion q(ps.pose.orientation.x, ps.pose.orientation.y, ps.pose.orientation.z, ps.pose.orientation.w);
-  tf2::Matrix3x3 m(q);
-
-  m.getRPY(EulerAngles[0], EulerAngles[1], EulerAngles[2]);
-  return EulerAngles;
-}
-
-/**
- * @brief Transform pose to body frame
- * @param src   src PoseStamped, the object to transform
- * @param x     result x
- * @param y     result y
- */
-void APFPlanner::getTransformedPosition(geometry_msgs::PoseStamped& src, double& x, double& y)
-{
-  geometry_msgs::PoseStamped dst;
-
-  src.header.stamp = ros::Time(0);
-  tf_->transform(src, dst, base_frame_);
-
-  x = dst.pose.position.x;
-  y = dst.pose.position.y;
-}
-
-/**
- * @brief Regularize angle to [-pi, pi]
- * @param angle the angle (rad) to regularize
- */
-void APFPlanner::regularizeAngle(double& angle)
-{
-  angle = angle - 2.0 * M_PI * std::floor((angle + M_PI) / (2.0 * M_PI));
-}
-
-/**
- * @brief Tranform from world map(x, y) to costmap(x, y)
- * @param mx  costmap x
- * @param my  costmap y
- * @param wx  world map x
- * @param wy  world map y
- * @return true if successfull, else false
- */
-bool APFPlanner::_worldToMap(double wx, double wy, int& mx, int& my)
-{
-  if (wx < origin_x_ || wy < origin_y_)
-  return false;
-
-  mx = (int) ( (wx - origin_x_) / resolution_ - convert_offset_ );
-  my = (int) ( (wy - origin_y_) / resolution_ - convert_offset_ );
-  if (mx < costmap_->getSizeInCellsX() && my < costmap_->getSizeInCellsY())
-  return true;
-
-  return false;
 }
 }  // namespace apf_planner

@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   tf2_ros
   base_local_planner
+  local_planner
 )
 
 # uncomment the following 4 lines to use the Eigen library
@@ -36,4 +37,5 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  local_planner
 )
