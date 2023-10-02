@@ -55,13 +55,13 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     initialized_ = true;
     tf_ = tf;
     costmap_ros_ = costmap_ros;
-    costmap_ = costmap_ros_->getCostmap();
-    costmap_char_ = costmap_->getCharMap();
+    costmap_2d::Costmap2D* costmap = costmap_ros_->getCostmap();
+    local_costmap_ = costmap->getCharMap();
 
     // set costmap properties
-    setSize(costmap_->getSizeInCellsX(), costmap_->getSizeInCellsY());
-    setOrigin(costmap_->getOriginX(), costmap_->getOriginY());
-    setResolution(costmap_->getResolution());
+    setSize(costmap->getSizeInCellsX(), costmap->getSizeInCellsY());
+    setOrigin(costmap->getOriginX(), costmap->getOriginY());
+    setResolution(costmap->getResolution());
 
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
 
@@ -91,8 +91,9 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("base_frame", base_frame_, base_frame_);
     nh.param("map_frame", map_frame_, map_frame_);
 
-    nh.param("/move_base/controller_frequency", controller_freqency_, 10.0);
-    d_t_ = 1 / controller_freqency_;
+    double controller_freqency;
+    nh.param("/move_base/controller_frequency", controller_freqency, 10.0);
+    d_t_ = 1 / controller_freqency;
 
     hist_nf_.clear();
 
@@ -182,9 +183,8 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   // transform into map
   tf_->transform(current_ps_odom, current_ps_, map_frame_);
 
-  x_ = current_ps_.pose.position.x;
-  y_ = current_ps_.pose.position.y;
-  theta_ = tf2::getYaw(current_ps_.pose.orientation);  // [-pi, pi]
+  // current angle
+  double theta = tf2::getYaw(current_ps_.pose.orientation);
 
   // compute the tatget pose and force at the current step
   Eigen::Vector2d attr_force, rep_force, net_force;
@@ -192,7 +192,7 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   while (plan_index_ < global_plan_.size())
   {
     target_ps_ = global_plan_[plan_index_];
-    attr_force = getAttractiveForce(target_ps_, x_, y_);
+    attr_force = getAttractiveForce(target_ps_);
     net_force = zeta_ * attr_force + eta_ * rep_force;
 
     // transform from map into base_frame
@@ -231,14 +231,14 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   tf2::Quaternion q;
   q.setRPY(0, 0, theta_d);
   tf2::convert(q, target_ps_.pose.orientation);
-  double e_theta = theta_d - theta_;
+  double e_theta = theta_d - theta;
   regularizeAngle(e_theta);
 
   // position reached
   if (dist(Eigen::Vector2d(global_plan_.back().pose.position.x, global_plan_.back().pose.position.y),
-           Eigen::Vector2d(x_, y_)) < p_precision_)
+           Eigen::Vector2d(current_ps_.pose.position.x, current_ps_.pose.position.y)) < p_precision_)
   {
-    e_theta = goal_rpy_.z() - theta_;
+    e_theta = goal_rpy_.z() - theta;
     regularizeAngle(e_theta);
 
     // orientation reached
@@ -333,12 +333,12 @@ double APFPlanner::AngularAPFController(nav_msgs::Odometry& base_odometry, doubl
 /**
  * @brief Get the attractive force of APF
  * @param ps      global target PoseStamped
- * @param x       global current x
- * @param y       global current y
  * @return the attractive force
  */
-Eigen::Vector2d APFPlanner::getAttractiveForce(const geometry_msgs::PoseStamped& ps, double x, double y)
+Eigen::Vector2d APFPlanner::getAttractiveForce(const geometry_msgs::PoseStamped& ps)
 {
+  double x = current_ps_.pose.position.x;
+  double y = current_ps_.pose.position.y;
   Eigen::Vector2d attr_force = Eigen::Vector2d(ps.pose.position.x - x, ps.pose.position.y - y);
   return attr_force / attr_force.norm();  // normalization
 }
@@ -357,7 +357,7 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
     return rep_force;
   }
 
-  double current_cost = costmap_char_[mx + nx_ * my];
+  double current_cost = local_costmap_[mx + nx_ * my];
 
   if (current_cost >= cost_ub_ || current_cost < cost_lb_)
   {
@@ -373,10 +373,10 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
   double bound_diff = cost_ub_ - cost_lb_;
   double dist = (cost_ub_ - current_cost) / bound_diff;
   double k = (1.0 - 1.0 / dist) / (dist * dist);
-  double next_x = costmap_char_[std::min(mx + 1, (int)nx_ - 1) + nx_ * my];
-  double prev_x = costmap_char_[std::max(mx - 1, 0) + nx_ * my];
-  double next_y = costmap_char_[mx + nx_ * std::min(my + 1, (int)ny_ - 1)];
-  double prev_y = costmap_char_[mx + nx_ * std::max(my - 1, 0)];
+  double next_x = local_costmap_[std::min(mx + 1, (int)nx_ - 1) + nx_ * my];
+  double prev_x = local_costmap_[std::max(mx - 1, 0) + nx_ * my];
+  double next_y = local_costmap_[mx + nx_ * std::min(my + 1, (int)ny_ - 1)];
+  double prev_y = local_costmap_[mx + nx_ * std::max(my - 1, 0)];
   Eigen::Vector2d grad_dist((next_x - prev_x) / (2.0 * bound_diff), (next_y - prev_y) / (2.0 * bound_diff));
 
   rep_force = k * grad_dist;

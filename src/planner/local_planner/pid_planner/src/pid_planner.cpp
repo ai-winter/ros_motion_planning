@@ -1,19 +1,19 @@
 /***********************************************************
-*
-* @file: pid_planner.cpp
-* @breif: Contains the Proportional–Integral–Derivative (PID) controller local planner class
-* @author: Yang Haodong, Wu Maojia
-* @update: 2023-10-1
-* @version: 1.1
-*
-* Copyright (c) 2023，Yang Haodong
-* All rights reserved.
-* --------------------------------------------------------
-*
-**********************************************************/
+ *
+ * @file: pid_planner.cpp
+ * @breif: Contains the Proportional–Integral–Derivative (PID) controller local planner class
+ * @author: Yang Haodong, Guo Zhanyu, Wu Maojia
+ * @update: 2023-10-1
+ * @version: 1.1
+ *
+ * Copyright (c) 2023，Yang Haodong
+ * All rights reserved.
+ * --------------------------------------------------------
+ *
+ **********************************************************/
+#include <pluginlib/class_list_macros.h>
 
 #include "pid_planner.h"
-#include <pluginlib/class_list_macros.h>
 
 PLUGINLIB_EXPORT_CLASS(pid_planner::PIDPlanner, nav_core::BaseLocalPlanner)
 
@@ -23,13 +23,7 @@ namespace pid_planner
  * @brief Construct a new PIDPlanner object
  */
 PIDPlanner::PIDPlanner()
-  : initialized_(false)
-  , tf_(nullptr)
-  , costmap_ros_(nullptr)
-  , goal_reached_(false)
-  , plan_index_(0)
-  , base_frame_("base_link")
-  , map_frame_("map")
+  : initialized_(false), tf_(nullptr), costmap_ros_(nullptr), goal_reached_(false), plan_index_(0)
 {
 }
 
@@ -87,8 +81,9 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 
     nh.param("k_theta", k_theta_, 0.5);
 
-    nh.param("/move_base/controller_frequency", controller_freqency_, 10.0);
-    d_t_ = 1 / controller_freqency_;
+    double controller_freqency;
+    nh.param("/move_base/controller_frequency", controller_freqency, 10.0);
+    d_t_ = 1 / controller_freqency;
 
     e_v_ = i_v_ = 0.0;
     e_w_ = i_w_ = 0.0;
@@ -100,9 +95,7 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     ROS_INFO("PID planner initialized!");
   }
   else
-  {
     ROS_WARN("PID planner has already been initialized.");
-  }
 }
 
 /**
@@ -181,9 +174,8 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   // transform into map
   tf_->transform(current_ps_odom, current_ps_, map_frame_);
 
-  x_ = current_ps_.pose.position.x;
-  y_ = current_ps_.pose.position.y;
-  theta_ = tf2::getYaw(current_ps_.pose.orientation);  // [-pi, pi]
+  // current angle
+  double theta = tf2::getYaw(current_ps_.pose.orientation);  // [-pi, pi]
 
   double theta_d, theta_dir, theta_trj;
   double b_x_d, b_y_d;  // desired x, y in base frame
@@ -196,7 +188,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     double y_d = target_ps_.pose.position.y;
 
     // from robot to plan point
-    theta_dir = atan2((y_d - y_), (x_d - x_));  // [-pi, pi]
+    theta_dir = atan2((y_d - current_ps_.pose.position.y), (x_d - current_ps_.pose.position.x));
 
     int next_plan_index = plan_index_ + 1;
     if (next_plan_index < global_plan_.size())
@@ -225,9 +217,13 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     tf2::convert(q, target_ps_.pose.orientation);
 
     // transform from map into base_frame
-    getTransformedPosition(target_ps_, b_x_d, b_y_d);
+    geometry_msgs::PoseStamped dst;
+    target_ps_.header.stamp = ros::Time(0);
+    tf_->transform(target_ps_, dst, base_frame_);
+    b_x_d = dst.pose.position.x;
+    b_y_d = dst.pose.position.y;
 
-    e_theta = theta_d - theta_;
+    e_theta = theta_d - theta;
     regularizeAngle(e_theta);
 
     if (std::hypot(b_x_d, b_y_d) > p_window_)
@@ -235,15 +231,16 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
     ++plan_index_;
   }
-  ROS_WARN("%d %lf", plan_index_, std::hypot(b_x_d, b_y_d));
+
   // odometry observation - getting robot velocities in robot frame
   nav_msgs::Odometry base_odom;
   odom_helper_->getOdom(base_odom);
 
   // position reached
-  if (getGoalPositionDistance(global_plan_.back(), x_, y_) < p_precision_)
+  if (dist(Eigen::Vector2d(global_plan_.back().pose.position.x, global_plan_.back().pose.position.y),
+           Eigen::Vector2d(current_ps_.pose.position.x, current_ps_.pose.position.y)) < p_precision_)
   {
-    e_theta = goal_rpy_[2] - theta_;
+    e_theta = goal_rpy_[2] - theta;
     regularizeAngle(e_theta);
 
     // orientation reached
@@ -258,20 +255,20 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     else
     {
       cmd_vel.linear.x = 0.0;
-      cmd_vel.angular.z = AngularPIDController(base_odom, goal_rpy_[2], theta_);
+      cmd_vel.angular.z = AngularPIDController(base_odom, e_theta);
     }
   }
   // large angle, turn first
   else if (std::fabs(e_theta) > M_PI_2)
   {
     cmd_vel.linear.x = 0.0;
-    cmd_vel.angular.z = AngularPIDController(base_odom, theta_d, theta_);
+    cmd_vel.angular.z = AngularPIDController(base_odom, e_theta);
   }
   // posistion not reached
   else
   {
     cmd_vel.linear.x = LinearPIDController(base_odom, b_x_d, b_y_d);
-    cmd_vel.angular.z = AngularPIDController(base_odom, theta_d, theta_);
+    cmd_vel.angular.z = AngularPIDController(base_odom, e_theta);
   }
 
   // publish next target_ps_ pose
@@ -323,13 +320,11 @@ double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double
 /**
  * @brief PID controller in angular
  * @param base_odometry odometry of the robot, to get velocity
- * @param theta_d       desired theta
- * @param theta         current theta
+ * @param e_theta       the error between the current and desired theta
  * @return  angular velocity
  */
-double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, double theta_d, double theta)
+double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, double e_theta)
 {
-  double e_theta = theta_d - theta;
   regularizeAngle(e_theta);
 
   double w_d = e_theta / d_t_;
@@ -356,58 +351,4 @@ double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, doubl
   return w_cmd;
 }
 
-/**
- * @brief Get the distance to the goal
- * @param goal_ps global goal PoseStamped
- * @param x       global current x
- * @param y       global current y
- * @return the distance to the goal
- */
-double PIDPlanner::getGoalPositionDistance(const geometry_msgs::PoseStamped& goal_ps, double x, double y)
-{
-  return std::hypot(x - goal_ps.pose.position.x, y - goal_ps.pose.position.y);
-}
-
-/**
- * @brief Get the Euler Angles from PoseStamped
- * @param ps  PoseStamped to calculate
- * @return  roll, pitch and yaw in XYZ order
- */
-std::vector<double> PIDPlanner::getEulerAngles(geometry_msgs::PoseStamped& ps)
-{
-  std::vector<double> EulerAngles;
-  EulerAngles.resize(3, 0);
-
-  tf2::Quaternion q(ps.pose.orientation.x, ps.pose.orientation.y, ps.pose.orientation.z, ps.pose.orientation.w);
-  tf2::Matrix3x3 m(q);
-
-  m.getRPY(EulerAngles[0], EulerAngles[1], EulerAngles[2]);
-  return EulerAngles;
-}
-
-/**
- * @brief Transform pose to body frame
- * @param src   src PoseStamped, the object to transform
- * @param x     result x
- * @param y     result y
- */
-void PIDPlanner::getTransformedPosition(geometry_msgs::PoseStamped& src, double& x, double& y)
-{
-  geometry_msgs::PoseStamped dst;
-
-  src.header.stamp = ros::Time(0);
-  tf_->transform(src, dst, base_frame_);
-
-  x = dst.pose.position.x;
-  y = dst.pose.position.y;
-}
-
-/**
- * @brief Regularize angle to [-pi, pi]
- * @param angle the angle (rad) to regularize
- */
-void PIDPlanner::regularizeAngle(double& angle)
-{
-  angle = angle - 2.0 * M_PI * std::floor((angle + M_PI) / (2.0 * M_PI));
-}
 }  // namespace pid_planner

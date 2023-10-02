@@ -1,16 +1,16 @@
 /***********************************************************
-*
-* @file: pid_planner.h
-* @breif: Contains the Proportional–Integral–Derivative (PID) controller local planner class
-* @author: Yang Haodong, Wu Maojia
-* @update: 2023-10-1
-* @version: 1.1
-*
-* Copyright (c) 2023，Yang Haodong
-* All rights reserved.
-* --------------------------------------------------------
-*
-**********************************************************/
+ *
+ * @file: pid_planner.h
+ * @breif: Contains the Proportional–Integral–Derivative (PID) controller local planner class
+ * @author: Yang Haodong, Guo Zhanyu, Wu Maojia
+ * @update: 2023-10-1
+ * @version: 1.1
+ *
+ * Copyright (c) 2023，Yang Haodong
+ * All rights reserved.
+ * --------------------------------------------------------
+ *
+ **********************************************************/
 
 #ifndef PID_PLANNER_H_
 #define PID_PLANNER_H_
@@ -25,13 +25,16 @@
 #include <nav_msgs/Odometry.h>
 #include <base_local_planner/odometry_helper_ros.h>
 #include <tf2/utils.h>
+#include <Eigen/Dense>
+
+#include "local_planner.h"
 
 namespace pid_planner
 {
 /**
  * @brief A class implementing a local planner using the PID
  */
-class PIDPlanner : public nav_core::BaseLocalPlanner
+class PIDPlanner : public nav_core::BaseLocalPlanner, local_planner::LocalPlanner
 {
 public:
   /**
@@ -89,41 +92,10 @@ public:
   /**
    * @brief PID controller in angular
    * @param base_odometry odometry of the robot, to get velocity
-   * @param theta_d       desired theta
-   * @param theta         current theta
+   * @param e_theta       the error between the current and desired theta
    * @return  angular velocity
    */
-  double AngularPIDController(nav_msgs::Odometry& base_odometry, double theta_d, double theta);
-
-  /**
-   * @brief Get the distance to the goal
-   * @param goal_ps global goal PoseStamped
-   * @param x       global current x
-   * @param y       global current y
-   * @return the distance to the goal
-   */
-  double getGoalPositionDistance(const geometry_msgs::PoseStamped& goal_ps, double x, double y);
-
-  /**
-   * @brief Get the Euler Angles from PoseStamped
-   * @param ps  PoseStamped to calculate
-   * @return  roll, pitch and yaw in XYZ order
-   */
-  std::vector<double> getEulerAngles(geometry_msgs::PoseStamped& ps);
-
-  /**
-   * @brief Transform pose to body frame
-   * @param src   src PoseStamped, the object to transform
-   * @param x     result x
-   * @param y     result y
-   */
-  void getTransformedPosition(geometry_msgs::PoseStamped& src, double& x, double& y);
-
-  /**
-   * @brief Regularize angle to [-pi, pi]
-   * @param angle the angle (rad) to regularize
-   */
-  void regularizeAngle(double& angle);
+  double AngularPIDController(nav_msgs::Odometry& base_odometry, double e_theta);
 
 private:
   bool initialized_, goal_reached_;
@@ -134,11 +106,9 @@ private:
   std::vector<geometry_msgs::PoseStamped> global_plan_;
   geometry_msgs::PoseStamped target_ps_, current_ps_;
 
-  double x_, y_, theta_;
-
   double p_window_;                   // next point distance
   double p_precision_, o_precision_;  // goal reached tolerance
-  double controller_freqency_, d_t_;
+  double d_t_;                        // control time step
 
   double max_v_, min_v_, max_v_inc_;  // linear velocity
   double max_w_, min_w_, max_w_inc_;  // angular velocity
@@ -150,12 +120,11 @@ private:
   double e_v_, e_w_;
   double i_v_, i_w_;
 
-  std::string base_frame_, map_frame_;
   base_local_planner::OdometryHelperRos* odom_helper_;
   ros::Publisher target_pose_pub_, current_pose_pub_;
 
   double goal_x_, goal_y_;
-  std::vector<double> goal_rpy_;
+  Eigen::Vector3d goal_rpy_;
 };
 };  // namespace pid_planner
 

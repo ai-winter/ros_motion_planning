@@ -100,11 +100,9 @@ public:
   /**
    * @brief Get the attractive force of APF
    * @param ps      global target PoseStamped
-   * @param x       global current x
-   * @param y       global current y
    * @return the attractive force
    */
-  Eigen::Vector2d getAttractiveForce(const geometry_msgs::PoseStamped& ps, double x, double y);
+  Eigen::Vector2d getAttractiveForce(const geometry_msgs::PoseStamped& ps);
 
   /**
    * @brief Get the repulsive force of APF
@@ -112,23 +110,19 @@ public:
    */
   Eigen::Vector2d getRepulsiveForce();
 
-
 private:
   bool initialized_, goal_reached_;
   tf2_ros::Buffer* tf_;
   costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
-  costmap_2d::Costmap2D* costmap_;         // costmap
-  unsigned char* costmap_char_;            // costmap char map
+  unsigned char* local_costmap_;           // costmap char map
 
   int plan_index_;
   std::vector<geometry_msgs::PoseStamped> global_plan_;
   geometry_msgs::PoseStamped target_ps_, current_ps_;
 
-  double x_, y_, theta_;
-
   double p_window_;                   // next point distance
   double p_precision_, o_precision_;  // goal reached tolerance
-  double controller_freqency_, d_t_;
+  double d_t_;                        // control time step
 
   double max_v_, min_v_, max_v_inc_;  // linear velocity
   double max_w_, min_w_, max_w_inc_;  // angular velocity
