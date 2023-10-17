@@ -3,8 +3,8 @@
  * @file: apf_planner.cpp
  * @breif: Contains the Artificial Potential Field (APF) local planner class
  * @author: Wu Maojia, Yang Haodong
- * @update: 2023-10-2
- * @version: 1.1
+ * @update: 2023-10-17
+ * @version: 1.2
  *
  * Copyright (c) 2023，Wu Maojia, Yang Haodong
  * All rights reserved.
@@ -88,6 +88,8 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("cost_ub", cost_ub_, (int)lethal_cost_);
     nh.param("cost_lb", cost_lb_, 0);
 
+    nh.param("inflation_radius", inflation_radius_, 1.0);
+
     nh.param("base_frame", base_frame_, base_frame_);
     nh.param("map_frame", map_frame_, map_frame_);
 
@@ -100,6 +102,9 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     odom_helper_ = new base_local_planner::OdometryHelperRos("/odom");
     target_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/target_pose", 10);
     current_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
+    potential_map_pub_ = nh.advertise<nav_msgs::OccupancyGrid>("/potential_map", 10);
+    costmap_sub_ = nh.subscribe<nav_msgs::OccupancyGrid>(
+        "/move_base/local_costmap/costmap", 10, &APFPlanner::publishPotentialMap, this);
 
     ROS_INFO("APF planner initialized!");
   }
@@ -382,5 +387,54 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
   rep_force = k * grad_dist;
 
   return rep_force;
+}
+
+/**
+   * @brief Callback function of costmap_sub_ to publish /potential_map topic
+   * @param msg the message received from topic /move_base/local_costmap/costmap
+ */
+void APFPlanner::publishPotentialMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
+{
+  int nx = potential_map_.info.width, ny = potential_map_.info.height;
+  double attr_scale = zeta_ / (zeta_ + eta_), rep_scale = eta_ / (zeta_ + eta_);  // the two potential scales sum up to 1
+  double current_cost, dist_to_target, dist_to_obstacles, inflation_radius, scaled_attr, scaled_rep;
+  double bound_diff = cost_ub_ - cost_lb_;
+  int tx, ty; // costmap coordinates of target point
+
+  // calculate costmap coordinates from world coordinates (maybe out of bound)
+  tx = (int)((target_ps_.pose.position.x - current_ps_.pose.position.x - origin_x_) / resolution_ - convert_offset_);
+  ty = (int)((target_ps_.pose.position.y - current_ps_.pose.position.y - origin_y_) / resolution_ - convert_offset_);
+
+  // calculate distance from the robot to target (on the scale of costmap)
+  dist_to_target = std::hypot(
+      tx - (int)((- origin_x_) / resolution_ - convert_offset_),
+      ty - (int)((- origin_y_) / resolution_ - convert_offset_)
+      );
+
+  potential_map_ = *msg;
+  for (int y = 0; y < ny; ++y)
+  {
+    for (int x = 0; x < nx; ++x)
+    {
+      // temp variables
+      current_cost = potential_map_.data[x + nx * y];     // cost of the cell
+      dist_to_obstacles = (cost_ub_ - current_cost) / bound_diff; // distance from cell to obstacles
+                                                                  // (normalized scale, i.e., within the range of [0,1])
+      inflation_radius = inflation_radius_ / resolution_; // the costmap inflation radius
+                                                          // of obstacles (on the scale of costmap)
+
+      // to calculate the two scaled force potential fields
+      scaled_attr = attr_scale *
+                    ((std::hypot(tx - x, ty - y) - dist_to_target) / inflation_radius / 2.0 + 0.5);
+      scaled_rep = rep_scale * std::pow(1.0 / dist_to_obstacles - 1.0, 2);
+
+      // sum two potential fields to calculate the net potential field
+      potential_map_.data[x + nx * y] =
+          std::max(cost_lb_, std::min(cost_ub_ - 1, (int)((scaled_attr + scaled_rep) * bound_diff)));
+    }
+  }
+
+  // publish potential map
+  potential_map_pub_.publish(potential_map_);
 }
 }  // namespace apf_planner
