@@ -395,7 +395,6 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
  */
 void APFPlanner::publishPotentialMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
-  int nx = potential_map_.info.width, ny = potential_map_.info.height;
   double attr_scale = zeta_ / (zeta_ + eta_), rep_scale = eta_ / (zeta_ + eta_);  // the two potential scales sum up to 1
   double current_cost, dist_to_target, dist_to_obstacles, inflation_radius, scaled_attr, scaled_rep;
   double bound_diff = cost_ub_ - cost_lb_;
@@ -411,17 +410,18 @@ void APFPlanner::publishPotentialMap(const nav_msgs::OccupancyGrid::ConstPtr& ms
       ty - (int)((- origin_y_) / resolution_ - convert_offset_)
       );
 
+  // the costmap inflation radius of obstacles (on the scale of costmap)
+  inflation_radius = inflation_radius_ / resolution_;
+
   potential_map_ = *msg;
-  for (int y = 0; y < ny; ++y)
+  for (int y = 0; y < ny_; ++y)
   {
-    for (int x = 0; x < nx; ++x)
+    for (int x = 0; x < nx_; ++x)
     {
       // temp variables
-      current_cost = potential_map_.data[x + nx * y];     // cost of the cell
+      current_cost = local_costmap_[x + nx_ * y];     // cost of the cell
       dist_to_obstacles = (cost_ub_ - current_cost) / bound_diff; // distance from cell to obstacles
                                                                   // (normalized scale, i.e., within the range of [0,1])
-      inflation_radius = inflation_radius_ / resolution_; // the costmap inflation radius
-                                                          // of obstacles (on the scale of costmap)
 
       // to calculate the two scaled force potential fields
       scaled_attr = attr_scale *
@@ -429,8 +429,8 @@ void APFPlanner::publishPotentialMap(const nav_msgs::OccupancyGrid::ConstPtr& ms
       scaled_rep = rep_scale * std::pow(1.0 / dist_to_obstacles - 1.0, 2);
 
       // sum two potential fields to calculate the net potential field
-      potential_map_.data[x + nx * y] =
-          std::max(cost_lb_, std::min(cost_ub_ - 1, (int)((scaled_attr + scaled_rep) * bound_diff)));
+      potential_map_.data[x + nx_ * y] =
+          std::max(0, std::min(100, (int)((scaled_attr + scaled_rep) * 100)));  // [0, 100] is the range of rviz costmap
     }
   }
 
