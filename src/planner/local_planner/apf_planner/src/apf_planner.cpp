@@ -367,8 +367,8 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
   if (current_cost >= cost_ub_ || current_cost < cost_lb_)
   {
     ROS_WARN(
-        "The cost of robot's position is out of bound! Are you sure the robot has been properly"
-        " localized and the cost bound is right?");
+        "The cost %.0lf of robot's position is out of bound! Are you sure the robot has been"
+        " properly localized and the cost bound is right?", current_cost);
     return rep_force;
   }
 
