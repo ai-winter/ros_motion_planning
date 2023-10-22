@@ -3,8 +3,8 @@
  * @file: apf_planner.h
  * @breif: Contains the Artificial Potential Field (APF) local planner class
  * @author: Wu Maojia, Yang Haodong
- * @update: 2023-10-1
- * @version: 1.0
+ * @update: 2023-10-17
+ * @version: 1.2
  *
  * Copyright (c) 2023，Wu Maojia, Yang Haodong
  * All rights reserved.
@@ -23,6 +23,7 @@
 #include <geometry_msgs/Twist.h>
 
 #include <nav_msgs/Odometry.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <base_local_planner/odometry_helper_ros.h>
 #include <tf2/utils.h>
 
@@ -110,11 +111,18 @@ public:
    */
   Eigen::Vector2d getRepulsiveForce();
 
+  /**
+   * @brief Callback function of costmap_sub_ to publish /potential_map topic
+   * @param msg the message received from topic /move_base/local_costmap/costmap
+   */
+  void publishPotentialMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
+
 private:
   bool initialized_, goal_reached_;
   tf2_ros::Buffer* tf_;
   costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
   unsigned char* local_costmap_;           // costmap char map
+  nav_msgs::OccupancyGrid potential_map_; // local potential field map
 
   int plan_index_;
   std::vector<geometry_msgs::PoseStamped> global_plan_;
@@ -131,12 +139,15 @@ private:
 
   double zeta_, eta_;  // scale factor of attractive and repulsive force
 
-  int cost_ub_, cost_lb_;  // the upper and lower bound of costmap used to calculate repulsive force potential field
+  int cost_ub_, cost_lb_;  // the upper and lower bound of costmap used to calculate potential field
+
+  double inflation_radius_; // the costmap inflation radius of obstacles
 
   std::deque<Eigen::Vector2d> hist_nf_;  // historical net forces
 
   base_local_planner::OdometryHelperRos* odom_helper_;
-  ros::Publisher target_pose_pub_, current_pose_pub_;
+  ros::Publisher target_pose_pub_, current_pose_pub_, potential_map_pub_;
+  ros::Subscriber costmap_sub_;   // subscribe local map topic to generate potential field
 
   double goal_x_, goal_y_;
   Eigen::Vector3d goal_rpy_;

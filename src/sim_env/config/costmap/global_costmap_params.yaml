@@ -7,6 +7,9 @@ global_costmap:
   transform_tolerance: 0.5
 
   static_map: true
+
+  inflation_radius: 1.0
+
   # plugins:
   #   - {name: static_map,       type: "costmap_2d::StaticLayer"}
   # #   - {name: voxel_layer,        type: "costmap_2d::VoxelLayer"}

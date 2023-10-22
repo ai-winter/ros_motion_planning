@@ -11,6 +11,8 @@ local_costmap:
   width: 3
   height: 3
   resolution: 0.05
+
+  inflation_radius: 1.0
   
   # plugins:
   #   - {name: obstacle_layer,        type: "costmap_2d::ObstacleLayer"}
