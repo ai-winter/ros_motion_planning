@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
  INCLUDE_DIRS include
+ LIBRARIES global_planner
 )
 
 include_directories(
@@ -17,7 +18,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
 add_library(${PROJECT_NAME}
   src/global_planner.cpp
   src/nodes.cpp

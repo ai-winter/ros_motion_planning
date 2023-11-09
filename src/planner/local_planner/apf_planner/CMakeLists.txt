@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
+  CATKIN_DEPENDS local_planner
 )
 
 include_directories(
@@ -37,5 +38,4 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  local_planner
 )

@@ -21,6 +21,7 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>utils</depend>
+  <depend>global_planner</depend>
 
   <export>
     <nav_core plugin="${prefix}/evolutionary_planner_plugin.xml" />

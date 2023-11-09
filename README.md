@@ -1,4 +1,6 @@
-![cover](assets/cover.png)
+<p align="center">
+    <img src="assets/cover.png" />
+</p>
 
 <p align="center">
     <img width="100px" height="20px" src="https://img.shields.io/badge/Ubuntu-20.04-orange?logo=Ubuntu&Ubuntu-20.04"
@@ -121,7 +123,7 @@ rviz_file: "sim_env.rviz"
 
 robots_config:
   - robot1_type: "turtlebot3_burger"
-    robot1_global_planner: "astar"
+    robot1_global_planner: "a_star"
     robot1_local_planner: "dwa"
     robot1_x_pos: "0.0"
     robot1_y_pos: "0.0"

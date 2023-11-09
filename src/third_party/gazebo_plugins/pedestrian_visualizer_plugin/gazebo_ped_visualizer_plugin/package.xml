@@ -33,5 +33,6 @@
   <exec_depend>visualization_msgs</exec_depend>
   <exec_depend>gazebo_ros</exec_depend>
 
+  <depend>gazebo_sfm_plugin</depend>
 
 </package>

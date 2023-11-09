@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
  INCLUDE_DIRS include
+ CATKIN_DEPENDS global_planner
 )
 
 include_directories(
@@ -24,7 +25,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
 add_library(${PROJECT_NAME}
   src/evolutionary_planner.cpp
   src/aco.cpp
@@ -32,5 +32,4 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  global_planner
 )

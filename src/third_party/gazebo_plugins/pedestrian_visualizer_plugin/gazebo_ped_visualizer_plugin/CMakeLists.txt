@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(gazebo_ped_visualizer_plugin)
 
 add_compile_options(-std=c++11)
@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   pedsim_msgs
   std_msgs
+  gazebo_sfm_plugin
 )
 
 find_package(Boost REQUIRED COMPONENTS thread)
@@ -30,16 +31,16 @@ link_directories(
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES PedestrianVisualPlugin
+  LIBRARIES gazebo_ped_visualizer_plugin
   CATKIN_DEPENDS gazebo_ros roscpp
 )
 
-add_library(PedestrianVisualPlugin src/pedestrian_visual_plugin.cpp)
-add_dependencies(PedestrianVisualPlugin ${catkin_EXPORTED_TARGETS})
-target_link_libraries(PedestrianVisualPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES}) #${Boost_LIBRARIES
+add_library(${PROJECT_NAME} src/pedestrian_visual_plugin.cpp)
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES}) #${Boost_LIBRARIES
 
 install(TARGETS
-  PedestrianVisualPlugin
+  ${PROJECT_NAME}
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )

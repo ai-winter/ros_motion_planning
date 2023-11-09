@@ -29,5 +29,5 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(voronoi_layer src/dynamicvoronoi.cpp src/voronoi_layer.cpp)
-target_link_libraries(voronoi_layer ${catkin_LIBRARIES})
+add_library(${PROJECT_NAME} src/dynamicvoronoi.cpp src/voronoi_layer.cpp)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})

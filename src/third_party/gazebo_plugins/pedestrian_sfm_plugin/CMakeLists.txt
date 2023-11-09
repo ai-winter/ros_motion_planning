@@ -34,21 +34,19 @@ link_directories(
   ${GAZEBO_LIBRARY_DIRS}
 )
 
-
-
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES PedestrianSFMPlugin
+  LIBRARIES gazebo_sfm_plugin
   CATKIN_DEPENDS gazebo_ros roscpp
 )
 
 
-add_library(PedestrianSFMPlugin src/pedestrian_sfm_plugin.cpp)
-add_dependencies(PedestrianSFMPlugin gazebo_sfm_plugin_generate_messages_cpp)
-target_link_libraries(PedestrianSFMPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES}) #${Boost_LIBRARIES
+add_library(${PROJECT_NAME} src/pedestrian_sfm_plugin.cpp)
+add_dependencies(${PROJECT_NAME} gazebo_sfm_plugin_generate_messages_cpp)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES}) #${Boost_LIBRARIES
 
 install(TARGETS
-  PedestrianSFMPlugin
+  ${PROJECT_NAME}
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
