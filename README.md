@@ -1,6 +1,4 @@
-<p align="center">
-    <img src="assets/cover.png" />
-</p>
+![cover.png](assets/cover.png)
 
 <p align="center">
     <img width="100px" height="20px" src="https://img.shields.io/badge/Ubuntu-20.04-orange?logo=Ubuntu&Ubuntu-20.04"
@@ -10,15 +8,13 @@
 
 # ROS Motion Planning
 
-**Motion planning** is a computational problem to find a sequence of valid configurations that moves the object from the source to destination. Generally, it includes **Path Searching** and **Trajectory Optimization**.
+**Robot Motion planning** is a computational problem to find a sequence of valid configurations that moves the robot from the source to the destination. Generally, it includes **Path Searching** and **Trajectory Optimization**.
 
-* **Path Searching**: Based on path constraints, e.g. obstacles, it searches an optimal path sequence for the robot to travel without conflicts between source and destination.
+* **Path Searching**: Based on path constraints, e.g., obstacles, it searches an optimal path sequence for the robot to travel without collisions from the source to the destination.
 
-* **Trajectory Planning**: Based on the kinematics, dynamics and obstacles, it optimizes a motion state trajectory from the source to destination according to the path sequence.
+* **Trajectory Planning**: Based on kinematics, dynamics and obstacles, it optimizes a motion state trajectory from the source to the destination according to the path sequence.
 
-This repository provides the implementation of common **Motion Planning** algorithms. The theory analysis can be found at [motion-planning](https://blog.csdn.net/frigidwinter/category_11410243.html).
-Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_planning) and [MATLAB](https://github.com/ai-winter/matlab_motion_planning) version.
-
+This repository provides the implementation of common **Motion Planning** algorithms. The theory analysis can be found at [motion-planning](https://blog.csdn.net/frigidwinter/category_11410243.html). Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_planning) and [MATLAB](https://github.com/ai-winter/matlab_motion_planning) version.
 
 **Your stars, forks and PRs are welcome!**
 
@@ -48,14 +44,7 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
     sudo apt install git
     ```
 
-3. Clone this reposity.
-
-    ```bash
-    cd <your_workspace>/
-    git clone https://github.com/ai-winter/ros_motion_planning.git
-    ```
-
-4. Other dependence.
+3. Other dependence.
 
     ```bash
     sudo apt install python-is-python3
@@ -66,19 +55,34 @@ Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_plan
     ros-noetic-navfn
     ```
 
-5. To compile and execute the code, run the scripts in `./src/sim_env/scripts/`. The `make.sh` is for compilation and the `main.sh` is for execution.
+4. Clone this reposity.
 
     ```bash
-    cd ros_motion_planning/src/sim_env/scripts/
-    ./make.sh
+    cd <your_workspace>/
+    git clone https://github.com/ai-winter/ros_motion_planning.git
+    ```
+
+5. Compile the code.
+   
+    ```bash
+    cd ros_motion_planning/
+    catkin_make
+    # or
+    # catkin build
+    ```
+
+6. Execute the code.
+
+    ```bash
+    cd scripts/
     ./main.sh
     ```
 
-    **NOTE: Changing some launch files DOES NOT work, because some of them are re-generated according to the `./src/user_config/user_config.yaml` by a python script when you run `main.sh`. Therefore, you should change configurations in `user_config.yaml` instead of launch files.**
+    **NOTE: Changing some launch files DOES NOT work, because some of them are re-generated according to the `src/user_config/user_config.yaml` by a python script when you run `main.sh`. Therefore, you should change configurations in `user_config.yaml` instead of launch files.**
 
-6. Use **2D Nav Goal** to select the goal.
+7. Use **2D Nav Goal** to select the goal.
 
-7. Moving!
+8. Moving!
 
 ## 1. <span id="1">File Tree
 
@@ -87,6 +91,7 @@ The file structure is shown below.
 ```
 ros_motion_planner
 ├── assets
+├── scripts
 └── src
     ├── planner
     │   ├── global_planner
@@ -99,7 +104,6 @@ ros_motion_planner
     │   ├── meshes
     │   ├── models
     │   ├── rviz
-    │   ├── scripts
     │   ├── urdf
     │   └── worlds
     ├── third_party
@@ -112,7 +116,7 @@ ros_motion_planner
 
 ## 02. <span id="2">Dynamic Configuration
 
-In this reposity, you can simply change configs through modifing the `./src/user_config/user_config.yaml`. When you run `./main.sh`, our python script will re-generated `.launch`, `.world` and so on, according to your configs in that file.
+In this reposity, you can simply change configs through modifing the `src/user_config/user_config.yaml`. When you run `main.sh`, our python script will re-generated `*.launch`, `*.world` and so on, according to your configs in `user_config.yaml`.
 
 Below is an example of `user_config.yaml`
 
@@ -122,7 +126,7 @@ world: "warehouse"
 rviz_file: "sim_env.rviz"
 
 robots_config:
-  - robot1_type: "turtlebot3_burger"
+  - robot1_type: "turtlebot3_waffle"
     robot1_global_planner: "a_star"
     robot1_local_planner: "dwa"
     robot1_x_pos: "0.0"
@@ -161,7 +165,9 @@ Explanation:
   - `xyz_pos and yaw`: initial pose.
 
 - `plugins`: other applications using in simulation
+
   - `pedestrians`: configure file to add dynamic obstacles(e.g. pedestrians).
+
   - `obstacles`: configure file to add static obstacles.
 
 For *pedestrians* and *obstacles* configuration files, the examples are shown below
@@ -213,18 +219,27 @@ pedestrians:
 ```
 Explanation:
 
+- `social_force`: the weight factors that modify the navigation behavior. See the [Social Force Model](https://github.com/robotics-upo/lightsfm) for further information.
 
-- `social_force`: The weight factors that modify the navigation behavior. See the [Social Force Model](https://github.com/robotics-upo/lightsfm) for further information.
-- `pedestrians/update_rate`: Update rate of pedestrains presentation. The higher `update_rate`, the more sluggish the environment becomes.
-- `pedestrians/ped_property`: Pedestrians property configuration.
-  - `name`: The id for each human.
-  - `pose`: The initial pose for each human.
-  - `velocity`: Maximum velocity (*m/s*) for each human.
-  - `radius`: Approximate radius of the human's body (m).
-  - `cycle`: If *true*, the actor will start the goal point sequence when the last goal point is reached.
-  - `time_delay`: This is time in seconds to wait before starting the human motion.
-  - `ignore_obstacles`: All the models that must be ignored as obstacles, must be indicated here. The other actors in the world are included automatically.
-  - `trajectory`. The list of goal points that the actor must reach must be indicated here. The goals will be post into social force model.
+- `pedestrians/update_rate`: update rate of pedestrains presentation. The higher `update_rate`, the more sluggish the environment becomes.
+
+- `pedestrians/ped_property`: pedestrians property configuration.
+  
+  - `name`: the id for each human.
+  
+  - `pose`: the initial pose for each human.
+
+  - `velocity`: maximum velocity (*m/s*) for each human.
+
+  - `radius`: approximate radius of the human's body (m).
+
+  - `cycle`: if *true*, the actor will start the goal point sequence when the last goal point is reached.
+
+  - `time_delay`: this is time in seconds to wait before starting the human motion.
+
+  - `ignore_obstacles`: all the models that must be ignored as obstacles, must be indicated here. The other actors in the world are included automatically.
+
+  - `trajectory`: the list of goal points that the actor must reach must be indicated here. The goals will be post into social force model.
 
 ```yaml
 ## obstacles_config.yaml 
@@ -241,24 +256,30 @@ obstacles:
       h: 0.80
 ```
 Explanation:
-- `type`: model type of specific obstacle, *Optional: `BOX`, `CYLINDER` or `SPHERE`*
-- `pose`: fixed pose of the obstacle
-- `color`: color of the obstacle
-- `props`: property of the obstacle
-  - `m`: mass
-  - `w`: width
-  - `d`: depth
-  - `h`: height
-  - `r`: radius
+- `type`: model type of specific obstacle, *Optional: `BOX`, `CYLINDER` or `SPHERE`*.
 
+- `pose`: fixed pose of the obstacle.
 
+- `color`: color of the obstacle.
+
+- `props`: property of the obstacle.
+
+  - `m`: mass.
+
+  - `w`: width.
+
+  - `d`: depth.
+
+  - `h`: height.
+
+  - `r`: radius.
 
 ## <span id="3">03. Version
 
 ### Global Planner
 
-|     Planner      |                                                                                             Version                                                                                              |                         Animation                          |
-|:----------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------:|
+| Planner | Version | Animation |
+|:-------:|:-------:|:---------:|
 |     **GBFS**     |      [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/a_star.cpp)       |            ![gbfs_ros.gif](assets/gbfs_ros.gif)            |
 |   **Dijkstra**   |      [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/a_star.cpp)       |        ![dijkstra_ros.gif](assets/dijkstra_ros.gif)        |
 |     **A\***      |      [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/graph_planner/src/a_star.cpp)       |          ![a_star_ros.gif](assets/a_star_ros.gif)          |
@@ -276,8 +297,8 @@ Explanation:
 
 ### Local Planner
 
-|   Planner   |                                                                                         Version                                                                                         |                        Animation                        |
-|:-----------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:| :-----------------------------------------------------: |
+| Planner | Version | Animation |
+|:-------:|:-------:|:---------:|
 |   **PID**   | [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/local_planner/pid_planner/src/pid_planner.cpp) |           ![pid_ros.gif](assets/pid_ros.gif)            |
 |   **DWA**   |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/local_planner/dwa_planner/src/dwa.cpp)     |           ![dwa_ros.gif](assets/dwa_ros.gif)            |
 |   **APF**   |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/local_planner/apf_planner/src/apf_planner.cpp)     | ![apf_ros.gif](assets/apf_ros.gif)|
@@ -287,8 +308,8 @@ Explanation:
 
 ### Intelligent Algorithm
 
-| Planner |                         Version                          |                        Animation                        |
-| :-----: | :------------------------------------------------------: | :-----------------------------------------------------: |
+| Planner | Version | Animation |
+|:-------:|:-------:|:---------:|
 | **ACO** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/evolutionary_planner/src/aco.cpp) | ![aco_ros.gif](assets/aco_ros.gif)  |
 | **GA**  | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
 | **PSO** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
@@ -399,18 +420,20 @@ We use another [gazebo simulation](https://github.com/ZhanyuGuo/ackermann_ws) as
 4. Run! But maybe there are still some details that you have to deal with...
 
 ## <span id="6">06. Important Updates
-|   Date    | Update                                                                                                                                                                            |
-| :-------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Date | Update |
+| :--: | ------ |
 | 2023.1.13 | cost of motion nodes is set to `NEUTRAL_COST`, which is unequal to that of heuristics, so there is no difference between A* and Dijkstra. This bug has been solved in A* C++ v1.1 |
-| 2023.1.18 | update RRT C++ v1.1, adding heuristic judgement when generating random nodes                                                                                                      |
-| 2023.2.25 | update PID C++ v1.1, making desired theta the weighted combination of theta error and theta on the trajectory                                                                     |
-| 2023.3.16 | support dynamic simulation environment, user can add pedestrians by modifing `pedestrian_config.yaml`                                                                             |
+| 2023.1.18 | update RRT C++ v1.1, adding heuristic judgement when generating random nodes |
+| 2023.2.25 | update PID C++ v1.1, making desired theta the weighted combination of theta error and theta on the trajectory |
+| 2023.3.16 | support dynamic simulation environment, user can add pedestrians by modifing `pedestrian_config.yaml` |
 
 ## <span id="7">07. Acknowledgments
 * Our robot and world models are from [
 Dataset-of-Gazebo-Worlds-Models-and-Maps](https://github.com/mlherd/Dataset-of-Gazebo-Worlds-Models-and-Maps) and [
 aws-robomaker-small-warehouse-world](https://github.com/aws-robotics/aws-robomaker-small-warehouse-world). Thanks for these open source models sincerely.
+
 * Pedestrians in this environment are using social force model(sfm), which comes from [https://github.com/robotics-upo/lightsfm](https://github.com/robotics-upo/lightsfm).
+
 * A ROS costmap plugin for [dynamicvoronoi](http://www2.informatik.uni-freiburg.de/~lau/dynamicvoronoi/) presented by Boris Lau.
 
 ## <span id="8">08. License
