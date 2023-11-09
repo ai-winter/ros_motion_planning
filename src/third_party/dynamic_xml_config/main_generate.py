@@ -13,22 +13,21 @@
 ******************************************************************************************
 """
 import xml.etree.ElementTree as ET
-from plugins import XMLGenerator, PedGenerator, RobotGenerator, ObstacleGenerator
+from plugins import ObstacleGenerator, PedGenerator, RobotGenerator, XMLGenerator
+
 
 class MainGenerator(XMLGenerator):
     def __init__(self, *plugins) -> None:
         super().__init__()
-        self.main_path = self.root_path + "pedestrian_simulation/"
+        self.main_path = self.root_path + "pedestrian_simulation/"  # todo
         self.app_list = [app for app in plugins]
-    
+
     def writeMainLaunch(self, path):
         """
         Create configure file of package `sim_env` dynamically.
 
-        Parameters
-        ----------
-        path: str
-            the path of file(.launch.xml) to write.
+        Args:
+            path (str): the path of file(.launch.xml) to write.
         """
         # root
         launch = MainGenerator.createElement("launch")
@@ -56,8 +55,7 @@ class MainGenerator(XMLGenerator):
     def plugin(self):
         pass
 
+
 # dynamic generator
-main_gen = MainGenerator(PedGenerator(),
-                         RobotGenerator(),
-                         ObstacleGenerator())
+main_gen = MainGenerator(PedGenerator(), RobotGenerator(), ObstacleGenerator())
 main_gen.writeMainLaunch(main_gen.root_path + "sim_env/launch/main.launch")

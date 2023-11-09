@@ -12,36 +12,46 @@
 *  @license  GNU General Public License (GPL)                                            *
 ******************************************************************************************
 """
-import rospy, tf
-from gazebo_msgs.srv import SpawnModel
-from geometry_msgs.msg import Quaternion, Pose, Point
 import xml.etree.ElementTree as ET
+
+import rospy
+import tf
+from gazebo_msgs.srv import SpawnModel
+from geometry_msgs.msg import Point, Pose, Quaternion
+
 from .xml_generate import XMLGenerator
 
 
 class ObstacleGenerator(XMLGenerator):
     def __init__(self) -> None:
         super().__init__()
-        if "plugins" in self.user_cfg.keys() and "obstacles" in self.user_cfg["plugins"] \
-            and self.user_cfg["plugins"]["obstacles"]:
+        if "plugins" in self.user_cfg.keys() and "obstacles" in self.user_cfg["plugins"] and self.user_cfg["plugins"]["obstacles"]:
             self.obs_cfg = ObstacleGenerator.yamlParser(self.root_path + "user_config/" + self.user_cfg["plugins"]["obstacles"])
         else:
             self.obs_cfg = None
-        
+
         self.box_obs, self.cylinder_obs, self.sphere_obs = [], [], []
-    
+
     def plugin(self):
         """
         Implement of obstacles application.
         """
         app_register = []
         if not self.obs_cfg is None:
-            '''app register'''
+            """app register"""
             # obstacles generation
-            obs_gen = ObstacleGenerator.createElement("node", props={"pkg": "dynamic_xml_config", "type": "obstacles_generate_ros.py",
-                "name": "obstacles_generate", "args": "user_config.yaml","output": "screen"})
+            obs_gen = ObstacleGenerator.createElement(
+                "node",
+                props={
+                    "pkg": "dynamic_xml_config",
+                    "type": "obstacles_generate_ros.py",
+                    "name": "obstacles_generate",
+                    "args": "user_config.yaml",
+                    "output": "screen",
+                },
+            )
             app_register.append(obs_gen)
-        
+
         return app_register
 
     def spawn(self) -> None:
@@ -94,38 +104,38 @@ class ObstacleGenerator(XMLGenerator):
         """
         # parameters checking
         if model_type.upper() == "BOX":
-            assert "m" in kwargs and \
-                "w" in kwargs and \
-                "d" in kwargs and \
-                "h" in kwargs and \
-                "c" in kwargs,    \
-                "Parameters of {} are `m`, `w`, `d`, `h`, `c` which mean mass, \
-                    width, depth, height and color, ".format(model_type)
+            assert (
+                "m" in kwargs and "w" in kwargs and "d" in kwargs and "h" in kwargs and "c" in kwargs
+            ), "Parameters of {} are `m`, `w`, `d`, `h`, `c` which mean mass, \
+                    width, depth, height and color, ".format(
+                model_type
+            )
             ixx = (kwargs["m"] / 12.0) * (pow(kwargs["d"], 2) + pow(kwargs["h"], 2))
             iyy = (kwargs["m"] / 12.0) * (pow(kwargs["w"], 2) + pow(kwargs["h"], 2))
             izz = (kwargs["m"] / 12.0) * (pow(kwargs["w"], 2) + pow(kwargs["d"], 2))
             geometry = ObstacleGenerator.createElement("geometry")
-            geometry.append(ObstacleGenerator.createElement(model_type.lower(),
-                props={"size": "{:f} {:f} {:f}".format(kwargs["w"], kwargs["d"], kwargs["h"])}))
+            geometry.append(
+                ObstacleGenerator.createElement(model_type.lower(), props={"size": "{:f} {:f} {:f}".format(kwargs["w"], kwargs["d"], kwargs["h"])})
+            )
         elif model_type.upper() == "CYLINDER":
-            assert "m" in kwargs and \
-                "r" in kwargs and \
-                "h" in kwargs and \
-                "c" in kwargs,    \
-                "Parameters of {} are `m`, `r`, `h`, `c` which mean mass, \
-                    radius, height and color, ".format(model_type)
+            assert (
+                "m" in kwargs and "r" in kwargs and "h" in kwargs and "c" in kwargs
+            ), "Parameters of {} are `m`, `r`, `h`, `c` which mean mass, \
+                    radius, height and color, ".format(
+                model_type
+            )
             ixx = (kwargs["m"] / 12.0) * (3 * pow(kwargs["r"], 2) + pow(kwargs["h"], 2))
             iyy = (kwargs["m"] / 12.0) * (3 * pow(kwargs["r"], 2) + pow(kwargs["h"], 2))
             izz = (kwargs["m"] * pow(kwargs["r"], 2)) / 2.0
             geometry = ObstacleGenerator.createElement("geometry")
-            geometry.append(ObstacleGenerator.createElement(model_type.lower(), 
-                props={"length": str(kwargs["h"]), "radius": str(kwargs["r"])}))
+            geometry.append(ObstacleGenerator.createElement(model_type.lower(), props={"length": str(kwargs["h"]), "radius": str(kwargs["r"])}))
         elif model_type.upper() == "SPHERE":
-            assert "m" in kwargs and \
-                "r" in kwargs and \
-                "c" in kwargs,    \
-                "Parameters of {} are `m`, `r`, `h`, `c` which mean mass, \
-                    radius and color, ".format(model_type)
+            assert (
+                "m" in kwargs and "r" in kwargs and "c" in kwargs
+            ), "Parameters of {} are `m`, `r`, `h`, `c` which mean mass, \
+                    radius and color, ".format(
+                model_type
+            )
             ixx = (2 * kwargs["m"] * pow(kwargs["r"], 2)) / 5.0
             iyy = (2 * kwargs["m"] * pow(kwargs["r"], 2)) / 5.0
             izz = (2 * kwargs["m"] * pow(kwargs["r"], 2)) / 5.0
@@ -141,12 +151,15 @@ class ObstacleGenerator(XMLGenerator):
         inertial = ObstacleGenerator.createElement("inertial")
         inertial.append(ObstacleGenerator.createElement("origin", props={"xyz": "0 0 0", "rpy": "0 0 0"}))
         inertial.append(ObstacleGenerator.createElement("mass", props={"value": str(kwargs["m"])}))
-        inertial.append(ObstacleGenerator.createElement("inertia", props={"ixx": str(ixx), "ixy": "0.0", "ixz": "0.0",
-            "iyy": str(iyy), "iyz": "0.0", "izz": str(izz)}))
+        inertial.append(
+            ObstacleGenerator.createElement(
+                "inertia", props={"ixx": str(ixx), "ixy": "0.0", "ixz": "0.0", "iyy": str(iyy), "iyz": "0.0", "izz": str(izz)}
+            )
+        )
 
         collision = ObstacleGenerator.createElement("collision")
         collision.append(ObstacleGenerator.createElement("origin", props={"xyz": "0 0 0", "rpy": "0 0 0"}))
-        
+
         collision.append(geometry)
 
         visual = ObstacleGenerator.createElement("visual")

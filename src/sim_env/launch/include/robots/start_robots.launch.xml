@@ -2,7 +2,7 @@
 <launch>
 	<arg name="robot_number" default="1" />
 	<arg name="robot1_type" value="turtlebot3_waffle" />
-	<arg name="robot1_global_planner" value="aco" />
+	<arg name="robot1_global_planner" value="a_star" />
 	<arg name="robot1_local_planner" value="pid" />
 	<arg name="robot1_x_pos" value="0.0" />
 	<arg name="robot1_y_pos" value="0.0" />

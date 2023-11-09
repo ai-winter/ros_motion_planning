@@ -11,35 +11,35 @@ robots_config:
     robot1_z_pos: "0.0"
     robot1_yaw: "0.0"
 
-# - global planner
-#   - graph_planner
-#     - a_star
-#     - jps
-#     - gbfs
-#     - dijkstra
-#     - d_star
-#     - lpa_star
-#     - voronoi
-#     - d_star_lite
-#     - theta_star
-#     - lazy_theta_star
+# * global planner
+#   * graph_planner
+#     * a_star
+#     * jps
+#     * gbfs
+#     * dijkstra
+#     * d_star
+#     * lpa_star
+#     * voronoi
+#     * d_star_lite
+#     * theta_star
+#     * lazy_theta_star
 #
-#   - sample_planner
-#     - rrt
-#     - rrt_star
-#     - informed_rrt
-#     - rrt_connect
+#   * sample_planner
+#     * rrt
+#     * rrt_star
+#     * informed_rrt
+#     * rrt_connect
 #
-#   - evolutionary_planner
-#     - aco
-#     - ga
+#   * evolutionary_planner
+#     * aco
+#     * ga
 #
-# - local planner
-#   - dwa_planner
-#   - pid_planner
-#   - apf_planner
+# * local planner
+#   * dwa_planner
+#   * pid_planner
+#   * apf_planner
 
 # plugins:
-# pedestrians: "pedestrian_config.yaml"
-# obstacles: "obstacles_config.yaml"
-# map_layers: "maps_config.yaml"
+#   pedestrians: "pedestrian_config.yaml"
+#   obstacles: "obstacles_config.yaml"
+#   map_layers: "maps_config.yaml"

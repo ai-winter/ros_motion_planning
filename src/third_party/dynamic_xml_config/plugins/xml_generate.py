@@ -12,11 +12,13 @@
 *  @license  GNU General Public License (GPL)                                            *
 ******************************************************************************************
 """
-import yaml
+import os
+import sys
 import xml.etree.ElementTree as ET
-import sys, os
+from abc import ABC, abstractmethod
 
-from abc import abstractmethod, ABC
+import yaml
+
 
 class XMLGenerator(ABC):
     def __init__(self) -> None:

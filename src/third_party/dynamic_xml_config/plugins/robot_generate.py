@@ -13,16 +13,17 @@
 ******************************************************************************************
 """
 import xml.etree.ElementTree as ET
+
 from .xml_generate import XMLGenerator
 
 
 class RobotGenerator(XMLGenerator):
     def __init__(self) -> None:
         super().__init__()
-    
+
     def __str__(self) -> str:
         return "Robots Generator"
-    
+
     def plugin(self):
         """
         Implement of robots starting application.

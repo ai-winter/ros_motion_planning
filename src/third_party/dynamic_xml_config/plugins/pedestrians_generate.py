@@ -13,18 +13,18 @@
 ******************************************************************************************
 """
 import xml.etree.ElementTree as ET
+
 from .xml_generate import XMLGenerator
 
 
 class PedGenerator(XMLGenerator):
     def __init__(self) -> None:
         super().__init__()
-        if "plugins" in self.user_cfg.keys() and "pedestrians" in self.user_cfg["plugins"] \
-            and self.user_cfg["plugins"]["pedestrians"]:
+        if "plugins" in self.user_cfg.keys() and "pedestrians" in self.user_cfg["plugins"] and self.user_cfg["plugins"]["pedestrians"]:
             self.ped_cfg = PedGenerator.yamlParser(self.root_path + "user_config/" + self.user_cfg["plugins"]["pedestrians"])
         else:
             self.ped_cfg = None
-    
+
     def __str__(self) -> str:
         return "Pedestrians Generator"
 
@@ -34,20 +34,19 @@ class PedGenerator(XMLGenerator):
         """
         app_register = []
         if not self.ped_cfg is None:
-            '''dynamic confiugre'''
+            """dynamic confiugre"""
             ped_path = self.root_path + "sim_env/worlds/" + self.user_cfg["world"] + "_with_pedestrians.world"
             self.writePedestrianWorld(ped_path)
 
-            '''app register'''
+            """app register"""
             # world generation
-            ped_world = PedGenerator.createElement("arg", props={"name": "world_parameter", 
-                "value": self.user_cfg["world"] + "_with_pedestrians"})
+            ped_world = PedGenerator.createElement("arg", props={"name": "world_parameter", "value": self.user_cfg["world"] + "_with_pedestrians"})
             app_register.append(ped_world)
         else:
             # world generation
             ped_world = PedGenerator.createElement("arg", props={"name": "world_parameter", "value": self.user_cfg["world"]})
             app_register.append(ped_world)
-        
+
         return app_register
 
     def writePedestrianWorld(self, path):
@@ -145,7 +144,7 @@ class PedGenerator(XMLGenerator):
             plugin.append(PedGenerator.createElement("group_gaze_weight", text=str(sfm["group_gaze_weight"])))
             plugin.append(PedGenerator.createElement("group_coh_weight", text=str(sfm["group_coh_weight"])))
             plugin.append(PedGenerator.createElement("group_rep_weight", text=str(sfm["group_rep_weight"])))
-            
+
             if "time_delay" in human.keys():
                 plugin.append(PedGenerator.createElement("time_delay", text=str(human["time_delay"])))
 
@@ -167,7 +166,7 @@ class PedGenerator(XMLGenerator):
 
             if not plugin_visual is None:
                 actor.append(plugin_visual)
-            
+
             PedGenerator.indent(actor)
 
             return actor
