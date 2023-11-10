@@ -18,7 +18,7 @@
     <!-- whether use namespace or not -->
     <arg name="start_ns" default="false" />
     <!-- global path planner name -->
-    <arg name="global_planner" default="astar"/>
+    <arg name="global_planner" default="a_star" />
     <!-- local planner name -->
     <arg name="local_planner" default="dwa" />
 
@@ -29,18 +29,18 @@
     <arg name="robot_yaw" />
 
     <!-- multi -->
-    <group ns = "$(arg robot_namespace)" if="$(arg start_ns)">
+    <group ns="$(arg robot_namespace)" if="$(arg start_ns)">
         <param name="tf_prefix" value="$(arg robot_namespace)" />
         <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" />
         <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen" />
-        <param name="robot_description" 
-               command="$(find xacro)/xacro --inorder $(find sim_env)/urdf/$(arg robot)/$(arg robot).xacro" />
+        <param name="robot_description"
+            command="$(find xacro)/xacro --inorder $(find sim_env)/urdf/$(arg robot)/$(arg robot).xacro" />
         <!-- Gazebo -->
-        <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" 
-              args="-urdf -x $(arg robot_x) -y $(arg robot_y) -z $(arg robot_z) -Y $(arg robot_yaw) 
-                    -model $(arg robot_namespace) -param robot_description"/>
+        <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+            args="-urdf -x $(arg robot_x) -y $(arg robot_y) -z $(arg robot_z) -Y $(arg robot_yaw) 
+                    -model $(arg robot_namespace) -param robot_description" />
         <!-- AMCL定位 -->
-        <include file="$(find sim_env)/launch/include/location_methods/amcl.launch.xml">
+        <include file="$(find sim_env)/launch/include/location/amcl.launch.xml">
             <arg name="robot_namespace" value="$(arg robot_namespace)" />
             <arg name="start_ns" value="$(arg start_ns)" />
             <arg name="robot_x" value="$(arg robot_x)" />
@@ -56,19 +56,19 @@
             <arg name="local_planner" value="$(arg local_planner)" />
         </include>
     </group>
-    
+
     <!-- single  -->
     <group unless="$(arg start_ns)">
         <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" />
         <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen" />
-        <param name="robot_description" 
-                command="$(find xacro)/xacro --inorder $(find sim_env)/urdf/$(arg robot)/$(arg robot).xacro" />
+        <param name="robot_description"
+            command="$(find xacro)/xacro --inorder $(find sim_env)/urdf/$(arg robot)/$(arg robot).xacro" />
         <!-- Gazebo -->
-        <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" 
-                args="-urdf -x $(arg robot_x) -y $(arg robot_y) -z $(arg robot_z) -Y $(arg robot_yaw) 
-                    -model $(arg robot) -param robot_description"/>
+        <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+            args="-urdf -x $(arg robot_x) -y $(arg robot_y) -z $(arg robot_z) -Y $(arg robot_yaw) 
+                    -model $(arg robot) -param robot_description" />
         <!-- AMCL -->
-        <include file="$(find sim_env)/launch/include/location_methods/amcl.launch.xml">
+        <include file="$(find sim_env)/launch/include/location/amcl.launch.xml">
             <arg name="robot_namespace" value="$(arg robot_namespace)" />
             <arg name="start_ns" value="$(arg start_ns)" />
             <arg name="robot_x" value="$(arg robot_x)" />

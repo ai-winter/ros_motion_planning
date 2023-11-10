@@ -23,13 +23,13 @@
     <node pkg="amcl" type="amcl" name="amcl">
         <!-- 加载初始化默认参数 -->
         <rosparam file="$(find sim_env)/config/amcl_params.yaml" command="load" />
-        <param name="initial_pose_x" value="$(arg robot_x)"/>
-        <param name="initial_pose_y" value="$(arg robot_y)"/>
-        <param name="initial_pose_z" value="$(arg robot_z)"/>
+        <param name="initial_pose_x" value="$(arg robot_x)" />
+        <param name="initial_pose_y" value="$(arg robot_y)" />
+        <param name="initial_pose_z" value="$(arg robot_z)" />
         <!-- 为坐标系添加命名空间 -->
-        <param name="odom_frame_id"  value="$(arg robot_namespace)/odom" if="$(arg start_ns)"/>
-        <param name="base_frame_id"  value="$(arg robot_namespace)/base_footprint" if="$(arg start_ns)"/>
+        <param name="odom_frame_id" value="$(arg robot_namespace)/odom" if="$(arg start_ns)" />
+        <param name="base_frame_id" value="$(arg robot_namespace)/base_footprint" if="$(arg start_ns)" />
 
-        <remap from="static_map" to="/static_map"/>
+        <remap from="static_map" to="/static_map" />
     </node>
 </launch>

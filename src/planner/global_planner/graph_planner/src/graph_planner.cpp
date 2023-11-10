@@ -36,8 +36,8 @@ GraphPlanner::GraphPlanner() : initialized_(false), costmap_(nullptr), g_planner
 
 /**
  * @brief Construct a new Graph Planner object
- * @param name      planner name
- * @param costmap_ros   the cost map to use for assigning costs to trajectories
+ * @param name        planner name
+ * @param costmap_ros the cost map to use for assigning costs to trajectories
  */
 GraphPlanner::GraphPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros) : GraphPlanner()
 {
@@ -52,14 +52,14 @@ GraphPlanner::~GraphPlanner()
   if (g_planner_)
   {
     delete g_planner_;
-    g_planner_ = NULL;
+    g_planner_ = nullptr;
   }
 }
 
 /**
  * @brief  Planner initialization
- * @param  name         planner name
- * @param  costmapRos   costmap ROS wrapper
+ * @param  name       planner name
+ * @param  costmapRos costmap ROS wrapper
  */
 void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmapRos)
 {
@@ -69,9 +69,9 @@ void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costma
 
 /**
  * @brief Planner initialization
- * @param name      planner name
- * @param costmap   costmap pointer
- * @param frame_id  costmap frame ID
+ * @param name     planner name
+ * @param costmap  costmap pointer
+ * @param frame_id costmap frame ID
  */
 void GraphPlanner::initialize(std::string name)
 {

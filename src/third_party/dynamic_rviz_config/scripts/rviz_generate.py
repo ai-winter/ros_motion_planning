@@ -1,7 +1,7 @@
 #!/usr/bin/python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
-''' 
+""" 
 ******************************************************************************************
 *  Copyright (C) 2023 Yang Haodong, All Rights Reserved                                  *
 *                                                                                        *
@@ -11,8 +11,10 @@
 *  @date     2022.07.06                                                                  *
 *  @license  GNU General Public License (GPL)                                            *
 ******************************************************************************************
-'''
-import sys, os
+"""
+import os
+import sys
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, dir_path)
 
@@ -42,9 +44,9 @@ if robot_num == 1:
     # append laser
     d.addLaserscan(topic="/scan", name="LaserScan", color=(255, 0, 0), size=0.03, alpha=1)
     # append `initialpose` setting panel
-    r.appendToolInit('/initialpose')
+    r.appendToolInit("/initialpose")
     # append `move_base_simple/goal` setting panel
-    r.appendToolGoal('/move_base_simple/goal')
+    r.appendToolGoal("/move_base_simple/goal")
 else:
     # multi-robot
     for i in range(robot_num):
@@ -59,9 +61,9 @@ else:
         meta_robot.addPath(topic=None, name="Path", color=(32, 74, 135))
         d.addGroup("Robot" + str(i + 1), meta_robot)
         # append `initialpose` setting panel
-        r.appendToolInit('/robot' + str(i + 1) + '/initialpose')
+        r.appendToolInit("/robot" + str(i + 1) + "/initialpose")
         # ppend `move_base_simple/goal` setting panel
-        r.appendToolGoal('/robot' + str(i + 1) +'/move_base_simple/goal')
+        r.appendToolGoal("/robot" + str(i + 1) + "/move_base_simple/goal")
 
 # 设置Rviz标准面板
 r.setStdPanels()
