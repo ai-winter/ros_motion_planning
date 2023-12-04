@@ -47,7 +47,7 @@ This repository provides the implementation of common **Motion Planning** algori
 3. Other dependence.
 
     ```bash
-    sudo apt install python-is-python3
+    sudo apt install python-is-python3 \
     ros-noetic-amcl \
     ros-noetic-base-local-planner \
     ros-noetic-map-server \
