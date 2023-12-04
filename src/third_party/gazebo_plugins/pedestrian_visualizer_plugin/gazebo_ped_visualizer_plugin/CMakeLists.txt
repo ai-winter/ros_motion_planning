@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   pedsim_msgs
   std_msgs
+  gazebo_sfm_plugin
 )
 
 find_package(Boost REQUIRED COMPONENTS thread)

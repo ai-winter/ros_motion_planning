@@ -69,6 +69,7 @@ This repository provides the implementation of common **Motion Planning** algori
     catkin_make
     # or
     # catkin build
+    # you may need to install it by: sudo apt install python-catkin-tools
     ```
 
 6. Execute the code.
