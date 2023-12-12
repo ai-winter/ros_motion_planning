@@ -49,7 +49,6 @@ void GlobalPlanner::setResolution(double resolution)
   resolution_ = resolution;
 }
 
-
 void GlobalPlanner::setLethalCost(unsigned char lethal_cost)
 {
   lethal_cost_ = lethal_cost;
@@ -128,14 +127,16 @@ void GlobalPlanner::grid2Map(int gx, int gy, double& mx, double& my)
  */
 std::vector<Node> GlobalPlanner::getMotion()
 {
-  return { Node(0, 1, 1),
-           Node(1, 0, 1),
-           Node(0, -1, 1),
-           Node(-1, 0, 1),
-           Node(1, 1, std::sqrt(2)),
-           Node(1, -1, std::sqrt(2)),
-           Node(-1, 1, std::sqrt(2)),
-           Node(-1, -1, std::sqrt(2)) };
+  return {
+    Node(0, 1, 1),
+    Node(1, 0, 1),
+    Node(0, -1, 1),
+    Node(-1, 0, 1),
+    Node(1, 1, std::sqrt(2)),
+    Node(1, -1, std::sqrt(2)),
+    Node(-1, 1, std::sqrt(2)),
+    Node(-1, -1, std::sqrt(2)),
+  };
 }
 
 /**
@@ -191,7 +192,7 @@ std::vector<Node> GlobalPlanner::_convertClosedListToPath(
     std::unordered_set<Node, NodeIdAsHash, compare_coordinates>& closed_list, const Node& start, const Node& goal)
 {
   auto current = *closed_list.find(goal);
-  
+
   std::vector<Node> path;
   while (current != start)
   {

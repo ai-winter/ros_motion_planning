@@ -3,7 +3,7 @@
  * @file: a_star.cpp
  * @breif: Contains the A* (dijkstra and GBFS) planner class
  * @author: Yang Haodong, Wu Maojia
- * @update: 2023-10-01
+ * @update: 2023-12-12
  * @version: 1.2
  *
  * Copyright (c) 2023， Yang Haodong
@@ -21,11 +21,11 @@ namespace global_planner
 {
 /**
  * @brief Construct a new AStar object
- * @param nx          pixel number in costmap x direction
- * @param ny          pixel number in costmap y direction
- * @param resolution  costmap resolution
- * @param dijkstra    using diksktra implementation
- * @param gbfs        using gbfs implementation
+ * @param nx         pixel number in costmap x direction
+ * @param ny         pixel number in costmap y direction
+ * @param resolution costmap resolution
+ * @param dijkstra   using diksktra implementation
+ * @param gbfs       using gbfs implementation
  */
 AStar::AStar(int nx, int ny, double resolution, bool dijkstra, bool gbfs) : GlobalPlanner(nx, ny, resolution)
 {
@@ -40,17 +40,17 @@ AStar::AStar(int nx, int ny, double resolution, bool dijkstra, bool gbfs) : Glob
     is_dijkstra_ = false;
     is_gbfs_ = false;
   }
-  factor_ = 0.35;
+  factor_ = 0.25;
 };
 
 /**
  * @brief A* implementation
  * @param global_costmap global costmap
- * @param start         start node
- * @param goal          goal node
- * @param path          optimal path consists of Node
- * @param expand        containing the node been search during the process
- * @return  true if path found, else false
+ * @param start          start node
+ * @param goal           goal node
+ * @param path           optimal path consists of Node
+ * @param expand         containing the node been search during the process
+ * @return true if path found, else false
  */
 bool AStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                  std::vector<Node>& expand)
@@ -102,9 +102,8 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
       node_new.id_ = grid2Index(node_new.x_, node_new.y_);
       node_new.pid_ = current.id_;
 
-      // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_)
-          || (global_costmap[node_new.id_] >= lethal_cost_ * factor_ && global_costmap[node_new.id_] >= global_costmap[current.id_]))
+      // next node hit the boundary or obstacle: && global_costmap[node_new.id_] >= global_costmap[current.id_]
+      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (global_costmap[node_new.id_] >= lethal_cost_ * factor_))
         continue;
 
       // if using dijkstra implementation, do not consider heuristics cost
