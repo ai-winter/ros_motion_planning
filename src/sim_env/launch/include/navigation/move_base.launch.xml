@@ -58,7 +58,7 @@
                     or arg('global_planner')=='voronoi'
                     or arg('global_planner')=='d_star_lite'
                     or arg('global_planner')=='theta_star'
-                    or arg('global_planner')=='lazy_theta_star')" />
+                    or arg('global_planner')=='lazy_theta_star')"/>
 
         <!-- sample search -->
         <param name="base_global_planner" value="sample_planner/SamplePlanner"
@@ -71,22 +71,25 @@
                     or arg('global_planner')=='rrt_star'
                     or arg('global_planner')=='informed_rrt'
                     or arg('global_planner')=='rrt_connect')" />
-        <rosparam file="$(find sim_env)/config/planner/sample_planner_params.yaml" command="load"
+        <rosparam file="$(find sim_env)/config/planner/sample_planner_params.yaml" command="load" 
             if="$(eval arg('global_planner')=='rrt'
                     or arg('global_planner')=='rrt_star'
                     or arg('global_planner')=='informed_rrt'
-                    or arg('global_planner')=='rrt_connect')" />
+                    or arg('global_planner')=='rrt_connect')"/>
 
         <!-- evolutionary search -->
         <param name="base_global_planner" value="evolutionary_planner/EvolutionaryPlanner"
             if="$(eval arg('global_planner')=='aco'
+                    or arg('global_planner')=='pso'
                     or arg('global_planner')=='ga')" />
         <param name="EvolutionaryPlanner/planner_name" value="$(arg global_planner)"
             if="$(eval arg('global_planner')=='aco'
+                    or arg('global_planner')=='pso'
                     or arg('global_planner')=='ga')" />
-        <rosparam file="$(find sim_env)/config/planner/evolutionary_planner_params.yaml" command="load"
+        <rosparam file="$(find sim_env)/config/planner/evolutionary_planner_params.yaml" command="load" 
             if="$(eval arg('global_planner')=='aco'
-                    or arg('global_planner')=='ga')" />
+                    or arg('global_planner')=='pso'
+                    or arg('global_planner')=='ga')"/>
 
         <!-- local planner plugin -->
         <param name="base_local_planner" value="dwa_planner/DWAPlanner"
@@ -100,9 +103,9 @@
             if="$(eval arg('local_planner')=='pid')" />
 
         <param name="base_local_planner" value="apf_planner/APFPlanner"
-            if="$(eval arg('local_planner')=='apf')" />
+               if="$(eval arg('local_planner')=='apf')" />
         <rosparam file="$(find sim_env)/config/planner/apf_planner_params.yaml" command="load"
-            if="$(eval arg('local_planner')=='apf')" />
+                  if="$(eval arg('local_planner')=='apf')" />
 
         <param name="base_local_planner" value="static_planner/StaticPlanner"
             if="$(eval arg('local_planner')=='static')" />
