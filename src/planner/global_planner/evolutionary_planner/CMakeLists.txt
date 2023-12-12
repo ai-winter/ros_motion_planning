@@ -28,6 +28,8 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/evolutionary_planner.cpp
   src/aco.cpp
+  src/trajectoryGeneration.cpp
+  src/pso.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
