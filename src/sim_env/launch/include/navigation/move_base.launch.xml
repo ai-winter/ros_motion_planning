@@ -80,13 +80,16 @@
         <!-- evolutionary search -->
         <param name="base_global_planner" value="evolutionary_planner/EvolutionaryPlanner"
             if="$(eval arg('global_planner')=='aco'
+                    or arg('global_planner')=='pso'
                     or arg('global_planner')=='ga')" />
         <param name="EvolutionaryPlanner/planner_name" value="$(arg global_planner)"
             if="$(eval arg('global_planner')=='aco'
+                    or arg('global_planner')=='pso'
                     or arg('global_planner')=='ga')" />
         <rosparam file="$(find sim_env)/config/planner/evolutionary_planner_params.yaml" command="load"
             if="$(eval arg('global_planner')=='aco'
-                    or arg('global_planner')=='ga')" />
+                    or arg('global_planner')=='pso'
+                    or arg('global_planner')=='ga')"/>
 
         <!-- local planner plugin -->
         <param name="base_local_planner" value="dwa_planner/DWAPlanner"

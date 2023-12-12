@@ -15,6 +15,7 @@
 #include <pluginlib/class_list_macros.h>
 
 #include "aco.h"
+#include "pso.h"
 
 PLUGINLIB_EXPORT_CLASS(evolutionary_planner::EvolutionaryPlanner, nav_core::BaseGlobalPlanner)
 
@@ -107,6 +108,24 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
       private_nh.param("max_iter", max_iter, 100);  // maximum iterations
 
       g_planner_ = new global_planner::ACO(nx_, ny_, resolution_, n_ants, alpha, beta, rho, Q, max_iter);
+    }
+    else if (planner_name == "pso")
+    {
+      bool pub_particles;
+      int n_particles,n_inherited,pointNum,max_speed,initposmode,pso_max_iter;
+      double w_inertial, w_social, w_cognitive;
+      private_nh.param("n_particles", n_particles, 50);        // number of particles
+      private_nh.param("n_inherited", n_inherited, 10);        // number of inherited particles
+      private_nh.param("pointNum", pointNum, 5);               // number of position points contained in each particle
+      private_nh.param("max_speed", max_speed,40);             // The maximum velocity of particle motion
+      private_nh.param("w_inertial", w_inertial,1.0);          // inertia weight
+      private_nh.param("w_social", w_social, 2.0);             // social weight
+      private_nh.param("w_cognitive", w_cognitive, 1.2);       // cognitive weight
+      private_nh.param("initposmode", initposmode, 2);         // Set the generation mode for the initial position points of the particle swarm
+      private_nh.param("pub_particles", pub_particles, false);     // Whether to publish particles
+      private_nh.param("pso_max_iter", pso_max_iter, 30);      // maximum iterations
+
+      g_planner_ = new global_planner::PSO(nx_, ny_, resolution_ ,origin_x_,origin_y_, n_particles,n_inherited, pointNum, w_inertial, w_social, w_cognitive,max_speed ,initposmode ,pub_particles,pso_max_iter);
     }
 
     ROS_INFO("Using global graph planner: %s", planner_name.c_str());
