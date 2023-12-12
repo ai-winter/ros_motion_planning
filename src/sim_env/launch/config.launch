@@ -38,7 +38,6 @@
         unless="$(eval arg('map') == '')" />
 
     <!-- Spawn multi robots with specific pose, and add robot control and state publisher. -->
-    <!-- Remember to change robot initial poses when using different world in start_robots.launch.xml. -->
     <include file="$(find sim_env)/launch/include/robots/start_robots.launch.xml" />
 
     <!-- Open Rviz to visualize information -->

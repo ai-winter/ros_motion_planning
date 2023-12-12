@@ -39,7 +39,7 @@ robots_config:
 #   * pid_planner
 #   * apf_planner
 
-plugins:
-  pedestrians: "pedestrian_config.yaml"
+# plugins:
+#   pedestrians: "pedestrian_config.yaml"
 #   obstacles: "obstacles_config.yaml"
 #   map_layers: "maps_config.yaml"

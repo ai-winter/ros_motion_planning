@@ -1,4 +1,6 @@
-![cover.png](assets/cover.png)
+<p align="center">
+  <img src="assets/cover.png">
+</p>
 
 <p align="center">
     <img width="100px" height="20px" src="https://img.shields.io/badge/Ubuntu-20.04-orange?logo=Ubuntu&Ubuntu-20.04"
@@ -8,11 +10,11 @@
 
 # ROS Motion Planning
 
-**Robot Motion planning** is a computational problem to find a sequence of valid configurations that moves the robot from the source to the destination. Generally, it includes **Path Searching** and **Trajectory Optimization**.
+**Robot Motion planning** is a computational problem that involves finding a sequence of valid configurations to move the robot from the source to the destination. Generally, it includes **Path Searching** and **Trajectory Optimization**.
 
-* **Path Searching**: Based on path constraints, e.g., obstacles, it searches an optimal path sequence for the robot to travel without collisions from the source to the destination.
+* **Path Searching**: Based on path constraints, such as obstacles, to find the optimal sequence for the robot to travel from the source to the destination without any collisions.
 
-* **Trajectory Planning**: Based on kinematics, dynamics and obstacles, it optimizes a motion state trajectory from the source to the destination according to the path sequence.
+* **Trajectory Planning**: Based on kinematics, dynamics and obstacles, it optimizes the trajectory of the motion state  from the source to the destination according to the path.
 
 This repository provides the implementation of common **Motion Planning** algorithms. The theory analysis can be found at [motion-planning](https://blog.csdn.net/frigidwinter/category_11410243.html). Furthermore, we provide [Python](https://github.com/ai-winter/python_motion_planning) and [MATLAB](https://github.com/ai-winter/matlab_motion_planning) version.
 
@@ -20,7 +22,7 @@ This repository provides the implementation of common **Motion Planning** algori
 
 ![demo.gif](./assets/demo.gif)
 
-## Table of Contents
+## Contents
 - [Quick Start within 3 Minutes](#0)
 - [File Tree](#1)
 - [Dynamic Configuration](#2)
@@ -39,13 +41,11 @@ This repository provides the implementation of common **Motion Planning** algori
 1. Install [ROS](http://wiki.ros.org/ROS/Installation) (Desktop-Full *suggested*).
 
 2. Install git.
-
     ```bash
     sudo apt install git
     ```
 
 3. Other dependence.
-
     ```bash
     sudo apt install python-is-python3 \
     ros-noetic-amcl \
@@ -55,35 +55,35 @@ This repository provides the implementation of common **Motion Planning** algori
     ros-noetic-navfn
     ```
 
-4. Clone this reposity.
-
+4. Clone the reposity.
     ```bash
-    cd <your_workspace>/
     git clone https://github.com/ai-winter/ros_motion_planning.git
     ```
 
-5. Compile the code.
-   
+5. Compile the code. 
     ```bash
     cd ros_motion_planning/
     catkin_make
-    # or
-    # catkin build
+    # or catkin build
     # you may need to install it by: sudo apt install python-catkin-tools
     ```
 
 6. Execute the code.
-
     ```bash
     cd scripts/
     ./main.sh
     ```
 
-    **NOTE: Changing some launch files DOES NOT work, because some of them are re-generated according to the `src/user_config/user_config.yaml` by a python script when you run `main.sh`. Therefore, you should change configurations in `user_config.yaml` instead of launch files.**
+    **NOTE: Modifying certain launch files does not have any effect, as they are regenerated based on the `src/user_config/user_config.yaml` by a Python script when you execute `main.sh`. Therefore, you should modify configurations in `user_config.yaml` instead of launch files.**
 
-7. Use **2D Nav Goal** to select the goal.
+7. Use **2D Nav Goal** in RViz to select the goal.
 
 8. Moving!
+
+9.  You can use the other script to shutdown them rapidly.
+    ```bash
+    ./killpro.sh
+    ```
 
 ## 1. <span id="1">File Tree
 
@@ -153,13 +153,13 @@ Explanation:
 
 - `world`: gazebo world，located in `src/sim_env/worlds/`, if `world: ""`, Gazebo will be disabled which often used in real world.
 
-- `rviz_file`: RVIZ configure, automatically generated if `rviz_file` is not set.
+- `rviz_file`: RViz configure, automatically generated if `rviz_file` is not set.
 
 - `robots_config`: robotic configuration.
 
-  - `type`: robotic type，such as *`turtlebot3_burger`, `turtlebot3_waffle` and `turtlebot3_waffle_pi`*.
+  - `type`: robotic type，such as `turtlebot3_burger`, `turtlebot3_waffle` and `turtlebot3_waffle_pi`.
 
-  - `global_planner`: global algorithm, details in Section `Version`.
+  - `global_planner`: global algorithm, details in [`Version`](#3).
 
   - `local_planner`: local algorithm, details in Section `Version`.
 
@@ -167,7 +167,7 @@ Explanation:
 
 - `plugins`: other applications using in simulation
 
-  - `pedestrians`: configure file to add dynamic obstacles(e.g. pedestrians).
+  - `pedestrians`: configure file to add dynamic obstacles (e.g. pedestrians).
 
   - `obstacles`: configure file to add static obstacles.
 
@@ -257,7 +257,7 @@ obstacles:
       h: 0.80
 ```
 Explanation:
-- `type`: model type of specific obstacle, *Optional: `BOX`, `CYLINDER` or `SPHERE`*.
+- `type`: model type of specific obstacle, *optional: `BOX`, `CYLINDER` or `SPHERE`*.
 
 - `pose`: fixed pose of the obstacle.
 
@@ -351,9 +351,7 @@ Explanation:
 We use another [gazebo simulation](https://github.com/ZhanyuGuo/ackermann_ws) as an example, like we have a robot which has the capacity of localization, mapping and navigation (*using move_base*).
 
 1. Download and compile this repository.
-
     ```bash
-    cd <your_workspace>/
     git clone https://github.com/ai-winter/ros_motion_planning.git
 
     cd ros_motion_planning/
@@ -361,24 +359,22 @@ We use another [gazebo simulation](https://github.com/ZhanyuGuo/ackermann_ws) as
     ```
 
 2. Download and compile the 'real robot' software.
-
     ```bash
-    cd <your_workspace>/
     git clone https://github.com/ZhanyuGuo/ackermann_ws.git
 
     cd ackermann_ws/
-    # ---- IMPORTANT HERE, reasons in NOTE ----
-    source <your_workspace>/ros_motion_planning/devel/setup.bash
+
+    # ---- IMPORTANT HERE ----
+    source ../ros_motion_planning/devel/setup.bash
 
     catkin_make
     ```
 
-    **NOTE: Sourcing other workspaces before `catkin_make` will make the current `setup.bash` contain former sourced workspaces, i.e. they are also included when you only source this current workspace later.**
+    **NOTE1: Sourcing other workspaces before `catkin_make` will make the current `setup.bash` contain former sourced workspaces, i.e., they are also included when you only source this current workspace later.**
     
-    **REMEMBER: Remove the old `build/` and `devel/` of current workspace before doing this, otherwise it will not work.**
+    **NOTE2: Remove the old `build/` and `devel/` of the current workspace before doing this, otherwise it will not work.**
 
 3. Change the **base_global_planner** and **base_local_planner** in real robot's `move_base` as you need.
-   
     ```xml
     <?xml version="1.0"?>
     <launch>
