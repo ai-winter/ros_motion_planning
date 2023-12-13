@@ -63,12 +63,12 @@ public:
   /**
    * @brief Set the plan that the controller is following
    * @param orig_global_plan the plan to pass to the controller
-   * @return  true if the plan was updated successfully, else false
+   * @return true if the plan was updated successfully, else false
    */
   bool setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan);
 
   /**
-   * @brief  Check if the goal pose has been achieved
+   * @brief Check if the goal pose has been achieved
    * @return True if achieved, false otherwise
    */
   bool isGoalReached();
@@ -76,7 +76,7 @@ public:
   /**
    * @brief Given the current position, orientation, and velocity of the robot, compute the velocity commands
    * @param cmd_vel will be filled with the velocity command to be passed to the robot base
-   * @return  true if a valid trajectory was found, else false
+   * @return true if a valid trajectory was found, else false
    */
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
 

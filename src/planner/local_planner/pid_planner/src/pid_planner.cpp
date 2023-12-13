@@ -99,9 +99,9 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 }
 
 /**
- * @brief  Set the plan that the controller is following
+ * @brief Set the plan that the controller is following
  * @param orig_global_plan the plan to pass to the controller
- * @return  true if the plan was updated successfully, else false
+ * @return true if the plan was updated successfully, else false
  */
 bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
 {
@@ -118,8 +118,10 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
   global_plan_ = orig_global_plan;
 
   // reset plan parameters
-  plan_index_ = std::min(1, (int)global_plan_.size() - 1);
+  // plan_index_ = std::min(1, (int)global_plan_.size() - 1);  // todo: why?
+  plan_index_ = 0;
 
+  // receive a plan for a new goal
   if (goal_x_ != global_plan_.back().pose.position.x || goal_y_ != global_plan_.back().pose.position.y)
   {
     goal_x_ = global_plan_.back().pose.position.x;
@@ -135,7 +137,7 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
 }
 
 /**
- * @brief  Check if the goal pose has been achieved
+ * @brief Check if the goal pose has been achieved
  * @return True if achieved, false otherwise
  */
 bool PIDPlanner::isGoalReached()
@@ -157,7 +159,7 @@ bool PIDPlanner::isGoalReached()
 /**
  * @brief Given the current position, orientation, and velocity of the robot, compute the velocity commands
  * @param cmd_vel will be filled with the velocity command to be passed to the robot base
- * @return  true if a valid trajectory was found, else false
+ * @return true if a valid trajectory was found, else false
  */
 bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 {
@@ -171,7 +173,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   geometry_msgs::PoseStamped current_ps_odom;
   costmap_ros_->getRobotPose(current_ps_odom);
 
-  // transform into map
+  // transform from odom into map
   tf_->transform(current_ps_odom, current_ps_, map_frame_);
 
   // current angle
