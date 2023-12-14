@@ -43,28 +43,28 @@ public:
   /**
    * @brief Overloading operator + for Node class
    * @param n another Node
-   * @return  Node with current node's and input node n's values added
+   * @return Node with current node's and input node n's values added
    */
   Node operator+(const Node& n) const;
 
   /**
    * @brief Overloading operator - for Node class
    * @param n another Node
-   * @return  Node with current node's and input node n's values subtracted
+   * @return Node with current node's and input node n's values subtracted
    */
   Node operator-(const Node& n) const;
 
   /**
    * @brief Overloading operator == for Node class
    * @param n another Node
-   * @return  true if current node equals node n, else false
+   * @return true if current node equals node n, else false
    */
   bool operator==(const Node& n) const;
 
   /**
    * @brief Overloading operator != for Node class
    * @param n another Node
-   * @return  true if current node equals node n, else false
+   * @return true if current node equals node n, else false
    */
   bool operator!=(const Node& n) const;
 
@@ -83,7 +83,7 @@ public:
   /**
    * @brief Overlaod () operator to calculate the hash of a Node
    * @param n Node for which the hash is to be calculated
-   * @return  hash value, node id
+   * @return hash value, node id
    */
   size_t operator()(const Node& n) const;
 };
@@ -96,9 +96,9 @@ struct compare_cost
 {
   /**
    * @brief Compare cost between 2 nodes
-   * @param n1  one Node
-   * @param n2  another Node
-   * @return  true if the cost to get to n1 is greater than n2, else false
+   * @param n1 one Node
+   * @param n2 another Node
+   * @return true if the cost to get to n1 is greater than n2, else false
    */
   bool operator()(const Node& n1, const Node& n2) const;
 };
@@ -111,17 +111,16 @@ struct compare_coordinates
 {
   /**
    * @brief Compare coordinates between 2 nodes
-   * @param n1  one Node
-   * @param n2  another Node
-   * @return  true if n1 equals n2, else false
+   * @param n1 one Node
+   * @param n2 another Node
+   * @return true if n1 equals n2, else false
    */
   bool operator()(const Node& n1, const Node& n2) const;
 };
 
 /**
  * @brief Structure to generate a hash for std::pair
- * @details This allows the use of pairs in data structures that use a hash,
- * such as unordered_map/set
+ * @details This allows the use of pairs in data structures that use a hash, such as unordered_map/set
  */
 struct pair_hash
 {
@@ -184,14 +183,14 @@ public:
   };
   /**
    * @brief Construct a new DNode object
-   * @param x       X value
-   * @param y       Y value
-   * @param cost    Cost to get to this node
-   * @param h_cost  Heuritic cost of this node
-   * @param id      Node's id
-   * @param pid     Node's parent's id
-   * @param t       Node's tag among enum Tag
-   * @param k       Node's k_min in history
+   * @param x      X value
+   * @param y      Y value
+   * @param cost   Cost to get to this node
+   * @param h_cost Heuritic cost of this node
+   * @param id     Node's id
+   * @param pid    Node's parent's id
+   * @param t      Node's tag among enum Tag
+   * @param k      Node's k_min in history
    */
   DNode(const int x = 0, const int y = 0, const double cost = INF, const double h_cost = INF, const int id = 0,
         const int pid = -1, const int t = NEW, const double k = INF)
@@ -209,15 +208,14 @@ class LNode : public Node
 public:
   /**
    * @brief Construct a new LNode object
-   *
-   * @param x       X value
-   * @param y       Y value
-   * @param cost    Cost to get to this node
-   * @param h_cost  Heuritic cost of this node
-   * @param id      Node's id
-   * @param pid     Node's parent's id
-   * @param rhs     Node's right hand side
-   * @param key     Node's key value
+   * @param x      X value
+   * @param y      Y value
+   * @param cost   Cost to get to this node
+   * @param h_cost Heuritic cost of this node
+   * @param id     Node's id
+   * @param pid    Node's parent's id
+   * @param rhs    Node's right hand side
+   * @param key    Node's key value
    */
   LNode(const int x = 0, const int y = 0, const double cost = INF, const double h_cost = INF, const int id = 0,
         const int pid = -1, const double rhs = INF, const double key = INF)
@@ -226,8 +224,8 @@ public:
   }
 
 public:
-  double rhs;                                         // minimum cost moving from start(value)
-  double key;                                         // priority
+  double rhs;                                       // minimum cost moving from start(value)
+  double key;                                       // priority
   std::multimap<double, LNode*>::iterator open_it;  // iterator
 };
 

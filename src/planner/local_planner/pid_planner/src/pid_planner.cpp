@@ -118,8 +118,7 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
   global_plan_ = orig_global_plan;
 
   // reset plan parameters
-  // plan_index_ = std::min(1, (int)global_plan_.size() - 1);  // todo: why?
-  plan_index_ = 0;
+  plan_index_ = std::min(4, (int)global_plan_.size() - 1);  // help getting a future plan, since the plan may delay
 
   // receive a plan for a new goal
   if (goal_x_ != global_plan_.back().pose.position.x || goal_y_ != global_plan_.back().pose.position.y)
@@ -291,7 +290,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
  * @param base_odometry odometry of the robot, to get velocity
  * @param b_x_d         desired x in body frame
  * @param b_y_d         desired y in body frame
- * @return  linear velocity
+ * @return linear velocity
  */
 double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double b_x_d, double b_y_d)
 {
@@ -323,7 +322,7 @@ double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double
  * @brief PID controller in angular
  * @param base_odometry odometry of the robot, to get velocity
  * @param e_theta       the error between the current and desired theta
- * @return  angular velocity
+ * @return angular velocity
  */
 double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, double e_theta)
 {

@@ -66,7 +66,7 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
   open_list.push(start);
 
   // get all possible motions
-  const std::vector<Node> motion = getMotion();
+  const std::vector<Node> motions = getMotion();
 
   // main process
   while (!open_list.empty())
@@ -90,11 +90,11 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
     }
 
     // explore neighbor of current node
-    for (const auto& m : motion)
+    for (const auto& motion : motions)
     {
-      Node node_new = current + m;
+      Node node_new = current + motion;
 
-      // current node do not exist in closed list
+      // node_new in closed list
       if (closed_list.find(node_new) != closed_list.end())
         continue;
 
@@ -102,8 +102,11 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
       node_new.id_ = grid2Index(node_new.x_, node_new.y_);
       node_new.pid_ = current.id_;
 
-      // next node hit the boundary or obstacle: && global_costmap[node_new.id_] >= global_costmap[current.id_]
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) || (global_costmap[node_new.id_] >= lethal_cost_ * factor_))
+      // next node hit the boundary or obstacle
+      // prevent planning failed when the current within inflation
+      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) ||
+          (global_costmap[node_new.id_] >= lethal_cost_ * factor_ &&
+           global_costmap[node_new.id_] >= global_costmap[current.id_]))
         continue;
 
       // if using dijkstra implementation, do not consider heuristics cost

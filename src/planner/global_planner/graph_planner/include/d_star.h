@@ -34,9 +34,9 @@ class DStar : public GlobalPlanner
 public:
   /**
    * @brief Construct a new DStar object
-   * @param nx          pixel number in costmap x direction
-   * @param ny          pixel number in costmap y direction
-   * @param resolution  costmap resolution
+   * @param nx         pixel number in costmap x direction
+   * @param ny         pixel number in costmap y direction
+   * @param resolution costmap resolution
    */
   DStar(int nx, int ny, double resolution);
 
@@ -52,23 +52,23 @@ public:
 
   /**
    * @brief Insert nodePtr into the open_list with h_new
-   * @param node_ptr  DNode pointer of the DNode to be inserted
-   * @param h_new     new h value
+   * @param node_ptr DNode pointer of the DNode to be inserted
+   * @param h_new    new h value
    */
   void insert(DNodePtr node_ptr, double h_new);
 
   /**
    * @brief Check if there is collision between n1 and n2
-   * @param n1  DNode pointer of one DNode
-   * @param n2  DNode pointer of the other DNode
+   * @param n1 DNode pointer of one DNode
+   * @param n2 DNode pointer of the other DNode
    * @return true if collision, else false
    */
   bool isCollision(DNodePtr n1, DNodePtr n2);
 
   /**
    * @brief Get neighbour DNodePtrs of nodePtr
-   * @param node_ptr    DNode to expand
-   * @param neighbours  neigbour DNodePtrs in vector
+   * @param node_ptr   DNode to expand
+   * @param neighbours neigbour DNodePtrs in vector
    */
   void getNeighbours(DNodePtr node_ptr, std::vector<DNodePtr>& neighbours);
 
@@ -114,10 +114,10 @@ public:
 
   /**
    * @brief D* implementation
-   * @param costs   costmap
-   * @param start   start node
-   * @param goal    goal node
-   * @param expand  containing the node been search during the process
+   * @param costs  costmap
+   * @param start  start node
+   * @param goal   goal node
+   * @param expand containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
   bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,

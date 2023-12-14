@@ -35,9 +35,9 @@ class GlobalPlanner
 public:
   /**
    * @brief Construct a new Global Planner object
-   * @param nx          pixel number in costmap x direction
-   * @param ny          pixel number in costmap y direction
-   * @param resolution  costmap resolution
+   * @param nx         pixel number in costmap x direction
+   * @param ny         pixel number in costmap y direction
+   * @param resolution costmap resolution
    */
   GlobalPlanner(int nx, int ny, double resolution);
 
@@ -49,25 +49,25 @@ public:
   /**
    * @brief Pure virtual function that is overloadde by planner implementations
    * @param global_costmap global costmap
-   * @param start         start node
-   * @param goal          goal node
-   * @param path          optimal path consists of Node
-   * @param expand        containing the node been search during the process
-   * @return  true if path found, else false
+   * @param start          start node
+   * @param goal           goal node
+   * @param path           optimal path consists of Node
+   * @param expand         containing the node been search during the process
+   * @return true if path found, else false
    */
   virtual bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
                     std::vector<Node>& expand) = 0;
 
   /**
    * @brief Set or reset costmap size
-   * @param nx  pixel number in costmap x direction
-   * @param ny  pixel number in costmap y direction
+   * @param nx pixel number in costmap x direction
+   * @param ny pixel number in costmap y direction
    */
   void setSize(int nx, int ny);
 
   /**
    * @brief Set or reset costmap resolution
-   * @param resolution  costmap resolution
+   * @param resolution costmap resolution
    */
   void setResolution(double resolution);
 
@@ -79,13 +79,13 @@ public:
 
   /**
    * @brief Set or reset neutral cost
-   * @param neutral_cost  neutral cost
+   * @param neutral_cost neutral cost
    */
   void setNeutralCost(unsigned char neutral_cost);
 
   /**
    * @brief Set or reset obstacle factor
-   * @param factor  obstacle factor
+   * @param factor obstacle factor
    */
   void setFactor(double factor);
 
@@ -93,7 +93,7 @@ public:
    * @brief Transform from grid map(x, y) to grid index(i)
    * @param x grid map x
    * @param y grid map y
-   * @return  index
+   * @return index
    */
   int grid2Index(int x, int y);
 
@@ -107,10 +107,10 @@ public:
 
   /**
    * @brief Transform from grid map(x, y) to costmap(x, y)
-   * @param gx  grid map x
-   * @param gy  grid map y
-   * @param mx  costmap x
-   * @param my  costmap y
+   * @param gx grid map x
+   * @param gy grid map y
+   * @param mx costmap x
+   * @param my costmap y
    */
   void map2Grid(double mx, double my, int& gx, int& gy);
 
@@ -137,17 +137,17 @@ public:
 
   /**
    * @brief Calculate distance between the 2 nodes.
-   * @param n1        Node 1
-   * @param n2        Node 2
+   * @param n1 Node 1
+   * @param n2 Node 2
    * @return distance between nodes
    */
   double dist(const Node& node1, const Node& node2);
 
   /**
    * @brief Calculate the angle of x-axis between the 2 nodes.
-   * @param n1        Node 1
-   * @param n2        Node 2
-   * @return he angle of x-axis between the 2 node
+   * @param n1 Node 1
+   * @param n2 Node 2
+   * @return the angle of x-axis between the 2 node
    */
   double angle(const Node& node1, const Node& node2);
 
@@ -157,7 +157,7 @@ protected:
    * @param closed_list closed list
    * @param start       start node
    * @param goal        goal node
-   * @return  vector containing path nodes
+   * @return vector containing path nodes
    */
   std::vector<Node> _convertClosedListToPath(std::unordered_set<Node, NodeIdAsHash, compare_coordinates>& closed_list,
                                              const Node& start, const Node& goal);

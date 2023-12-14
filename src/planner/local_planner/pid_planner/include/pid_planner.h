@@ -85,7 +85,7 @@ public:
    * @param base_odometry odometry of the robot, to get velocity
    * @param b_x_d         desired x in body frame
    * @param b_y_d         desired y in body frame
-   * @return  linear velocity
+   * @return linear velocity
    */
   double LinearPIDController(nav_msgs::Odometry& base_odometry, double b_x_d, double b_y_d);
 
@@ -93,7 +93,7 @@ public:
    * @brief PID controller in angular
    * @param base_odometry odometry of the robot, to get velocity
    * @param e_theta       the error between the current and desired theta
-   * @return  angular velocity
+   * @return angular velocity
    */
   double AngularPIDController(nav_msgs::Odometry& base_odometry, double e_theta);
 

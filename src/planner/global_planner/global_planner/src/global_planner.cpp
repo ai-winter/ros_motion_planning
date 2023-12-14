@@ -17,9 +17,9 @@ namespace global_planner
 {
 /**
  * @brief Construct a new Global Planner object
- * @param nx          pixel number in costmap x direction
- * @param ny          pixel number in costmap y direction
- * @param resolution  costmap resolution
+ * @param nx         pixel number in costmap x direction
+ * @param ny         pixel number in costmap y direction
+ * @param resolution costmap resolution
  */
 GlobalPlanner::GlobalPlanner(int nx, int ny, double resolution)
   : lethal_cost_(LETHAL_COST), neutral_cost_(NEUTRAL_COST), factor_(OBSTACLE_FACTOR)
@@ -30,8 +30,8 @@ GlobalPlanner::GlobalPlanner(int nx, int ny, double resolution)
 
 /**
  * @brief Set or reset costmap size
- * @param nx  pixel number in costmap x direction
- * @param ny  pixel number in costmap y direction
+ * @param nx pixel number in costmap x direction
+ * @param ny pixel number in costmap y direction
  */
 void GlobalPlanner::setSize(int nx, int ny)
 {
@@ -42,7 +42,7 @@ void GlobalPlanner::setSize(int nx, int ny)
 
 /**
  * @brief Set or reset costmap resolution
- * @param resolution  costmap resolution
+ * @param resolution costmap resolution
  */
 void GlobalPlanner::setResolution(double resolution)
 {
@@ -56,7 +56,7 @@ void GlobalPlanner::setLethalCost(unsigned char lethal_cost)
 
 /**
  * @brief Set or reset neutral cost
- * @param neutral_cost  neutral cost
+ * @param neutral_cost neutral cost
  */
 void GlobalPlanner::setNeutralCost(unsigned char neutral_cost)
 {
@@ -65,7 +65,7 @@ void GlobalPlanner::setNeutralCost(unsigned char neutral_cost)
 
 /**
  * @brief Set or reset obstacle factor
- * @param factor  obstacle factor
+ * @param factor obstacle factor
  */
 void GlobalPlanner::setFactor(double factor)
 {
@@ -76,7 +76,7 @@ void GlobalPlanner::setFactor(double factor)
  * @brief Transform from grid map(x, y) to grid index(i)
  * @param x grid map x
  * @param y grid map y
- * @return  index
+ * @return index
  */
 int GlobalPlanner::grid2Index(int x, int y)
 {
@@ -97,10 +97,10 @@ void GlobalPlanner::index2Grid(int i, int& x, int& y)
 
 /**
  * @brief Transform from grid map(x, y) to costmap(x, y)
- * @param gx  grid map x
- * @param gy  grid map y
- * @param mx  costmap x
- * @param my  costmap y
+ * @param gx grid map x
+ * @param gy grid map y
+ * @param mx costmap x
+ * @param my costmap y
  */
 void GlobalPlanner::map2Grid(double mx, double my, int& gx, int& gy)
 {
@@ -123,7 +123,7 @@ void GlobalPlanner::grid2Map(int gx, int gy, double& mx, double& my)
 
 /**
  * @brief Get permissible motion
- * @return  Node vector of permissible motions
+ * @return Node vector of permissible motions
  */
 std::vector<Node> GlobalPlanner::getMotion()
 {
@@ -140,8 +140,8 @@ std::vector<Node> GlobalPlanner::getMotion()
 }
 
 /**
- * @brief  Inflate the boundary of costmap into obstacles to prevent cross planning
- * @param  costarr  costmap pointer
+ * @brief Inflate the boundary of costmap into obstacles to prevent cross planning
+ * @param costarr costmap pointer
  */
 void GlobalPlanner::outlineMap(unsigned char* costarr)
 {
@@ -161,8 +161,8 @@ void GlobalPlanner::outlineMap(unsigned char* costarr)
 
 /**
  * @brief Calculate distance between the 2 nodes.
- * @param n1        Node 1
- * @param n2        Node 2
+ * @param n1 Node 1
+ * @param n2 Node 2
  * @return distance between nodes
  */
 double GlobalPlanner::dist(const Node& node1, const Node& node2)
@@ -172,9 +172,9 @@ double GlobalPlanner::dist(const Node& node1, const Node& node2)
 
 /**
  * @brief Calculate the angle of x-axis between the 2 nodes.
- * @param n1        Node 1
- * @param n2        Node 2
- * @return he angle of x-axis between the 2 node
+ * @param n1 Node 1
+ * @param n2 Node 2
+ * @return the angle of x-axis between the 2 node
  */
 double GlobalPlanner::angle(const Node& node1, const Node& node2)
 {
@@ -186,7 +186,7 @@ double GlobalPlanner::angle(const Node& node1, const Node& node2)
  * @param closed_list closed list
  * @param start       start node
  * @param goal        goal node
- * @return  vector containing path nodes
+ * @return vector containing path nodes
  */
 std::vector<Node> GlobalPlanner::_convertClosedListToPath(
     std::unordered_set<Node, NodeIdAsHash, compare_coordinates>& closed_list, const Node& start, const Node& goal)
