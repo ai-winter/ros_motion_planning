@@ -183,18 +183,18 @@ public:
   };
   /**
    * @brief Construct a new DNode object
-   * @param x      X value
-   * @param y      Y value
-   * @param cost   Cost to get to this node
-   * @param h_cost Heuritic cost of this node
-   * @param id     Node's id
-   * @param pid    Node's parent's id
-   * @param t      Node's tag among enum Tag
-   * @param k      Node's k_min in history
+   * @param x   X value
+   * @param y   Y value
+   * @param g   Cost to get to this node
+   * @param h   Heuritic cost of this node
+   * @param id  Node's id
+   * @param pid Node's parent's id
+   * @param t   Node's tag among enum Tag
+   * @param k   Node's k_min in history
    */
-  DNode(const int x = 0, const int y = 0, const double cost = INF, const double h_cost = INF, const int id = 0,
+  DNode(const int x = 0, const int y = 0, const double g = INF, const double h = INF, const int id = 0,
         const int pid = -1, const int t = NEW, const double k = INF)
-    : Node(x, y, cost, h_cost, id, pid), t_(t), k_(k)
+    : Node(x, y, g, h, id, pid), t_(t), k_(k)
   {
   }
 

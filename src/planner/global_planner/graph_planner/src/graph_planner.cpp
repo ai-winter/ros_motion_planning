@@ -191,7 +191,7 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
     return false;
   }
 
-  // get goal and strat node coordinate tranform from world to costmap
+  // get goal and start node coordinate tranform from world to costmap
   double wx = start.pose.position.x, wy = start.pose.position.y;
   double m_start_x, m_start_y, m_goal_x, m_goal_y;
   if (!_worldToMap(wx, wy, m_start_x, m_start_y))

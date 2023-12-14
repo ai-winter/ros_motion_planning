@@ -31,7 +31,7 @@ Node::Node(int x, int y, double g, double h, int id, int pid) : x_(x), y_(y), g_
 /**
  * @brief Overloading operator + for Node class
  * @param n another Node
- * @return  Node with current node's and input node n's values added
+ * @return Node with current node's and input node n's values added
  */
 Node Node::operator+(const Node& n) const
 {
@@ -46,7 +46,7 @@ Node Node::operator+(const Node& n) const
 /**
  * @brief Overloading operator - for Node class
  * @param n another Node
- * @return  Node with current node's and input node n's values subtracted
+ * @return Node with current node's and input node n's values subtracted
  */
 Node Node::operator-(const Node& n) const
 {
@@ -60,7 +60,7 @@ Node Node::operator-(const Node& n) const
 /**
  * @brief Overloading operator == for Node class
  * @param n another Node
- * @return  true if current node equals node n, else false
+ * @return true if current node equals node n, else false
  */
 bool Node::operator==(const Node& n) const
 {
@@ -70,7 +70,7 @@ bool Node::operator==(const Node& n) const
 /**
  * @brief Overloading operator != for Node class
  * @param n another Node
- * @return  true if current node equals node n, else false
+ * @return true if current node equals node n, else false
  */
 bool Node::operator!=(const Node& n) const
 {
@@ -80,7 +80,7 @@ bool Node::operator!=(const Node& n) const
 /**
  * @brief Overlaod () operator to calculate the hash of a Node
  * @param n Node for which the hash is to be calculated
- * @return  hash value, node id
+ * @return hash value, node id
  */
 size_t NodeIdAsHash::operator()(const Node& n) const
 {
@@ -89,9 +89,9 @@ size_t NodeIdAsHash::operator()(const Node& n) const
 
 /**
  * @brief Compare cost between 2 nodes
- * @param n1  one Node
- * @param n2  another Node
- * @return  true if the cost to get to n1 is greater than n2, else false
+ * @param n1 one Node
+ * @param n2 another Node
+ * @return true if the cost to get to n1 is greater than n2, else false
  */
 bool compare_cost::operator()(const Node& n1, const Node& n2) const
 {
@@ -101,9 +101,9 @@ bool compare_cost::operator()(const Node& n1, const Node& n2) const
 
 /**
  * @brief Compare coordinates between 2 nodes
- * @param n1  one Node
- * @param n2  another Node
- * @return  true if n1 equals n2, else false
+ * @param n1 one Node
+ * @param n2 another Node
+ * @return true if n1 equals n2, else false
  */
 bool compare_coordinates::operator()(const Node& n1, const Node& n2) const
 {

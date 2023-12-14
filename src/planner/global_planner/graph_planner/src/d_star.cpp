@@ -53,11 +53,11 @@ void DStar::reset()
 {
   open_list_.clear();
 
-  for (int i = 0; i < nx_; i++)
-    for (int j = 0; j < ny_; j++)
+  for (int i = 0; i < nx_; ++i)
+    for (int j = 0; j < ny_; ++j)
       delete map_[i][j];
 
-  for (int i = 0; i < nx_; i++)
+  for (int i = 0; i < nx_; ++i)
     delete[] map_[i];
 
   delete[] map_;
@@ -104,9 +104,9 @@ bool DStar::isCollision(DNodePtr n1, DNodePtr n2)
 void DStar::getNeighbours(DNodePtr node_ptr, std::vector<DNodePtr>& neighbours)
 {
   int x = node_ptr->x_, y = node_ptr->y_;
-  for (int i = -1; i <= 1; i++)
+  for (int i = -1; i <= 1; ++i)
   {
-    for (int j = -1; j <= 1; j++)
+    for (int j = -1; j <= 1; ++j)
     {
       if (i == 0 && j == 0)
         continue;
@@ -114,11 +114,8 @@ void DStar::getNeighbours(DNodePtr node_ptr, std::vector<DNodePtr>& neighbours)
       int x_n = x + i, y_n = y + j;
       if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
         continue;
+
       DNodePtr neigbour_ptr = map_[x_n][y_n];
-
-      // if (isCollision(node_ptr, neigbour_ptr))
-      //   continue;
-
       neighbours.push_back(neigbour_ptr);
     }
   }
@@ -140,7 +137,6 @@ double DStar::getCost(DNodePtr n1, DNodePtr n2)
 
 /**
  * @brief Main process of D*
- *
  * @return k_min
  */
 double DStar::processState()
@@ -212,9 +208,9 @@ double DStar::processState()
  */
 void DStar::extractExpand(std::vector<Node>& expand)
 {
-  for (int i = 0; i < nx_; i++)
+  for (int i = 0; i < nx_; ++i)
   {
-    for (int j = 0; j < ny_; j++)
+    for (int j = 0; j < ny_; ++j)
     {
       DNodePtr node_ptr = map_[i][j];
       if (node_ptr->t_ == DNode::CLOSED)
@@ -326,9 +322,9 @@ bool DStar::plan(const unsigned char* global_costmap, const Node& start, const N
     Node state = getState(start);
 
     // prepare-repair
-    for (int i = -WINDOW_SIZE / 2; i < WINDOW_SIZE / 2; i++)
+    for (int i = -WINDOW_SIZE / 2; i < WINDOW_SIZE / 2; ++i)
     {
-      for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; j++)
+      for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; ++j)
       {
         int x_n = state.x_ + i, y_n = state.y_ + j;
         if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
