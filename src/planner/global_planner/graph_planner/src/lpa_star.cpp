@@ -16,14 +16,17 @@
 namespace global_planner
 {
 /**
- * @brief Class for objects that plan using the LPA* algorithm
+ * @brief Construct a new LPAStar object
+ * @param nx         pixel number in costmap x direction
+ * @param ny         pixel number in costmap y direction
+ * @param resolution costmap resolution
  */
 LPAStar::LPAStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resolution)
 {
   curr_global_costmap_ = new unsigned char[ns_];
   last_global_costmap_ = new unsigned char[ns_];
   start_.x_ = start_.y_ = goal_.x_ = goal_.y_ = INF;
-  factor_ = 0.4;
+  // factor_ = 0.4;
   initMap();
 }
 
@@ -33,10 +36,10 @@ LPAStar::LPAStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, reso
 void LPAStar::initMap()
 {
   map_ = new LNodePtr*[nx_];
-  for (int i = 0; i < nx_; i++)
+  for (int i = 0; i < nx_; ++i)
   {
     map_[i] = new LNodePtr[ny_];
-    for (int j = 0; j < ny_; j++)
+    for (int j = 0; j < ny_; ++j)
     {
       map_[i][j] = new LNode(i, j, INF, INF, grid2Index(i, j), -1, INF, INF);
       map_[i][j]->open_it = open_list_.end();  // allocate empty memory
@@ -51,11 +54,11 @@ void LPAStar::reset()
 {
   open_list_.clear();
 
-  for (int i = 0; i < nx_; i++)
-    for (int j = 0; j < ny_; j++)
+  for (int i = 0; i < nx_; ++i)
+    for (int j = 0; j < ny_; ++j)
       delete map_[i][j];
 
-  for (int i = 0; i < nx_; i++)
+  for (int i = 0; i < nx_; ++i)
     delete[] map_[i];
 
   delete[] map_;
@@ -65,9 +68,8 @@ void LPAStar::reset()
 
 /**
  * @brief Get heuristics between n1 and n2
- *
- * @param n1  LNode pointer of on LNode
- * @param n2  LNode pointer of the other LNode
+ * @param n1 LNode pointer of on LNode
+ * @param n2 LNode pointer of the other LNode
  * @return heuristics between n1 and n2
  */
 double LPAStar::getH(LNodePtr n1, LNodePtr n2)
@@ -77,7 +79,6 @@ double LPAStar::getH(LNodePtr n1, LNodePtr n2)
 
 /**
  * @brief Calculate the key of s
- *
  * @param s LNode pointer
  * @return the key value
  */
@@ -88,9 +89,8 @@ double LPAStar::calculateKey(LNodePtr s)
 
 /**
  * @brief Check if there is collision between n1 and n2
- *
- * @param n1  DNode pointer of one DNode
- * @param n2  DNode pointer of the other DNode
+ * @param n1 DNode pointer of one DNode
+ * @param n2 DNode pointer of the other DNode
  * @return true if collision, else false
  */
 bool LPAStar::isCollision(LNodePtr n1, LNodePtr n2)
@@ -101,16 +101,15 @@ bool LPAStar::isCollision(LNodePtr n1, LNodePtr n2)
 
 /**
  * @brief Get neighbour LNodePtrs of nodePtr
- *
- * @param node_ptr    DNode to expand
- * @param neighbours  neigbour LNodePtrs in vector
+ * @param node_ptr   DNode to expand
+ * @param neighbours neigbour LNodePtrs in vector
  */
 void LPAStar::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
 {
   int x = u->x_, y = u->y_;
-  for (int i = -1; i <= 1; i++)
+  for (int i = -1; i <= 1; ++i)
   {
-    for (int j = -1; j <= 1; j++)
+    for (int j = -1; j <= 1; ++j)
     {
       if (i == 0 && j == 0)
         continue;
@@ -130,7 +129,6 @@ void LPAStar::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
 
 /**
  * @brief Get the cost between n1 and n2, return INF if collision
- *
  * @param n1 LNode pointer of one LNode
  * @param n2 LNode pointer of the other LNode
  * @return cost between n1 and n2
@@ -139,12 +137,12 @@ double LPAStar::getCost(LNodePtr n1, LNodePtr n2)
 {
   if (isCollision(n1, n2))
     return INF;
+
   return std::hypot(n1->x_ - n2->x_, n1->y_ - n2->y_);
 }
 
 /**
  * @brief Update vertex u
- *
  * @param u LNode pointer to update
  */
 void LPAStar::updateVertex(LNodePtr u)
@@ -221,7 +219,6 @@ void LPAStar::computeShortestPath()
 
 /**
  * @brief Extract path for map
- *
  * @param start start node
  * @param goal  goal node
  */
@@ -257,7 +254,6 @@ void LPAStar::extractPath(const Node& start, const Node& goal)
 
 /**
  * @brief Get the closest Node of the path to current state
- *
  * @param current current state
  * @return the closest Node
  */
@@ -317,7 +313,6 @@ bool LPAStar::plan(const unsigned char* global_costmap, const Node& start, const
     extractPath(start, goal);
 
     expand = expand_;
-
     path = path_;
 
     return true;
@@ -330,9 +325,9 @@ bool LPAStar::plan(const unsigned char* global_costmap, const Node& start, const
   {
     Node state = getState(start);
 
-    for (int i = -WINDOW_SIZE / 2; i < WINDOW_SIZE / 2; i++)
+    for (int i = -WINDOW_SIZE / 2; i < WINDOW_SIZE / 2; ++i)
     {
-      for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; j++)
+      for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; ++j)
       {
         int x_n = state.x_ + i, y_n = state.y_ + j;
         if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
