@@ -321,7 +321,7 @@ namespace global_planner
           if(yorder){std::sort(y, y + chromLength_, &GA::ascendingOrder);}
           else{std::sort(y, y + chromLength_, &GA::descendingOrder);}
 
-          // 将 x 和 y 中的元素存放到 genetsPositions 中
+          // Store elements from x and y in genetsPositions
           for (int ii = 0; ii < chromLength_; ++ii)
           {
               genetsPositions.emplace_back(x[ii], y[ii]);
@@ -492,7 +492,11 @@ namespace global_planner
     }
 
     // Publish genets markers
-    if(pub_genets_){publishGenetsMarkers(Genets_c.position, index_i);}
+    if(pub_genets_)
+    {
+      publishGenetsMarkers(Genets_c.position, index_i);
+      publishGenetsMarkers(Genets_p.position, index_i+(n_genets_/2));
+    }
 
     //Update global optimal genets
     genets_lock_.lock();
