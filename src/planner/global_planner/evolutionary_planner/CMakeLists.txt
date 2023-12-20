@@ -30,6 +30,7 @@ add_library(${PROJECT_NAME}
   src/aco.cpp
   src/trajectoryGeneration.cpp
   src/pso.cpp
+  src/ga.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
