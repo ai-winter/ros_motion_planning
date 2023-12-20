@@ -32,6 +32,7 @@ robots_config:
 #
 #   * evolutionary_planner
 #     * aco
+#     * pso
 #     * ga
 #
 # * local planner
