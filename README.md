@@ -121,8 +121,8 @@ For the efficient operation of the motion planning system, we provide a series o
 
 | Tool | Version | Introduction |
 |:-------:|:-------:|:---------:|
-|[![Status](https://img.shields.io/badge/Pedestrian_Simulation-Gazebo-8A2BE2?logo=iledefrancemobilites)](https://github.com/ai-winter/ros_pedestrians_simulation)|[![Status](https://img.shields.io/badge/done-v2.0-brightgreen)](https://github.com/ai-winter/ros_pedestrians_simulation) | This is a Gazebo plugin for pedestians with collision property. You can construct a dynamic environment in ROS easily using plugin.
-|[![Status](https://img.shields.io/badge/Path_Visualization-Rviz-8A2BE2?logo=v)](https://github.com/ai-winter/path_visualization_plugins)|[![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/path_visualization_plugins) | This repository provides a ROS-based visualization Rviz plugins for path planning and curve generation algorithms.
+|[![Status](https://img.shields.io/badge/Pedestrian_Simulation-8A2BE2?logo=iledefrancemobilites)](https://github.com/ai-winter/ros_pedestrians_simulation)|[![Status](https://img.shields.io/badge/done-v2.0-brightgreen)](https://github.com/ai-winter/ros_pedestrians_simulation) | This is a Gazebo plugin for pedestians with collision property. You can construct a dynamic environment in ROS easily using plugin.
+|[![Status](https://img.shields.io/badge/Path_Visualization-8A2BE2?logo=v)](https://github.com/ai-winter/path_visualization_plugins)|[![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/path_visualization_plugins) | This repository provides a ROS-based visualization Rviz plugins for path planning and curve generation algorithms.
 
 ## <span id="3">03. Version
 
