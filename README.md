@@ -312,7 +312,7 @@ Explanation:
 | Planner | Version | Animation |
 |:-------:|:-------:|:---------:|
 | **ACO** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/evolutionary_planner/src/aco.cpp) | ![aco_ros.gif](assets/aco_ros.gif)  |
-| **GA**  | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
+| **GA**  | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/evolutionary_planner/src/ga.cpp) | ![ga_ros.gif](assets/ga_ros.gif)  |
 | **PSO** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/evolutionary_planner/src/pso.cpp) | ![pso_ros.gif](assets/pso_ros.gif) |
 | **ABC** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
 
@@ -336,7 +336,9 @@ Explanation:
 
 ### Evolutionary-based Planning
 * ACO: [Ant Colony Optimization: A New Meta-Heuristic](http://www.cs.yale.edu/homes/lans/readings/routing/dorigo-ants-1999.pdf).
+* GA: [Adaptation in Natural and Artificial Systems](https://ieeexplore.ieee.org/book/6267401)
 * PSO: [Particle Swarm Optimization](https://ieeexplore.ieee.org/document/488968)
+
 
 ### Local Planning
 

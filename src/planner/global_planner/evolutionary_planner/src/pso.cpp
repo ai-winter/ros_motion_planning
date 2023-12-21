@@ -11,8 +11,6 @@
  * --------------------------------------------------------
  *
  **********************************************************/
-#include <unordered_map>
-#include <unordered_set>
 #include <algorithm>
 #include <cmath>
 #include "pso.h"
@@ -370,6 +368,7 @@ void PSO::optimizeParticle(Particle& particle, Particle& best_particle, const in
   if (particle.best_fitness > best_particle.fitness)
   {
     best_particle.fitness = particle.best_fitness;
+    best_particle.position = particle.position;
     best_particle_idx_ = index_i;
   }
 
