@@ -16,6 +16,7 @@
 
 #include "aco.h"
 #include "pso.h"
+#include "ga.h"
 
 PLUGINLIB_EXPORT_CLASS(evolutionary_planner::EvolutionaryPlanner, nav_core::BaseGlobalPlanner)
 
@@ -115,6 +116,7 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
       bool pub_particles;
       int n_particles, n_inherited, point_num, max_speed, init_mode, pso_max_iter;
       double w_inertial, w_social, w_cognitive;
+
       private_nh.param("n_particles", n_particles, 50);   // number of particles
       private_nh.param("n_inherited", n_inherited, 10);   // number of inherited particles
       private_nh.param("point_num", point_num, 5);        // number of position points contained in each particle
@@ -128,6 +130,25 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
 
       g_planner_ = new global_planner::PSO(nx_, ny_, resolution_, n_particles, n_inherited, point_num, w_inertial,
                                            w_social, w_cognitive, max_speed, init_mode, pso_max_iter);
+
+    }
+    else if (planner_name == "ga")
+    {
+      bool pub_genets;
+      int n_genets,ga_inherited,chromLength,ga_speed,ga_initposmode,ga_max_iter;
+      double p_select, p_crs, p_mut;
+      private_nh.param("n_genets", n_genets, 50);                   // number of genets
+      private_nh.param("ga_inherited", ga_inherited, 20);           // number of inherited genets
+      private_nh.param("chromLength", chromLength, 5);              // number of position points contained in each genets
+      private_nh.param("ga_speed", ga_speed,40);                    // The maximum velocity of genets motion
+      private_nh.param("p_select", p_select,0.5);                   // selection probability
+      private_nh.param("p_crs", p_crs, 0.8);                        // crossover probability
+      private_nh.param("p_mut", p_mut, 0.3);                        // mutation probability
+      private_nh.param("ga_initposmode", ga_initposmode, 2);        // Set the generation mode for the initial position points of the genets swarm
+      private_nh.param("pub_genets", pub_genets, false);            // Whether to publish genets
+      private_nh.param("ga_max_iter", ga_max_iter, 30);             // maximum iterations
+
+      g_planner_ = new global_planner::GA(nx_, ny_, resolution_ ,origin_x_,origin_y_, n_genets,ga_inherited, chromLength, p_select, p_crs, p_mut,ga_speed ,ga_initposmode ,pub_genets,ga_max_iter);
     }
 
     ROS_INFO("Using global graph planner: %s", planner_name.c_str());

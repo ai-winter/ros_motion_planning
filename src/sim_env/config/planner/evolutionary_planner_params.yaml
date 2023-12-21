@@ -45,3 +45,31 @@ EvolutionaryPlanner:
   init_mode: 2
   # maximum iterations
   pso_max_iter: 5
+
+
+  ## Genetic Algorithm(GA) planner 
+  # number of genets (Note: The parameter must be set to an even number greater than 0)
+  n_genets: 50
+  # number of inherited genets (Note: Need to be less than parameter n_genets)
+  ga_inherited: 20
+  # number of position points contained in each genets
+  chromLength: 5
+  # The maximum velocity of genets motion
+  ga_speed: 40
+  # selection probability (Note: The parameter value range is from 0 to 1)
+  # Note ：in the current version, the selection probability in the genetic algorithm is forced to be set to 0.5, so the parameter p_ The value of select does not affect the selection probability, but the value of the parameter int (100 * p-select) determines the setting of the selection scheme:
+  # If the value of int (100 * p-select) is even, select the retained individuals based on their fitness level
+  # If the value of int (100 * p-select) is a series, then the reserved individuals are selected through roulette wheel betting
+  p_select: 0.5
+  # crossover probability (Note: The parameter value range is from 0 to 1)
+  p_crs: 0.8
+  # mutation probability (Note: The parameter value range is from 0 to 1)
+  p_mut: 0.3
+  # Set the generation mode for the initial position points of the genets swarm
+  # 1: Randomly generate initial positions of genets swarm within the map range
+  # 2: Randomly generate initial genets swarm positions within the circular area of the starting and target points
+  ga_initposmode: 2
+  # Whether to publish genets
+  pub_genets: false
+  # maximum iterations
+  ga_max_iter: 5
