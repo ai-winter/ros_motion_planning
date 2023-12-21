@@ -313,7 +313,7 @@ Explanation:
 |:-------:|:-------:|:---------:|
 | **ACO** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/evolutionary_planner/src/aco.cpp) | ![aco_ros.gif](assets/aco_ros.gif)  |
 | **GA**  | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
-| **PSO** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
+| **PSO** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/planner/global_planner/evolutionary_planner/src/pso.cpp) | ![pso_ros.gif](assets/pso_ros.gif) |
 | **ABC** | ![Status](https://img.shields.io/badge/develop-v1.0-red) | ![Status](https://img.shields.io/badge/gif-none-yellow) |
 
 ## <span id="4">04. Papers
@@ -336,6 +336,7 @@ Explanation:
 
 ### Evolutionary-based Planning
 * ACO: [Ant Colony Optimization: A New Meta-Heuristic](http://www.cs.yale.edu/homes/lans/readings/routing/dorigo-ants-1999.pdf).
+* PSO: [Particle Swarm Optimization](https://ieeexplore.ieee.org/document/488968)
 
 ### Local Planning
 
