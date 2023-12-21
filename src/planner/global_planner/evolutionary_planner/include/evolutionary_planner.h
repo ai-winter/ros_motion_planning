@@ -19,6 +19,7 @@
 #include <costmap_2d/costmap_2d.h>
 #include <nav_core/base_global_planner.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <visualization_msgs/Marker.h>
 
 #include <nav_msgs/GetPlan.h>
 
@@ -105,6 +106,12 @@ protected:
   bool _getPlanFromPath(std::vector<global_planner::Node>& path, std::vector<geometry_msgs::PoseStamped>& plan);
 
   /**
+   * @brief  publish expand zone
+   * @param  expand  set of expand nodes
+   */
+  void _publishExpand(std::vector<global_planner::Node>& expand);
+
+  /**
    * @brief Tranform from costmap(x, y) to world map(x, y)
    * @param mx  costmap x
    * @param my  costmap y
@@ -124,16 +131,16 @@ protected:
   bool _worldToMap(double wx, double wy, double& mx, double& my);
 
 protected:
-  bool initialized_;                               // initialization flag
-  costmap_2d::Costmap2D* costmap_;                 // costmap
-  global_planner::GlobalPlanner* g_planner_;       // global graph planner
-  std::string frame_id_;                           // costmap frame ID
-  unsigned int nx_, ny_;                           // costmap size
-  double origin_x_, origin_y_;                     // costmap origin
-  double resolution_;                              // costmap resolution
-  ros::Publisher plan_pub_;                        // path planning publisher
-  ros::ServiceServer make_plan_srv_;               // planning service
-  // std::string planner_name_;                       // planner name
+  bool initialized_;                          // initialization flag
+  costmap_2d::Costmap2D* costmap_;            // costmap
+  global_planner::GlobalPlanner* g_planner_;  // global graph planner
+  std::string frame_id_;                      // costmap frame ID
+  unsigned int nx_, ny_;                      // costmap size
+  double origin_x_, origin_y_;                // costmap origin
+  double resolution_;                         // costmap resolution
+  ros::Publisher plan_pub_;                   // path planning publisher
+  ros::ServiceServer make_plan_srv_;          // planning service
+  ros::Publisher expand_pub_;                 // nodes explorer publisher
 
 private:
   boost::mutex mutex_;     // thread mutex
@@ -141,6 +148,7 @@ private:
   double tolerance_;       // tolerance
   double factor_;          // obstacle inflation factor
   bool is_outline_;        // whether outline the boudary of map
+  bool is_expand_;         // whether publish expand map or not
 };
-}  // namespace graph_planner
+}  // namespace evolutionary_planner
 #endif

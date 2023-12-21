@@ -4,7 +4,7 @@ rviz_file: "sim_env.rviz"
 
 robots_config:
   - robot1_type: "turtlebot3_waffle"
-    robot1_global_planner: "d_star"
+    robot1_global_planner: "pso"
     robot1_local_planner: "pid"
     robot1_x_pos: "0.0"
     robot1_y_pos: "0.0"
@@ -32,6 +32,7 @@ robots_config:
 #
 #   * evolutionary_planner
 #     * aco
+#     * pso
 #     * ga
 #
 # * local planner
@@ -39,7 +40,7 @@ robots_config:
 #   * pid_planner
 #   * apf_planner
 
-plugins:
-  pedestrians: "pedestrian_config.yaml"
-  obstacles: "obstacles_config.yaml"
+# plugins:
+#   pedestrians: "pedestrian_config.yaml"
+#   obstacles: "obstacles_config.yaml"
 #   map_layers: "maps_config.yaml"

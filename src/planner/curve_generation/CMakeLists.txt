@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.0.2)
+project(curve_generation)
+
+find_package(catkin REQUIRED COMPONENTS
+  angles
+  roscpp
+)
+
+find_package(Eigen3 REQUIRED)
+
+catkin_package(
+ INCLUDE_DIRS include
+)
+
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
+)
+
+add_library(${PROJECT_NAME}
+  src/curve.cpp
+  src/bspline_curve.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)

@@ -22,6 +22,7 @@
   <depend>tf2_ros</depend>
   <depend>utils</depend>
   <depend>global_planner</depend>
+  <depend>curve_generation</depend>
 
   <export>
     <nav_core plugin="${prefix}/evolutionary_planner_plugin.xml" />

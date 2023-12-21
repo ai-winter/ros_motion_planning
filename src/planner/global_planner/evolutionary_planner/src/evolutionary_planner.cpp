@@ -92,6 +92,7 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
     private_nh.param("default_tolerance", tolerance_, 0.0);    // error tolerance
     private_nh.param("outline_map", is_outline_, false);       // whether outline the map or not
     private_nh.param("obstacle_factor", factor_, 0.5);         // obstacle factor, NOTE: no use...
+    private_nh.param("expand_zone", is_expand_, false);        // whether publish expand zone or not
 
     // planner name
     std::string planner_name;
@@ -112,26 +113,29 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
     else if (planner_name == "pso")
     {
       bool pub_particles;
-      int n_particles,n_inherited,pointNum,max_speed,initposmode,pso_max_iter;
+      int n_particles, n_inherited, point_num, max_speed, init_mode, pso_max_iter;
       double w_inertial, w_social, w_cognitive;
-      private_nh.param("n_particles", n_particles, 50);        // number of particles
-      private_nh.param("n_inherited", n_inherited, 10);        // number of inherited particles
-      private_nh.param("pointNum", pointNum, 5);               // number of position points contained in each particle
-      private_nh.param("max_speed", max_speed,40);             // The maximum velocity of particle motion
-      private_nh.param("w_inertial", w_inertial,1.0);          // inertia weight
-      private_nh.param("w_social", w_social, 2.0);             // social weight
-      private_nh.param("w_cognitive", w_cognitive, 1.2);       // cognitive weight
-      private_nh.param("initposmode", initposmode, 2);         // Set the generation mode for the initial position points of the particle swarm
-      private_nh.param("pub_particles", pub_particles, false);     // Whether to publish particles
-      private_nh.param("pso_max_iter", pso_max_iter, 30);      // maximum iterations
+      private_nh.param("n_particles", n_particles, 50);   // number of particles
+      private_nh.param("n_inherited", n_inherited, 10);   // number of inherited particles
+      private_nh.param("point_num", point_num, 5);        // number of position points contained in each particle
+      private_nh.param("max_speed", max_speed, 40);       // The maximum velocity of particle motion
+      private_nh.param("w_inertial", w_inertial, 1.0);    // inertia weight
+      private_nh.param("w_social", w_social, 2.0);        // social weight
+      private_nh.param("w_cognitive", w_cognitive, 1.2);  // cognitive weight
+      private_nh.param("init_mode", init_mode, GEN_MODE_CIRCLE);  // Set the generation mode for the initial position
+                                                                  // points of the particle swarm
+      private_nh.param("pso_max_iter", pso_max_iter, 30);         // maximum iterations
 
-      g_planner_ = new global_planner::PSO(nx_, ny_, resolution_ ,origin_x_,origin_y_, n_particles,n_inherited, pointNum, w_inertial, w_social, w_cognitive,max_speed ,initposmode ,pub_particles,pso_max_iter);
+      g_planner_ = new global_planner::PSO(nx_, ny_, resolution_, n_particles, n_inherited, point_num, w_inertial,
+                                           w_social, w_cognitive, max_speed, init_mode, pso_max_iter);
     }
 
     ROS_INFO("Using global graph planner: %s", planner_name.c_str());
 
     // register planning publisher
     plan_pub_ = private_nh.advertise<nav_msgs::Path>("plan", 1);
+    // register explorer visualization publisher
+    expand_pub_ = private_nh.advertise<visualization_msgs::Marker>(planner_name + "_marker", 1);
 
     // register planning service
     make_plan_srv_ = private_nh.advertiseService("make_plan", &EvolutionaryPlanner::makePlanService, this);
@@ -249,6 +253,9 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
     ROS_ERROR("Failed to get a path.");
   }
 
+  if (is_expand_ && expand.size())
+    _publishExpand(expand);
+
   // publish visulization plan
   publishPlan(plan);
 
@@ -300,7 +307,8 @@ bool EvolutionaryPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_m
  * @param plan  plan transfromed from path, i.e. [start, ..., goal]
  * @return  bool true if successful, else false
  */
-bool EvolutionaryPlanner::_getPlanFromPath(std::vector<global_planner::Node>& path, std::vector<geometry_msgs::PoseStamped>& plan)
+bool EvolutionaryPlanner::_getPlanFromPath(std::vector<global_planner::Node>& path,
+                                           std::vector<geometry_msgs::PoseStamped>& plan)
 {
   if (!initialized_)
   {
@@ -331,6 +339,45 @@ bool EvolutionaryPlanner::_getPlanFromPath(std::vector<global_planner::Node>& pa
   }
 
   return !plan.empty();
+}
+
+/**
+ * @brief  publish expand zone
+ * @param  expand  set of expand nodes
+ */
+void EvolutionaryPlanner::_publishExpand(std::vector<global_planner::Node>& expand)
+{
+  ROS_DEBUG("Expand Zone Size:%ld", expand.size());
+
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "map";
+  marker.header.stamp = ros::Time::now();
+  marker.ns = "marker";
+  marker.id = 0;
+  marker.type = visualization_msgs::Marker::POINTS;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.pose.orientation.w = 1.0;
+  marker.scale.x = 0.1;
+  marker.scale.y = 0.1;
+  marker.color.r = 0.43;
+  marker.color.g = 0.54;
+  marker.color.b = 0.24;
+  marker.color.a = 0.5;
+
+  // Convert particle positions to geometry_msgs::Point
+  for (const auto& node : expand)
+  {
+    geometry_msgs::Point p;
+    p.x = origin_x_ + node.x_ * resolution_;
+    p.y = origin_y_ + node.y_ * resolution_;
+    p.z = 0.0;
+    marker.points.push_back(p);
+  }
+
+  // Set the lifetime of the marker (e.g., 1 second)
+  marker.lifetime = ros::Duration(1.0);
+
+  expand_pub_.publish(marker);
 }
 
 /**

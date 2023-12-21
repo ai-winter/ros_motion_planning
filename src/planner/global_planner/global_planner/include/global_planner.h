@@ -151,6 +151,20 @@ public:
    */
   double angle(const Node& node1, const Node& node2);
 
+  /**
+   * @brief Clamps a value within a specified range.
+   * @tparam T             The type of the values to be clamped.
+   * @param value          The value to be clamped.
+   * @param low            The lower bound of the range.
+   * @param high           The upper bound of the range.
+   * @return const T&      The clamped value within the specified range.
+   */
+  template <typename T>
+  const T& clamp(const T& value, const T& low, const T& high)
+  {
+    return std::max(low, std::min(value, high));
+  }
+
 protected:
   /**
    * @brief Convert closed list to path
