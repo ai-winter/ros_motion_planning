@@ -94,9 +94,10 @@ ros_motion_planner
 ├── assets
 ├── scripts
 └── src
-    ├── planner
+    ├── core
     │   ├── global_planner
     │   ├── local_planner
+    │   ├── curve_generation
     │   └── utils
     ├── sim_env             # simulation environment
     │   ├── config

@@ -22,6 +22,7 @@ add_library(${PROJECT_NAME}
   src/curve.cpp
   src/bspline_curve.cpp
   src/bezier_curve.cpp
+  src/cubic_spline_curve.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
