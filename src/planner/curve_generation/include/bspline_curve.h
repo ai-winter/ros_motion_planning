@@ -44,11 +44,19 @@ public:
 
   /**
    * @brief Running trajectory generation
-   * @param points path points
+   * @param points path points <x, y>
    * @param path generated trajectory
    * @return true if generate successfully, else failed
    */
-  bool run(const std::vector<std::pair<double, double>> points, std::vector<std::pair<double, double>>& path);
+  bool run(const Points2d points, Points2d& path);
+
+  /**
+   * @brief Running trajectory generation
+   * @param points path points <x, y, theta>
+   * @param path generated trajectory
+   * @return true if generate successfully, else failed
+   */
+  bool run(const Poses2d points, Points2d& path);
 
   /**
    * @brief Calculate base function using Cox-deBoor function.
@@ -65,7 +73,7 @@ public:
    * @param points      Path points
    * @return parameters The parameters of given points
    */
-  std::vector<double> paramSelection(const std::vector<std::pair<double, double>> points);
+  std::vector<double> paramSelection(const Points2d points);
 
   /**
    * @brief Generate knot vector.
@@ -83,8 +91,7 @@ public:
    * @param knot            The knot vector
    * @return control_points The control points
    */
-  std::vector<std::pair<double, double>> interpolation(const std::vector<std::pair<double, double>> points,
-                                                       const std::vector<double> param, const std::vector<double> knot);
+  Points2d interpolation(const Points2d points, const std::vector<double> param, const std::vector<double> knot);
 
   /**
    * @brief Given a set of N data points, D0, D1, ..., Dn, a degree k, and a number H, where N > H > k >= 1,
@@ -96,8 +103,7 @@ public:
    * @param knot            The knot vector
    * @return control_points The control points
    */
-  std::vector<std::pair<double, double>> approximation(const std::vector<std::pair<double, double>> points,
-                                                       const std::vector<double> param, const std::vector<double> knot);
+  Points2d approximation(const Points2d points, const std::vector<double> param, const std::vector<double> knot);
 
   /**
    * @brief Generate the path.
@@ -106,8 +112,7 @@ public:
    * @param control_points  The control points
    * @return path The smoothed trajectory points
    */
-  std::vector<std::pair<double, double>> generation(int k, const std::vector<double> knot,
-                                                    std::vector<std::pair<double, double>> control_pts);
+  Points2d generation(int k, const std::vector<double> knot, Points2d control_pts);
 
   /**
    * @brief Configure the degree of the curve.

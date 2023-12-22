@@ -80,7 +80,7 @@ double BSpline::baseFunction(int i, int k, double t, std::vector<double> knot)
  * @param points      Path points
  * @return parameters The parameters of given points
  */
-std::vector<double> BSpline::paramSelection(const std::vector<std::pair<double, double>> points)
+std::vector<double> BSpline::paramSelection(const Points2d points)
 {
   size_t n = points.size();
   std::vector<double> parameters(n);
@@ -147,9 +147,7 @@ std::vector<double> BSpline::knotGeneration(const std::vector<double> param, int
  * @param knot            The knot vector
  * @return control_points The control points
  */
-std::vector<std::pair<double, double>> BSpline::interpolation(const std::vector<std::pair<double, double>> points,
-                                                              const std::vector<double> param,
-                                                              const std::vector<double> knot)
+Points2d BSpline::interpolation(const Points2d points, const std::vector<double> param, const std::vector<double> knot)
 {
   size_t n = points.size();
   Eigen::MatrixXd N = Eigen::MatrixXd::Zero(n, n);
@@ -186,9 +184,7 @@ std::vector<std::pair<double, double>> BSpline::interpolation(const std::vector<
  * @param knot            The knot vector
  * @return control_points The control points
  */
-std::vector<std::pair<double, double>> BSpline::approximation(const std::vector<std::pair<double, double>> points,
-                                                              const std::vector<double> param,
-                                                              const std::vector<double> knot)
+Points2d BSpline::approximation(const Points2d points, const std::vector<double> param, const std::vector<double> knot)
 {
   size_t n = points.size();
   Eigen::MatrixXd D(n, 2);
@@ -220,7 +216,7 @@ std::vector<std::pair<double, double>> BSpline::approximation(const std::vector<
   Eigen::MatrixXd Q = N_.transpose() * qk;
   Eigen::MatrixXd P = (N_.transpose() * N_).inverse() * Q;
 
-  std::vector<std::pair<double, double>> control_points(h);
+  Points2d control_points(h);
   control_points[0] = { D(0, 0), D(0, 1) };
   control_points[h - 1] = { D(n - 1, 0), D(n - 1, 1) };
   for (size_t i = 1; i < h - 1; i++)
@@ -236,8 +232,7 @@ std::vector<std::pair<double, double>> BSpline::approximation(const std::vector<
  * @param control_points  The control points
  * @return path The smoothed trajectory points
  */
-std::vector<std::pair<double, double>> BSpline::generation(int k, const std::vector<double> knot,
-                                                           std::vector<std::pair<double, double>> control_pts)
+Points2d BSpline::generation(int k, const std::vector<double> knot, Points2d control_pts)
 {
   size_t n = (int)(1.0 / step_);
   std::vector<double> t(n);
@@ -259,7 +254,7 @@ std::vector<std::pair<double, double>> BSpline::generation(int k, const std::vec
   }
 
   Eigen::MatrixXd P = N * C;
-  std::vector<std::pair<double, double>> points(n);
+  Points2d points(n);
   for (size_t i = 0; i < n; i++)
     points[i] = { P(i, 0), P(i, 1) };
 
@@ -272,13 +267,13 @@ std::vector<std::pair<double, double>> BSpline::generation(int k, const std::vec
  * @param path generated trajectory
  * @return true if generate successfully, else failed
  */
-bool BSpline::run(const std::vector<std::pair<double, double>> points, std::vector<std::pair<double, double>>& path)
+bool BSpline::run(const Points2d points, Points2d& path)
 {
   if (points.size() < 4)
     return false;
   else
   {
-    std::vector<std::pair<double, double>> control_pts;
+    Points2d control_pts;
     std::vector<double> params = paramSelection(points);
     std::vector<double> knot = knotGeneration(params, points.size());
     if (spline_mode_ == SPLINE_MODE_INTERPOLATION)
@@ -293,8 +288,23 @@ bool BSpline::run(const std::vector<std::pair<double, double>> points, std::vect
       return false;
 
     path = generation(order_, knot, control_pts);
-    return true;
+
+    return !path.empty();
   }
+}
+
+/**
+ * @brief Running trajectory generation
+ * @param points path points <x, y, theta>
+ * @param path generated trajectory
+ * @return true if generate successfully, else failed
+ */
+bool BSpline::run(const Poses2d points, Points2d& path)
+{
+  Points2d points_pair;
+  for (const auto p : points)
+    points_pair.emplace_back(std::get<0>(p), std::get<1>(p));
+  return run(points_pair, path);
 }
 
 /**

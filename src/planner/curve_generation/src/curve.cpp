@@ -30,9 +30,20 @@ Curve::Curve(double step) : step_(step)
  * @param n2 Node 2
  * @return distance between nodes
  */
-double Curve::dist(const std::pair<double, double>& node1, const std::pair<double, double>& node2)
+double Curve::dist(const Point2d& node1, const Point2d& node2)
 {
   return std::hypot(node1.first - node2.first, node1.second - node2.second);
+}
+
+/**
+ * @brief Calculate the angle of x-axis between the 2 nodes.
+ * @param n1 Node 1
+ * @param n2 Node 2
+ * @return the angle of x-axis between the 2 node
+ */
+double Curve::angle(const Point2d& node1, const Point2d& node2)
+{
+  return atan2(node2.second - node1.second, node2.first - node1.first);
 }
 
 /**
@@ -40,7 +51,7 @@ double Curve::dist(const std::pair<double, double>& node1, const std::pair<doubl
  * @param path    the trajectory
  * @return length the length of path
  */
-double Curve::len(std::vector<std::pair<double, double>> path)
+double Curve::len(Points2d path)
 {
   double length = 0.0;
   for (size_t i = 1; i < path.size(); ++i)

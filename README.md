@@ -119,7 +119,7 @@ ros_motion_planner
 
 For the efficient operation of the motion planning system, we provide a series of user-friendly simulation tools that allow for on-demand selection of these lightweight repositories.
 
-| Tool  | Introduction |
+| Tool Version | Introduction |
 |:-------:|:---------:|
 |[![Status](https://img.shields.io/badge/Pedestrian-v2.0-8A2BE2?logo=iledefrancemobilites)](https://github.com/ai-winter/ros_pedestrians_simulation) | This is a Gazebo plugin for pedestians with collision property. You can construct a dynamic environment in ROS easily using plugin.
 |[![Status](https://img.shields.io/badge/Path_Visual-v1.1-8A2BE2?logo=v)](https://github.com/ai-winter/path_visualization_plugins)|This repository provides a ROS-based visualization Rviz plugins for path planning and curve generation algorithms.
