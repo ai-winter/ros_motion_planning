@@ -60,6 +60,16 @@ double Curve::len(Points2d path)
 }
 
 /**
+ * @brief Perform modulus operation on 2π.
+ * @param theta    the angle to modulu
+ * @return theta_m the angle after modulus operator
+ */
+double Curve::mod2pi(double theta)
+{
+  return theta - 2.0 * M_PI * floor(theta / M_PI / 2.0);
+}
+
+/**
  * @brief Configure the simulation step.
  * @param step    Simulation or interpolation size
  */

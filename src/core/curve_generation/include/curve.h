@@ -79,6 +79,13 @@ public:
   double len(Points2d path);
 
   /**
+   * @brief Perform modulus operation on 2π.
+   * @param theta    the angle to modulu
+   * @return theta_m the angle after modulus operator
+   */
+  double mod2pi(double theta);
+
+  /**
    * @brief Configure the simulation step.
    * @param step    Simulation or interpolation size
    */

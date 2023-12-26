@@ -11,6 +11,7 @@
  * --------------------------------------------------------
  *
  **********************************************************/
+#include <cassert>
 #include "bezier_curve.h"
 
 namespace trajectory_generation
@@ -28,7 +29,7 @@ Bezier::Bezier() : Curve(0.1), offset_(3)
 }
 
 /**
- * @brief Destroy the B-Spline generation object
+ * @brief Destroy the Bezier generation object
  */
 Bezier::~Bezier()
 {
@@ -149,6 +150,16 @@ bool Bezier::run(const Poses2d points, Points2d& path)
 
     return !path.empty();
   }
+}
+
+/**
+ * @brief Configure the offset of control points.
+ * @param offset  The offset of control points
+ */
+void Bezier::setOffset(double offset)
+{
+  assert(offset > 0);
+  offset_ = offset;
 }
 
 // Calculate the number of combinations

@@ -74,6 +74,12 @@ public:
    */
   Points2d generation(Pose2d start, Pose2d goal);
 
+  /**
+   * @brief Configure the offset of control points.
+   * @param offset  The offset of control points
+   */
+  void setOffset(double offset);
+
 private:
   // Calculate the number of combinations
   int _comb(int n, int r);
