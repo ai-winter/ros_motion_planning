@@ -122,12 +122,10 @@ public:
    * @brief Particle update optimization iteration
    * @param particle       Particles to be updated for velocity
    * @param best_particle  Global optimal particle
-   * @param index_i        Particle ID
    * @param gen            randomizer
    * @param expand         containing the node been search during the process
    */
-  void optimizeParticle(Particle& particle, Particle& best_particle, const int& index_i, std::mt19937& gen,
-                        std::vector<Node>& expand);
+  void optimizeParticle(Particle& particle, Particle& best_particle, std::mt19937& gen, std::vector<Node>& expand);
 
 protected:
   int max_iter_;     // maximum iterations
@@ -142,7 +140,6 @@ protected:
   const unsigned char* costmap_;
 
 private:
-  int best_particle_idx_;                       // The ID of the globally optimal particle
   std::mutex particles_lock_;                   // thread lock
   std::vector<Particle> inherited_particles_;   // inherited particles
   trajectory_generation::BSpline bspline_gen_;  // Path generation

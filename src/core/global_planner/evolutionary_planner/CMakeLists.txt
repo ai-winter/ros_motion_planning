@@ -27,10 +27,10 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME}
-  src/evolutionary_planner.cpp
   src/aco.cpp
   src/pso.cpp
   src/ga.cpp
+  src/evolutionary_planner.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

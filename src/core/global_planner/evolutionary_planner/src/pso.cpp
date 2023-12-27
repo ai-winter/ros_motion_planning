@@ -95,14 +95,12 @@ bool PSO::plan(const unsigned char* global_costmap, const Node& start, const Nod
 
     if ((i == 0) || (init_fitness > best_particle.fitness))
     {
-      best_particle_idx_ = i;
       best_particle.fitness = init_fitness;
+      best_particle.position = init_position;
     }
     // Create and add particle objects to containers
     particles.emplace_back(init_position, init_velocity, init_fitness);
   }
-
-  best_particle.position = particles[best_particle_idx_].position;
 
   // random data
   std::random_device rd;
@@ -113,12 +111,10 @@ bool PSO::plan(const unsigned char* global_costmap, const Node& start, const Nod
   {
     std::vector<std::thread> particle_list = std::vector<std::thread>(n_particles_);
     for (size_t i = 0; i < n_particles_; ++i)
-      particle_list[i] = std::thread(&PSO::optimizeParticle, this, std::ref(particles[i]), std::ref(best_particle), i,
+      particle_list[i] = std::thread(&PSO::optimizeParticle, this, std::ref(particles[i]), std::ref(best_particle),
                                      std::ref(gen), std::ref(expand));
     for (size_t i = 0; i < n_particles_; ++i)
       particle_list[i].join();
-
-    best_particle.position = particles[best_particle_idx_].best_pos;
   }
 
   // Generating Paths from Optimal Particles
@@ -336,12 +332,10 @@ void PSO::updateParticlePosition(Particle& particle)
  * @brief Particle update optimization iteration
  * @param particle       Particles to be updated for velocity
  * @param best_particle  Global optimal particle
- * @param index_i        Particle ID
  * @param gen            randomizer
  * @param expand         containing the node been search during the process
  */
-void PSO::optimizeParticle(Particle& particle, Particle& best_particle, const int& index_i, std::mt19937& gen,
-                           std::vector<Node>& expand)
+void PSO::optimizeParticle(Particle& particle, Particle& best_particle, std::mt19937& gen, std::vector<Node>& expand)
 {
   // update speed
   updateParticleVelocity(particle, best_particle, gen);
@@ -369,7 +363,6 @@ void PSO::optimizeParticle(Particle& particle, Particle& best_particle, const in
   {
     best_particle.fitness = particle.best_fitness;
     best_particle.position = particle.position;
-    best_particle_idx_ = index_i;
   }
 
   particles_lock_.unlock();

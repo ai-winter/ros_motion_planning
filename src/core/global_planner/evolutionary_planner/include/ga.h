@@ -11,8 +11,8 @@
  * --------------------------------------------------------
  *
  **********************************************************/
-#ifndef GA_H_
-#define GA_H_
+#ifndef GA_H
+#define GA_H
 
 #include <random>
 #include <thread>
@@ -83,7 +83,7 @@ public:
             std::vector<Node>& expand);
 
   /**
-   * @brief Generate n particles with pointNum_ positions each within the map range
+   * @brief Generate n genets with pointNum_ positions each within the map range
    * @param initial_positions The initial position sequence of particle swarm
    * @param start     start node
    * @param goal      goal node
@@ -130,7 +130,6 @@ protected:
   const unsigned char* costmap_;
 
 private:
-  int best_genet_idx_;                          // The ID of the globally optimal genets
   std::mutex genets_lock_;                      // thread lock
   std::vector<Genets> inherited_genets_;        // inherited genets
   trajectory_generation::BSpline bspline_gen_;  // Path generation

@@ -100,16 +100,21 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
     private_nh.param("planner_name", planner_name, (std::string) "aco");
     if (planner_name == "aco")
     {
-      int n_ants, max_iter;
+      int n_ants, n_inherited, point_num, max_iter, init_mode;
       double alpha, beta, rho, Q;
-      private_nh.param("n_ants", n_ants, 50);       // number of ants
-      private_nh.param("alpha", alpha, 1.0);        // pheromone weight coefficient
-      private_nh.param("beta", beta, 5.0);          // heuristic factor weight coefficient
-      private_nh.param("rho", rho, 0.1);            // evaporation coefficient
-      private_nh.param("Q", Q, 1.0);                // pheromone gain
-      private_nh.param("max_iter", max_iter, 100);  // maximum iterations
+      private_nh.param("n_ants", n_ants, 50);                         // number of ants
+      private_nh.param("ant_inherited", n_inherited, 10);             // number of inherited ants
+      private_nh.param("point_num_ant", point_num, 5);                // number of position points contained in each ant
+      private_nh.param("alpha", alpha, 1.0);                          // pheromone weight coefficient
+      private_nh.param("beta", beta, 5.0);                            // heuristic factor weight coefficient
+      private_nh.param("rho", rho, 0.1);                              // evaporation coefficient
+      private_nh.param("Q", Q, 1.0);                                  // pheromone gain
+      private_nh.param("init_mode_ant", init_mode, GEN_MODE_CIRCLE);  // Set the generation mode for the initial
+                                                                      // position points of the ants
+      private_nh.param("max_iter_ant", max_iter, 100);                // maximum iterations
 
-      g_planner_ = new global_planner::ACO(nx_, ny_, resolution_, n_ants, alpha, beta, rho, Q, max_iter);
+      g_planner_ = new global_planner::ACO(nx_, ny_, resolution_, n_ants, n_inherited, point_num, alpha, beta, rho, Q,
+                                           init_mode, max_iter);
     }
     else if (planner_name == "pso")
     {
@@ -117,13 +122,13 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
       int n_particles, n_inherited, point_num, max_speed, init_mode, max_iter;
       double w_inertial, w_social, w_cognitive;
 
-      private_nh.param("n_particles", n_particles, 50);   // number of particles
-      private_nh.param("n_inherited", n_inherited, 10);   // number of inherited particles
-      private_nh.param("point_num_pso", point_num, 5);    // number of position points contained in each particle
-      private_nh.param("max_speed_pso", max_speed, 40);   // The maximum velocity of particle motion
-      private_nh.param("w_inertial", w_inertial, 1.0);    // inertia weight
-      private_nh.param("w_social", w_social, 2.0);        // social weight
-      private_nh.param("w_cognitive", w_cognitive, 1.2);  // cognitive weight
+      private_nh.param("n_particles", n_particles, 50);    // number of particles
+      private_nh.param("pso_inherited", n_inherited, 10);  // number of inherited particles
+      private_nh.param("point_num_pso", point_num, 5);     // number of position points contained in each particle
+      private_nh.param("max_speed_pso", max_speed, 40);    // The maximum velocity of particle motion
+      private_nh.param("w_inertial", w_inertial, 1.0);     // inertia weight
+      private_nh.param("w_social", w_social, 2.0);         // social weight
+      private_nh.param("w_cognitive", w_cognitive, 1.2);   // cognitive weight
       private_nh.param("init_mode_pso", init_mode, GEN_MODE_CIRCLE);  // Set the generation mode for the initial
                                                                       // position points of the particle swarm
       private_nh.param("max_iter_pso", max_iter, 30);                 // maximum iterations

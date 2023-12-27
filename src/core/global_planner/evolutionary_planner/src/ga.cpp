@@ -104,14 +104,12 @@ bool GA::plan(const unsigned char* global_costmap, const Node& start, const Node
 
     if ((i == 0) || (init_fitness > best_genet.fitness))
     {
-      best_genet_idx_ = i;
       best_genet.fitness = init_fitness;
+      best_genet.position = init_position;
     }
     // Create and add genets objects to containers
     genets_swarm.emplace_back(init_position, init_fitness);
   }
-
-  best_genet.position = genets_swarm[best_genet_idx_].position;
 
   // random data
   std::random_device rd;
@@ -450,7 +448,6 @@ void GA::optimizeGenets(const Genets& genets_p, Genets& genets_c, Genets& best_g
   if (genets_c.best_fitness > best_genet.fitness)
   {
     best_genet.fitness = genets_c.best_fitness;
-    best_genet_idx_ = i;
     best_genet.position = genets_c.best_pos;
   }
 
