@@ -147,6 +147,18 @@ public:
    */
   bool run(const Poses2d points, Points2d& path);
 
+  /**
+   * @brief Configure the maximum acceleration.
+   * @param max_acc  The maximum acceleration
+   */
+  void setMaxAcceleration(double max_acc);
+
+  /**
+   * @brief Configure the maximum jerk.
+   * @param max_jerk  The maximum jerk
+   */
+  void setMaxJerk(double max_jerk);
+
 protected:
   double max_acc_;   // Maximum acceleration
   double max_jerk_;  // Maximum jerk

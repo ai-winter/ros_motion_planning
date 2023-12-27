@@ -345,7 +345,7 @@ Points2d Dubins::generation(Pose2d start, Pose2d goal)
       l += d_l;
     }
     i += 1;
-    std::tie(path_x[i], path_y[i], path_yaw[i]) = interpolate(m, l, { x, y, yaw });
+    std::tie(path_x[i], path_y[i], path_yaw[i]) = interpolate(m, seg_length, { x, y, yaw });
   }
 
   // remove unused data

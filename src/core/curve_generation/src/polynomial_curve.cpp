@@ -341,4 +341,24 @@ bool Polynomial::run(const Poses2d points, Points2d& path)
   }
 }
 
+/**
+ * @brief Configure the maximum acceleration.
+ * @param max_acc  The maximum acceleration
+ */
+void Polynomial::setMaxAcceleration(double max_acc)
+{
+  assert(max_acc > 0);
+  max_acc_ = max_acc;
+}
+
+/**
+ * @brief Configure the maximum jerk.
+ * @param max_jerk  The maximum jerk
+ */
+void Polynomial::setMaxJerk(double max_jerk)
+{
+  assert(max_jerk > 0);
+  max_jerk_ = max_jerk;
+}
+
 }  // namespace trajectory_generation

@@ -70,6 +70,20 @@ double Curve::mod2pi(double theta)
 }
 
 /**
+ * @brief Truncate the angle to the interval of -π to π.
+ * @param theta    the angle to truncate
+ * @return theta_t the truncated angle
+ */
+double Curve::pi2pi(double theta)
+{
+  while (theta > M_PI)
+    theta -= 2.0 * M_PI;
+  while (theta < -M_PI)
+    theta += 2.0 * M_PI;
+  return theta;
+}
+
+/**
  * @brief Configure the simulation step.
  * @param step    Simulation or interpolation size
  */

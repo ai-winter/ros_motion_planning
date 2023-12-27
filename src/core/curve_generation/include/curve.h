@@ -86,6 +86,13 @@ public:
   double mod2pi(double theta);
 
   /**
+   * @brief Truncate the angle to the interval of -π to π.
+   * @param theta    the angle to truncate
+   * @return theta_t the truncated angle
+   */
+  double pi2pi(double theta);
+
+  /**
    * @brief Configure the simulation step.
    * @param step    Simulation or interpolation size
    */

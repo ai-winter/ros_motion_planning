@@ -25,6 +25,7 @@ add_library(${PROJECT_NAME}
   src/cubic_spline_curve.cpp
   src/dubins_curve.cpp
   src/polynomial_curve.cpp
+  src/reeds_shepp_curve.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
