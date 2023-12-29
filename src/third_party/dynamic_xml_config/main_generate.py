@@ -13,7 +13,7 @@
 ******************************************************************************************
 """
 import xml.etree.ElementTree as ET
-from plugins import ObstacleGenerator, PedGenerator, RobotGenerator, XMLGenerator
+from plugins import ObstacleGenerator, PedGenerator, RobotGenerator, MapsGenerator, XMLGenerator
 
 
 class MainGenerator(XMLGenerator):
@@ -57,5 +57,5 @@ class MainGenerator(XMLGenerator):
 
 
 # dynamic generator
-main_gen = MainGenerator(PedGenerator(), RobotGenerator(), ObstacleGenerator())
+main_gen = MainGenerator(PedGenerator(), RobotGenerator(), ObstacleGenerator(), MapsGenerator())
 main_gen.writeMainLaunch(main_gen.root_path + "sim_env/launch/main.launch")

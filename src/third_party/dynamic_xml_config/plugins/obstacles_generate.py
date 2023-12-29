@@ -21,7 +21,6 @@ from geometry_msgs.msg import Point, Pose, Quaternion
 
 from .xml_generate import XMLGenerator
 
-
 class ObstacleGenerator(XMLGenerator):
     def __init__(self) -> None:
         super().__init__()

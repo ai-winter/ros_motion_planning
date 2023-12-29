@@ -1,4 +1,11 @@
 # Dynamic Configuration
+## Contents
+- [Introduction](#0)
+- [Dynamic Obstacles](#1)
+- [Static Obstacles](#2)
+- [Costmap Layers](#3)
+
+## <span id="0">0. Introduction
 
 In this reposity, you can simply change configs through modifing the `src/user_config/user_config.yaml`. When you run `main.sh`, our python script will re-generated `*.launch`, `*.world` and so on, according to your configs in `user_config.yaml`.
 
@@ -28,6 +35,7 @@ robots_config:
 plugins:
   pedestrians: "pedestrian_config.yaml"
   obstacles: "obstacles_config.yaml"
+  map_layers: "maps_layer_config.yaml"
 ```
 
 Explanation:
@@ -53,8 +61,12 @@ Explanation:
   - `pedestrians`: configure file to add dynamic obstacles (e.g. pedestrians).
 
   - `obstacles`: configure file to add static obstacles.
+  - `map_layers`: configure file to add costmap layers.
 
-For *pedestrians* and *obstacles* configuration files, the examples are shown below
+## <span id="1">1. Dynamic Obstacles
+
+
+For *pedestrians* configuration file, the examples are shown below
 
 ```yaml
 ## pedestrians_config.yaml
@@ -125,6 +137,10 @@ Explanation:
 
   - `trajectory`: the list of goal points that the actor must reach must be indicated here. The goals will be post into social force model.
 
+## <span id="2">2. Static Obstacles
+
+For *obstacles* configuration file, the examples are shown below
+
 ```yaml
 ## obstacles_config.yaml 
 
@@ -157,3 +173,25 @@ Explanation:
   - `h`: height.
 
   - `r`: radius.
+
+## <span id="3">3. Costmap Layers
+
+For *map_layers* configuration file, the examples are shown below
+
+```yaml
+# map layers configure
+global_costmap:
+  - static_map
+  - obstacle_layer
+  - voronoi_layer
+  - inflation_layer
+
+local_costmap:
+  - static_map
+  - obstacle_layer
+  - inflation_layer
+```
+
+Explanation:
+- `global_costmap`: global costmap option
+- `local_costmap`: local costmap option

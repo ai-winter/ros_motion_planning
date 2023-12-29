@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <launch>
-	<arg name="world_parameter" value="warehouse" />
+	<arg name="world_parameter" value="warehouse_with_obstacles" />
 	<include file="$(find sim_env)/launch/config.launch">
 		<arg name="world" value="$(arg world_parameter)" />
 		<arg name="map" value="warehouse" />

@@ -10,9 +10,30 @@ global_costmap:
 
   inflation_radius: 1.0
 
-  # plugins:
-  #   - {name: static_map,       type: "costmap_2d::StaticLayer"}
-  # #   - {name: voxel_layer,        type: "costmap_2d::VoxelLayer"}
-  #   - {name: obstacle_layer,        type: "costmap_2d::ObstacleLayer"}
-  #   - {name: voronoi_layer,        type: "costmap_2d::VoronoiLayer"}     
-  #   - {name: inflation_layer,        type: "costmap_2d::InflationLayer"}
+  ### Sensor management parameters ###
+  obstacle_layer:
+    observation_sources: laserscan
+    laserscan: { 
+      topic:                    /scan, 
+      sensor_frame:             base_footprint, 
+      observation_persistence:  0.0,
+      expected_update_rate:     0.8,
+      data_type:                LaserScan, 
+      clearing:                 true, 
+      marking:                  true, 
+      max_obstacle_height:      2.0,
+      min_obstacle_height:      0.0,
+      obstacle_range:           2.5,
+      raytrace_range:           3.0,
+      inf_is_valid:             true
+    }  
+
+  inflation_layer:
+    enabled:              true
+    cost_scaling_factor:  5.0  # exponential rate at which the obstacle cost drops off (default: 10)
+    inflation_radius:     0.6  # max. distance from an obstacle at which costs are incurred for planning paths.
+
+  static_map:
+    enabled:              true
+    clear_time:           20
+    publish_static_map:   true

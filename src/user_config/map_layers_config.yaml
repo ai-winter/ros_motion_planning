@@ -1,0 +1,11 @@
+# maps layers configure
+global_costmap:
+  - static_map
+  - obstacle_layer
+  - voronoi_layer
+  - inflation_layer
+
+# local_costmap:
+#   - static_map
+#   - obstacle_layer
+#   - inflation_layer

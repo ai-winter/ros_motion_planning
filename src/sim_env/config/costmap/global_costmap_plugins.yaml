@@ -1,0 +1,6 @@
+global_costmap:
+  plugins:
+  - {name: static_map, type: 'costmap_2d::StaticLayer'}
+  - {name: obstacle_layer, type: 'costmap_2d::ObstacleLayer'}
+  - {name: voronoi_layer, type: 'costmap_2d::VoronoiLayer'}
+  - {name: inflation_layer, type: 'costmap_2d::InflationLayer'}

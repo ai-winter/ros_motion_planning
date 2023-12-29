@@ -188,7 +188,7 @@ Visualization Manager:
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
-      Topic: /move_base/EvolutionaryPlanner/plan
+      Topic: /move_base/GraphPlanner/plan
       Unreliable: false
       Value: true
     - Alpha: 0.8999999761581421
@@ -215,18 +215,18 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: false
-      Enabled: false
+      Enabled: true
       Name: Map
       Topic: /move_base/global_costmap/costmap
       Unreliable: false
       Use Timestamp: false
-      Value: false
+      Value: true
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /move_base/EvolutionaryPlanner/pso_marker
       Name: Marker
       Namespaces:
-        marker: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
