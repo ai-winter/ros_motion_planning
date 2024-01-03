@@ -132,6 +132,7 @@ void VoronoiLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, in
       }
 
       if (!voronoi_.isOccupied(i, j) && master_grid.getCost(i, j) == costmap_2d::LETHAL_OBSTACLE)
+      // if (!voronoi_.isOccupied(i, j) && master_grid.getCost(i, j) >= 128)
       {
         new_occupied_cells.push_back(IntPoint(i, j));
       }

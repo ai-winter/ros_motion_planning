@@ -11,9 +11,9 @@
  * --------------------------------------------------------
  *
  **********************************************************/
-#include "graph_planner.h"
 #include <pluginlib/class_list_macros.h>
 
+#include "graph_planner.h"
 #include "a_star.h"
 #include "jump_point_search.h"
 #include "d_star.h"
@@ -98,6 +98,7 @@ void GraphPlanner::initialize(std::string name)
     private_nh.param("outline_map", is_outline_, false);       // whether outline the map or not
     private_nh.param("obstacle_factor", factor_, 0.5);         // obstacle factor, NOTE: no use...
     private_nh.param("expand_zone", is_expand_, false);        // whether publish expand zone or not
+    private_nh.param("voronoi_map", is_voronoi_map_, false);   // whether to store Voronoi map or not
 
     // planner name
     private_nh.param("planner_name", planner_name_, (std::string) "a_star");
@@ -223,15 +224,10 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
   if (is_outline_)
     g_planner_->outlineMap(costmap_->getCharMap());
 
-  // calculate path
-  std::vector<global_planner::Node> path;
-  std::vector<global_planner::Node> expand;
-  bool path_found = false;
-
-  if (planner_name_ == "voronoi")
+  // calculate voronoi map
+  bool voronoi_layer_exist = false;
+  if (is_voronoi_map_)
   {
-    bool voronoi_layer_exist = false;
-    // check if the costmap has a Voronoi layer
     for (auto layer = costmap_ros_->getLayeredCostmap()->getPlugins()->begin();
          layer != costmap_ros_->getLayeredCostmap()->getPlugins()->end(); ++layer)
     {
@@ -240,28 +236,25 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
       if (voronoi_layer)
       {
         voronoi_layer_exist = true;
-        global_planner::VoronoiData** voronoi_diagram;
-        voronoi_diagram = new global_planner::VoronoiData*[nx_];
-        for (unsigned int i = 0; i < nx_; i++)
-          voronoi_diagram[i] = new global_planner::VoronoiData[ny_];
-
         boost::unique_lock<boost::mutex> lock(voronoi_layer->getMutex());
-        const DynamicVoronoi& voronoi = voronoi_layer->getVoronoi();
-        for (unsigned int j = 0; j < ny_; j++)
-        {
-          for (unsigned int i = 0; i < nx_; i++)
-          {
-            voronoi_diagram[i][j].dist = voronoi.getDistance(i, j) * resolution_;
-            voronoi_diagram[i][j].is_voronoi = voronoi.isVoronoi(i, j);
-          }
-        }
-        path_found = dynamic_cast<global_planner::VoronoiPlanner*>(g_planner_)
-                         ->plan(voronoi_diagram, start_node, goal_node, path);
+        voronoi_ = voronoi_layer->getVoronoi();
         break;
       }
     }
     if (!voronoi_layer_exist)
-      ROS_ERROR("Failed to get a Voronoi layer for Voronoi planner");
+      ROS_WARN("Failed to get a Voronoi layer for potentional application.");
+  }
+
+  // calculate path
+  std::vector<global_planner::Node> path;
+  std::vector<global_planner::Node> expand;
+  bool path_found = false;
+
+  if (planner_name_ == "voronoi")
+  {
+    if (!voronoi_layer_exist)
+      ROS_ERROR("Failed to get a Voronoi layer for Voronoi planner.");
+    path_found = dynamic_cast<global_planner::VoronoiPlanner*>(g_planner_)->plan(voronoi_, start_node, goal_node, path);
   }
   else
     path_found = g_planner_->plan(costmap_->getCharMap(), start_node, goal_node, path, expand);

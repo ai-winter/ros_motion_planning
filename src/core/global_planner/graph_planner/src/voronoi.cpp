@@ -29,9 +29,18 @@ namespace global_planner
  * @param circumscribed_radius  the circumscribed radius of robot
  */
 VoronoiPlanner::VoronoiPlanner(int nx, int ny, double resolution, double circumscribed_radius)
-  : GlobalPlanner(nx, ny, resolution)
+  : GlobalPlanner(nx, ny, resolution), circumscribed_radius_(circumscribed_radius)
 {
-  circumscribed_radius_ = circumscribed_radius;
+  voronoi_diagram_ = new VoronoiData*[nx_];
+  for (unsigned int i = 0; i < nx_; i++)
+    voronoi_diagram_[i] = new VoronoiData[ny_];
+}
+
+VoronoiPlanner::~VoronoiPlanner()
+{
+  for (unsigned int i = 0; i < nx_; i++)
+    delete[] voronoi_diagram_[i];
+  delete[] voronoi_diagram_;
 }
 
 /**
@@ -48,9 +57,17 @@ bool VoronoiPlanner::plan(const unsigned char* global_costmap, const Node& start
 {
   return true;
 }
-bool VoronoiPlanner::plan(VoronoiData** voronoi_diagram, const Node& start, const Node& goal, std::vector<Node>& path)
+bool VoronoiPlanner::plan(const DynamicVoronoi& voronoi, const Node& start, const Node& goal, std::vector<Node>& path)
 {
-  voronoi_diagram_ = voronoi_diagram;
+  // update voronoi diagram
+  for (unsigned int j = 0; j < ny_; j++)
+  {
+    for (unsigned int i = 0; i < nx_; i++)
+    {
+      voronoi_diagram_[i][j].dist = voronoi.getDistance(i, j) * resolution_;
+      voronoi_diagram_[i][j].is_voronoi = voronoi.isVoronoi(i, j);
+    }
+  }
 
   // clear vector
   path.clear();
