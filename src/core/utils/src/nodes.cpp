@@ -13,8 +13,6 @@
  **********************************************************/
 #include "nodes.h"
 
-namespace global_planner
-{
 /**
  * @brief Constructor for Node class
  * @param x   x value
@@ -78,14 +76,23 @@ bool Node::operator!=(const Node& n) const
 }
 
 /**
- * @brief Overlaod () operator to calculate the hash of a Node
- * @param n Node for which the hash is to be calculated
- * @return hash value, node id
+ * @brief Get permissible motion
+ * @return Node vector of permissible motions
  */
-size_t NodeIdAsHash::operator()(const Node& n) const
+std::vector<Node> Node::getMotion()
 {
-  return n.id_;
+  return {
+    Node(0, 1, 1),
+    Node(1, 0, 1),
+    Node(0, -1, 1),
+    Node(-1, 0, 1),
+    Node(1, 1, std::sqrt(2)),
+    Node(1, -1, std::sqrt(2)),
+    Node(-1, 1, std::sqrt(2)),
+    Node(-1, -1, std::sqrt(2)),
+  };
 }
+
 
 /**
  * @brief Compare cost between 2 nodes
@@ -93,7 +100,7 @@ size_t NodeIdAsHash::operator()(const Node& n) const
  * @param n2 another Node
  * @return true if the cost to get to n1 is greater than n2, else false
  */
-bool compare_cost::operator()(const Node& n1, const Node& n2) const
+bool Node::compare_cost::operator()(const Node& n1, const Node& n2) const
 {
   // Can modify this to allow tie breaks based on heuristic cost if required
   return (n1.g_ + n1.h_ > n2.g_ + n2.h_) || ((n1.g_ + n1.h_ == n2.g_ + n2.h_) && (n1.h_ > n2.h_));
@@ -105,8 +112,7 @@ bool compare_cost::operator()(const Node& n1, const Node& n2) const
  * @param n2 another Node
  * @return true if n1 equals n2, else false
  */
-bool compare_coordinates::operator()(const Node& n1, const Node& n2) const
+bool Node::compare_coordinates::operator()(const Node& n1, const Node& n2) const
 {
   return (n1.x_ == n2.x_) && (n1.y_ == n2.y_);
-}
 }

@@ -100,11 +100,11 @@ std::vector<double> BSpline::paramSelection(const Points2d points)
     {
       double d;
       if (param_mode_ == PARAM_MODE_CHORDLENGTH)
-        d = dist(points[i], points[i + 1]);
+        d = helper::dist(points[i], points[i + 1]);
       else
       {
         double alpha = 0.5;
-        d = std::pow(dist(points[i], points[i + 1]), alpha);
+        d = std::pow(helper::dist(points[i], points[i + 1]), alpha);
       }
       d_cumsum += d;
       s[i] = d_cumsum;

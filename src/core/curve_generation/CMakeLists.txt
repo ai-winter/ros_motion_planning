@@ -4,12 +4,15 @@ project(curve_generation)
 find_package(catkin REQUIRED COMPONENTS
   angles
   roscpp
+  utils
 )
 
 find_package(Eigen3 REQUIRED)
 
 catkin_package(
  INCLUDE_DIRS include
+ LIBRARIES curve_generation
+ CATKIN_DEPENDS utils
 )
 
 include_directories(

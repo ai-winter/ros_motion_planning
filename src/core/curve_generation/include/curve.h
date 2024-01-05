@@ -18,6 +18,8 @@
 #include <tuple>
 #include <cmath>
 
+#include <math_helper.h>
+
 namespace trajectory_generation
 {
 using Point2d = std::pair<double, double>;
@@ -56,41 +58,11 @@ public:
   virtual bool run(const Poses2d points, Points2d& path) = 0;
 
   /**
-   * @brief Calculate distance between the 2 nodes.
-   * @param n1 Node 1
-   * @param n2 Node 2
-   * @return distance between nodes
-   */
-  double dist(const Point2d& node1, const Point2d& node2);
-
-  /**
-   * @brief Calculate the angle of x-axis between the 2 nodes.
-   * @param n1 Node 1
-   * @param n2 Node 2
-   * @return the angle of x-axis between the 2 node
-   */
-  double angle(const Point2d& node1, const Point2d& node2);
-
-  /**
    * @brief Calculate length of given path.
    * @param path    the trajectory
    * @return length the length of path
    */
   double len(Points2d path);
-
-  /**
-   * @brief Perform modulus operation on 2π.
-   * @param theta    the angle to modulu
-   * @return theta_m the angle after modulus operator
-   */
-  double mod2pi(double theta);
-
-  /**
-   * @brief Truncate the angle to the interval of -π to π.
-   * @param theta    the angle to truncate
-   * @return theta_t the truncated angle
-   */
-  double pi2pi(double theta);
 
   /**
    * @brief Configure the simulation step.

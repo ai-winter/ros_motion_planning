@@ -53,20 +53,6 @@ public:
 
   void setVoronoiDiagram(DynamicVoronoi& voronoi);
 
-  /**
-   * @brief Clamps a value within a specified range.
-   * @tparam T             The type of the values to be clamped.
-   * @param value          The value to be clamped.
-   * @param low            The lower bound of the range.
-   * @param high           The upper bound of the range.
-   * @return const T&      The clamped value within the specified range.
-   */
-  template <typename T>
-  const T& clamp(const T& value, const T& low, const T& high)
-  {
-    return std::max(low, std::min(value, high));
-  }
-
 protected:
   int max_iter_;            // the maximum iterations for optimization
   DynamicVoronoi voronoi_;  // dynamic voronoi map

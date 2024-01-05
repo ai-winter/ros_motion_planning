@@ -119,7 +119,7 @@ Eigen::Vector2d CGOptimizer::calCurvatureTerm(const Eigen::Vector2d xi_c1, const
   if (abs_dxi > 0 && abs_dxi_p1 > 0)
   {
     // the angular change at the node
-    double d_phi = acos(clamp(d_xi.dot(d_xi_p1) / (abs_dxi * abs_dxi_p1), -1.0, 1.0));
+    double d_phi = acos(helper::clamp(d_xi.dot(d_xi_p1) / (abs_dxi * abs_dxi_p1), -1.0, 1.0));
     double k = d_phi / abs_dxi;
 
     // if the curvature is smaller then the maximum do nothing

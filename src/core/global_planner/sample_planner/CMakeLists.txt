@@ -14,11 +14,12 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   visualization_msgs
   global_planner
+  utils
 )
 
 catkin_package(
  INCLUDE_DIRS include
- CATKIN_DEPENDS global_planner
+ CATKIN_DEPENDS global_planner utils
 )
 
 include_directories(
@@ -37,4 +38,5 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  utils
 )

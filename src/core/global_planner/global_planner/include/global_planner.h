@@ -21,8 +21,9 @@
 
 #include <costmap_2d/cost_values.h>
 #include <unordered_set>
+#include <unordered_map>
 
-#include "nodes.h"
+#include "math_helper.h"
 
 namespace global_planner
 {
@@ -90,6 +91,20 @@ public:
   void setFactor(double factor);
 
   /**
+   * @brief Set or reset costmap origin
+   * @param origin_x  origin in costmap x direction
+   * @param origin_y  origin in costmap y direction
+   */
+  void setOrigin(double origin_x, double origin_y);
+
+  /**
+   * @brief Set convert offset
+   * @param origin_x  origin in costmap x direction
+   * @param origin_y  origin in costmap y direction
+   */
+  void setConvertOffset(double convert_offset);
+
+  /**
    * @brief Transform from grid map(x, y) to grid index(i)
    * @param x grid map x
    * @param y grid map y
@@ -106,7 +121,7 @@ public:
   void index2Grid(int i, int& x, int& y);
 
   /**
-   * @brief Transform from grid map(x, y) to costmap(x, y)
+   * @brief Transform from grid map(x, y) to grid map(x, y)
    * @param gx grid map x
    * @param gy grid map y
    * @param mx costmap x
@@ -124,46 +139,29 @@ public:
   void grid2Map(int gx, int gy, double& mx, double& my);
 
   /**
-   * @brief Get permissible motion
-   * @return  Node vector of permissible motions
+   * @brief Tranform from world map(x, y) to costmap(x, y)
+   * @param mx costmap x
+   * @param my costmap y
+   * @param wx world map x
+   * @param wy world map y
+   * @return true if successfull, else false
    */
-  std::vector<Node> getMotion();
+  bool world2Map(double wx, double wy, double& mx, double& my);
+
+  /**
+   * @brief Tranform from costmap(x, y) to world map(x, y)
+   * @param mx costmap x
+   * @param my costmap y
+   * @param wx world map x
+   * @param wy world map y
+   */
+  void map2World(double mx, double my, double& wx, double& wy);
 
   /**
    * @brief Inflate the boundary of costmap into obstacles to prevent cross planning
    * @param costarr costmap pointer
    */
   void outlineMap(unsigned char* costarr);
-
-  /**
-   * @brief Calculate distance between the 2 nodes.
-   * @param n1 Node 1
-   * @param n2 Node 2
-   * @return distance between nodes
-   */
-  double dist(const Node& node1, const Node& node2);
-
-  /**
-   * @brief Calculate the angle of x-axis between the 2 nodes.
-   * @param n1 Node 1
-   * @param n2 Node 2
-   * @return the angle of x-axis between the 2 node
-   */
-  double angle(const Node& node1, const Node& node2);
-
-  /**
-   * @brief Clamps a value within a specified range.
-   * @tparam T             The type of the values to be clamped.
-   * @param value          The value to be clamped.
-   * @param low            The lower bound of the range.
-   * @param high           The upper bound of the range.
-   * @return const T&      The clamped value within the specified range.
-   */
-  template <typename T>
-  const T& clamp(const T& value, const T& low, const T& high)
-  {
-    return std::max(low, std::min(value, high));
-  }
 
 protected:
   /**
@@ -173,8 +171,8 @@ protected:
    * @param goal        goal node
    * @return vector containing path nodes
    */
-  std::vector<Node> _convertClosedListToPath(std::unordered_set<Node, NodeIdAsHash, compare_coordinates>& closed_list,
-                                             const Node& start, const Node& goal);
+  std::vector<Node> _convertClosedListToPath(std::unordered_map<int, Node>& closed_list, const Node& start,
+                                             const Node& goal);
 
   // lethal cost and neutral cost
   unsigned char lethal_cost_, neutral_cost_;
@@ -184,6 +182,10 @@ protected:
   double resolution_;
   // obstacle factor(greater means obstacles)
   double factor_;
+  // origin in costmap x/y direction
+  double origin_x_, origin_y_;
+  // offset of transform from world(x,y) to grid map(x,y)
+  double convert_offset_;
 };
 }  // namespace global_planner
 #endif  // PLANNER_HPP

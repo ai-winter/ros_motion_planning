@@ -16,6 +16,7 @@
 
 #include <Eigen/Dense>
 
+#include "math_helper.h"
 #include "optimizer.h"
 
 namespace trajectory_optimization

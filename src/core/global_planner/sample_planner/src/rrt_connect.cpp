@@ -45,8 +45,8 @@ bool RRTConnect::plan(const unsigned char* global_costmap, const Node& start, co
   // copy
   start_ = start, goal_ = goal;
   costs_ = global_costmap;
-  sample_list_f_.insert(start);
-  sample_list_b_.insert(goal);
+  sample_list_f_.insert(std::make_pair(start.id_, start));
+  sample_list_b_.insert(std::make_pair(goal.id_, goal));
   expand.push_back(start);
   expand.push_back(goal);
 
@@ -62,7 +62,7 @@ bool RRTConnect::plan(const unsigned char* global_costmap, const Node& start, co
       continue;
 
     // visited
-    if (sample_list_.find(sample_node) != sample_list_.end())
+    if (sample_list_.find(sample_node.id_) != sample_list_.end())
       continue;
 
     // regular the sample node
@@ -71,19 +71,19 @@ bool RRTConnect::plan(const unsigned char* global_costmap, const Node& start, co
       continue;
     else
     {
-      sample_list_f_.insert(new_node);
+      sample_list_f_.insert(std::make_pair(new_node.id_, new_node));
       expand.push_back(new_node);
       // backward exploring
       Node new_node_b = _findNearestPoint(sample_list_b_, new_node);
       if (new_node_b.id_ != -1)
       {
-        sample_list_b_.insert(new_node_b);
+        sample_list_b_.insert(std::make_pair(new_node_b.id_, new_node_b));
         expand.push_back(new_node_b);
         // greedy extending
         while (true)
         {
-          double dist_ = std::min(max_dist_, dist(new_node, new_node_b));
-          double theta = angle(new_node_b, new_node);
+          double dist_ = std::min(max_dist_, helper::dist(new_node, new_node_b));
+          double theta = helper::angle(new_node_b, new_node);
           Node new_node_b2;
           new_node_b2.x_ = new_node_b.x_ + (int)(dist_ * cos(theta));
           new_node_b2.y_ = new_node_b.y_ + (int)(dist_ * sin(theta));
@@ -93,7 +93,7 @@ bool RRTConnect::plan(const unsigned char* global_costmap, const Node& start, co
 
           if (!_isAnyObstacleInPath(new_node_b, new_node_b2))
           {
-            sample_list_b_.insert(new_node_b2);
+            sample_list_b_.insert(std::make_pair(new_node_b2.id_, new_node_b2));
             expand.push_back(new_node_b2);
             new_node_b = new_node_b2;
           }
@@ -126,22 +126,20 @@ bool RRTConnect::plan(const unsigned char* global_costmap, const Node& start, co
  */
 std::vector<Node> RRTConnect::_convertClosedListToPath(const Node& boundary)
 {
-  if (sample_list_f_.find(start_) == sample_list_.end())
+  if (sample_list_f_.find(start_.id_) == sample_list_.end())
     std::swap(sample_list_f_, sample_list_b_);
 
   std::vector<Node> path;
 
   // backward
   std::vector<Node> path_b;
-  auto current = *sample_list_b_.find(boundary);
-  while (current != goal_)
+  auto current = sample_list_b_.find(boundary.id_);
+  while (current->second != goal_)
   {
-    path_b.push_back(current);
-    auto it = sample_list_b_.find(Node(current.pid_ % nx_, current.pid_ / nx_, 0, 0, current.pid_));
+    path_b.push_back(current->second);
+    auto it = sample_list_b_.find(current->second.pid_);
     if (it != sample_list_b_.end())
-    {
-      current = *it;
-    }
+      current = it;
     else
       return {};
   }
@@ -151,17 +149,17 @@ std::vector<Node> RRTConnect::_convertClosedListToPath(const Node& boundary)
   for (auto rit = path_b.rbegin(); rit != path_b.rend(); rit++)
     path.push_back(*rit);
 
-  current = *sample_list_f_.find(boundary);
-  while (current != start_)
+  current = sample_list_f_.find(boundary.id_);
+  while (current->second != start_)
   {
-    auto it = sample_list_f_.find(Node(current.pid_ % nx_, current.pid_ / nx_, 0, 0, current.pid_));
+    auto it = sample_list_f_.find(current->second.pid_);
     if (it != sample_list_f_.end())
     {
-      current = *it;
+      current = it;
     }
     else
       return {};
-    path.push_back(current);
+    path.push_back(current->second);
   }
 
   return path;

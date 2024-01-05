@@ -50,7 +50,7 @@ bool RRT::plan(const unsigned char* global_costmap, const Node& start, const Nod
   // copy
   start_ = start, goal_ = goal;
   costs_ = global_costmap;
-  sample_list_.insert(start);
+  sample_list_.insert(std::make_pair(start.id_, start));
   expand.push_back(start);
 
   // main loop
@@ -65,7 +65,7 @@ bool RRT::plan(const unsigned char* global_costmap, const Node& start, const Nod
       continue;
 
     // visited
-    if (sample_list_.find(sample_node) != sample_list_.end())
+    if (sample_list_.find(sample_node.id_) != sample_list_.end())
       continue;
 
     // regular the sample node
@@ -74,7 +74,7 @@ bool RRT::plan(const unsigned char* global_costmap, const Node& start, const Nod
       continue;
     else
     {
-      sample_list_.insert(new_node);
+      sample_list_.insert(std::make_pair(new_node.id_, new_node));
       expand.push_back(new_node);
     }
 
@@ -122,22 +122,22 @@ Node RRT::_generateRandomNode()
  * @param node  sample node
  * @return nearest node
  */
-Node RRT::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coordinates> list, const Node& node)
+Node RRT::_findNearestPoint(std::unordered_map<int, Node> list, const Node& node)
 {
   Node nearest_node, new_node(node);
   double min_dist = std::numeric_limits<double>::max();
 
-  for (const auto node_ : list)
+  for (const auto & p : list)
   {
     // calculate distance
-    double new_dist = dist(node_, new_node);
+    double new_dist = helper::dist(p.second, new_node);
 
     // update nearest node
     if (new_dist < min_dist)
     {
-      nearest_node = node_;
+      nearest_node = p.second;
       new_node.pid_ = nearest_node.id_;
-      new_node.g_ = new_dist + node_.g_;
+      new_node.g_ = new_dist + p.second.g_;
       min_dist = new_dist;
     }
   }
@@ -147,7 +147,7 @@ Node RRT::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coord
   {
     // connect sample node and nearest node, then move the nearest node
     // forward to sample node with `max_distance` as result
-    double theta = angle(nearest_node, new_node);
+    double theta = helper::angle(nearest_node, new_node);
     new_node.x_ = nearest_node.x_ + (int)(max_dist_ * cos(theta));
     new_node.y_ = nearest_node.y_ + (int)(max_dist_ * sin(theta));
     new_node.id_ = grid2Index(new_node.x_, new_node.y_);
@@ -169,8 +169,8 @@ Node RRT::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coord
  */
 bool RRT::_isAnyObstacleInPath(const Node& n1, const Node& n2)
 {
-  double theta = angle(n1, n2);
-  double dist_ = dist(n1, n2);
+  double theta = helper::angle(n1, n2);
+  double dist_ = helper::dist(n1, n2);
 
   // distance longer than the threshold
   if (dist_ > max_dist_)
@@ -195,14 +195,14 @@ bool RRT::_isAnyObstacleInPath(const Node& n1, const Node& n2)
  */
 bool RRT::_checkGoal(const Node& new_node)
 {
-  auto dist_ = dist(new_node, goal_);
+  auto dist_ = helper::dist(new_node, goal_);
   if (dist_ > max_dist_)
     return false;
 
   if (!_isAnyObstacleInPath(new_node, goal_))
   {
     Node goal(goal_.x_, goal_.y_, dist_ + new_node.g_, 0, grid2Index(goal_.x_, goal_.y_), new_node.id_);
-    sample_list_.insert(goal);
+    sample_list_.insert(std::make_pair(goal.id_, goal));
     return true;
   }
   return false;

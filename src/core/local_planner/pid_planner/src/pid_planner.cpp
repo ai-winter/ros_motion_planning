@@ -238,8 +238,8 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   odom_helper_->getOdom(base_odom);
 
   // position reached
-  if (dist(Eigen::Vector2d(global_plan_.back().pose.position.x, global_plan_.back().pose.position.y),
-           Eigen::Vector2d(current_ps_.pose.position.x, current_ps_.pose.position.y)) < p_precision_)
+  if (helper::dist(Eigen::Vector2d(global_plan_.back().pose.position.x, global_plan_.back().pose.position.y),
+                   Eigen::Vector2d(current_ps_.pose.position.x, current_ps_.pose.position.y)) < p_precision_)
   {
     e_theta = goal_rpy_[2] - theta;
     regularizeAngle(e_theta);

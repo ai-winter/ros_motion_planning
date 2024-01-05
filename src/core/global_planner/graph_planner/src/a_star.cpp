@@ -60,13 +60,13 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
   expand.clear();
 
   // open list and closed list
-  std::priority_queue<Node, std::vector<Node>, compare_cost> open_list;
-  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list;
+  std::priority_queue<Node, std::vector<Node>, Node::compare_cost> open_list;
+  std::unordered_map<int, Node> closed_list;
 
   open_list.push(start);
 
   // get all possible motions
-  const std::vector<Node> motions = getMotion();
+  const std::vector<Node> motions = Node::getMotion();
 
   // main process
   while (!open_list.empty())
@@ -76,10 +76,10 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
     open_list.pop();
 
     // current node does not exist in closed list
-    if (closed_list.find(current) != closed_list.end())
+    if (closed_list.find(current.id_) != closed_list.end())
       continue;
 
-    closed_list.insert(current);
+    closed_list.insert(std::make_pair(current.id_, current));
     expand.push_back(current);
 
     // goal found
@@ -92,14 +92,14 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
     // explore neighbor of current node
     for (const auto& motion : motions)
     {
+      // explore a new node
       Node node_new = current + motion;
+      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
 
       // node_new in closed list
-      if (closed_list.find(node_new) != closed_list.end())
+      if (closed_list.find(node_new.id_) != closed_list.end())
         continue;
 
-      // explore a new node
-      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
       node_new.pid_ = current.id_;
 
       // next node hit the boundary or obstacle
@@ -111,7 +111,7 @@ bool AStar::plan(const unsigned char* global_costmap, const Node& start, const N
 
       // if using dijkstra implementation, do not consider heuristics cost
       if (!is_dijkstra_)
-        node_new.h_ = dist(node_new, goal);
+        node_new.h_ = helper::dist(node_new, goal);
 
       // if using GBFS implementation, only consider heuristics cost
       if (is_gbfs_)

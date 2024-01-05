@@ -112,8 +112,9 @@ public:
    *
    * @param start start node
    * @param goal  goal node
+   * @return flag true if extract successfully else do not
    */
-  void extractPath(const Node& start, const Node& goal);
+  bool extractPath(const Node& start, const Node& goal);
 
   /**
    * @brief Get the closest Node of the path to current state

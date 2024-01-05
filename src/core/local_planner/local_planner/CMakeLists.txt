@@ -6,11 +6,13 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   costmap_2d
   geometry_msgs
+  utils
 )
 
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES local_planner
+ CATKIN_DEPENDS utils
 )
 
 include_directories(

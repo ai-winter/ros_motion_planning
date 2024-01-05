@@ -117,7 +117,7 @@ bool CubicSpline::run(const Points2d points, Points2d& path)
     double d_cumsum = 0.0;
     for (size_t i = 0; i < points.size() - 1; i++)
     {
-      double d = dist(points[i], points[i + 1]);
+      double d = helper::dist(points[i], points[i + 1]);
       d_cumsum += d;
       s.push_back(d_cumsum);
     }

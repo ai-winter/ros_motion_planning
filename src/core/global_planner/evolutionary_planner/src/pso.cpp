@@ -186,7 +186,7 @@ void PSO::initializePositions(PositionSequence& initial_positions, const Node& s
     // Calculate the center and the radius of the circle (midpoint between start and goal)
     center_x = (start.x_ + goal.x_) / 2;
     center_y = (start.y_ + goal.y_) / 2;
-    radius = dist(start, goal) / 2.0 < 5 ? 5 : dist(start, goal) / 2.0;
+    radius = helper::dist(start, goal) / 2.0 < 5 ? 5 : helper::dist(start, goal) / 2.0;
   }
 
   // initialize n_particles positions
@@ -305,8 +305,8 @@ void PSO::updateParticleVelocity(Particle& particle, const Particle& global_best
                          w_cognitive_ * rand2 * (global_best.position[i].second - particle.position[i].second));
 
     // Velocity limit
-    particle.velocity[i].first = clamp(particle.velocity[i].first, -1 * max_speed_, max_speed_);
-    particle.velocity[i].second = clamp(particle.velocity[i].second, -1 * max_speed_, max_speed_);
+    particle.velocity[i].first = helper::clamp(particle.velocity[i].first, -1 * max_speed_, max_speed_);
+    particle.velocity[i].second = helper::clamp(particle.velocity[i].second, -1 * max_speed_, max_speed_);
   }
 }
 
@@ -323,8 +323,8 @@ void PSO::updateParticlePosition(Particle& particle)
     particle.position[i].second += particle.velocity[i].second;
 
     // Position limit
-    particle.position[i].first = clamp(particle.position[i].first, 1, nx_ - 1);
-    particle.position[i].second = clamp(particle.position[i].second, 1, ny_ - 1);
+    particle.position[i].first = helper::clamp(particle.position[i].first, 1, nx_ - 1);
+    particle.position[i].second = helper::clamp(particle.position[i].second, 1, ny_ - 1);
   }
 }
 

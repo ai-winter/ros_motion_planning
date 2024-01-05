@@ -108,13 +108,13 @@ bool VoronoiPlanner::searchPathWithVoronoi(const Node& start, const Node& goal, 
   path.clear();
 
   // open list and closed list
-  std::priority_queue<Node, std::vector<Node>, compare_cost> open_list;
-  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list;
+  std::priority_queue<Node, std::vector<Node>, Node::compare_cost> open_list;
+  std::unordered_map<int, Node> closed_list;
 
   open_list.push(start);
 
   // get all possible motions
-  const std::vector<Node> motion = getMotion();
+  const std::vector<Node> motion = Node::getMotion();
 
   while (!open_list.empty())
   {
@@ -123,10 +123,10 @@ bool VoronoiPlanner::searchPathWithVoronoi(const Node& start, const Node& goal, 
     open_list.pop();
 
     // current node does not exist in closed list
-    if (closed_list.find(current) != closed_list.end())
+    if (closed_list.find(current.id_) != closed_list.end())
       continue;
 
-    closed_list.insert(current);
+    closed_list.insert(std::make_pair(current.id_, current));
 
     // goal found
     if ((current == goal) || (v_goal == nullptr ? false : voronoi_diagram_[current.x_][current.y_].is_voronoi))
@@ -147,7 +147,7 @@ bool VoronoiPlanner::searchPathWithVoronoi(const Node& start, const Node& goal, 
       Node node_new = current + m;
 
       // current node do not exist in closed list
-      if (closed_list.find(node_new) != closed_list.end())
+      if (closed_list.find(node_new.id_) != closed_list.end())
         continue;
 
       // explore a new node

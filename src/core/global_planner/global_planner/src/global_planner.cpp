@@ -73,6 +73,27 @@ void GlobalPlanner::setFactor(double factor)
 }
 
 /**
+ * @brief Set or reset costmap origin
+ * @param origin_x  origin in costmap x direction
+ * @param origin_y  origin in costmap y direction
+ */
+void GlobalPlanner::setOrigin(double origin_x, double origin_y)
+{
+  origin_x_ = origin_x;
+  origin_y_ = origin_y;
+}
+
+/**
+ * @brief Set convert offset
+ * @param origin_x  origin in costmap x direction
+ * @param origin_y  origin in costmap y direction
+ */
+void GlobalPlanner::setConvertOffset(double convert_offset)
+{
+  convert_offset_ = convert_offset;
+}
+
+/**
  * @brief Transform from grid map(x, y) to grid index(i)
  * @param x grid map x
  * @param y grid map y
@@ -122,21 +143,37 @@ void GlobalPlanner::grid2Map(int gx, int gy, double& mx, double& my)
 }
 
 /**
- * @brief Get permissible motion
- * @return Node vector of permissible motions
+ * @brief Tranform from world map(x, y) to costmap(x, y)
+ * @param mx costmap x
+ * @param my costmap y
+ * @param wx world map x
+ * @param wy world map y
+ * @return true if successfull, else false
  */
-std::vector<Node> GlobalPlanner::getMotion()
+bool GlobalPlanner::world2Map(double wx, double wy, double& mx, double& my)
 {
-  return {
-    Node(0, 1, 1),
-    Node(1, 0, 1),
-    Node(0, -1, 1),
-    Node(-1, 0, 1),
-    Node(1, 1, std::sqrt(2)),
-    Node(1, -1, std::sqrt(2)),
-    Node(-1, 1, std::sqrt(2)),
-    Node(-1, -1, std::sqrt(2)),
-  };
+  if (wx < origin_x_ || wy < origin_y_)
+    return false;
+
+  mx = (wx - origin_x_) / resolution_ - convert_offset_;
+  my = (wy - origin_y_) / resolution_ - convert_offset_;
+  if (mx < nx_ && my < ny_)
+    return true;
+
+  return false;
+}
+
+/**
+ * @brief Tranform from costmap(x, y) to world map(x, y)
+ * @param mx costmap x
+ * @param my costmap y
+ * @param wx world map x
+ * @param wy world map y
+ */
+void GlobalPlanner::map2World(double mx, double my, double& wx, double& wy)
+{
+  wx = origin_x_ + (mx + convert_offset_) * resolution_;
+  wy = origin_y_ + (my + convert_offset_) * resolution_;
 }
 
 /**
@@ -160,51 +197,27 @@ void GlobalPlanner::outlineMap(unsigned char* costarr)
 }
 
 /**
- * @brief Calculate distance between the 2 nodes.
- * @param n1 Node 1
- * @param n2 Node 2
- * @return distance between nodes
- */
-double GlobalPlanner::dist(const Node& node1, const Node& node2)
-{
-  return std::hypot(node1.x_ - node2.x_, node1.y_ - node2.y_);
-}
-
-/**
- * @brief Calculate the angle of x-axis between the 2 nodes.
- * @param n1 Node 1
- * @param n2 Node 2
- * @return the angle of x-axis between the 2 node
- */
-double GlobalPlanner::angle(const Node& node1, const Node& node2)
-{
-  return atan2(node2.y_ - node1.y_, node2.x_ - node1.x_);
-}
-
-/**
  * @brief Convert closed list to path
  * @param closed_list closed list
  * @param start       start node
  * @param goal        goal node
  * @return vector containing path nodes
  */
-std::vector<Node> GlobalPlanner::_convertClosedListToPath(
-    std::unordered_set<Node, NodeIdAsHash, compare_coordinates>& closed_list, const Node& start, const Node& goal)
+std::vector<Node> GlobalPlanner::_convertClosedListToPath(std::unordered_map<int, Node>& closed_list, const Node& start,
+                                                          const Node& goal)
 {
-  auto current = *closed_list.find(goal);
-
   std::vector<Node> path;
-  while (current != start)
+  auto current = closed_list.find(goal.id_);
+  while (current->second != start)
   {
-    path.push_back(current);
-    auto it = closed_list.find(Node(current.pid_ % nx_, current.pid_ / nx_, 0, 0, current.pid_));
+    path.emplace_back(current->second.x_, current->second.y_);
+    auto it = closed_list.find(current->second.pid_);
     if (it != closed_list.end())
-      current = *it;
+      current = it;
     else
       return {};
   }
   path.push_back(start);
-
   return path;
 }
 

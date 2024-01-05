@@ -103,8 +103,8 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     target_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/target_pose", 10);
     current_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
     potential_map_pub_ = nh.advertise<nav_msgs::OccupancyGrid>("/potential_map", 10);
-    costmap_sub_ = nh.subscribe<nav_msgs::OccupancyGrid>(
-        "/move_base/local_costmap/costmap", 10, &APFPlanner::publishPotentialMap, this);
+    costmap_sub_ = nh.subscribe<nav_msgs::OccupancyGrid>("/move_base/local_costmap/costmap", 10,
+                                                         &APFPlanner::publishPotentialMap, this);
 
     ROS_INFO("APF planner initialized!");
   }
@@ -240,8 +240,8 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   regularizeAngle(e_theta);
 
   // position reached
-  if (dist(Eigen::Vector2d(global_plan_.back().pose.position.x, global_plan_.back().pose.position.y),
-           Eigen::Vector2d(current_ps_.pose.position.x, current_ps_.pose.position.y)) < p_precision_)
+  if (helper::dist(Eigen::Vector2d(global_plan_.back().pose.position.x, global_plan_.back().pose.position.y),
+                   Eigen::Vector2d(current_ps_.pose.position.x, current_ps_.pose.position.y)) < p_precision_)
   {
     e_theta = goal_rpy_.z() - theta;
     regularizeAngle(e_theta);
@@ -368,7 +368,8 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
   {
     ROS_WARN(
         "The cost %.0lf of robot's position is out of bound! Are you sure the robot has been"
-        " properly localized and the cost bound is right?", current_cost);
+        " properly localized and the cost bound is right?",
+        current_cost);
     return rep_force;
   }
 
@@ -390,25 +391,24 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
 }
 
 /**
-   * @brief Callback function of costmap_sub_ to publish /potential_map topic
-   * @param msg the message received from topic /move_base/local_costmap/costmap
+ * @brief Callback function of costmap_sub_ to publish /potential_map topic
+ * @param msg the message received from topic /move_base/local_costmap/costmap
  */
 void APFPlanner::publishPotentialMap(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
-  double attr_scale = zeta_ / (zeta_ + eta_), rep_scale = eta_ / (zeta_ + eta_);  // the two potential scales sum up to 1
+  double attr_scale = zeta_ / (zeta_ + eta_),
+         rep_scale = eta_ / (zeta_ + eta_);  // the two potential scales sum up to 1
   double current_cost, dist_to_target, dist_to_obstacles, inflation_radius, scaled_attr, scaled_rep;
   double bound_diff = cost_ub_ - cost_lb_;
-  int tx, ty; // costmap coordinates of target point
+  int tx, ty;  // costmap coordinates of target point
 
   // calculate costmap coordinates from world coordinates (maybe out of bound)
   tx = (int)((target_ps_.pose.position.x - current_ps_.pose.position.x - origin_x_) / resolution_ - convert_offset_);
   ty = (int)((target_ps_.pose.position.y - current_ps_.pose.position.y - origin_y_) / resolution_ - convert_offset_);
 
   // calculate distance from the robot to target (on the scale of costmap)
-  dist_to_target = std::hypot(
-      tx - (int)((- origin_x_) / resolution_ - convert_offset_),
-      ty - (int)((- origin_y_) / resolution_ - convert_offset_)
-      );
+  dist_to_target = std::hypot(tx - (int)((-origin_x_) / resolution_ - convert_offset_),
+                              ty - (int)((-origin_y_) / resolution_ - convert_offset_));
 
   // the costmap inflation radius of obstacles (on the scale of costmap)
   inflation_radius = inflation_radius_ / resolution_;
@@ -419,13 +419,13 @@ void APFPlanner::publishPotentialMap(const nav_msgs::OccupancyGrid::ConstPtr& ms
     for (int x = 0; x < nx_; ++x)
     {
       // temp variables
-      current_cost = local_costmap_[x + nx_ * y];     // cost of the cell
-      dist_to_obstacles = (cost_ub_ - current_cost) / bound_diff; // distance from cell to obstacles
-                                                                  // (normalized scale, i.e., within the range of [0,1])
+      current_cost = local_costmap_[x + nx_ * y];  // cost of the cell
+      dist_to_obstacles =
+          (cost_ub_ - current_cost) / bound_diff;  // distance from cell to obstacles
+                                                   // (normalized scale, i.e., within the range of [0,1])
 
       // to calculate the two scaled force potential fields
-      scaled_attr = attr_scale *
-                    ((std::hypot(tx - x, ty - y) - dist_to_target) / inflation_radius / 2.0 + 0.5);
+      scaled_attr = attr_scale * ((std::hypot(tx - x, ty - y) - dist_to_target) / inflation_radius / 2.0 + 0.5);
       scaled_rep = rep_scale * std::pow(1.0 / dist_to_obstacles - 1.0, 2);
 
       // sum two potential fields to calculate the net potential field

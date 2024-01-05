@@ -6,11 +6,13 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   costmap_2d
   geometry_msgs
+  utils
 )
 
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES global_planner
+ CATKIN_DEPENDS utils
 )
 
 include_directories(
@@ -20,7 +22,6 @@ include_directories(
 
 add_library(${PROJECT_NAME}
   src/global_planner.cpp
-  src/nodes.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

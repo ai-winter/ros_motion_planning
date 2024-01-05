@@ -13,5 +13,6 @@
   <depend>angles</depend>
   <depend>roscpp</depend>
   <depend>voronoi_layer</depend>
+  <depend>utils</depend>
 
 </package>

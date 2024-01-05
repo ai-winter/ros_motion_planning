@@ -5,13 +5,14 @@ find_package(catkin REQUIRED COMPONENTS
   angles
   roscpp
   voronoi_layer
+  utils
 )
 
 find_package(Eigen3 REQUIRED)
 
 catkin_package(
  INCLUDE_DIRS include
- CATKIN_DEPENDS voronoi_layer
+ CATKIN_DEPENDS voronoi_layer utils
 )
 
 include_directories(
@@ -27,4 +28,5 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  utils
 )

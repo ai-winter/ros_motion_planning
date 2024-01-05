@@ -103,17 +103,6 @@ void LocalPlanner::setMapFrame(std::string map_frame)
 }
 
 /**
- * @brief Calculate distance between the 2 points.
- * @param n1        point 1
- * @param n2        point 2
- * @return distance between points
- */
-double LocalPlanner::dist(const Eigen::Vector2d& point1, const Eigen::Vector2d& point2)
-{
-  return std::hypot(point1.x() - point2.x(), point1.y() - point2.y());
-}
-
-/**
  * @brief Regularize angle to [-pi, pi]
  * @param angle the angle (rad) to regularize
  */

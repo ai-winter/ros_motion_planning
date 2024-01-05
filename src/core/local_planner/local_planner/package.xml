@@ -14,5 +14,6 @@
   <depend>costmap_2d</depend>
   <depend>geometry_msgs</depend>
   <depend>roscpp</depend>
+  <depend>utils</depend>
 
 </package>

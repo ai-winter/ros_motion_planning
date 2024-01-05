@@ -22,6 +22,8 @@
   <depend>tf2_ros</depend>
   <depend>global_planner</depend>
   <depend>voronoi_layer</depend>
+  <depend>utils</depend>
+  <depend>curve_generation</depend>
 
   <export>
     <nav_core plugin="${prefix}/graph_planner_plugin.xml" />

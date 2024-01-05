@@ -22,6 +22,7 @@
   <depend>tf2_ros</depend>
   <depend>visualization_msgs</depend>
   <depend>global_planner</depend>
+  <depend>utils</depend>
 
   <export>
     <nav_core plugin="${prefix}/sample_planner_plugin.xml" />

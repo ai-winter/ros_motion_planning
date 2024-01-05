@@ -45,13 +45,13 @@ bool JumpPointSearch::plan(const unsigned char* global_costmap, const Node& star
   expand.clear();
 
   // open list and closed list
-  std::priority_queue<Node, std::vector<Node>, compare_cost> open_list;
-  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list;
+  std::priority_queue<Node, std::vector<Node>, Node::compare_cost> open_list;
+  std::unordered_map<int, Node> closed_list;
 
   open_list.push(start);
 
   // get all possible motions
-  std::vector<Node> motions = getMotion();
+  std::vector<Node> motions = Node::getMotion();
 
   // main loop
   while (!open_list.empty())
@@ -61,10 +61,10 @@ bool JumpPointSearch::plan(const unsigned char* global_costmap, const Node& star
     open_list.pop();
 
     // current node do not exist in closed list
-    if (closed_list.find(current) != closed_list.end())
+    if (closed_list.find(current.id_) != closed_list.end())
       continue;
 
-    closed_list.insert(current);
+    closed_list.insert(std::make_pair(current.id_, current));
     expand.push_back(current);
 
     // goal found
@@ -80,7 +80,7 @@ bool JumpPointSearch::plan(const unsigned char* global_costmap, const Node& star
       Node node_new = jump(current, motion);
 
       // node_new not exits or in closed list
-      if (node_new.id_ == -1 || closed_list.find(node_new) != closed_list.end())
+      if (node_new.id_ == -1 || closed_list.find(node_new.id_) != closed_list.end())
         continue;
 
       node_new.pid_ = current.id_;

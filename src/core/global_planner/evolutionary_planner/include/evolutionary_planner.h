@@ -103,32 +103,13 @@ protected:
    * @param plan  plan transfromed from path, i.e. [start, ..., goal]
    * @return  bool true if successful, else false
    */
-  bool _getPlanFromPath(std::vector<global_planner::Node>& path, std::vector<geometry_msgs::PoseStamped>& plan);
+  bool _getPlanFromPath(std::vector<Node>& path, std::vector<geometry_msgs::PoseStamped>& plan);
 
   /**
    * @brief  publish expand zone
    * @param  expand  set of expand nodes
    */
-  void _publishExpand(std::vector<global_planner::Node>& expand);
-
-  /**
-   * @brief Tranform from costmap(x, y) to world map(x, y)
-   * @param mx  costmap x
-   * @param my  costmap y
-   * @param wx  world map x
-   * @param wy  world map y
-   */
-  void _mapToWorld(double mx, double my, double& wx, double& wy);
-
-  /**
-   * @brief Tranform from world map(x, y) to costmap(x, y)
-   * @param mx  costmap x
-   * @param my  costmap y
-   * @param wx  world map x
-   * @param wy  world map y
-   * @return true if successfull, else false
-   */
-  bool _worldToMap(double wx, double wy, double& mx, double& my);
+  void _publishExpand(std::vector<Node>& expand);
 
 protected:
   bool initialized_;                          // initialization flag

@@ -167,7 +167,7 @@ void ACO::initializePositions(PositionSequence& initial_positions, const Node& s
     // Calculate the center and the radius of the circle (midpoint between start and goal)
     center_x = (start.x_ + goal.x_) / 2;
     center_y = (start.y_ + goal.y_) / 2;
-    radius = dist(start, goal) / 2.0 < 5 ? 5 : dist(start, goal) / 2.0;
+    radius = helper::dist(start, goal) / 2.0 < 5 ? 5 : helper::dist(start, goal) / 2.0;
   }
 
   // initialize n_particles positions

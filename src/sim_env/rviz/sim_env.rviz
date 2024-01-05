@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Path1
+        - /Map2
         - /Marker1
         - /TrackedPersons1
         - /Map5
@@ -191,9 +192,9 @@ Visualization Manager:
       Topic: /move_base/GraphPlanner/plan
       Unreliable: false
       Value: true
-    - Alpha: 0.8999999761581421
+    - Alpha: 1
       Class: rviz/Map
-      Color Scheme: costmap
+      Color Scheme: map
       Draw Behind: true
       Enabled: true
       Name: Map

@@ -55,9 +55,9 @@ protected:
 
 protected:
   // Sampled list forward
-  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> sample_list_f_;
+  std::unordered_map<int, Node> sample_list_f_;
   // Sampled list backward
-  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> sample_list_b_;
+  std::unordered_map<int, Node> sample_list_b_;
 };
 }  // namespace global_planner
 

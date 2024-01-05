@@ -219,16 +219,19 @@ void LPAStar::computeShortestPath()
 
 /**
  * @brief Extract path for map
+ *
  * @param start start node
  * @param goal  goal node
+ * @return flag true if extract successfully else do not
  */
-void LPAStar::extractPath(const Node& start, const Node& goal)
+bool LPAStar::extractPath(const Node& start, const Node& goal)
 {
+  std::vector<Node> path_temp;
   LNodePtr node_ptr = map_[goal.x_][goal.y_];
   int count = 0;
   while (node_ptr->x_ != start.x_ || node_ptr->y_ != start.y_)
   {
-    path_.push_back(*node_ptr);
+    path_temp.push_back(*node_ptr);
 
     // argmin_{s\in pred(u)}
     std::vector<LNodePtr> neigbours;
@@ -248,8 +251,10 @@ void LPAStar::extractPath(const Node& start, const Node& goal)
     // TODO: it happens to cannnot find a path to start sometimes...
     // use counter to solve it templately
     if (count++ > 1000)
-      break;
+      return false;
   }
+  path_ = path_temp;
+  return true;
 }
 
 /**
@@ -309,7 +314,7 @@ bool LPAStar::plan(const unsigned char* global_costmap, const Node& start, const
 
     computeShortestPath();
 
-    path_.clear();
+    // path_.clear();
     extractPath(start, goal);
 
     expand = expand_;

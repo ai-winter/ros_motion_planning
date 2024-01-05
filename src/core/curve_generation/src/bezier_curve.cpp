@@ -66,7 +66,7 @@ Points2d Bezier::getControlPoints(Pose2d start, Pose2d goal)
   std::tie(sx, sy, syaw) = start;
   std::tie(gx, gy, gyaw) = goal;
 
-  double d = dist(Point2d(sx, sy), Point2d(gx, gy)) / offset_;
+  double d = helper::dist(Point2d(sx, sy), Point2d(gx, gy)) / offset_;
 
   Points2d control_pts;
   control_pts.emplace_back(sx, sy);
@@ -90,7 +90,7 @@ Points2d Bezier::generation(Pose2d start, Pose2d goal)
   std::tie(sx, sy, syaw) = start;
   std::tie(gx, gy, gyaw) = goal;
 
-  int n_points = (int)(dist(Point2d(sx, sy), Point2d(gx, gy)) / step_);
+  int n_points = (int)(helper::dist(Point2d(sx, sy), Point2d(gx, gy)) / step_);
   Points2d control_pts = getControlPoints(start, goal);
 
   Points2d points;
@@ -119,8 +119,8 @@ bool Bezier::run(const Points2d points, Points2d& path)
     poses.emplace_back(points.begin()->first, points.begin()->second, 0);
     for (size_t i = 1; i < points.size() - 1; i++)
     {
-      double theta1 = angle(points[i - 1], points[i]);
-      double theta2 = angle(points[i], points[i + 1]);
+      double theta1 = helper::angle(points[i - 1], points[i]);
+      double theta2 = helper::angle(points[i], points[i + 1]);
       poses.emplace_back(points[i].first, points[i].second, (theta1 + theta2) / 2);
     }
     poses.emplace_back(points.back().first, points.back().second, 0);

@@ -63,8 +63,8 @@ void Dubins::LSL(double alpha, double beta, double dist, DubinsLength& length, D
   else
   {
     p_lsl = sqrt(p_lsl);
-    double t_lsl = mod2pi(-alpha + atan2(cos_b - cos_a, dist + sin_a - sin_b));
-    double q_lsl = mod2pi(beta - atan2(cos_b - cos_a, dist + sin_a - sin_b));
+    double t_lsl = helper::mod2pi(-alpha + atan2(cos_b - cos_a, dist + sin_a - sin_b));
+    double q_lsl = helper::mod2pi(beta - atan2(cos_b - cos_a, dist + sin_a - sin_b));
     length = { t_lsl, p_lsl, q_lsl };
     mode = { DUBINS_L, DUBINS_S, DUBINS_L };
   }
@@ -95,8 +95,8 @@ void Dubins::RSR(double alpha, double beta, double dist, DubinsLength& length, D
   else
   {
     p_rsr = sqrt(p_rsr);
-    double t_rsr = mod2pi(alpha - atan2(cos_a - cos_b, dist - sin_a + sin_b));
-    double q_rsr = mod2pi(-beta + atan2(cos_a - cos_b, dist - sin_a + sin_b));
+    double t_rsr = helper::mod2pi(alpha - atan2(cos_a - cos_b, dist - sin_a + sin_b));
+    double q_rsr = helper::mod2pi(-beta + atan2(cos_a - cos_b, dist - sin_a + sin_b));
     length = { t_rsr, p_rsr, q_rsr };
     mode = { DUBINS_R, DUBINS_S, DUBINS_R };
   }
@@ -128,8 +128,8 @@ void Dubins::LSR(double alpha, double beta, double dist, DubinsLength& length, D
   else
   {
     p_lsr = sqrt(p_lsr);
-    double t_lsr = mod2pi(-alpha + atan2(-cos_a - cos_b, dist + sin_a + sin_b) - atan2(-2.0, p_lsr));
-    double q_lsr = mod2pi(-beta + atan2(-cos_a - cos_b, dist + sin_a + sin_b) - atan2(-2.0, p_lsr));
+    double t_lsr = helper::mod2pi(-alpha + atan2(-cos_a - cos_b, dist + sin_a + sin_b) - atan2(-2.0, p_lsr));
+    double q_lsr = helper::mod2pi(-beta + atan2(-cos_a - cos_b, dist + sin_a + sin_b) - atan2(-2.0, p_lsr));
     length = { t_lsr, p_lsr, q_lsr };
     mode = { DUBINS_L, DUBINS_S, DUBINS_R };
   }
@@ -161,8 +161,8 @@ void Dubins::RSL(double alpha, double beta, double dist, DubinsLength& length, D
   else
   {
     p_rsl = sqrt(p_rsl);
-    double t_rsl = mod2pi(alpha - atan2(cos_a + cos_b, dist - sin_a - sin_b) + atan2(2.0, p_rsl));
-    double q_rsl = mod2pi(beta - atan2(cos_a + cos_b, dist - sin_a - sin_b) + atan2(2.0, p_rsl));
+    double t_rsl = helper::mod2pi(alpha - atan2(cos_a + cos_b, dist - sin_a - sin_b) + atan2(2.0, p_rsl));
+    double q_rsl = helper::mod2pi(beta - atan2(cos_a + cos_b, dist - sin_a - sin_b) + atan2(2.0, p_rsl));
     length = { t_rsl, p_rsl, q_rsl };
     mode = { DUBINS_R, DUBINS_S, DUBINS_L };
   }
@@ -193,9 +193,9 @@ void Dubins::RLR(double alpha, double beta, double dist, DubinsLength& length, D
   }
   else
   {
-    p_rlr = mod2pi(2 * M_PI - acos(p_rlr));
-    double t_rlr = mod2pi(alpha - atan2(cos_a - cos_b, dist - sin_a + sin_b) + p_rlr / 2.0);
-    double q_rlr = mod2pi(alpha - beta - t_rlr + p_rlr);
+    p_rlr = helper::mod2pi(2 * M_PI - acos(p_rlr));
+    double t_rlr = helper::mod2pi(alpha - atan2(cos_a - cos_b, dist - sin_a + sin_b) + p_rlr / 2.0);
+    double q_rlr = helper::mod2pi(alpha - beta - t_rlr + p_rlr);
     length = { t_rlr, p_rlr, q_rlr };
     mode = { DUBINS_R, DUBINS_L, DUBINS_R };
   }
@@ -226,9 +226,9 @@ void Dubins::LRL(double alpha, double beta, double dist, DubinsLength& length, D
   }
   else
   {
-    p_lrl = mod2pi(2 * M_PI - acos(p_lrl));
-    double t_lrl = mod2pi(-alpha + atan2(-cos_a + cos_b, dist + sin_a - sin_b) + p_lrl / 2.0);
-    double q_lrl = mod2pi(beta - alpha - t_lrl + p_lrl);
+    p_lrl = helper::mod2pi(2 * M_PI - acos(p_lrl));
+    double t_lrl = helper::mod2pi(-alpha + atan2(-cos_a + cos_b, dist + sin_a - sin_b) + p_lrl / 2.0);
+    double q_lrl = helper::mod2pi(beta - alpha - t_lrl + p_lrl);
     length = { t_lrl, p_lrl, q_lrl };
     mode = { DUBINS_L, DUBINS_R, DUBINS_L };
   }
@@ -289,10 +289,10 @@ Points2d Dubins::generation(Pose2d start, Pose2d goal)
   // coordinate transformation
   gx -= sx;
   gy -= sy;
-  double theta = mod2pi(atan2(gy, gx));
+  double theta = helper::mod2pi(atan2(gy, gx));
   double dist = hypot(gx, gy) * max_curv_;
-  double alpha = mod2pi(syaw - theta);
-  double beta = mod2pi(gyaw - theta);
+  double alpha = helper::mod2pi(syaw - theta);
+  double beta = helper::mod2pi(gyaw - theta);
 
   // select the best motion
   DubinsMode best_mode;
@@ -382,7 +382,7 @@ Points2d Dubins::generation(Pose2d start, Pose2d goal)
  */
 bool Dubins::run(const Points2d points, Points2d& path)
 {
-  if (points.size() < 4)
+  if (points.size() < 2)
     return false;
   else
   {
@@ -390,8 +390,8 @@ bool Dubins::run(const Points2d points, Points2d& path)
     poses.emplace_back(points.begin()->first, points.begin()->second, 0);
     for (size_t i = 1; i < points.size() - 1; i++)
     {
-      double theta1 = angle(points[i - 1], points[i]);
-      double theta2 = angle(points[i], points[i + 1]);
+      double theta1 = helper::angle(points[i - 1], points[i]);
+      double theta2 = helper::angle(points[i], points[i + 1]);
       poses.emplace_back(points[i].first, points[i].second, (theta1 + theta2) / 2);
     }
     poses.emplace_back(points.back().first, points.back().second, 0);
@@ -408,7 +408,7 @@ bool Dubins::run(const Points2d points, Points2d& path)
  */
 bool Dubins::run(const Poses2d points, Points2d& path)
 {
-  if (points.size() < 4)
+  if (points.size() < 2)
     return false;
   else
   {

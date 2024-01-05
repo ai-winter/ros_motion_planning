@@ -46,7 +46,7 @@ bool RRTStar::plan(const unsigned char* global_costmap, const Node& start, const
   // copy
   start_ = start, goal_ = goal;
   costs_ = global_costmap;
-  sample_list_.insert(start);
+  sample_list_.insert(std::make_pair(start.id_, start));
   expand.push_back(start);
 
   // main loop
@@ -61,7 +61,7 @@ bool RRTStar::plan(const unsigned char* global_costmap, const Node& start, const
       continue;
 
     // visited
-    if (sample_list_.find(sample_node) != sample_list_.end())
+    if (sample_list_.find(sample_node.id_) != sample_list_.end())
       continue;
 
     // regular the sample node
@@ -70,7 +70,7 @@ bool RRTStar::plan(const unsigned char* global_costmap, const Node& start, const
       continue;
     else
     {
-      sample_list_.insert(new_node);
+      sample_list_.insert(std::make_pair(new_node.id_, new_node));
       expand.push_back(new_node);
     }
 
@@ -92,22 +92,22 @@ bool RRTStar::plan(const unsigned char* global_costmap, const Node& start, const
  * @param node     sample node
  * @return nearest node
  */
-Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_coordinates> list, Node& node)
+Node RRTStar::_findNearestPoint(std::unordered_map<int, Node> list, Node& node)
 {
   Node nearest_node, new_node(node);
   double min_dist = std::numeric_limits<double>::max();
 
-  for (const auto node_ : list)
+  for (const auto p : list)
   {
     // calculate distance
-    double new_dist = dist(node_, new_node);
+    double new_dist = helper::dist(p.second, new_node);
 
     // update nearest node
     if (new_dist < min_dist)
     {
-      nearest_node = node_;
+      nearest_node = p.second;
       new_node.pid_ = nearest_node.id_;
-      new_node.g_ = new_dist + node_.g_;
+      new_node.g_ = new_dist + p.second.g_;
       min_dist = new_dist;
     }
   }
@@ -117,7 +117,7 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
   {
     // connect sample node and nearest node, then move the nearest node
     // forward to sample node with `max_distance` as result
-    double theta = angle(nearest_node, new_node);
+    double theta = helper::angle(nearest_node, new_node);
     new_node.x_ = nearest_node.x_ + (int)(max_dist_ * cos(theta));
     new_node.y_ = nearest_node.y_ + (int)(max_dist_ * sin(theta));
     new_node.id_ = grid2Index(new_node.x_, new_node.y_);
@@ -128,19 +128,19 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
   if (!_isAnyObstacleInPath(new_node, nearest_node))
   {
     // rewire optimization
-    for (auto node_ : sample_list_)
+    for (auto p : sample_list_)
     {
       // inside the optimization circle
-      double new_dist = dist(node_, new_node);
+      double new_dist = helper::dist(p.second, new_node);
       if (new_dist < r_)
       {
-        double cost = node_.g_ + new_dist;
+        double cost = p.second.g_ + new_dist;
         // update new sample node's cost and parent
         if (new_node.g_ > cost)
         {
-          if (!_isAnyObstacleInPath(new_node, node_))
+          if (!_isAnyObstacleInPath(new_node, p.second))
           {
-            new_node.pid_ = node_.id_;
+            new_node.pid_ = p.second.id_;
             new_node.g_ = cost;
           }
         }
@@ -148,12 +148,12 @@ Node RRTStar::_findNearestPoint(std::unordered_set<Node, NodeIdAsHash, compare_c
         {
           // update nodes' cost inside the radius
           cost = new_node.g_ + new_dist;
-          if (cost < node_.g_)
+          if (cost < p.second.g_)
           {
-            if (!_isAnyObstacleInPath(new_node, node_))
+            if (!_isAnyObstacleInPath(new_node, p.second))
             {
-              node_.pid_ = new_node.id_;
-              node_.g_ = cost;
+              p.second.pid_ = new_node.id_;
+              p.second.g_ = cost;
             }
           }
         }

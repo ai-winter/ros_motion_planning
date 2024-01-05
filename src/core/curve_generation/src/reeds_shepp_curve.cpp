@@ -113,7 +113,7 @@ void ReedsShepp::R(double x, double y, double& r, double& theta)
  */
 double ReedsShepp::M(double theta)
 {
-  return pi2pi(theta);
+  return helper::pi2pi(theta);
 }
 
 /**
@@ -977,8 +977,8 @@ bool ReedsShepp::run(const Points2d points, Points2d& path)
     poses.emplace_back(points.begin()->first, points.begin()->second, 0);
     for (size_t i = 1; i < points.size() - 1; i++)
     {
-      double theta1 = angle(points[i - 1], points[i]);
-      double theta2 = angle(points[i], points[i + 1]);
+      double theta1 = helper::angle(points[i - 1], points[i]);
+      double theta2 = helper::angle(points[i], points[i + 1]);
       poses.emplace_back(points[i].first, points[i].second, (theta1 + theta2) / 2);
     }
     poses.emplace_back(points.back().first, points.back().second, 0);

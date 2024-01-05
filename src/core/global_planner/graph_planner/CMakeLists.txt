@@ -14,11 +14,13 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   global_planner
   voronoi_layer
+  utils
+  curve_generation
 )
 
 catkin_package(
  INCLUDE_DIRS include
- CATKIN_DEPENDS global_planner voronoi_layer
+ CATKIN_DEPENDS global_planner voronoi_layer utils curve_generation
 )
 
 include_directories(
@@ -37,8 +39,10 @@ add_library(${PROJECT_NAME}
   src/voronoi.cpp
   src/theta_star.cpp
   src/lazy_theta_star.cpp
+  src/hybrid_a_star.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  utils
 )

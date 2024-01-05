@@ -14,11 +14,12 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   global_planner
   curve_generation
+  utils
 )
 
 catkin_package(
  INCLUDE_DIRS include
- CATKIN_DEPENDS global_planner curve_generation
+ CATKIN_DEPENDS global_planner curve_generation utils
 )
 
 include_directories(
@@ -36,4 +37,5 @@ add_library(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   curve_generation
+  utils
 )

@@ -21,7 +21,7 @@
 
 #include <geometry_msgs/PoseStamped.h>
 
-#include <Eigen/Dense>
+#include "math_helper.h"
 
 namespace local_planner
 {
@@ -82,14 +82,6 @@ public:
    */
   void setBaseFrame(std::string base_frame);
   void setMapFrame(std::string map_frame);
-
-  /**
-   * @brief Calculate distance between the 2 points.
-   * @param n1        point 1
-   * @param n2        point 2
-   * @return distance between points
-   */
-  double dist(const Eigen::Vector2d& point1, const Eigen::Vector2d& point2);
 
   /**
    * @brief Regularize angle to [-pi, pi]

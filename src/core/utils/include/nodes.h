@@ -21,8 +21,6 @@
 #include <vector>
 #include <map>
 
-namespace global_planner
-{
 /**
  * @brief Basic Node class
  */
@@ -68,72 +66,46 @@ public:
    */
   bool operator!=(const Node& n) const;
 
+  /**
+   * @brief Get permissible motion
+   * @return  Node vector of permissible motions
+   */
+  static std::vector<Node> getMotion();
+
+  /**
+   * @brief Struct created to encapsulate function compare cost between 2 Nodes.
+   *        Used in with multiple algorithms and classes
+   */
+  struct compare_cost
+  {
+    /**
+     * @brief Compare cost between 2 nodes
+     * @param n1 one Node
+     * @param n2 another Node
+     * @return true if the cost to get to n1 is greater than n2, else false
+     */
+    bool operator()(const Node& n1, const Node& n2) const;
+  };
+
+  /**
+   * @brief Struct created to encapsulate function compare coordinates between 2 Nodes.
+   *        Used in with multiple algorithms and classes
+   */
+  struct compare_coordinates
+  {
+    /**
+     * @brief Compare coordinates between 2 nodes
+     * @param n1 one Node
+     * @param n2 another Node
+     * @return true if n1 equals n2, else false
+     */
+    bool operator()(const Node& n1, const Node& n2) const;
+  };
+
 public:
   int x_, y_;     // x and y value
   double g_, h_;  // g value, cost to reach this node. h value, heuristic cost to reach the goal
   int id_, pid_;  // Node's index and parent's index
-};
-
-/**
- * @brief Hash for node struct that returns node id
- */
-class NodeIdAsHash
-{
-public:
-  /**
-   * @brief Overlaod () operator to calculate the hash of a Node
-   * @param n Node for which the hash is to be calculated
-   * @return hash value, node id
-   */
-  size_t operator()(const Node& n) const;
-};
-
-/**
- * @brief Struct created to encapsulate function compare cost between 2 Nodes.
- *        Used in with multiple algorithms and classes
- */
-struct compare_cost
-{
-  /**
-   * @brief Compare cost between 2 nodes
-   * @param n1 one Node
-   * @param n2 another Node
-   * @return true if the cost to get to n1 is greater than n2, else false
-   */
-  bool operator()(const Node& n1, const Node& n2) const;
-};
-
-/**
- * @brief Struct created to encapsulate function compare coordinates between 2 Nodes.
- *        Used in with multiple algorithms and classes
- */
-struct compare_coordinates
-{
-  /**
-   * @brief Compare coordinates between 2 nodes
-   * @param n1 one Node
-   * @param n2 another Node
-   * @return true if n1 equals n2, else false
-   */
-  bool operator()(const Node& n1, const Node& n2) const;
-};
-
-/**
- * @brief Structure to generate a hash for std::pair
- * @details This allows the use of pairs in data structures that use a hash, such as unordered_map/set
- */
-struct pair_hash
-{
-  /**
-   * @brief Function used to generate hash for keys
-   * @param pair pair of values
-   * @return generated hash value
-   */
-  template <class T1, class T2>
-  std::size_t operator()(const std::pair<T1, T2>& pair) const
-  {
-    return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
-  }
 };
 
 /* =====================================================================================
@@ -229,5 +201,6 @@ public:
   std::multimap<double, LNode*>::iterator open_it;  // iterator
 };
 
-}  // namespace global_planner
+
+
 #endif  // NODES_H

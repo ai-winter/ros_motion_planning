@@ -87,7 +87,6 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
     nx_ = costmap->getSizeInCellsX(), ny_ = costmap->getSizeInCellsY();
     origin_x_ = costmap_->getOriginX(), origin_y_ = costmap_->getOriginY();
     resolution_ = costmap->getResolution();
-    // ROS_WARN("nx: %d, origin_x: %f, res: %lf", nx_, origin_x_, resolution_);
 
     private_nh.param("convert_offset", convert_offset_, 0.0);  // offset of transform from world(x,y) to grid map(x,y)
     private_nh.param("default_tolerance", tolerance_, 0.0);    // error tolerance
@@ -157,6 +156,9 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
                                           p_mut, max_speed, init_mode, pub_genets, max_iter);
     }
 
+    // pass costmap information to planner (required)
+    g_planner_->setOrigin(origin_x_, origin_y_);
+    g_planner_->setConvertOffset(convert_offset_);
     ROS_INFO("Using global evolutionary planner: %s", planner_name.c_str());
 
     // register planning publisher
@@ -225,7 +227,7 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
   // get goal and strat node coordinate tranform from world to costmap
   double wx = start.pose.position.x, wy = start.pose.position.y;
   double m_start_x, m_start_y, m_goal_x, m_goal_y;
-  if (!_worldToMap(wx, wy, m_start_x, m_start_y))
+  if (!g_planner_->world2Map(wx, wy, m_start_x, m_start_y))
   {
     ROS_WARN(
         "The robot's start position is off the global costmap. Planning will always fail, are you sure the robot has "
@@ -233,7 +235,7 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
     return false;
   }
   wx = goal.pose.position.x, wy = goal.pose.position.y;
-  if (!_worldToMap(wx, wy, m_goal_x, m_goal_y))
+  if (!g_planner_->world2Map(wx, wy, m_goal_x, m_goal_y))
   {
     ROS_WARN_THROTTLE(1.0,
                       "The goal sent to the global planner is off the global costmap. Planning will always fail to "
@@ -247,8 +249,8 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
   g_planner_->map2Grid(m_goal_x, m_goal_y, g_goal_x, g_goal_y);
 
   // NOTE: how to init start and goal?
-  global_planner::Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
-  global_planner::Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
+  Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
+  Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
 
   // clear the cost of robot location
   costmap_->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
@@ -258,8 +260,8 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
     g_planner_->outlineMap(costmap_->getCharMap());
 
   // calculate path
-  std::vector<global_planner::Node> path;
-  std::vector<global_planner::Node> expand;
+  std::vector<Node> path;
+  std::vector<Node> expand;
   bool path_found = g_planner_->plan(costmap_->getCharMap(), start_node, goal_node, path, expand);
 
   if (path_found)
@@ -334,8 +336,7 @@ bool EvolutionaryPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_m
  * @param plan  plan transfromed from path, i.e. [start, ..., goal]
  * @return  bool true if successful, else false
  */
-bool EvolutionaryPlanner::_getPlanFromPath(std::vector<global_planner::Node>& path,
-                                           std::vector<geometry_msgs::PoseStamped>& plan)
+bool EvolutionaryPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometry_msgs::PoseStamped>& plan)
 {
   if (!initialized_)
   {
@@ -349,7 +350,7 @@ bool EvolutionaryPlanner::_getPlanFromPath(std::vector<global_planner::Node>& pa
   for (int i = path.size() - 1; i >= 0; i--)
   {
     double wx, wy;
-    _mapToWorld((double)path[i].x_, (double)path[i].y_, wx, wy);
+    g_planner_->map2World((double)path[i].x_, (double)path[i].y_, wx, wy);
 
     // coding as message type
     geometry_msgs::PoseStamped pose;
@@ -372,7 +373,7 @@ bool EvolutionaryPlanner::_getPlanFromPath(std::vector<global_planner::Node>& pa
  * @brief  publish expand zone
  * @param  expand  set of expand nodes
  */
-void EvolutionaryPlanner::_publishExpand(std::vector<global_planner::Node>& expand)
+void EvolutionaryPlanner::_publishExpand(std::vector<Node>& expand)
 {
   ROS_DEBUG("Expand Zone Size:%ld", expand.size());
 
@@ -405,40 +406,6 @@ void EvolutionaryPlanner::_publishExpand(std::vector<global_planner::Node>& expa
   marker.lifetime = ros::Duration(1.0);
 
   expand_pub_.publish(marker);
-}
-
-/**
- * @brief Tranform from costmap(x, y) to world map(x, y)
- * @param mx  costmap x
- * @param my  costmap y
- * @param wx  world map x
- * @param wy  world map y
- */
-void EvolutionaryPlanner::_mapToWorld(double mx, double my, double& wx, double& wy)
-{
-  wx = origin_x_ + (mx + convert_offset_) * resolution_;
-  wy = origin_y_ + (my + convert_offset_) * resolution_;
-}
-
-/**
- * @brief Tranform from world map(x, y) to costmap(x, y)
- * @param mx  costmap x
- * @param my  costmap y
- * @param wx  world map x
- * @param wy  world map y
- * @return true if successfull, else false
- */
-bool EvolutionaryPlanner::_worldToMap(double wx, double wy, double& mx, double& my)
-{
-  if (wx < origin_x_ || wy < origin_y_)
-    return false;
-
-  mx = (wx - origin_x_) / resolution_ - convert_offset_;
-  my = (wy - origin_y_) / resolution_ - convert_offset_;
-  if (mx < costmap_->getSizeInCellsX() && my < costmap_->getSizeInCellsY())
-    return true;
-
-  return false;
 }
 
 }  // namespace evolutionary_planner

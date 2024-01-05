@@ -61,8 +61,8 @@ protected:
   void _setVertex(Node& node);
 
 private:
-  std::unordered_set<Node, NodeIdAsHash, compare_coordinates> closed_list_;  // closed list
-  std::vector<Node> motion_;                                                 // possible motions
+  std::unordered_map<int, Node> closed_list_;  // closed list
+  std::vector<Node> motion_;                   // possible motions
 };
 }  // namespace global_planner
 #endif

@@ -12,5 +12,6 @@
 
   <depend>angles</depend>
   <depend>roscpp</depend>
+  <depend>utils</depend>
 
 </package>
