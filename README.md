@@ -141,6 +141,7 @@ For the efficient operation of the motion planning system, we provide a series o
 |   **Voronoi**    |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/voronoi.cpp))     |         ![voronoi_ros.gif](assets/voronoi_ros.gif)         |
 |   **Theta\***    |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/theta_star.cpp))    |      ![theta_star_ros.gif](assets/theta_star_ros.gif)      |
 | **Lazy Theta\*** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/lazy_theta_star.cpp)) | ![lazy_theta_star_ros.gif](assets/lazy_theta_star_ros.gif) |
+| **Hybrid A\*** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/hybrid_astar.cpp)) | ![hybrid_astar_ros.gif](assets/hybrid_astar_ros.gif) |
 |     **RRT**      |       [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/sample_planner/src/rrt.cpp)        |             ![rrt_ros.gif](assets/rrt_ros.gif)             |
 |    **RRT\***     |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/sample_planner/src/rrt_star.cpp)     |        ![rrt_star_ros.gif](assets/rrt_star_ros.gif)        |
 | **Informed RRT** |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/sample_planner/src/informed_rrt.cpp)   |    ![informed_rrt_ros.gif](assets/informed_rrt_ros.gif)    |
@@ -171,12 +172,12 @@ For the efficient operation of the motion planning system, we provide a series o
 
 | Planner | Version | Animation |
 |:-------:|:-------:|:---------:|
-| **Polynomia** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/polynomial_curve.cpp) | ![polynomial_curve_python.gif](assets/polynomial_curve_python.gif)
-| **Bezier** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/bezier_curve.cpp) | ![bezier_curve_python.png](assets/bezier_curve_python.png)
-| **Cubic Spline** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/cubic_spline.cpp) | ![cubic_spline_python.png](assets/cubic_spline_python.png)
-| **BSpline** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/bspline_curve.cpp) | ![bspline_curve_python.png](assets/bspline_curve_python.png) 
-| **Dubins** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/dubins_curve.cpp) | ![dubins_curve_python.png](assets/dubins_curve_python.png)
-| **Reeds-Shepp** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/reeds_shepp.cpp) | ![reeds_shepp_python.png](assets/reeds_shepp_python.gif)
+| **Polynomia** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/src/polynomial_curve.cpp) | ![polynomial_curve_python.gif](assets/polynomial_curve_python.gif)
+| **Bezier** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/src/bezier_curve.cpp) | ![bezier_curve_python.png](assets/bezier_curve_python.png)
+| **Cubic Spline** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/src/cubic_spline.cpp) | ![cubic_spline_python.png](assets/cubic_spline_python.png)
+| **BSpline** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/src/bspline_curve.cpp) | ![bspline_curve_python.png](assets/bspline_curve_python.png) 
+| **Dubins** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/src/dubins_curve.cpp) | ![dubins_curve_python.png](assets/dubins_curve_python.png)
+| **Reeds-Shepp** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/curve_generation/src/reeds_shepp.cpp) | ![reeds_shepp_python.png](assets/reeds_shepp_python.gif)
 ## <span id="4">04. Papers
 
 ### Search-based Planning
@@ -188,6 +189,7 @@ For the efficient operation of the motion planning system, we provide a series o
 * D* Lite: [D* Lite](http://idm-lab.org/bib/abstracts/papers/aaai02b.pdf).
 * Theta*: [Theta*: Any-Angle Path Planning on Grids](https://www.jair.org/index.php/jair/article/view/10676), [Any-angle path planning on non-uniform costmaps](https://ieeexplore.ieee.org/abstract/document/5979769).
 * Lazy Theta*: [Lazy Theta*: Any-Angle Path Planning and Path Length Analysis in 3D](https://ojs.aaai.org/index.php/AAAI/article/view/7566).
+* Hybrid A*: [Practical search techniques in path planning for autonomous driving](https://ai.stanford.edu/~ddolgov/papers/dolgov_gpp_stair08.pdf)
 
 ### Sample-based Planning
 * RRT: [Rapidly-Exploring Random Trees: A New Tool for Path Planning](http://msl.cs.uiuc.edu/~lavalle/papers/Lav98c.pdf).
@@ -205,6 +207,11 @@ For the efficient operation of the motion planning system, we provide a series o
 
 * DWA: [The Dynamic Window Approach to Collision Avoidance](https://www.ri.cmu.edu/pub_files/pub1/fox_dieter_1997_1/fox_dieter_1997_1.pdf).
 * APF: [Real-time obstacle avoidance for manipulators and mobile robots](https://ieeexplore.ieee.org/document/1087247).
+
+
+### Curve Generation
+* Reeds Shepp: [Optimal paths for a car that goes both forwards and backwards](https://projecteuclid.org/journals/pacific-journal-of-mathematics/volume-145/issue-2/Optimal-paths-for-a-car-that-goes-both-forwards-and/pjm/1102645450.full)
+* Dubins: [On curves of minimal length with a constraint on average curvature, and with prescribed initial and terminal positions and tangents]()
 
 
 ## <span id="5">05. Acknowledgments

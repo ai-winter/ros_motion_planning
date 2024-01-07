@@ -26,6 +26,14 @@ namespace trajectory_generation
 {
 using DubinsMode = std::tuple<int, int, int>;
 using DubinsLength = std::tuple<double, double, double>;
+
+#define UNPACK_DUBINS_INPUTS(alpha, beta)                                                                              \
+  double sin_a = sin(alpha);                                                                                           \
+  double sin_b = sin(beta);                                                                                            \
+  double cos_a = cos(alpha);                                                                                           \
+  double cos_b = cos(beta);                                                                                            \
+  double cos_a_b = cos(alpha - beta);
+
 class Dubins : public Curve
 {
 public:

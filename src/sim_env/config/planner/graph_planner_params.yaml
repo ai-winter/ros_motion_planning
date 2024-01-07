@@ -10,4 +10,4 @@ GraphPlanner:
   # whether publish expand zone or not
   expand_zone: true
   # whether to store Voronoi map or not
-  voronoi_map: true
+  voronoi_map: false

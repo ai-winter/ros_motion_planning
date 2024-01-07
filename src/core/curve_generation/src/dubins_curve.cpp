@@ -47,12 +47,7 @@ Dubins::~Dubins()
  */
 void Dubins::LSL(double alpha, double beta, double dist, DubinsLength& length, DubinsMode& mode)
 {
-  double sin_a = sin(alpha);
-  double sin_b = sin(beta);
-  double cos_a = cos(alpha);
-  double cos_b = cos(beta);
-  double cos_a_b = cos(alpha - beta);
-
+  UNPACK_DUBINS_INPUTS(alpha, beta);
   double p_lsl = 2 + std::pow(dist, 2) - 2 * cos_a_b + 2 * dist * (sin_a - sin_b);
 
   if (p_lsl < 0)
@@ -80,12 +75,7 @@ void Dubins::LSL(double alpha, double beta, double dist, DubinsLength& length, D
  */
 void Dubins::RSR(double alpha, double beta, double dist, DubinsLength& length, DubinsMode& mode)
 {
-  double sin_a = sin(alpha);
-  double sin_b = sin(beta);
-  double cos_a = cos(alpha);
-  double cos_b = cos(beta);
-  double cos_a_b = cos(alpha - beta);
-
+  UNPACK_DUBINS_INPUTS(alpha, beta);
   double p_rsr = 2 + std::pow(dist, 2) - 2 * cos_a_b + 2 * dist * (sin_b - sin_a);
   if (p_rsr < 0)
   {
@@ -112,12 +102,7 @@ void Dubins::RSR(double alpha, double beta, double dist, DubinsLength& length, D
  */
 void Dubins::LSR(double alpha, double beta, double dist, DubinsLength& length, DubinsMode& mode)
 {
-  double sin_a = sin(alpha);
-  double sin_b = sin(beta);
-  double cos_a = cos(alpha);
-  double cos_b = cos(beta);
-  double cos_a_b = cos(alpha - beta);
-
+  UNPACK_DUBINS_INPUTS(alpha, beta);
   double p_lsr = -2 + std::pow(dist, 2) + 2 * cos_a_b + 2 * dist * (sin_a + sin_b);
 
   if (p_lsr < 0)
@@ -145,12 +130,7 @@ void Dubins::LSR(double alpha, double beta, double dist, DubinsLength& length, D
  */
 void Dubins::RSL(double alpha, double beta, double dist, DubinsLength& length, DubinsMode& mode)
 {
-  double sin_a = sin(alpha);
-  double sin_b = sin(beta);
-  double cos_a = cos(alpha);
-  double cos_b = cos(beta);
-  double cos_a_b = cos(alpha - beta);
-
+  UNPACK_DUBINS_INPUTS(alpha, beta);
   double p_rsl = -2 + std::pow(dist, 2) + 2 * cos_a_b - 2 * dist * (sin_a + sin_b);
 
   if (p_rsl < 0)
@@ -178,12 +158,7 @@ void Dubins::RSL(double alpha, double beta, double dist, DubinsLength& length, D
  */
 void Dubins::RLR(double alpha, double beta, double dist, DubinsLength& length, DubinsMode& mode)
 {
-  double sin_a = sin(alpha);
-  double sin_b = sin(beta);
-  double cos_a = cos(alpha);
-  double cos_b = cos(beta);
-  double cos_a_b = cos(alpha - beta);
-
+  UNPACK_DUBINS_INPUTS(alpha, beta);
   double p_rlr = (6.0 - std::pow(dist, 2) + 2.0 * cos_a_b + 2.0 * dist * (sin_a - sin_b)) / 8.0;
 
   if (fabs(p_rlr) > 1.0)
@@ -211,12 +186,7 @@ void Dubins::RLR(double alpha, double beta, double dist, DubinsLength& length, D
  */
 void Dubins::LRL(double alpha, double beta, double dist, DubinsLength& length, DubinsMode& mode)
 {
-  double sin_a = sin(alpha);
-  double sin_b = sin(beta);
-  double cos_a = cos(alpha);
-  double cos_b = cos(beta);
-  double cos_a_b = cos(alpha - beta);
-
+  UNPACK_DUBINS_INPUTS(alpha, beta);
   double p_lrl = (6.0 - std::pow(dist, 2) + 2.0 * cos_a_b + 2.0 * dist * (sin_a - sin_b)) / 8.0;
 
   if (fabs(p_lrl) > 1.0)

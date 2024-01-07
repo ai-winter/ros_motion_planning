@@ -108,34 +108,16 @@ bool HybridAStar::HybridNode::operator!=(const HybridNode& n) const
  */
 std::vector<HybridAStar::HybridNode> HybridAStar::HybridNode::getMotion()
 {
+  // double R = 1.0;
+  double R = 1.3;
+
+  // // 20 deg 0.349065 rad
+  double alpha = 14 * M_PI / 180;
+
   // R, alpha
-  // dy = {0, -R * (1 - cos(alpha)), R * (1 - cos(alpha))}
-  // dx = {alpha * R, R * sin(alpha), R * sin(alpha)}
-  // dt = {0, alpha, -alpha}
-
-  // R = 2, alpha = 6.75 deg
-  // double dy[] = { 0, -0.013863, 0.013863 };
-  // double dx[] = { 0.2356194, 0.2350747, 0.2350747 };
-  // double dt[] = { 0, 0.1178097, -0.1178097 };
-
-  // R = 3, alpha = 6.75 deg
-  // double dy[] = { 0,        -0.0207946, 0.0207946};
-  // double dx[] = { 0.35342917352,   0.352612,  0.352612};
-  // double dt[] = { 0,         0.11780972451,   -0.11780972451};
-
-  // R = 2, alpha = 13.5 deg
-  // double dy[] = { 0, -0.0552601, 0.0552601 };
-  // double dx[] = { 0.4712388, 0.4668906, 0.4668906 };
-  // double dt[] = { 0, 0.2356194, -0.2356194 };
-
-  // double dy[] = { 0, -0.06814815, 0.06814815 };
-  // double dx[] = { 0.523598, 0.517637, 0.517637 };
-  // double dt[] = { 0, 0.261799, -0.261799 };
-
-  // R=1
-  double dy[] = { 0, -0.05621, 0.05621 };
-  double dx[] = { 0.261798, 0.25357, 0.25357 };
-  double dt[] = { 0, 0.43633, -0.43633 };
+  double dy[] = { 0, -R * (1 - cos(alpha)), R * (1 - cos(alpha)) };
+  double dx[] = { alpha * R, R * sin(alpha), R * sin(alpha) };
+  double dt[] = { 0, alpha, -alpha };
 
   return {
     HybridNode(dx[0], dy[0], dt[0], 0, 0, 0, 0, 0),   HybridNode(dx[1], dy[1], dt[1], 0, 0, 0, 0, 1),
@@ -144,25 +126,46 @@ std::vector<HybridAStar::HybridNode> HybridAStar::HybridNode::getMotion()
   };
 }
 
+/**
+ * @brief Construct a new Hybrid A* object
+ * @param nx         pixel number in costmap x direction
+ * @param ny         pixel number in costmap y direction
+ * @param resolution costmap resolution
+ * @param is_reverse whether reverse operation is allowed
+ * @param max_curv   maximum curvature of model
+ */
 HybridAStar::HybridAStar(int nx, int ny, double resolution, bool is_reverse, double max_curv)
   : GlobalPlanner(nx, ny, resolution), is_reverse_(is_reverse), max_curv_(max_curv)
 {
   dubins_gen_.setStep(1.5);
   dubins_gen_.setMaxCurv(max_curv_);
+  goal_ = HybridNode();
   a_star_planner_ = new AStar(nx, ny, resolution);
 }
 
+/**
+ * @brief Destory the Hybrid A* object
+ */
 HybridAStar::~HybridAStar()
 {
+  delete costmap_;
   delete a_star_planner_;
 }
 
+/**
+ * @brief Hybrid A* implementation
+ * @param global_costmap global costmap
+ * @param start          start node
+ * @param goal           goal node
+ * @param path           optimal path consists of Node
+ * @param expand         containing the node been search during the process
+ * @return true if path found, else false
+ */
 bool HybridAStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal,
                        std::vector<Node>& path, std::vector<Node>& expand)
 {
   return false;
 }
-
 bool HybridAStar::plan(const unsigned char* global_costmap, HybridNode& start, HybridNode& goal,
                        std::vector<Node>& path, std::vector<Node>& expand)
 
@@ -173,6 +176,16 @@ bool HybridAStar::plan(const unsigned char* global_costmap, HybridNode& start, H
   costmap_ = global_costmap;
   updateIndex(start);
   updateIndex(goal);
+
+  // update heuristic map
+  if (goal_ != goal)
+  {
+    goal_ = goal;
+    double gx, gy;
+    world2Map(goal.x_, goal.y_, gx, gy);
+    Node h_start(gx, gy, 0, 0, grid2Index(gx, gy), 0);
+    genHeurisiticMap(h_start);
+  }
 
   // possible directions and motions
   int dir = is_reverse_ ? 6 : 3;
@@ -197,9 +210,6 @@ bool HybridAStar::plan(const unsigned char* global_costmap, HybridNode& start, H
 
     closed_list.insert(std::make_pair(current.id_, current));
     expand.emplace_back(current.x_, current.y_, 0, 0, _worldToIndex(current.x_, current.y_));
-
-    // std::cout << current.x_ << ", " << current.y_ << ", " << current.id_ << ", " << current.g_ << ", " << current.h_
-    //           << std::endl;
 
     // goal shot
     std::vector<Node> path_dubins;
@@ -236,19 +246,27 @@ bool HybridAStar::plan(const unsigned char* global_costmap, HybridNode& start, H
         continue;
 
       node_new.pid_ = current.id_;
-      // updateHeuristic(node_new, goal);
-      node_new.h_ = std::hypot(node_new.x_ - goal.x_, node_new.y_ - goal.y_);
+      updateHeuristic(node_new);
 
-      // std::cout << node_new.x_ << ", " << node_new.y_ << ", " << node_new.id_ << ", " << node_new.g_ << ", "
-      //           << node_new.h_ << std::endl;
-      // std::cout << "=========" << std::endl;
       open_list.push(node_new);
     }
   }
 
-  return false;
+  // candidate A* path
+  double sx, sy, gx, gy;
+  world2Map(start.x_, start.y_, sx, sy);
+  world2Map(goal.x_, goal.y_, gx, gy);
+  return a_star_planner_->plan(global_costmap, Node(sx, sy, 0, 0, grid2Index(sx, sy)),
+                               Node(gx, gy, 0, 0, grid2Index(gx, gy)), path, expand);
 }
 
+/**
+ * @brief Try using Dubins curves to connect the start and goal
+ * @param start          start node
+ * @param goal           goal node
+ * @param path           dubins path between start and goal
+ * @return true if shot successfully, else false
+ */
 bool HybridAStar::dubinsShot(const HybridNode& start, const HybridNode& goal, std::vector<Node>& path)
 {
   double sx, sy, gx, gy;
@@ -273,32 +291,87 @@ bool HybridAStar::dubinsShot(const HybridNode& start, const HybridNode& goal, st
     return false;
 }
 
+/**
+ * @brief update index of hybrid node
+ * @param node hybrid node to update
+ */
 void HybridAStar::updateIndex(HybridNode& node)
 {
   node.id_ = static_cast<int>(node.t_ / DELTA_HEADING) + _worldToIndex(node.x_, node.y_);
 }
 
-void HybridAStar::updateHeuristic(HybridNode& node, const HybridNode& goal)
+/**
+ * @brief update the h-value of hybrid node
+ * @param node hybrid node to update
+ */
+void HybridAStar::updateHeuristic(HybridNode& node)
 {
   // Dubins cost function
   double cost_dubins = 0.0;
-  std::vector<std::tuple<double, double, double>> poes = { { node.x_, node.y_, node.t_ },
-                                                           { goal.x_, goal.y_, goal.t_ } };
-  std::vector<std::pair<double, double>> path_dubins;
-  if (dubins_gen_.run(poes, path_dubins))
-    cost_dubins = dubins_gen_.len(path_dubins);
+  // std::vector<std::tuple<double, double, double>> poes = { { node.x_, node.y_, node.t_ },
+  //                                                          { goal_.x_, goal_.y_, goal_.t_ } };
+  // std::vector<std::pair<double, double>> path_dubins;
+  // if (dubins_gen_.run(poes, path_dubins))
+  //   cost_dubins = dubins_gen_.len(path_dubins);
 
   // 2D search cost function
-  double cost_2d = 0.0;
-  std::vector<Node> path_2d, expand_2d;
-  if (a_star_planner_->plan(costmap_, Node(node.x_, node.y_, 0, 0, grid2Index(node.x_, node.y_), 0),
-                            Node(goal.x_, goal.y_, 0, 0, grid2Index(goal.x_, goal.y_), 0), path_2d, expand_2d))
-  {
-    for (size_t i = 1; i < path_2d.size(); ++i)
-      cost_2d += helper::dist(path_2d[i - 1], path_2d[i]);
-  }
-  // std::cout<<cost_dubins<<", "<<cost_2d<<std::endl;
+  double cost_2d = h_map_[_worldToIndex(node.x_, node.y_)].g_ * resolution_;
   node.h_ = std::max(cost_2d, cost_dubins);
+}
+
+/**
+ * @brief generate heurisitic map using A* algorithm, each matric of map is the distance between it and start.
+ * @param start start node
+ */
+void HybridAStar::genHeurisiticMap(const Node& start)
+{
+  // open list and closed list
+  std::priority_queue<Node, std::vector<Node>, Node::compare_cost> open_list;
+  std::unordered_map<int, Node> open_set;
+
+  open_list.push(start);
+  open_set.emplace(start.id_, start);
+
+  // get all possible motions
+  const std::vector<Node> motions = Node::getMotion();
+
+  // main process
+  while (!open_list.empty())
+  {
+    // pop current node from open list
+    Node current = open_list.top();
+    open_list.pop();
+
+    h_map_.emplace(current.id_, current);
+
+    // explore neighbor of current node
+    for (const auto& motion : motions)
+    {
+      // explore a new node
+      Node node_new = current + motion;
+      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
+
+      // node_new in closed list
+      if (h_map_.find(node_new.id_) != h_map_.end())
+        continue;
+
+      // next node hit the boundary or obstacle
+      // prevent planning failed when the current within inflation
+      if ((node_new.id_ < 0) || (node_new.id_ >= ns_))
+        continue;
+
+      if (open_set.find(node_new.id_) != open_set.end())
+      {
+        if (open_set[node_new.id_].g_ > node_new.g_)
+          open_set[node_new.id_].g_ = node_new.g_;
+      }
+      else
+      {
+        open_list.push(node_new);
+        open_set.emplace(node_new.id_, node_new);
+      }
+    }
+  }
 }
 
 /**

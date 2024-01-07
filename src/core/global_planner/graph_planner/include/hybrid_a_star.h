@@ -85,8 +85,14 @@ public:
    * @param nx         pixel number in costmap x direction
    * @param ny         pixel number in costmap y direction
    * @param resolution costmap resolution
+   * @param is_reverse whether reverse operation is allowed
+   * @param max_curv   maximum curvature of model
    */
   HybridAStar(int nx, int ny, double resolution, bool is_reverse, double max_curv);
+
+  /**
+   * @brief Destory the Hybrid A* object
+   */
   ~HybridAStar();
 
   /**
@@ -103,10 +109,32 @@ public:
   bool plan(const unsigned char* global_costmap, HybridNode& start, HybridNode& goal, std::vector<Node>& path,
             std::vector<Node>& expand);
 
+  /**
+   * @brief Try using Dubins curves to connect the start and goal
+   * @param start          start node
+   * @param goal           goal node
+   * @param path           dubins path between start and goal
+   * @return true if shot successfully, else false
+   */
   bool dubinsShot(const HybridNode& start, const HybridNode& goal, std::vector<Node>& path);
 
+  /**
+   * @brief update index of hybrid node
+   * @param node hybrid node to update
+   */
   void updateIndex(HybridNode& node);
-  void updateHeuristic(HybridNode& node, const HybridNode& goal);
+
+  /**
+   * @brief update the h-value of hybrid node
+   * @param node hybrid node to update
+   */
+  void updateHeuristic(HybridNode& node);
+
+  /**
+   * @brief generate heurisitic map using A* algorithm, each matric of map is the distance between it and start.
+   * @param start start node
+   */
+  void genHeurisiticMap(const Node& start);
 
 protected:
   /**
@@ -137,12 +165,14 @@ protected:
                                              const HybridNode& goal);
 
 protected:
-  const unsigned char* costmap_;
-  bool is_reverse_;
-  double max_curv_;
+  HybridNode goal_;                      // the history goal point
+  std::unordered_map<int, Node> h_map_;  // heurisitic map
+  const unsigned char* costmap_;         // the copy of costmap
+  bool is_reverse_;                      // whether reverse operation is allowed
+  double max_curv_;                      // maximum curvature of model
 
-  trajectory_generation::Dubins dubins_gen_;
-  AStar* a_star_planner_;
+  trajectory_generation::Dubins dubins_gen_;  // dubins curve generator
+  AStar* a_star_planner_;                     // A* planner
 };
 }  // namespace global_planner
 #endif

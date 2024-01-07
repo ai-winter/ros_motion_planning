@@ -10,7 +10,7 @@ APFPlanner:
   o_precision: 0.5
 
   # linear velocity
-  max_v: 0.5
+  max_v: 0.3
   min_v: 0.0
   max_v_inc: 0.5
 

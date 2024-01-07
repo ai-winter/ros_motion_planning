@@ -126,11 +126,10 @@ void GraphPlanner::initialize(std::string name)
       g_planner_ = new global_planner::LazyThetaStar(nx_, ny_, resolution_);
     else if (planner_name_ == "hybrid_a_star")
     {
-      bool is_reverse;
-      double max_curv;
+      bool is_reverse;  // whether reverse operation is allowed
+      double max_curv;  // maximum curvature of model
       private_nh.param("is_reverse", is_reverse, false);
-      private_nh.param("max_curv", max_curv, 0.25);
-
+      private_nh.param("max_curv", max_curv, 1.0);
       g_planner_ = new global_planner::HybridAStar(nx_, ny_, resolution_, is_reverse, max_curv);
     }
     else
