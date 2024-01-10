@@ -164,6 +164,9 @@ protected:
 protected:
   double max_curv_;  // The maximum curvature of the curve
 };
+
+typedef void (Dubins::*DubinsSolver)(double, double, double, DubinsLength&, DubinsMode&);
+extern DubinsSolver dubins_solvers[];
 }  // namespace trajectory_generation
 
 #endif

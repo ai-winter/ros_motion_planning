@@ -15,8 +15,6 @@
 #ifndef APF_PLANNER_H_
 #define APF_PLANNER_H_
 
-#include <ros/ros.h>
-#include <nav_core/base_local_planner.h>
 #include <tf2_ros/buffer.h>
 #include <costmap_2d/costmap_2d_ros.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -24,10 +22,7 @@
 
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/OccupancyGrid.h>
-#include <base_local_planner/odometry_helper_ros.h>
 #include <tf2/utils.h>
-
-#include <Eigen/Dense>
 
 #include "local_planner.h"
 
@@ -83,22 +78,6 @@ public:
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
 
   /**
-   * @brief APF controller in linear
-   * @param base_odometry odometry of the robot, to get velocity
-   * @param v_d           desired velocity magnitude
-   * @return  linear velocity
-   */
-  double LinearAPFController(nav_msgs::Odometry& base_odometry, double v_d);
-
-  /**
-   * @brief APF controller in angular
-   * @param base_odometry odometry of the robot, to get velocity
-   * @param e_theta       the error between the current and desired theta
-   * @return  angular velocity
-   */
-  double AngularAPFController(nav_msgs::Odometry& base_odometry, double e_theta);
-
-  /**
    * @brief Get the attractive force of APF
    * @param ps      global target PoseStamped
    * @return the attractive force
@@ -118,22 +97,20 @@ public:
   void publishPotentialMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
 
 private:
-  bool initialized_, goal_reached_;
-  tf2_ros::Buffer* tf_;
+  bool initialized_;                       // initialized flag
+  bool goal_reached_;                      // goal reached flag
+  tf2_ros::Buffer* tf_;                    // transform buffer
   costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
   unsigned char* local_costmap_;           // costmap char map
-  nav_msgs::OccupancyGrid potential_map_; // local potential field map
+  nav_msgs::OccupancyGrid potential_map_;  // local potential field map
 
   int plan_index_;
   std::vector<geometry_msgs::PoseStamped> global_plan_;
   geometry_msgs::PoseStamped target_ps_, current_ps_;
 
-  double p_window_;                   // next point distance
-  double p_precision_, o_precision_;  // goal reached tolerance
-  double d_t_;                        // control time step
-
-  double max_v_, min_v_, max_v_inc_;  // linear velocity
-  double max_w_, min_w_, max_w_inc_;  // angular velocity
+  double p_window_;     // next point distance
+  double o_precision_;  // goal reached tolerance
+  double d_t_;          // control time step
 
   int s_window_;  // trajectory smoothing window time
 
@@ -141,14 +118,14 @@ private:
 
   int cost_ub_, cost_lb_;  // the upper and lower bound of costmap used to calculate potential field
 
-  double inflation_radius_; // the costmap inflation radius of obstacles
+  double inflation_radius_;  // the costmap inflation radius of obstacles
 
   std::deque<Eigen::Vector2d> hist_nf_;  // historical net forces
 
-  base_local_planner::OdometryHelperRos* odom_helper_;
   ros::Publisher target_pose_pub_, current_pose_pub_, potential_map_pub_;
-  ros::Subscriber costmap_sub_;   // subscribe local map topic to generate potential field
+  ros::Subscriber costmap_sub_;  // subscribe local map topic to generate potential field
 
+  // goal parameters
   double goal_x_, goal_y_;
   Eigen::Vector3d goal_rpy_;
 };

@@ -26,8 +26,18 @@ LocalPlanner::LocalPlanner()
   , factor_(OBSTACLE_FACTOR)
   , base_frame_("base_link")
   , map_frame_("map")
+  , odom_frame_("odom")
   , convert_offset_(0.0)
 {
+  odom_helper_ = new base_local_planner::OdometryHelperRos(odom_frame_);
+}
+
+/**
+ * @brief Destroy the Local Planner object
+ */
+LocalPlanner::~LocalPlanner()
+{
+  delete odom_helper_;
 }
 
 /**
@@ -125,6 +135,92 @@ Eigen::Vector3d LocalPlanner::getEulerAngles(geometry_msgs::PoseStamped& ps)
   m.getRPY(roll, pitch, yaw);
 
   return Eigen::Vector3d(roll, pitch, yaw);
+}
+
+/**
+ * @brief Whether to reach the target pose through rotation operation
+ * @param cur   current pose of robot
+ * @param goal  goal pose of robot
+ * @return true if robot should perform rotation
+ */
+bool LocalPlanner::shouldRotateToGoal(const geometry_msgs::PoseStamped& cur, const geometry_msgs::PoseStamped& goal)
+{
+  std::pair<double, double> p1(cur.pose.position.x, cur.pose.position.y);
+  std::pair<double, double> p2(goal.pose.position.x, goal.pose.position.y);
+  
+  return helper::dist(p1, p2) < goal_dist_tol_;
+}
+
+/**
+ * @brief Whether to correct the tracking path with rotation operation
+ * @param angle_to_path  the angle deviation
+ * @return true if robot should perform rotation
+ */
+bool LocalPlanner::shouldRotateToPath(double angle_to_path, double tolerance)
+{
+  return (tolerance && (angle_to_path > tolerance)) || (angle_to_path > rotate_tol_);
+}
+
+/**
+ * @brief linear velocity regularization
+ * @param base_odometry odometry of the robot, to get velocity
+ * @param v_d           desired velocity magnitude
+ * @return v            regulated linear velocity
+ */
+double LocalPlanner::linearRegularization(nav_msgs::Odometry& base_odometry, double v_d)
+{
+  double v = std::hypot(base_odometry.twist.twist.linear.x, base_odometry.twist.twist.linear.y);
+  double v_inc = v_d - v;
+
+  if (std::fabs(v_inc) > max_v_inc_)
+    v_inc = std::copysign(max_v_inc_, v_inc);
+
+  double v_cmd = v + v_inc;
+  if (std::fabs(v_cmd) > max_v_)
+    v_cmd = std::copysign(max_v_, v_cmd);
+  else if (std::fabs(v_cmd) < min_v_)
+    v_cmd = std::copysign(min_v_, v_cmd);
+
+  return v_cmd;
+}
+
+/**
+ * @brief angular velocity regularization
+ * @param base_odometry odometry of the robot, to get velocity
+ * @param w_d           desired angular velocity
+ * @return  w           regulated angular velocity
+ */
+double LocalPlanner::angularRegularization(nav_msgs::Odometry& base_odometry, double w_d)
+{
+  if (std::fabs(w_d) > max_w_)
+    w_d = std::copysign(max_w_, w_d);
+
+  double w = base_odometry.twist.twist.angular.z;
+  double w_inc = w_d - w;
+
+  if (std::fabs(w_inc) > max_w_inc_)
+    w_inc = std::copysign(max_w_inc_, w_inc);
+
+  double w_cmd = w + w_inc;
+  if (std::fabs(w_cmd) > max_w_)
+    w_cmd = std::copysign(max_w_, w_cmd);
+  else if (std::fabs(w_cmd) < min_w_)
+    w_cmd = std::copysign(min_w_, w_cmd);
+
+  return w_cmd;
+}
+
+/**
+ * @brief Tranform from in_pose to out_pose with out frame using tf
+ */
+void LocalPlanner::transformPose(tf2_ros::Buffer* tf, const std::string out_frame,
+                                 const geometry_msgs::PoseStamped& in_pose, geometry_msgs::PoseStamped& out_pose) const
+{
+  if (in_pose.header.frame_id == out_frame)
+    out_pose = in_pose;
+
+  tf->transform(in_pose, out_pose, out_frame);
+  out_pose.header.frame_id = out_frame;
 }
 
 /**

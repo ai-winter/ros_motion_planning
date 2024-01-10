@@ -6,8 +6,8 @@ APFPlanner:
   p_window: 0.5
 
   # goal reached tolerance
-  p_precision: 0.2
-  o_precision: 0.5
+  goal_dist_tolerance: 0.2
+  rotate_tolerance: 0.5
 
   # linear velocity
   max_v: 0.3

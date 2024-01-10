@@ -18,6 +18,8 @@
 
 namespace trajectory_generation
 {
+DubinsSolver dubins_solvers[] = { &Dubins::LRL, &Dubins::LSL, &Dubins::LSR, &Dubins::RLR, &Dubins::RSL, &Dubins::RSR };
+
 /**
  * @brief Construct a new Dubins generation object
  * @param step        Simulation or interpolation size (default: 0.1)
@@ -271,18 +273,12 @@ Points2d Dubins::generation(Pose2d start, Pose2d goal)
   DubinsLength best_length = { DUBINS_NONE, DUBINS_NONE, DUBINS_NONE };
   DubinsMode mode;
 
-  LSL(alpha, beta, dist, length, mode);
-  _update(length, mode, best_length, best_mode, best_cost);
-  RSR(alpha, beta, dist, length, mode);
-  _update(length, mode, best_length, best_mode, best_cost);
-  LSR(alpha, beta, dist, length, mode);
-  _update(length, mode, best_length, best_mode, best_cost);
-  RSL(alpha, beta, dist, length, mode);
-  _update(length, mode, best_length, best_mode, best_cost);
-  RLR(alpha, beta, dist, length, mode);
-  _update(length, mode, best_length, best_mode, best_cost);
-  LRL(alpha, beta, dist, length, mode);
-  _update(length, mode, best_length, best_mode, best_cost);
+  for (const auto solver : dubins_solvers)
+  {
+    (this->*solver)(alpha, beta, dist, length, mode);
+    _update(length, mode, best_length, best_mode, best_cost);
+  }
+
   if (best_cost == DUBINS_MAX)
     return path;
 

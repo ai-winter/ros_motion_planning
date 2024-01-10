@@ -19,7 +19,14 @@
 #define NEUTRAL_COST 50      // neutral cost
 #define OBSTACLE_FACTOR 0.5  // obstacle factor
 
+#include <ros/ros.h>
+#include <nav_core/base_local_planner.h>
+#include <base_local_planner/odometry_helper_ros.h>
+
+#include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseStamped.h>
+
+#include <Eigen/Dense>
 
 #include "math_helper.h"
 
@@ -36,7 +43,7 @@ public:
   /**
    * @brief Destroy the Local Planner object
    */
-  virtual ~LocalPlanner() = default;
+  ~LocalPlanner();
 
   /**
    * @brief Set or reset costmap size
@@ -97,6 +104,43 @@ public:
   Eigen::Vector3d getEulerAngles(geometry_msgs::PoseStamped& ps);
 
   /**
+   * @brief Whether to reach the target pose through rotation operation
+   * @param cur   current pose of robot
+   * @param goal  goal pose of robot
+   * @return true if robot should perform rotation
+   */
+  bool shouldRotateToGoal(const geometry_msgs::PoseStamped& cur, const geometry_msgs::PoseStamped& goal);
+
+  /**
+   * @brief Whether to correct the tracking path with rotation operation
+   * @param angle_to_path  the angle deviation
+   * @return true if robot should perform rotation
+   */
+  bool shouldRotateToPath(double angle_to_path, double tolerance = 0.0);
+
+  /**
+   * @brief linear velocity regularization
+   * @param base_odometry odometry of the robot, to get velocity
+   * @param v_d           desired velocity magnitude
+   * @return v            regulated linear velocity
+   */
+  double linearRegularization(nav_msgs::Odometry& base_odometry, double v_d);
+
+  /**
+   * @brief angular velocity regularization
+   * @param base_odometry odometry of the robot, to get velocity
+   * @param w_d           desired angular velocity
+   * @return  w           regulated angular velocity
+   */
+  double angularRegularization(nav_msgs::Odometry& base_odometry, double w_d);
+
+  /**
+   * @brief Tranform from in_pose to out_pose with out frame using tf
+   */
+  void transformPose(tf2_ros::Buffer* tf, const std::string out_frame, const geometry_msgs::PoseStamped& in_pose,
+                     geometry_msgs::PoseStamped& out_pose) const;
+
+  /**
    * @brief Tranform from world map(x, y) to costmap(x, y)
    * @param mx  costmap x
    * @param my  costmap y
@@ -114,12 +158,22 @@ protected:
   double origin_x_, origin_y_;  // local costmap origin
   double resolution_;           // local ostmap resolution
   double convert_offset_;       // offset of transform from world(x,y) to grid map(x,y)
+  double factor_;               // obstacle factor(greater means obstacles)
 
-  // obstacle factor(greater means obstacles)
-  double factor_;
+  double max_v_, min_v_, max_v_inc_;  // linear velocity
+  double max_w_, min_w_, max_w_inc_;  // angular velocity
 
-  // frame name of base link and map
-  std::string base_frame_, map_frame_;
+  // if the distance is less than the tolerance value, it is considered to have reached the target position
+  double goal_dist_tol_;
+
+  // if the angle deviation is greater than this threshold, perform rotation first
+  double rotate_tol_;
+
+  // frame name of base link, map and odometry
+  std::string base_frame_, map_frame_, odom_frame_;
+
+  // odometry helper
+  base_local_planner::OdometryHelperRos* odom_helper_;
 };
 }  // namespace local_planner
 

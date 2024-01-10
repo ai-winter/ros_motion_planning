@@ -1,0 +1,36 @@
+RPPPlanner:
+  # offset of transform from world(x,y) to grid map(x,y)
+  convert_offset: 0.0
+
+  # goal reached tolerance
+  goal_dist_tolerance: 0.2
+  rotate_tolerance: 0.5
+
+  # linear velocity
+  max_v: 0.4
+  min_v: 0.0
+  max_v_inc: 0.2
+
+  # angular velocity
+  max_w: 1.57
+  min_w: 0.0
+  max_w_inc: 1.57
+
+  # frame id
+  base_frame: base_link
+  map_frame: map
+
+  # lookahead
+  lookahead_time: 1.5
+  min_lookahead_dist: 0.3
+  max_lookahead_dist: 0.9
+
+  # constriants
+  regulated_min_radius: 0.9
+  inflation_cost_factor: 3.0
+  scaling_dist: 0.6
+  scaling_gain: 1.0
+  approach_dist: 0.8
+  approach_min_v: 0.1
+
+

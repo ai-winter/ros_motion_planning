@@ -15,7 +15,6 @@
 #include <queue>
 #include <cmath>
 #include <unordered_set>
-#include <iostream>
 
 #include "voronoi.h"
 

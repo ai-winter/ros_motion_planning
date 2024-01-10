@@ -12,7 +12,6 @@
  *
  **********************************************************/
 #include <algorithm>
-#include <iostream>
 #include "aco.h"
 
 namespace global_planner

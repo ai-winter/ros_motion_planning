@@ -343,7 +343,6 @@ bool EvolutionaryPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
     return false;
   }
-  std::string globalFrame = frame_id_;
   ros::Time planTime = ros::Time::now();
   plan.clear();
 

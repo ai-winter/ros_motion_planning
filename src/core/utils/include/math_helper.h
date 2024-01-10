@@ -14,6 +14,9 @@
 #ifndef MATH_HELPER_H
 #define MATH_HELPER_H
 
+// ROS headers
+#include <geometry_msgs/PoseStamped.h>
+
 #include <Eigen/Dense>
 #include "nodes.h"
 
@@ -28,6 +31,7 @@ namespace helper
 double dist(const Node& node1, const Node& node2);
 double dist(const std::pair<double, double>& node1, const std::pair<double, double>& node2);
 double dist(const Eigen::Vector2d& node1, const Eigen::Vector2d& node2);
+double dist(const geometry_msgs::PoseStamped& node1, const geometry_msgs::PoseStamped& node2);
 
 /**
  * @brief Calculate the angle of x-axis between the 2 nodes.
@@ -53,8 +57,17 @@ double mod2pi(double theta);
 double pi2pi(double theta);
 
 /**
+ * @brief Formula for intersection of a line with a circle centered at the origin
+ * @note  https://mathworld.wolfram.com/Circle-LineIntersection.html
+ * @param p1/p2     the two point in the segment
+ * @param r         the radius of circle centered at the origin
+ * @return points   the intersection points of a line and the circle
+ */
+std::vector<std::pair<double, double>> circleSegmentIntersection(const std::pair<double, double>& p1,
+                                                                 const std::pair<double, double>& p2, double r);
+
+/**
  * @brief Clamps a value within a specified range.
- * @tparam T             The type of the values to be clamped.
  * @param value          The value to be clamped.
  * @param low            The lower bound of the range.
  * @param high           The upper bound of the range.
@@ -65,6 +78,57 @@ const T& clamp(const T& value, const T& low, const T& high)
 {
   return std::max(low, std::min(value, high));
 }
+
+/**
+ * @brief Find the first element in iterator with the minimum calculated value
+ * @param begin   The begin of iterator
+ * @param end     The end of iterator
+ * @param cal     The customer calculated function
+ * @return it     The first element in iterator with the minimum calculated value
+ */
+template <typename Iter, typename Func>
+Iter getMinFuncVal(Iter begin, Iter end, Func cal)
+{
+  if (begin == end)
+    return end;
+
+  auto min_val = cal(*begin);
+  Iter min_iter = begin;
+  for (Iter it = ++begin; it != end; it++)
+  {
+    auto val = cal(*it);
+    if (val <= min_val)
+    {
+      min_val = val;
+      min_iter = it;
+    }
+  }
+  return min_iter;
+}
+
+/**
+ * @brief Find the first element in iterator that is greater integrated distance than compared value
+ * @param begin   The begin of iterator
+ * @param end     The end of iterator
+ * @param dist    The distance metric function
+ * @param cmp_val The compared value
+ * @return it     The first element in iterator that is greater integrated distance than compared value
+ */
+template <typename Iter, typename Func, typename Val>
+Iter firstIntegratedDistance(Iter begin, Iter end, Func dist, Val cmp_val)
+{
+  if (begin == end)
+    return end;
+  Val d = 0.0;
+  for (Iter it = begin; it != end - 1; it++)
+  {
+    d += dist(*it, *(it + 1));
+    if (d > cmp_val)
+      return it + 1;
+  }
+  return end;
+}
+
 }  // namespace helper
 
 #endif

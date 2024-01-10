@@ -60,8 +60,8 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 
     nh.param("p_window", p_window_, 0.5);
 
-    nh.param("p_precision", p_precision_, 0.2);
-    nh.param("o_precision", o_precision_, 0.5);
+    nh.param("goal_dist_tolerance", goal_dist_tol_, 0.2);
+    nh.param("rotate_tolerance", rotate_tol_, 0.5);
 
     nh.param("max_v", max_v_, 0.5);
     nh.param("min_v", min_v_, 0.0);
@@ -88,7 +88,6 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     e_v_ = i_v_ = 0.0;
     e_w_ = i_w_ = 0.0;
 
-    odom_helper_ = new base_local_planner::OdometryHelperRos("/odom");
     target_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/target_pose", 10);
     current_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
 
@@ -238,14 +237,13 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   odom_helper_->getOdom(base_odom);
 
   // position reached
-  if (helper::dist(Eigen::Vector2d(global_plan_.back().pose.position.x, global_plan_.back().pose.position.y),
-                   Eigen::Vector2d(current_ps_.pose.position.x, current_ps_.pose.position.y)) < p_precision_)
+  if (shouldRotateToGoal(current_ps_, global_plan_.back()))
   {
     e_theta = goal_rpy_[2] - theta;
     regularizeAngle(e_theta);
 
     // orientation reached
-    if (std::fabs(e_theta) < o_precision_)
+    if (!shouldRotateToPath(std::fabs(e_theta)))
     {
       cmd_vel.linear.x = 0.0;
       cmd_vel.angular.z = 0.0;
@@ -256,20 +254,20 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     else
     {
       cmd_vel.linear.x = 0.0;
-      cmd_vel.angular.z = AngularPIDController(base_odom, e_theta);
+      cmd_vel.angular.z = angularRegularization(base_odom, e_theta / d_t_);
     }
   }
   // large angle, turn first
-  else if (std::fabs(e_theta) > M_PI_2)
+  else if (shouldRotateToPath(std::fabs(e_theta), M_PI_2))
   {
     cmd_vel.linear.x = 0.0;
-    cmd_vel.angular.z = AngularPIDController(base_odom, e_theta);
+    cmd_vel.angular.z = angularRegularization(base_odom, e_theta / d_t_);
   }
   // posistion not reached
   else
   {
-    cmd_vel.linear.x = LinearPIDController(base_odom, b_x_d, b_y_d);
-    cmd_vel.angular.z = AngularPIDController(base_odom, e_theta);
+    cmd_vel.linear.x = linearRegularization(base_odom, std::hypot(b_x_d, b_y_d) / d_t_);
+    cmd_vel.angular.z = angularRegularization(base_odom, e_theta / d_t_);
   }
 
   // publish next target_ps_ pose
@@ -286,16 +284,14 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 }
 
 /**
- * @brief PID controller in linear
+ * @brief linear velocity regularization
  * @param base_odometry odometry of the robot, to get velocity
- * @param b_x_d         desired x in body frame
- * @param b_y_d         desired y in body frame
- * @return linear velocity
+ * @param v_d           desired velocity magnitude
+ * @return v            regulated linear velocity
  */
-double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double b_x_d, double b_y_d)
+double PIDPlanner::linearRegularization(nav_msgs::Odometry& base_odometry, double v_d)
 {
   double v = std::hypot(base_odometry.twist.twist.linear.x, base_odometry.twist.twist.linear.y);
-  double v_d = std::hypot(b_x_d, b_y_d) / d_t_;
   if (std::fabs(v_d) > max_v_)
     v_d = std::copysign(max_v_, v_d);
 
@@ -319,16 +315,13 @@ double PIDPlanner::LinearPIDController(nav_msgs::Odometry& base_odometry, double
 }
 
 /**
- * @brief PID controller in angular
+ * @brief angular velocity regularization
  * @param base_odometry odometry of the robot, to get velocity
- * @param e_theta       the error between the current and desired theta
- * @return angular velocity
+ * @param w_d           desired angular velocity
+ * @return  w           regulated angular velocity
  */
-double PIDPlanner::AngularPIDController(nav_msgs::Odometry& base_odometry, double e_theta)
+double PIDPlanner::angularRegularization(nav_msgs::Odometry& base_odometry, double w_d)
 {
-  regularizeAngle(e_theta);
-
-  double w_d = e_theta / d_t_;
   if (std::fabs(w_d) > max_w_)
     w_d = std::copysign(max_w_, w_d);
 

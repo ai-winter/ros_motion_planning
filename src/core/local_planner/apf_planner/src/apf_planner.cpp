@@ -11,9 +11,9 @@
  * --------------------------------------------------------
  *
  **********************************************************/
+#include <pluginlib/class_list_macros.h>
 
 #include "apf_planner.h"
-#include <pluginlib/class_list_macros.h>
 
 PLUGINLIB_EXPORT_CLASS(apf_planner::APFPlanner, nav_core::BaseLocalPlanner)
 
@@ -69,8 +69,8 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 
     nh.param("p_window", p_window_, 0.5);
 
-    nh.param("p_precision", p_precision_, 0.2);
-    nh.param("o_precision", o_precision_, 0.5);
+    nh.param("goal_dist_tolerance", goal_dist_tol_, 0.2);
+    nh.param("rotate_tolerance", rotate_tol_, 0.5);
 
     nh.param("max_v", max_v_, 0.5);
     nh.param("min_v", min_v_, 0.0);
@@ -99,7 +99,6 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 
     hist_nf_.clear();
 
-    odom_helper_ = new base_local_planner::OdometryHelperRos("/odom");
     target_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/target_pose", 10);
     current_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
     potential_map_pub_ = nh.advertise<nav_msgs::OccupancyGrid>("/potential_map", 10);
@@ -181,12 +180,10 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   nav_msgs::Odometry base_odom;
   odom_helper_->getOdom(base_odom);
 
-  // current pose
+  // get robot position in global frame
   geometry_msgs::PoseStamped current_ps_odom;
   costmap_ros_->getRobotPose(current_ps_odom);
-
-  // transform into map
-  tf_->transform(current_ps_odom, current_ps_, map_frame_);
+  transformPose(tf_, map_frame_, current_ps_odom, current_ps_);
 
   // current angle
   double theta = tf2::getYaw(current_ps_.pose.orientation);
@@ -240,14 +237,13 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   regularizeAngle(e_theta);
 
   // position reached
-  if (helper::dist(Eigen::Vector2d(global_plan_.back().pose.position.x, global_plan_.back().pose.position.y),
-                   Eigen::Vector2d(current_ps_.pose.position.x, current_ps_.pose.position.y)) < p_precision_)
+  if (shouldRotateToGoal(current_ps_, global_plan_.back()))
   {
     e_theta = goal_rpy_.z() - theta;
     regularizeAngle(e_theta);
 
     // orientation reached
-    if (std::fabs(e_theta) < o_precision_)
+    if (!shouldRotateToPath(std::fabs(e_theta)))
     {
       cmd_vel.linear.x = 0.0;
       cmd_vel.angular.z = 0.0;
@@ -257,20 +253,20 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     else
     {
       cmd_vel.linear.x = 0.0;
-      cmd_vel.angular.z = AngularAPFController(base_odom, e_theta);
+      cmd_vel.angular.z = angularRegularization(base_odom, e_theta / d_t_);
     }
   }
   // large angle, turn first
-  else if (std::fabs(e_theta) > M_PI_2)
+  else if (shouldRotateToPath(std::fabs(e_theta), M_PI_2))
   {
     cmd_vel.linear.x = 0.0;
-    cmd_vel.angular.z = AngularAPFController(base_odom, e_theta);
+    cmd_vel.angular.z = angularRegularization(base_odom, e_theta / d_t_);
   }
   // posistion not reached
   else
   {
-    cmd_vel.linear.x = LinearAPFController(base_odom, new_v.norm());
-    cmd_vel.angular.z = AngularAPFController(base_odom, e_theta);
+    cmd_vel.linear.x = linearRegularization(base_odom, new_v.norm());
+    cmd_vel.angular.z = angularRegularization(base_odom, e_theta / d_t_);
   }
 
   // publish next target_ps_ pose
@@ -280,59 +276,6 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   current_pose_pub_.publish(current_ps_);
 
   return true;
-}
-
-/**
- * @brief APF controller in linear
- * @param base_odometry odometry of the robot, to get velocity
- * @param b_x_d         desired x in body frame
- * @param b_y_d         desired y in body frame
- * @return  linear velocity
- */
-double APFPlanner::LinearAPFController(nav_msgs::Odometry& base_odometry, double v_d)
-{
-  double v = std::hypot(base_odometry.twist.twist.linear.x, base_odometry.twist.twist.linear.y);
-  double v_inc = v_d - v;
-
-  if (std::fabs(v_inc) > max_v_inc_)
-    v_inc = std::copysign(max_v_inc_, v_inc);
-
-  double v_cmd = v + v_inc;
-  if (std::fabs(v_cmd) > max_v_)
-    v_cmd = std::copysign(max_v_, v_cmd);
-  else if (std::fabs(v_cmd) < min_v_)
-    v_cmd = std::copysign(min_v_, v_cmd);
-
-  return v_cmd;
-}
-
-/**
- * @brief APF controller in angular
- * @param base_odometry odometry of the robot, to get velocity
- * @param e_theta       the error between the current and desired theta
- * @return  angular velocity
- */
-double APFPlanner::AngularAPFController(nav_msgs::Odometry& base_odometry, double e_theta)
-{
-  regularizeAngle(e_theta);
-
-  double w_d = e_theta / d_t_;
-  if (std::fabs(w_d) > max_w_)
-    w_d = std::copysign(max_w_, w_d);
-
-  double w = base_odometry.twist.twist.angular.z;
-  double w_inc = w_d - w;
-
-  if (std::fabs(w_inc) > max_w_inc_)
-    w_inc = std::copysign(max_w_inc_, w_inc);
-
-  double w_cmd = w + w_inc;
-  if (std::fabs(w_cmd) > max_w_)
-    w_cmd = std::copysign(max_w_, w_cmd);
-  else if (std::fabs(w_cmd) < min_w_)
-    w_cmd = std::copysign(min_w_, w_cmd);
-
-  return w_cmd;
 }
 
 /**

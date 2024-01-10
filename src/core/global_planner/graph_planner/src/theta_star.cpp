@@ -12,7 +12,6 @@
  *
  **********************************************************/
 #include "theta_star.h"
-#include <iostream>
 
 namespace global_planner
 {
