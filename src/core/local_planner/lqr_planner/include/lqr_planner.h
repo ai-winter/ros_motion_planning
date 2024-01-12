@@ -1,9 +1,9 @@
 /***********************************************************
  *
- * @file: rpp_planner.h
- * @breif: Contains the regulated_pure_pursuit (RPP) local planner class
+ * @file: lqr_planner.h
+ * @breif: Contains the linear quadratic regulator (LQR) local planner class
  * @author: Yang Haodong
- * @update: 2024-1-8
+ * @update: 2024-1-12
  * @version: 1.0
  *
  * Copyright (c) 2024 Yang Haodong
@@ -11,36 +11,36 @@
  * --------------------------------------------------------
  *
  **********************************************************/
-#ifndef RPP_PLANNER_H
-#define RPP_PLANNER_H
+#ifndef LQR_PLANNER_H
+#define LQR_PLANNER_H
 
 #include <geometry_msgs/PointStamped.h>
 #include <tf2/utils.h>
 
 #include "local_planner.h"
 
-namespace rpp_planner
+namespace lqr_planner
 {
 /**
- * @brief A class implementing a local planner using the RPP
+ * @brief A class implementing a local planner using the LQR
  */
-class RPPPlanner : public nav_core::BaseLocalPlanner, local_planner::LocalPlanner
+class LQRPlanner : public nav_core::BaseLocalPlanner, local_planner::LocalPlanner
 {
 public:
   /**
-   * @brief Construct a new RPP planner object
+   * @brief Construct a new LQR planner object
    */
-  RPPPlanner();
+  LQRPlanner();
 
   /**
-   * @brief Construct a new RPP planner object
+   * @brief Construct a new LQR planner object
    */
-  RPPPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  LQRPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
-   * @brief Destroy the RPP planner object
+   * @brief Destroy the LQR planner object
    */
-  ~RPPPlanner();
+  ~LQRPlanner();
 
   /**
    * @brief Initialization of the local planner
@@ -79,14 +79,6 @@ protected:
   double _getLookAheadDistance(double vt);
 
   /**
-   * @brief calculate the relative angle between robot' yaw and relative lookahead vector
-   * @param lookahead_pt      the lookahead pose [global]
-   * @param robot_pose_global the robot's pose  [global]
-   * @return dphi             the lookahead angle - robot's yaw
-   */
-  double _dphi(geometry_msgs::PointStamped lookahead_pt, geometry_msgs::PoseStamped robot_pose_global);
-
-  /**
    * @brief find the point on the path that is exactly the lookahead distance away from the robot
    * @param lookahead_dist    the lookahead distance
    * @param robot_pose_global the robot's pose  [global]
@@ -105,29 +97,12 @@ protected:
 
 private:
   /**
-   * @brief Applying curvature constraints to regularize the speed of robot turning
-   * @param raw_linear_vel    the raw linear velocity of robot
-   * @param curvature         the tracking curvature
-   * @return reg_vel          the regulated velocity
+   * @brief Execute LQR control process
+   * @param x   state error vector
+   * @param ref reference point
+   * @return u  control vector
    */
-  double _applyCurvatureConstraint(const double raw_linear_vel, const double curvature);
-
-  /**
-   * @brief Applying obstacle constraints to regularize the speed of robot approaching obstacles
-   * @param raw_linear_vel    the raw linear velocity of robot
-   * @return reg_vel          the regulated velocity
-   */
-  double _applyObstacleConstraint(const double raw_linear_vel);
-
-  /**
-   * @brief Applying approach constraints to regularize the speed of robot approaching final goal
-   * @param raw_linear_vel    the raw linear velocity of robot
-   * @param robot_pose_global the robot's pose  [global]
-   * @param prune_plan        the pruned plan
-   * @return reg_vel          the regulated velocity
-   */
-  double _applyApproachConstraint(const double raw_linear_vel, geometry_msgs::PoseStamped robot_pose_global,
-                                  const std::vector<geometry_msgs::PoseStamped>& prune_plan);
+  Eigen::Vector2d _lqrControl(Eigen::Vector3d x, std::vector<double> ref);
 
 protected:
   double lookahead_time_;      // lookahead time gain
@@ -140,12 +115,11 @@ private:
   tf2_ros::Buffer* tf_;                    // transform buffer
   costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
 
-  double d_t_;  // control time interval
-  double regulated_min_radius_;         // the threshold to apply curvature constraint
-  double inflation_cost_factor_;        // the heuristical factor to calculate minimum distance to obstacles
-  double scaling_dist_, scaling_gain_;  // the threshold to apply obstacle constraint
-  double approach_dist_;                // the threshold to apply approaching goal constraint
-  double approach_min_v_;               // minimum approaching velocity
+  double d_t_;         // control time interval
+  Eigen::Matrix3d Q_;  // state error matrix
+  Eigen::Matrix2d R_;  // control error matrix
+  int max_iter_;       // maximum iteration for ricatti solution
+  double eps_iter_;    // iteration ending threshold
 
   std::vector<geometry_msgs::PoseStamped> global_plan_;
   ros::Publisher target_pt_pub_, current_pose_pub_;
@@ -154,5 +128,5 @@ private:
   double goal_x_, goal_y_;
   Eigen::Vector3d goal_rpy_;
 };
-}  // namespace rpp_planner
+}  // namespace lqr_planner
 #endif

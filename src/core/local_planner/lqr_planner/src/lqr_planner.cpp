@@ -1,9 +1,9 @@
 /***********************************************************
  *
- * @file: rpp_planner.h
- * @breif: Contains the regulated_pure_pursuit (RPP) local planner class
+ * @file: lqr_planner.cpp
+ * @breif: Contains the linear quadratic regulator (LQR) local planner class
  * @author: Yang Haodong
- * @update: 2024-1-8
+ * @update: 2024-1-12
  * @version: 1.0
  *
  * Copyright (c) 2024 Yang Haodong
@@ -13,24 +13,23 @@
  **********************************************************/
 #include <pluginlib/class_list_macros.h>
 
-#include "rpp_planner.h"
-#include "math_helper.h"
+#include "lqr_planner.h"
 
-PLUGINLIB_EXPORT_CLASS(rpp_planner::RPPPlanner, nav_core::BaseLocalPlanner)
+PLUGINLIB_EXPORT_CLASS(lqr_planner::LQRPlanner, nav_core::BaseLocalPlanner)
 
-namespace rpp_planner
+namespace lqr_planner
 {
 /**
  * @brief Construct a new RPP planner object
  */
-RPPPlanner::RPPPlanner() : initialized_(false), tf_(nullptr), costmap_ros_(nullptr), goal_reached_(false)
+LQRPlanner::LQRPlanner() : initialized_(false), tf_(nullptr), costmap_ros_(nullptr), goal_reached_(false)
 {
 }
 
 /**
  * @brief Construct a new RPP planner object
  */
-RPPPlanner::RPPPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros) : RPPPlanner()
+LQRPlanner::LQRPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros) : LQRPlanner()
 {
   initialize(name, tf, costmap_ros);
 }
@@ -38,7 +37,7 @@ RPPPlanner::RPPPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costma
 /**
  * @brief Destroy the RPP planner object
  */
-RPPPlanner::~RPPPlanner()
+LQRPlanner::~LQRPlanner()
 {
 }
 
@@ -48,7 +47,7 @@ RPPPlanner::~RPPPlanner()
  * @param tf          a pointer to a transform listener
  * @param costmap_ros the cost map to use for assigning costs to trajectories
  */
-void RPPPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
+void LQRPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
 {
   if (!initialized_)
   {
@@ -86,13 +85,20 @@ void RPPPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("min_w", min_w_, 0.0);
     nh.param("max_w_inc", max_w_inc_, 1.57);
 
-    // constriants
-    nh.param("regulated_min_radius", regulated_min_radius_, 0.9);
-    nh.param("inflation_cost_factor", inflation_cost_factor_, 3.0);
-    nh.param("scaling_dist", scaling_dist_, 0.6);
-    nh.param("scaling_gain", scaling_gain_, 1.0);
-    nh.param("approach_dist", approach_dist_, 0.8);
-    nh.param("approach_min_v", approach_min_v_, 0.1);
+    // iteration for ricatti solution
+    nh.param("max_iter_", max_iter_, 100);
+    nh.param("eps_iter_", eps_iter_, 1e-4);
+
+    // weight matrix for penalizing state error while tracking [x,y,theta]
+    std::vector<double> diag_vec;
+    nh.getParam("Q_matrix_diag", diag_vec);
+    for (size_t i = 0; i < diag_vec.size(); i++)
+      Q_(i, i) = diag_vec[i];
+
+    // weight matrix for penalizing input error while tracking[v, w]
+    nh.getParam("R_matrix_diag", diag_vec);
+    for (size_t i = 0; i < diag_vec.size(); i++)
+      R_(i, i) = diag_vec[i];
 
     double controller_freqency;
     nh.param("/move_base/controller_frequency", controller_freqency, 10.0);
@@ -102,10 +108,10 @@ void RPPPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     target_pt_pub_ = nh.advertise<geometry_msgs::PointStamped>("/target_point", 10);
     current_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
 
-    ROS_INFO("RPP planner initialized!");
+    ROS_INFO("LQR planner initialized!");
   }
   else
-    ROS_WARN("RPP planner has already been initialized.");
+    ROS_WARN("LQR planner has already been initialized.");
 }
 
 /**
@@ -113,7 +119,7 @@ void RPPPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
  * @param orig_global_plan the plan to pass to the controller
  * @return  true if the plan was updated successfully, else false
  */
-bool RPPPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
+bool LQRPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
 {
   if (!initialized_)
   {
@@ -143,11 +149,11 @@ bool RPPPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
  * @brief  Check if the goal pose has been achieved
  * @return True if achieved, false otherwise
  */
-bool RPPPlanner::isGoalReached()
+bool LQRPlanner::isGoalReached()
 {
   if (!initialized_)
   {
-    ROS_ERROR("RPP planner has not been initialized");
+    ROS_ERROR("LQR planner has not been initialized");
     return false;
   }
 
@@ -164,7 +170,7 @@ bool RPPPlanner::isGoalReached()
  * @param cmd_vel will be filled with the velocity command to be passed to the robot base
  * @return  true if a valid trajectory was found, else false
  */
-bool RPPPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
+bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 {
   if (!initialized_)
   {
@@ -186,13 +192,11 @@ bool RPPPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
   // calculate look-ahead distance
   double vt = std::hypot(base_odom.twist.twist.linear.x, base_odom.twist.twist.linear.y);
+  double wt = base_odom.twist.twist.angular.z;
   double L = _getLookAheadDistance(vt);
 
   // get the particular point on the path at the lookahead distance
   auto lookahead_pt = _getLookAheadPoint(L, robot_pose_map, prune_plan);
-
-  // get the tracking curvature with goalahead point
-  double lookahead_k = 2 * sin(_dphi(lookahead_pt, robot_pose_map)) / L;
 
   // calculate commands
   if (shouldRotateToGoal(robot_pose_map, global_plan_.back()))
@@ -216,27 +220,21 @@ bool RPPPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   }
   else
   {
-    double e_theta = _dphi(lookahead_pt, robot_pose_map);
+    double theta_r = atan2(lookahead_pt.point.y - robot_pose_map.pose.position.y,
+                           lookahead_pt.point.x - robot_pose_map.pose.position.x);
+    double e_theta = tf2::getYaw(robot_pose_map.pose.orientation) - theta_r;
     regularizeAngle(e_theta);
 
-    // large angle, turn first
-    if (shouldRotateToPath(std::fabs(e_theta), M_PI_2))
-    {
-      cmd_vel.linear.x = 0.0;
-      cmd_vel.angular.z = angularRegularization(base_odom, e_theta / d_t_);
-    }
+    // state vector (p - p_ref)
+    Eigen::Vector3d x(robot_pose_map.pose.position.x - lookahead_pt.point.x,
+                      robot_pose_map.pose.position.y - lookahead_pt.point.y, e_theta);
+    std::vector<double> ref = { vt, theta_r };
 
-    // apply constraints
-    else
-    {
-      double curv_vel = _applyCurvatureConstraint(max_v_, lookahead_k);
-      double cost_vel = _applyObstacleConstraint(max_v_);
-      double v_d = std::min(curv_vel, cost_vel);
-      v_d = _applyApproachConstraint(v_d, robot_pose_map, prune_plan);
+    // control vector
+    Eigen::Vector2d u = _lqrControl(x, ref);
 
-      cmd_vel.linear.x = linearRegularization(base_odom, v_d);
-      cmd_vel.angular.z = angularRegularization(base_odom, v_d * lookahead_k);
-    }
+    cmd_vel.linear.x = linearRegularization(base_odom, u[0]);
+    cmd_vel.angular.z = angularRegularization(base_odom, u[1]);
   }
 
   // publish lookahead pose
@@ -253,23 +251,10 @@ bool RPPPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
  * @param vt  the current speed
  * @return L  the look-ahead distance
  */
-double RPPPlanner::_getLookAheadDistance(double vt)
+double LQRPlanner::_getLookAheadDistance(double vt)
 {
   double lookahead_dist = fabs(vt) * lookahead_time_;
   return helper::clamp(lookahead_dist, min_lookahead_dist_, max_lookahead_dist_);
-}
-
-/**
- * @brief calculate the relative angle between robot' yaw and relative lookahead vector
- * @param lookahead_pt      the lookahead pose [global]
- * @param robot_pose_global the robot's pose  [global]
- * @return dphi             the lookahead angle - robot's yaw
- */
-double RPPPlanner::_dphi(geometry_msgs::PointStamped lookahead_pt, geometry_msgs::PoseStamped robot_pose_global)
-{
-  return atan2(lookahead_pt.point.y - robot_pose_global.pose.position.y,
-               lookahead_pt.point.x - robot_pose_global.pose.position.x) -
-         tf2::getYaw(robot_pose_global.pose.orientation);
 }
 
 /**
@@ -279,7 +264,7 @@ double RPPPlanner::_dphi(geometry_msgs::PointStamped lookahead_pt, geometry_msgs
  * @param prune_plan        the pruned plan
  * @return point            the lookahead point
  */
-geometry_msgs::PointStamped RPPPlanner::_getLookAheadPoint(double lookahead_dist,
+geometry_msgs::PointStamped LQRPlanner::_getLookAheadPoint(double lookahead_dist,
                                                            geometry_msgs::PoseStamped robot_pose_global,
                                                            const std::vector<geometry_msgs::PoseStamped>& prune_plan)
 {
@@ -329,71 +314,11 @@ geometry_msgs::PointStamped RPPPlanner::_getLookAheadPoint(double lookahead_dist
 }
 
 /**
- * @brief Applying curvature constraints to regularize the speed of robot turning
- * @param raw_linear_vel    the raw linear velocity of robot
- * @param curvature         the tracking curvature
- * @return reg_vel          the regulated velocity
- */
-double RPPPlanner::_applyCurvatureConstraint(const double raw_linear_vel, const double curvature)
-{
-  const double radius = std::fabs(1.0 / curvature);
-  if (radius < regulated_min_radius_)
-    return raw_linear_vel * (radius / regulated_min_radius_);
-  else
-    return raw_linear_vel;
-}
-
-/**
- * @brief Applying obstacle constraints to regularize the speed of robot approaching obstacles
- * @param raw_linear_vel    the raw linear velocity of robot
- * @return reg_vel          the regulated velocity
- */
-double RPPPlanner::_applyObstacleConstraint(const double raw_linear_vel)
-{
-  int size_x = costmap_ros_->getCostmap()->getSizeInCellsX() / 2;
-  int size_y = costmap_ros_->getCostmap()->getSizeInCellsY() / 2;
-  double robot_cost = static_cast<double>(costmap_ros_->getCostmap()->getCost(size_x, size_y));
-
-  if (robot_cost != static_cast<double>(costmap_2d::FREE_SPACE) &&
-      robot_cost != static_cast<double>(costmap_2d::NO_INFORMATION))
-  {
-    const double& inscribed_radius = costmap_ros_->getLayeredCostmap()->getInscribedRadius();
-
-    // calculate the minimum distance to obstacles heuristically
-    const double obs_dist =
-        inscribed_radius -
-        (log(robot_cost) - log(static_cast<double>(costmap_2d::INSCRIBED_INFLATED_OBSTACLE))) / inflation_cost_factor_;
-
-    if (obs_dist < scaling_dist_)
-      return raw_linear_vel * scaling_gain_ * obs_dist / scaling_dist_;
-  }
-  return raw_linear_vel;
-}
-
-/**
- * @brief Applying approach constraints to regularize the speed of robot approaching final goal
- * @param raw_linear_vel    the raw linear velocity of robot
- * @param robot_pose_global the robot's pose  [global]
- * @param prune_plan        the pruned plan
- * @return reg_vel          the regulated velocity
- */
-double RPPPlanner::_applyApproachConstraint(const double raw_linear_vel, geometry_msgs::PoseStamped robot_pose_global,
-                                            const std::vector<geometry_msgs::PoseStamped>& prune_plan)
-{
-  double remain_dist = 0.0;
-  for (size_t i = 0; i < prune_plan.size() - 1; i++)
-    remain_dist += helper::dist(prune_plan[i], prune_plan[i + 1]);
-  double s = remain_dist < approach_dist_ ? helper::dist(prune_plan.back(), robot_pose_global) / approach_dist_ : 1.0;
-
-  return std::min(raw_linear_vel, std::max(approach_min_v_, raw_linear_vel * s));
-}
-
-/**
  * @brief Prune the path, removing the waypoints that the robot has already passed and distant waypoints
  * @param robot_pose_global the robot's pose  [global]
  * @return pruned path
  */
-std::vector<geometry_msgs::PoseStamped> RPPPlanner::_prune(const geometry_msgs::PoseStamped robot_pose_global)
+std::vector<geometry_msgs::PoseStamped> LQRPlanner::_prune(const geometry_msgs::PoseStamped robot_pose_global)
 {
   auto calPoseDistance = [](const geometry_msgs::PoseStamped& ps_1, const geometry_msgs::PoseStamped& ps_2) {
     return helper::dist(ps_1, ps_2);
@@ -408,13 +333,6 @@ std::vector<geometry_msgs::PoseStamped> RPPPlanner::_prune(const geometry_msgs::
         return calPoseDistance(robot_pose_global, ps);
       });
 
-  // // discard points on the plan that are outside the local costmap
-  // const double max_costmap_extent =
-  //     std::max(costmap_ros_->getCostmap()->getSizeInMetersX(), costmap_ros_->getCostmap()->getSizeInMetersY()) / 2.0;
-  // auto transform_end = std::find_if(transform_begin, global_plan_.end(), [&](const auto& global_plan_pose) {
-  //   return calPoseDistance(global_plan_pose, robot_pose_global) > max_costmap_extent;
-  // });
-
   // Transform the near part of the global plan into the robot's frame of reference.
   std::vector<geometry_msgs::PoseStamped> prune_path;
   for (auto it = transform_begin; it < global_plan_.end(); it++)
@@ -426,4 +344,42 @@ std::vector<geometry_msgs::PoseStamped> RPPPlanner::_prune(const geometry_msgs::
   return prune_path;
 }
 
-}  // namespace rpp_planner
+/**
+ * @brief Execute LQR control process
+ * @param x   state error vector
+ * @param ref reference point
+ * @return u  control vector
+ */
+Eigen::Vector2d LQRPlanner::_lqrControl(Eigen::Vector3d x, std::vector<double> ref)
+{
+  // for diffrential wheel model
+  double v_r = ref[0], theta_r = ref[1];
+
+  // state equation
+  Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
+  A(0, 2) = -v_r * sin(theta_r) * d_t_;
+  A(1, 2) = v_r * cos(theta_r) * d_t_;
+
+  Eigen::MatrixXd B = Eigen::MatrixXd::Zero(3, 2);
+  B(0, 0) = cos(theta_r) * d_t_;
+  B(1, 0) = sin(theta_r) * d_t_;
+  B(2, 1) = d_t_;
+
+  // discrete iteration Ricatti equation
+  Eigen::Matrix3d P, P_;
+  P = Q_;
+  for (int i = 0; i < max_iter_; i++)
+  {
+    Eigen::Matrix2d temp = R_ + B.transpose() * P * B;
+    P_ = Q_ + A.transpose() * P * A - A.transpose() * P * B * temp.inverse() * B.transpose() * P * A;
+    if ((P - P_).array().abs().maxCoeff() < eps_iter_)
+      break;
+    P = P_;
+  }
+
+  // feedback
+  Eigen::MatrixXd K = -(R_ + B.transpose() * P_ * B).inverse() * B.transpose() * P_ * A;
+  return K * x;
+}
+
+}  // namespace lqr_planner

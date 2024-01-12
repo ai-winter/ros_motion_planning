@@ -1,0 +1,8 @@
+<library path="lib/liblqr_planner">
+    <class name="lqr_planner/LQRPlanner" type="lqr_planner::LQRPlanner"
+        base_class_type="nav_core::BaseLocalPlanner">
+        <description>
+            A implementation of a local linear quadratic regulator (LQR) planner.
+        </description>
+    </class>
+</library>

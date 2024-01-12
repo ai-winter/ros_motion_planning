@@ -10,6 +10,7 @@ Panels:
         - /TrackedPersons1
         - /Map5
         - /PointStamped1
+        - /Axes1
       Splitter Ratio: 0.5
     Tree Height: 649
   - Class: rviz/Selection
@@ -370,6 +371,15 @@ Visualization Manager:
       Topic: /target_point
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Class: rviz/Axes
+      Enabled: false
+      Length: 1
+      Name: Axes
+      Radius: 0.10000000149011612
+      Reference Frame: map
+      Show Trail: false
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -398,7 +408,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 34.855472564697266
+      Distance: 36.30717468261719
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -414,9 +424,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5647963285446167
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Yaw: 1.5549954175949097
+      Yaw: 1.5449954271316528
     Saved: ~
 Window Geometry:
   Displays:
