@@ -116,6 +116,19 @@ ros_motion_planner
     └── user_config         # user configure file
 ```
 
+Generating doxygen documentation helps you understand the code better.
+
+First install doxygen and graphviz.
+```sh
+sudo apt-get install doxygen
+sudo apt-get install graphviz
+```
+Then run the following commands in your terminal to generate doxygen documentation.
+```sh
+doxygen
+```
+You can find the documentation in `./docs/html/index.html`, and configure the doxygen settings in `./Doxyfile`.
+
 ## 02. <span id="2">Tool Chains
 
 For the efficient operation of the motion planning system, we provide a series of user-friendly simulation tools that allow for on-demand selection of these lightweight repositories.
