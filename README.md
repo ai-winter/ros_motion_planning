@@ -85,37 +85,7 @@ This repository provides the implementation of common **Motion Planning** algori
 10. For more details on system configuration, please refer to [Configuration](https://github.com/ai-winter/ros_motion_planning/blob/master/docs/configuration.md).
 
 
-## 1. <span id="1">File Tree
-
-The file structure is shown below.
-
-```
-ros_motion_planner
-├── assets
-├── scripts
-└── src
-    ├── core
-    │   ├── global_planner
-    │   ├── local_planner
-    │   ├── curve_generation
-    │   └── utils
-    ├── sim_env             # simulation environment
-    │   ├── config
-    │   ├── launch
-    │   ├── maps
-    │   ├── meshes
-    │   ├── models
-    │   ├── rviz
-    │   ├── urdf
-    │   └── worlds
-    ├── third_party
-    │   ├── dynamic_rviz_config
-    │   ├── dynamic_xml_config
-    │   ├── gazebo_plugins
-    │   └── rviz_plugins
-    └── user_config         # user configure file
-```
-
+## 1. <span id="1">Documentation
 Generating doxygen documentation helps you understand the code better.
 
 First install doxygen and graphviz.
@@ -123,7 +93,7 @@ First install doxygen and graphviz.
 sudo apt-get install doxygen
 sudo apt-get install graphviz
 ```
-Then run the following commands in your terminal to generate doxygen documentation.
+Then enter the root directory and run the following commands in your terminal to generate doxygen documentation.
 ```sh
 doxygen
 ```
