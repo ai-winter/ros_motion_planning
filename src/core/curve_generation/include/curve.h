@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: curve.h
- * @breif: Trajectory generation
+ * @brief: Curve generation
  * @author: Yang Haodong
- * @update: 2023-12-20
+ * @date: 2023-12-20
  * @version: 1.0
  *
- * Copyright (c) 2023, Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef CURVE_H
 #define CURVE_H
 

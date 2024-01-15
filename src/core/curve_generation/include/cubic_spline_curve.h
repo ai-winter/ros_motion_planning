@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: cubic_spline_curve.h
- * @breif: Cubic spline generation
+ * @brief: Cubic spline generation
  * @author: Yang Haodong
- * @update: 2023-12-22
+ * @date: 2023-12-22
  * @version: 1.0
  *
- * Copyright (c) 2023, Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef CUBIC_SPLINE_CURVE_H
 #define CUBIC_SPLINE_CURVE_H
 

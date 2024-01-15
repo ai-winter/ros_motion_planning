@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: pid_planner.cpp
- * @breif: Contains the Proportional–Integral–Derivative (PID) controller local planner class
+ * @brief: Contains the Proportional–Integral–Derivative (PID) controller local planner class
  * @author: Yang Haodong, Guo Zhanyu, Wu Maojia
- * @update: 2023-10-1
+ * @date: 2023-10-01
  * @version: 1.1
  *
- * Copyright (c) 2023，Yang Haodong
+ * Copyright (c) 2024, Yang Haodong, Guo Zhanyu, Wu Maojia. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include <pluginlib/class_list_macros.h>
 
 #include "pid_planner.h"

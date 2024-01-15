@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: d_star_lite.cpp
- * @breif: Contains the D* lite planner class
+ * @brief: Contains the D* lite planner class
  * @author: Zhanyu Guo
- * @update: 2023-03-19
+ * @date: 2023-03-19
  * @version: 1.0
  *
- * Copyright (c) 2023, Zhanyu Guo
+ * Copyright (c) 2024, Zhanyu Guo. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include "d_star_lite.h"
 
 namespace global_planner

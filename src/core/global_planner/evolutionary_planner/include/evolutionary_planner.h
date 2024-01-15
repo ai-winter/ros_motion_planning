@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: evolutionary_planner.h
- * @breif: Contains the evolutionary planner ROS wrapper class
+ * @brief: Contains the evolutionary planner ROS wrapper class
  * @author: Yang Haodong
- * @update: 2023-7-16
+ * @date: 2023-7-16
  * @version: 1.0
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef EVOLUTIONARY_PLANNER_H
 #define EVOLUTIONARY_PLANNER_H
 

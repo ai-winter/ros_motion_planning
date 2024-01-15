@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: lqr_planner.cpp
- * @breif: Contains the linear quadratic regulator (LQR) local planner class
+ * @brief: Contains the linear quadratic regulator (LQR) local planner class
  * @author: Yang Haodong
- * @update: 2024-1-12
+ * @date: 2024-01-12
  * @version: 1.0
  *
- * Copyright (c) 2024 Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include <pluginlib/class_list_macros.h>
 
 #include "lqr_planner.h"

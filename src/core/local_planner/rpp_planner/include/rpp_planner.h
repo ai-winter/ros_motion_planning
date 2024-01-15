@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: rpp_planner.h
- * @breif: Contains the regulated_pure_pursuit (RPP) local planner class
+ * @brief: Contains the regulated_pure_pursuit (RPP) local planner class
  * @author: Yang Haodong
- * @update: 2024-1-8
+ * @date: 2024-01-08
  * @version: 1.0
  *
- * Copyright (c) 2024 Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef RPP_PLANNER_H
 #define RPP_PLANNER_H
 

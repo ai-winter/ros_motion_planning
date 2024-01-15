@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: voronoi.h
- * @breif: Contains the Voronoi-based planner class
+ * @brief: Contains the Voronoi-based planner class
  * @author: Yang Haodong
- * @update: 2023-7-21
+ * @date: 2023-07-21
  * @version: 1.0
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef VORONOI_H
 #define VORONOI_H
 

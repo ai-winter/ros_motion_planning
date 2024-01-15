@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: bspline_curve.h
- * @breif: B-Spline curve generation
+ * @brief: B-Spline curve generation
  * @author: Yang Haodong
- * @update: 2023-12-20
+ * @date: 2023-12-20
  * @version: 1.0
  *
- * Copyright (c) 2023, Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef B_SPLINE_CURVE_H
 #define B_SPLINE_CURVE_H
 

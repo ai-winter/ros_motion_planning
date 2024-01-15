@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
- * @file: nodes.cpp
- * @breif: Contains common/commonly used nodes data strcutre
+ * @file: nodes.h
+ * @brief: Contains common/commonly used nodes data strcutre
  * @author: Yang Haodong
- * @update: 2023-7-21
+ * @date: 2023-07-21
  * @version: 2.1
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
+ *
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include "nodes.h"
 
 /**
@@ -92,7 +95,6 @@ std::vector<Node> Node::getMotion()
     Node(-1, -1, std::sqrt(2)),
   };
 }
-
 
 /**
  * @brief Compare cost between 2 nodes

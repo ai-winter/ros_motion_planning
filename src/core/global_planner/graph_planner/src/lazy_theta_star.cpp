@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: lazy_theta_star.cpp
- * @breif: Contains the lazy Theta* planner class
+ * @brief: Contains the lazy Theta* planner class
  * @author: Wu Maojia, Yang Haodong
- * @update: 2023-10-1
+ * @date: 2023-10-01
  * @version: 1.3
  *
- * Copyright (c) 2023， Wu Maojia
+ * Copyright (c) 2024, Wu Maojia, Yang Haodong.
  * All rights reserved.
+ *
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include "lazy_theta_star.h"
 
 namespace global_planner

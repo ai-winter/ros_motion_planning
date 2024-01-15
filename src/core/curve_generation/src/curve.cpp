@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
- * @file: curve.cpp
- * @breif: Trajectory generation
+ * @file: curve.h
+ * @brief: Curve generation
  * @author: Yang Haodong
- * @update: 2023-12-20
+ * @date: 2023-12-20
  * @version: 1.0
  *
- * Copyright (c) 2023, Yang Haodong
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
+ *
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include <cassert>
 #include "curve.h"
 
@@ -36,7 +39,6 @@ double Curve::len(Points2d path)
     length += helper::dist(path[i - 1], path[i]);
   return length;
 }
-
 
 /**
  * @brief Configure the simulation step.

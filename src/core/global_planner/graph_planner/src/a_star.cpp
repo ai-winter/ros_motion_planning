@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: a_star.cpp
- * @breif: Contains the A* (dijkstra and GBFS) planner class
- * @author: Yang Haodong, Wu Maojia
- * @update: 2023-12-12
+ * @brief: Contains the A* (dijkstra and GBFS) planner class
+ * @author: Yang Haodong
+ * @date: 2023-12-12
  * @version: 1.2
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include "a_star.h"
 
 #include <queue>

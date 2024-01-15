@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: ga.h
- * @breif: Contains the Genetic Algorithm(GA) planner class
+ * @brief: Contains the Genetic Algorithm (GA) planner class
  * @author: Jing Zongxin, Yang Haodong
- * @update: 2023-12-21
+ * @date: 2023-12-21
  * @version: 1.1
  *
- * Copyright (c) 2023， Jing Zongxin, Yang Haodong
+ * Copyright (c) 2024, Jing Zongxin, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef GA_H
 #define GA_H
 

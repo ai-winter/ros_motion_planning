@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: hybrid_a_star.h
- * @breif: Contains the Hybrid A* planner class
+ * @brief: Contains the Hybrid A* planner class
  * @author: Yang Haodong
- * @update: 2024-1-3
+ * @date: 2024-01-03
  * @version: 1.0
  *
- * Copyright (c) 2024， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef HYBRID_A_STAR_H
 #define HYBRID_A_STAR_H
 

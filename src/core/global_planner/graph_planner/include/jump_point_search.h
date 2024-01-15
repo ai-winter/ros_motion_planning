@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: jump_point_search.h
- * @breif: Contains the Jump Point Search(JPS) planner class
- * @author: Yang Haodong, Guo Zhanyu
- * @update: 2023-12-14
+ * @brief: Contains the Jump Point Search(JPS) planner class
+ * @author: Yang Haodong
+ * @date: 2023-12-14
  * @version: 1.1
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef JUMP_POINT_SEARCH_H
 #define JUMP_POINT_SEARCH_H
 

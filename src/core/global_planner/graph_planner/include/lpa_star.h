@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: lpa_star.h
- * @breif: Contains the LPA* planner class
+ * @brief: Contains the LPA* planner class
  * @author: Zhanyu Guo
- * @update: 2023-03-19
+ * @date: 2023-03-19
  * @version: 1.0
  *
- * Copyright (c) 2023, Zhanyu Guo
+ * Copyright (c) 2024, Zhanyu Guo. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef LPA_STAR_H
 #define LPA_STAR_H
 

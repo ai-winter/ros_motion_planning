@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: pso.cpp
- * @breif: Contains the Particle Swarm Optimization(PSO) planner class
+ * @brief: Contains the Particle Swarm Optimization(PSO) planner class
  * @author: Jing Zongxin, Yang Haodong
- * @update: 2023-12-20
+ * @date: 2023-12-20
  * @version: 1.1
  *
- * Copyright (c) 2023, Jing Zongxin, Yang Haodong
+ * Copyright (c) 2024, Jing Zongxin, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include <algorithm>
 #include <cmath>
 #include "pso.h"

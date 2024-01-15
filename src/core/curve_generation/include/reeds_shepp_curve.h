@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
- * @file: bezier_curve.h
- * @breif: Reeds shepp curve generation
+ * @file: reeds_shepp_curve.h
+ * @brief: Reeds shepp curve generation
  * @author: Yang Haodong
- * @update: 2023-12-26
+ * @date: 2023-12-26
  * @version: 1.0
  *
- * Copyright (c) 2023, Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef REEDS_SHEPP_CURVE_H
 #define REEDS_SHEPP_CURVE_H
 

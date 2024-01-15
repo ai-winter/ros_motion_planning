@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: graph_planner.h
- * @breif: Contains the graph planner ROS wrapper class
+ * @brief: Contains the graph planner ROS wrapper class
  * @author: Yang Haodong
- * @update: 2022-10-26
+ * @date: 2023-10-26
  * @version: 1.0
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef GRAPH_PLANNER_H
 #define GRAPH_PLANNER_H
 

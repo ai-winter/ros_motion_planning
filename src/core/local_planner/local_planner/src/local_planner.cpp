@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: local_planner.cpp
- * @breif: Contains some implement of local planner class
+ * @brief: Contains the abstract local planner class
  * @author: Yang Haodong
- * @update: 2023-10-2
- * @version: 1.0
+ * @date: 2023-10-02
+ * @version: 1.2
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
+ *
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include <tf2/utils.h>
 
 #include "local_planner.h"
@@ -147,7 +150,7 @@ bool LocalPlanner::shouldRotateToGoal(const geometry_msgs::PoseStamped& cur, con
 {
   std::pair<double, double> p1(cur.pose.position.x, cur.pose.position.y);
   std::pair<double, double> p2(goal.pose.position.x, goal.pose.position.y);
-  
+
   return helper::dist(p1, p2) < goal_dist_tol_;
 }
 

@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
- * @file: pedestrian_sfm_plugin.cpp
- * @breif: Gazebo plugin for pedestrians using social force model
+ * @file: pedestrian_sfm_plugin.h
+ * @brief: Gazebo plugin for pedestrians using social force model
  * @author: Yang Haodong
- * @update: 2023-03-15
+ * @date: 2023-03-15
  * @version: 1.1
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef PEDESTRIANSFM_GAZEBO_PLUGIN_H
 #define PEDESTRIANSFM_GAZEBO_PLUGIN_H
 

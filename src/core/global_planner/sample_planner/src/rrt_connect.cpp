@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: rrt_connect.cpp
- * @breif: Contains the RRT Connect planner class
+ * @brief: Contains the RRT Connect planner class
  * @author: Yang Haodong
- * @update: 2023-1-18
+ * @date: 2023-01-18
  * @version: 1.0
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include <cmath>
 
 #include "rrt_connect.h"

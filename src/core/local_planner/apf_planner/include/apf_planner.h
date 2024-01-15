@@ -1,17 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: apf_planner.h
- * @breif: Contains the Artificial Potential Field (APF) local planner class
+ * @brief: Contains the Artificial Potential Field (APF) local planner class
  * @author: Wu Maojia, Yang Haodong
- * @update: 2023-10-17
+ * @date: 2023-10-17
  * @version: 1.2
  *
- * Copyright (c) 2023，Wu Maojia, Yang Haodong
+ * Copyright (c) 2024, Wu Maojia, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
-
+ * ********************************************************
+ */
 #ifndef APF_PLANNER_H_
 #define APF_PLANNER_H_
 

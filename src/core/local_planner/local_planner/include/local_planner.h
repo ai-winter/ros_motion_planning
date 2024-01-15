@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: local_planner.h
- * @breif: Contains the abstract local planner class
+ * @brief: Contains the abstract local planner class
  * @author: Yang Haodong
- * @update: 2023-10-2
- * @version: 1.0
+ * @date: 2023-10-02
+ * @version: 1.2
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef LOCAL_PLANNER_H
 #define LOCAL_PLANNER_H
 

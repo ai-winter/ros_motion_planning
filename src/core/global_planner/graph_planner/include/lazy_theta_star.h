@@ -11,6 +11,23 @@
  * --------------------------------------------------------
  *
  **********************************************************/
+
+/**
+ * *********************************************************
+ *
+ * @file: lazy_theta_star.h
+ * @brief: Contains the lazy Theta* planner class
+ * @author: Wu Maojia, Yang Haodong
+ * @date: 2023-10-01
+ * @version: 1.3
+ *
+ * Copyright (c) 2024, Wu Maojia, Yang Haodong. 
+ * All rights reserved.
+ * 
+ * --------------------------------------------------------
+ *
+ * ********************************************************
+ */
 #ifndef LAZY_THETA_STAR_H
 #define LAZY_THETA_STAR_H
 

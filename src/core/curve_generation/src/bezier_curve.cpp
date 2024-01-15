@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: bezier_curve.cpp
- * @breif: Bezier curve generation
+ * @brief: Bezier curve generation
  * @author: Yang Haodong
- * @update: 2023-12-22
+ * @date: 2023-12-22
  * @version: 1.0
  *
- * Copyright (c) 2023, Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include <cassert>
 #include "bezier_curve.h"
 

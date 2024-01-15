@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: static_planner.cpp
- * @breif: Contains the static planner class used in path debugging.
+ * @brief: Contains the static planner class used in path debugging.
  * @author: Yang Haodong
- * @update: 2023-8-31
+ * @date: 2023-08-31
  * @version: 1.0
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #include "static_planner.h"
 #include <pluginlib/class_list_macros.h>
 

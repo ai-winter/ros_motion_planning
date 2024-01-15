@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: a_star.h
- * @breif: Contains the A* (dijkstra and GBFS) planner class
+ * @brief: Contains the A* (dijkstra and GBFS) planner class
  * @author: Yang Haodong
- * @update: 2023-12-12
+ * @date: 2023-12-12
  * @version: 1.2
  *
- * Copyright (c) 2023， Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef A_STAR_H
 #define A_STAR_H
 

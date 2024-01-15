@@ -1,16 +1,19 @@
-/***********************************************************
+/**
+ * *********************************************************
  *
  * @file: dubins_curve.h
- * @breif: Dubins curve generation
+ * @brief: Dubins curve generation
  * @author: Yang Haodong
- * @update: 2023-12-23
+ * @date: 2023-12-23
  * @version: 1.0
  *
- * Copyright (c) 2023, Yang Haodong
+ * Copyright (c) 2024, Yang Haodong. 
  * All rights reserved.
+ * 
  * --------------------------------------------------------
  *
- **********************************************************/
+ * ********************************************************
+ */
 #ifndef DUBINS_CURVE_H
 #define DUBINS_CURVE_H
 
