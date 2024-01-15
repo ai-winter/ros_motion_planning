@@ -93,11 +93,11 @@ First install doxygen and graphviz.
 sudo apt-get install doxygen
 sudo apt-get install graphviz
 ```
-Then enter the root directory and run the following commands in your terminal to generate doxygen documentation.
+Then enter the root directory of project and run the following command in your terminal to generate doxygen documentation.
 ```sh
 doxygen
 ```
-You can find the documentation in `./docs/html/index.html`, and configure the doxygen settings in `./Doxyfile`.
+Then you can find the documentation in `./docs/html/index.html`. You can configure the doxygen settings in `./Doxyfile`.
 
 ## 02. <span id="2">Tool Chains
 
