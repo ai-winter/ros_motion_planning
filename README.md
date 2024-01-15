@@ -86,7 +86,7 @@ This repository provides the implementation of common **Motion Planning** algori
 
 
 ## 1. <span id="1">Documentation
-Generating doxygen documentation helps you understand the code better.
+Generating a doxygen documentation helps you understand the code better.
 
 First install doxygen and graphviz.
 ```sh
