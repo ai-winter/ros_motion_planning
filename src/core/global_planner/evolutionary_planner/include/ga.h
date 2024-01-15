@@ -57,17 +57,16 @@ public:
    * @param resolution    costmap resolution
    * @param n_genets	    number of genets
    * @param n_inherited   number of inherited genets
-   * @param chromLength   number of position points contained in each genets
+   * @param point_num     number of position points contained in each genets
    * @param p_select	    selection probability
    * @param p_crs		      crossover probability
    * @param p_mut	        mutation probability
    * @param max_speed		  The maximum movement speed of genets
    * @param init_mode	  Set the generation mode for the initial position points of the genets swarm
-   * @param pub_genets    Boolean flag to publish genets.
    * @param max_iter		  maximum iterations
    */
-  GA(int nx, int ny, double resolution, int n_genets, int n_inherited, int chromLength, double p_select, double p_crs,
-     double p_mut, int max_speed, int init_mode, bool pub_genets, int max_iter);
+  GA(int nx, int ny, double resolution, int n_genets, int n_inherited, int point_num, double p_select, double p_crs,
+     double p_mut, int max_speed, int init_mode, int max_iter);
   ~GA();
 
   /**

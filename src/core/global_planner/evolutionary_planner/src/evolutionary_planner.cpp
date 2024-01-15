@@ -147,13 +147,12 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
       private_nh.param("p_select", p_select, 0.5);         // selection probability
       private_nh.param("p_crs", p_crs, 0.8);               // crossover probability
       private_nh.param("p_mut", p_mut, 0.3);               // mutation probability
-      private_nh.param("init_mode_ga", init_mode,
-                       2);  // Set the generation mode for the initial position points of the genets swarm
-      private_nh.param("pub_genets", pub_genets, false);  // Whether to publish genets
-      private_nh.param("max_iter_ga", max_iter, 30);      // maximum iterations
+      private_nh.param("init_mode_ga", init_mode, GEN_MODE_CIRCLE);  // Set the generation mode for the initial
+                                                                     // position points of the particle swarm
+      private_nh.param("max_iter_ga", max_iter, 30);                 // maximum iterations
 
       g_planner_ = new global_planner::GA(nx_, ny_, resolution_, n_genets, ga_inherited, point_num, p_select, p_crs,
-                                          p_mut, max_speed, init_mode, pub_genets, max_iter);
+                                          p_mut, max_speed, init_mode, max_iter);
     }
 
     // pass costmap information to planner (required)

@@ -279,7 +279,6 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
                                                    tf2::getYaw(goal.pose.orientation));
     path_found = dynamic_cast<global_planner::HybridAStar*>(g_planner_)
                      ->plan(costmap_->getCharMap(), h_start, h_goal, path, expand);
-    _publishExpand(expand);
   }
   else
     path_found = g_planner_->plan(costmap_->getCharMap(), start_node, goal_node, path, expand);
