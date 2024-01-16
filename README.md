@@ -24,7 +24,7 @@ This repository provides the implementation of common **Motion Planning** algori
 
 ## Contents
 - [Quick Start within 3 Minutes](#0)
-- [File Tree](#1)
+- [Document](#1)
 - [Tool Chains](#2)
 - [Version](#3)
 - [Acknowledgments](#4)
