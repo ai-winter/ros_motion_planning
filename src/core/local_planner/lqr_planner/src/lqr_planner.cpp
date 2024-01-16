@@ -204,8 +204,7 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   // calculate commands
   if (shouldRotateToGoal(robot_pose_map, global_plan_.back()))
   {
-    double e_theta = goal_rpy_.z() - tf2::getYaw(robot_pose_map.pose.orientation);
-    regularizeAngle(e_theta);
+    double e_theta = regularizeAngle(goal_rpy_.z() - tf2::getYaw(robot_pose_map.pose.orientation));
 
     // orientation reached
     if (!shouldRotateToPath(std::fabs(e_theta)))
@@ -225,8 +224,7 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   {
     double theta_r = atan2(lookahead_pt.point.y - robot_pose_map.pose.position.y,
                            lookahead_pt.point.x - robot_pose_map.pose.position.x);
-    double e_theta = tf2::getYaw(robot_pose_map.pose.orientation) - theta_r;
-    regularizeAngle(e_theta);
+    double e_theta = regularizeAngle(tf2::getYaw(robot_pose_map.pose.orientation) - theta_r);
 
     // state vector (p - p_ref)
     Eigen::Vector3d x(robot_pose_map.pose.position.x - lookahead_pt.point.x,

@@ -96,8 +96,9 @@ public:
   /**
    * @brief Regularize angle to [-pi, pi]
    * @param angle the angle (rad) to regularize
+   * @return reg_angle the regulated angle
    */
-  void regularizeAngle(double& angle);
+  double regularizeAngle(double angle);
 
   /**
    * @brief Get the Euler Angles from PoseStamped

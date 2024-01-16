@@ -118,10 +118,11 @@ void LocalPlanner::setMapFrame(std::string map_frame)
 /**
  * @brief Regularize angle to [-pi, pi]
  * @param angle the angle (rad) to regularize
+ * @return reg_angle the regulated angle
  */
-void LocalPlanner::regularizeAngle(double& angle)
+double LocalPlanner::regularizeAngle(double angle)
 {
-  angle = angle - 2.0 * M_PI * std::floor((angle + M_PI) / (2.0 * M_PI));
+  return angle - 2.0 * M_PI * std::floor((angle + M_PI) / (2.0 * M_PI));
 }
 
 /**

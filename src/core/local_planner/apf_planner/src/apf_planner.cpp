@@ -231,19 +231,16 @@ bool APFPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   new_v *= max_v_;
 
   // set the desired angle and the angle error
-  double theta_d = atan2(new_v[1], new_v[0]);  // [-pi, pi]
-  regularizeAngle(theta_d);
+  double theta_d = regularizeAngle(atan2(new_v[1], new_v[0]));  // [-pi, pi]
   tf2::Quaternion q;
   q.setRPY(0, 0, theta_d);
   tf2::convert(q, target_ps_.pose.orientation);
-  double e_theta = theta_d - theta;
-  regularizeAngle(e_theta);
+  double e_theta = regularizeAngle(theta_d - theta);
 
   // position reached
   if (shouldRotateToGoal(current_ps_, global_plan_.back()))
   {
-    e_theta = goal_rpy_.z() - theta;
-    regularizeAngle(e_theta);
+    e_theta = regularizeAngle(goal_rpy_.z() - theta);
 
     // orientation reached
     if (!shouldRotateToPath(std::fabs(e_theta)))

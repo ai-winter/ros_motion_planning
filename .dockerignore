@@ -1,0 +1,11 @@
+*
+
+!assets
+!docker
+!docs
+!scripts
+!src
+!Doxyfile
+!LICENSE
+!README.md
+!.clang-format

@@ -212,8 +212,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     }
 
     // weighting between two angle
-    theta_d = (1 - k_theta_) * theta_trj + k_theta_ * theta_dir;
-    regularizeAngle(theta_d);
+    theta_d = regularizeAngle((1 - k_theta_) * theta_trj + k_theta_ * theta_dir);
 
     tf2::Quaternion q;
     q.setRPY(0, 0, theta_d);
@@ -226,8 +225,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     b_x_d = dst.pose.position.x;
     b_y_d = dst.pose.position.y;
 
-    e_theta = theta_d - theta;
-    regularizeAngle(e_theta);
+    e_theta = regularizeAngle(theta_d - theta);
 
     if (std::hypot(b_x_d, b_y_d) > p_window_)
       break;
@@ -242,8 +240,7 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   // position reached
   if (shouldRotateToGoal(current_ps_, global_plan_.back()))
   {
-    e_theta = goal_rpy_[2] - theta;
-    regularizeAngle(e_theta);
+    e_theta = regularizeAngle(goal_rpy_[2] - theta);
 
     // orientation reached
     if (!shouldRotateToPath(std::fabs(e_theta)))

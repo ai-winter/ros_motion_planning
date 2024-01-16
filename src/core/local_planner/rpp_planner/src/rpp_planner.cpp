@@ -200,8 +200,7 @@ bool RPPPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   // calculate commands
   if (shouldRotateToGoal(robot_pose_map, global_plan_.back()))
   {
-    double e_theta = goal_rpy_.z() - tf2::getYaw(robot_pose_map.pose.orientation);
-    regularizeAngle(e_theta);
+    double e_theta = regularizeAngle(goal_rpy_.z() - tf2::getYaw(robot_pose_map.pose.orientation));
 
     // orientation reached
     if (!shouldRotateToPath(std::fabs(e_theta)))
@@ -219,8 +218,7 @@ bool RPPPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   }
   else
   {
-    double e_theta = _dphi(lookahead_pt, robot_pose_map);
-    regularizeAngle(e_theta);
+    double e_theta = regularizeAngle(_dphi(lookahead_pt, robot_pose_map));
 
     // large angle, turn first
     if (shouldRotateToPath(std::fabs(e_theta), M_PI_2))
