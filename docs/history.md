@@ -15,12 +15,5 @@
 | 2023.12.27 | support curve generation package, including polynomial, bezier, bspline, cubic-spline, dubins and reeds-shepp|
 | 2023.12.29 | support dynamic costmap layers configuration, user can add pedestrians by modifing `map_layers_config.yaml` |
 | 2024.1.7 | update Hybrid A* planner|
-| 2023.1.12 | update RPP and LQR planner|
-| 2023.1.16 | support docker-based ros motion planning |
-
-
-
-
-
-
-
+| 2024.1.12 | update RPP and LQR planner|
+| 2024.1.16 | support docker-based ros motion planning |
