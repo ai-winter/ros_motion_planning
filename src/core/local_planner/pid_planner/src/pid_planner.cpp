@@ -4,12 +4,12 @@
  * @file: pid_planner.cpp
  * @brief: Contains the Proportional–Integral–Derivative (PID) controller local planner class
  * @author: Yang Haodong, Guo Zhanyu, Wu Maojia
- * @date: 2023-10-01
- * @version: 1.1
+ * @date: 2024-01-20
+ * @version: 1.2
  *
- * Copyright (c) 2024, Yang Haodong, Guo Zhanyu, Wu Maojia. 
+ * Copyright (c) 2024, Yang Haodong, Guo Zhanyu, Wu Maojia.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -25,8 +25,7 @@ namespace pid_planner
 /**
  * @brief Construct a new PIDPlanner object
  */
-PIDPlanner::PIDPlanner()
-  : initialized_(false), tf_(nullptr), costmap_ros_(nullptr), goal_reached_(false), plan_index_(0)
+PIDPlanner::PIDPlanner() : initialized_(false), goal_reached_(false), tf_(nullptr), costmap_ros_(nullptr)
 {
 }
 
@@ -61,35 +60,41 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
 
-    nh.param("p_window", p_window_, 0.5);
-
+    // base
     nh.param("goal_dist_tolerance", goal_dist_tol_, 0.2);
     nh.param("rotate_tolerance", rotate_tol_, 0.5);
+    nh.param("base_frame", base_frame_, base_frame_);
+    nh.param("map_frame", map_frame_, map_frame_);
 
+    // lookahead
+    nh.param("lookahead_time", lookahead_time_, 0.5);
+    nh.param("min_lookahead_dist", min_lookahead_dist_, 0.3);
+    nh.param("max_lookahead_dist", max_lookahead_dist_, 0.9);
+
+    // linear velocity
     nh.param("max_v", max_v_, 0.5);
     nh.param("min_v", min_v_, 0.0);
     nh.param("max_v_inc", max_v_inc_, 0.5);
 
+    // angular velocity
     nh.param("max_w", max_w_, 1.57);
     nh.param("min_w", min_w_, 0.0);
     nh.param("max_w_inc", max_w_inc_, 1.57);
 
+    // PID parameters
     nh.param("k_v_p", k_v_p_, 1.00);
     nh.param("k_v_i", k_v_i_, 0.01);
     nh.param("k_v_d", k_v_d_, 0.10);
-
     nh.param("k_w_p", k_w_p_, 1.00);
     nh.param("k_w_i", k_w_i_, 0.01);
     nh.param("k_w_d", k_w_d_, 0.10);
-
     nh.param("k_theta", k_theta_, 0.5);
+    e_v_ = i_v_ = 0.0;
+    e_w_ = i_w_ = 0.0;
 
     double controller_freqency;
     nh.param("/move_base/controller_frequency", controller_freqency, 10.0);
     d_t_ = 1 / controller_freqency;
-
-    e_v_ = i_v_ = 0.0;
-    e_w_ = i_w_ = 0.0;
 
     target_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/target_pose", 10);
     current_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
@@ -97,7 +102,9 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     ROS_INFO("PID planner initialized!");
   }
   else
+  {
     ROS_WARN("PID planner has already been initialized.");
+  }
 }
 
 /**
@@ -119,9 +126,6 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
   global_plan_.clear();
   global_plan_ = orig_global_plan;
 
-  // reset plan parameters
-  plan_index_ = std::min(4, (int)global_plan_.size() - 1);  // help getting a future plan, since the plan may delay
-
   // receive a plan for a new goal
   if (goal_x_ != global_plan_.back().pose.position.x || goal_y_ != global_plan_.back().pose.position.y)
   {
@@ -139,7 +143,7 @@ bool PIDPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
 
 /**
  * @brief Check if the goal pose has been achieved
- * @return True if achieved, false otherwise
+ * @return true if achieved, false otherwise
  */
 bool PIDPlanner::isGoalReached()
 {
@@ -170,84 +174,46 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     return false;
   }
 
-  // current pose
-  geometry_msgs::PoseStamped current_ps_odom;
-  costmap_ros_->getRobotPose(current_ps_odom);
-
-  // transform from odom into map
-  tf_->transform(current_ps_odom, current_ps_, map_frame_);
-
-  // current angle
-  double theta = tf2::getYaw(current_ps_.pose.orientation);  // [-pi, pi]
-
-  double theta_d, theta_dir, theta_trj;
-  double b_x_d, b_y_d;  // desired x, y in base frame
-  double e_theta;
-
-  while (plan_index_ < global_plan_.size())
-  {
-    target_ps_ = global_plan_[plan_index_];
-    double x_d = target_ps_.pose.position.x;
-    double y_d = target_ps_.pose.position.y;
-
-    // from robot to plan point
-    theta_dir = atan2((y_d - current_ps_.pose.position.y), (x_d - current_ps_.pose.position.x));
-
-    int next_plan_index = plan_index_ + 1;
-    if (next_plan_index < global_plan_.size())
-    {
-      // theta on the trajectory
-      theta_trj = atan2((global_plan_[next_plan_index].pose.position.y - y_d),
-                        (global_plan_[next_plan_index].pose.position.x - x_d));
-    }
-
-    // if the difference is greater than PI, it will get a wrong result
-    if (fabs(theta_trj - theta_dir) > M_PI)
-    {
-      // add 2*PI to the smaller one
-      if (theta_trj > theta_dir)
-        theta_dir += 2 * M_PI;
-      else
-        theta_trj += 2 * M_PI;
-    }
-
-    // weighting between two angle
-    theta_d = regularizeAngle((1 - k_theta_) * theta_trj + k_theta_ * theta_dir);
-
-    tf2::Quaternion q;
-    q.setRPY(0, 0, theta_d);
-    tf2::convert(q, target_ps_.pose.orientation);
-
-    // transform from map into base_frame
-    geometry_msgs::PoseStamped dst;
-    target_ps_.header.stamp = ros::Time(0);
-    tf_->transform(target_ps_, dst, base_frame_);
-    b_x_d = dst.pose.position.x;
-    b_y_d = dst.pose.position.y;
-
-    e_theta = regularizeAngle(theta_d - theta);
-
-    if (std::hypot(b_x_d, b_y_d) > p_window_)
-      break;
-
-    ++plan_index_;
-  }
-
-  // odometry observation - getting robot velocities in robot frame
+  // odometry observation - getting robot velocities in odom
   nav_msgs::Odometry base_odom;
   odom_helper_->getOdom(base_odom);
 
+  // get robot position in map
+  geometry_msgs::PoseStamped current_ps_odom, current_ps_map, target_ps_map;
+  costmap_ros_->getRobotPose(current_ps_odom);
+  transformPose(tf_, map_frame_, current_ps_odom, current_ps_map);
+
+  // prune the global plan
+  std::vector<geometry_msgs::PoseStamped> prune_plan = _prune(current_ps_map);
+
+  // calculate look-ahead distance
+  double vt = std::hypot(base_odom.twist.twist.linear.x, base_odom.twist.twist.linear.y);
+  double wt = base_odom.twist.twist.angular.z;
+  double L = _getLookAheadDistance(vt);
+
+  // get the particular point on the path at the lookahead distance
+  double theta_d, theta_dir, theta_trj;
+  _getLookAheadPoint(L, current_ps_map, prune_plan, target_ps_map, theta_trj);
+  theta_dir = atan2((target_ps_map.pose.position.y - current_ps_map.pose.position.y),
+                    (target_ps_map.pose.position.x - current_ps_map.pose.position.x));
+  theta_d = regularizeAngle((1 - k_theta_) * theta_trj + k_theta_ * theta_dir);
+  tf2::Quaternion q;
+  q.setRPY(0, 0, theta_d);
+  tf2::convert(q, target_ps_map.pose.orientation);
+
+  // current angle
+  double theta = tf2::getYaw(current_ps_map.pose.orientation);  // [-pi, pi]
+
   // position reached
-  if (shouldRotateToGoal(current_ps_, global_plan_.back()))
+  if (shouldRotateToGoal(current_ps_map, global_plan_.back()))
   {
-    e_theta = regularizeAngle(goal_rpy_[2] - theta);
+    double e_theta = regularizeAngle(goal_rpy_.z() - theta);
 
     // orientation reached
     if (!shouldRotateToPath(std::fabs(e_theta)))
     {
       cmd_vel.linear.x = 0.0;
       cmd_vel.angular.z = 0.0;
-
       goal_reached_ = true;
     }
     // orientation not reached
@@ -257,92 +223,188 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
       cmd_vel.angular.z = angularRegularization(base_odom, e_theta / d_t_);
     }
   }
-  // large angle, turn first
-  else if (shouldRotateToPath(std::fabs(e_theta), M_PI_2))
-  {
-    cmd_vel.linear.x = 0.0;
-    cmd_vel.angular.z = angularRegularization(base_odom, e_theta / d_t_);
-  }
   // posistion not reached
   else
   {
-    cmd_vel.linear.x = linearRegularization(base_odom, std::hypot(b_x_d, b_y_d) / d_t_);
-    cmd_vel.angular.z = angularRegularization(base_odom, e_theta / d_t_);
+    Eigen::Vector3d s(current_ps_map.pose.position.x, current_ps_map.pose.position.y, theta);    // current state
+    Eigen::Vector3d s_d(target_ps_map.pose.position.x, target_ps_map.pose.position.y, theta_d);  // desired state
+    Eigen::Vector2d u_r(vt, wt);                                                                 // refered input
+    Eigen::Vector2d u = _pidControl(s, s_d, u_r);
+    cmd_vel.linear.x = u[0];
+    cmd_vel.angular.z = u[1];
   }
 
-  // publish next target_ps_ pose
-  // target_ps_.header.frame_id = "map";
-  // target_ps_.header.stamp = ros::Time::now();
-  target_pose_pub_.publish(target_ps_);
+  // publish next target_ps_map pose
+  target_ps_map.header.frame_id = "map";
+  target_ps_map.header.stamp = ros::Time::now();
+  target_pose_pub_.publish(target_ps_map);
 
   // publish robot pose
-  // current_ps_.header.frame_id = "map";
-  // current_ps_.header.stamp = ros::Time::now();
-  current_pose_pub_.publish(current_ps_);
+  current_ps_map.header.frame_id = "map";
+  current_ps_map.header.stamp = ros::Time::now();
+  current_pose_pub_.publish(current_ps_map);
 
   return true;
 }
 
 /**
- * @brief linear velocity regularization
- * @param base_odometry odometry of the robot, to get velocity
- * @param v_d           desired velocity magnitude
- * @return v            regulated linear velocity
+ * @brief Execute PID control process (no model pid)
+ * @param s   current state
+ * @param s_d desired state
+ * @param u_r refered input
+ * @return u  control vector
  */
-double PIDPlanner::linearRegularization(nav_msgs::Odometry& base_odometry, double v_d)
+Eigen::Vector2d PIDPlanner::_pidControl(Eigen::Vector3d s, Eigen::Vector3d s_d, Eigen::Vector2d u_r)
 {
-  double v = std::hypot(base_odometry.twist.twist.linear.x, base_odometry.twist.twist.linear.y);
+  Eigen::Vector2d u;
+  Eigen::Vector3d e = s_d - s;
+
+  double e_x = e[0];
+  double e_y = e[1];
+  double e_theta = e[2];
+
+  double v_d = std::hypot(e_x, e_y) / d_t_;
+  double w_d = e_theta / d_t_;
+
   if (std::fabs(v_d) > max_v_)
     v_d = std::copysign(max_v_, v_d);
+  if (std::fabs(w_d) > max_w_)
+    w_d = std::copysign(max_w_, w_d);
 
-  double e_v = v_d - v;
+  double e_v = v_d - u_r[0];
+  double e_w = w_d - u_r[1];
+
   i_v_ += e_v * d_t_;
+  i_w_ += e_w * d_t_;
+
   double d_v = (e_v - e_v_) / d_t_;
+  double d_w = (e_w - e_w_) / d_t_;
+
   e_v_ = e_v;
+  e_w_ = e_w;
 
   double v_inc = k_v_p_ * e_v + k_v_i_ * i_v_ + k_v_d_ * d_v;
+  double w_inc = k_w_p_ * e_w + k_w_i_ * i_w_ + k_w_d_ * d_w;
 
   if (std::fabs(v_inc) > max_v_inc_)
     v_inc = std::copysign(max_v_inc_, v_inc);
+  if (std::fabs(w_inc) > max_w_inc_)
+    w_inc = std::copysign(max_w_inc_, w_inc);
 
-  double v_cmd = v + v_inc;
+  double v_cmd = u_r[0] + v_inc;
   if (std::fabs(v_cmd) > max_v_)
     v_cmd = std::copysign(max_v_, v_cmd);
   else if (std::fabs(v_cmd) < min_v_)
     v_cmd = std::copysign(min_v_, v_cmd);
 
-  return v_cmd;
-}
-
-/**
- * @brief angular velocity regularization
- * @param base_odometry odometry of the robot, to get velocity
- * @param w_d           desired angular velocity
- * @return  w           regulated angular velocity
- */
-double PIDPlanner::angularRegularization(nav_msgs::Odometry& base_odometry, double w_d)
-{
-  if (std::fabs(w_d) > max_w_)
-    w_d = std::copysign(max_w_, w_d);
-
-  double w = base_odometry.twist.twist.angular.z;
-  double e_w = w_d - w;
-  i_w_ += e_w * d_t_;
-  double d_w = (e_w - e_w_) / d_t_;
-  e_w_ = e_w;
-
-  double w_inc = k_w_p_ * e_w + k_w_i_ * i_w_ + k_w_d_ * d_w;
-
-  if (std::fabs(w_inc) > max_w_inc_)
-    w_inc = std::copysign(max_w_inc_, w_inc);
-
-  double w_cmd = w + w_inc;
+  double w_cmd = u_r[1] + w_inc;
   if (std::fabs(w_cmd) > max_w_)
     w_cmd = std::copysign(max_w_, w_cmd);
   else if (std::fabs(w_cmd) < min_w_)
     w_cmd = std::copysign(min_w_, w_cmd);
 
-  return w_cmd;
+  u[0] = v_cmd;
+  u[1] = w_cmd;
+
+  return u;
+}
+
+/**
+ * @brief Prune the path, removing the waypoints that the robot has already passed and distant waypoints
+ * @param robot_pose_global the robot's pose  [global]
+ * @return pruned path
+ */
+std::vector<geometry_msgs::PoseStamped> PIDPlanner::_prune(const geometry_msgs::PoseStamped robot_pose_global)
+{
+  auto calPoseDistance = [](const geometry_msgs::PoseStamped& ps_1, const geometry_msgs::PoseStamped& ps_2) {
+    return helper::dist(ps_1, ps_2);
+  };
+
+  auto closest_pose_upper_bound = helper::firstIntegratedDistance(
+      global_plan_.begin(), global_plan_.end(), calPoseDistance, costmap_ros_->getCostmap()->getSizeInMetersX() / 2.0);
+
+  // find the closest pose on the path to the robot
+  auto transform_begin =
+      helper::getMinFuncVal(global_plan_.begin(), closest_pose_upper_bound, [&](const geometry_msgs::PoseStamped& ps) {
+        return calPoseDistance(robot_pose_global, ps);
+      });
+
+  // Transform the near part of the global plan into the robot's frame of reference.
+  std::vector<geometry_msgs::PoseStamped> prune_path;
+  for (auto it = transform_begin; it < global_plan_.end(); it++)
+    prune_path.push_back(*it);
+
+  // path pruning: remove the portion of the global plan that already passed so don't process it on the next iteration
+  global_plan_.erase(std::begin(global_plan_), transform_begin);
+
+  return prune_path;
+}
+
+/**
+ * @brief Calculate the look-ahead distance with current speed dynamically
+ * @param vt the current speed
+ * @return L the look-ahead distance
+ */
+double PIDPlanner::_getLookAheadDistance(double vt)
+{
+  double lookahead_dist = fabs(vt) * lookahead_time_;
+  return helper::clamp(lookahead_dist, min_lookahead_dist_, max_lookahead_dist_);
+}
+
+/**
+ * @brief find the point on the path that is exactly the lookahead distance away from the robot
+ * @param lookahead_dist    the lookahead distance
+ * @param robot_pose_global the robot's pose  [global]
+ * @param prune_plan        the pruned plan
+ */
+void PIDPlanner::_getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseStamped robot_pose_global,
+                                    const std::vector<geometry_msgs::PoseStamped>& prune_plan,
+                                    geometry_msgs::PoseStamped& target_ps_map, double& theta)
+{
+  double rx = robot_pose_global.pose.position.x;
+  double ry = robot_pose_global.pose.position.y;
+
+  // Find the first pose which is at a distance greater than the lookahead distance
+  auto goal_pose_it = std::find_if(prune_plan.begin(), prune_plan.end(), [&](const auto& ps) {
+    return helper::dist(ps, robot_pose_global) >= lookahead_dist;
+  });
+
+  std::vector<geometry_msgs::PoseStamped>::const_iterator prev_pose_it;
+  // If the no pose is not far enough, take the last pose
+  if (goal_pose_it == prune_plan.end())
+  {
+    goal_pose_it = std::prev(prune_plan.end());
+    prev_pose_it = std::prev(goal_pose_it);
+    target_ps_map = *goal_pose_it;
+  }
+  else
+  {
+    // find the point on the line segment between the two poses
+    // that is exactly the lookahead distance away from the robot pose (the origin)
+    // This can be found with a closed form for the intersection of a segment and a circle
+    // Because of the way we did the std::find_if, prev_pose is guaranteed to be inside the circle,
+    // and goal_pose is guaranteed to be outside the circle.
+    prev_pose_it = std::prev(goal_pose_it);
+
+    double px = prev_pose_it->pose.position.x;
+    double py = prev_pose_it->pose.position.y;
+    double gx = goal_pose_it->pose.position.x;
+    double gy = goal_pose_it->pose.position.y;
+
+    // transform to the robot frame so that the circle centers at (0,0)
+    std::pair<double, double> prev_p(px - rx, py - ry);
+    std::pair<double, double> goal_p(gx - rx, gy - ry);
+    std::vector<std::pair<double, double>> i_points = helper::circleSegmentIntersection(prev_p, goal_p, lookahead_dist);
+
+    target_ps_map.pose.position.x = i_points[0].first + rx;
+    target_ps_map.pose.position.y = i_points[0].second + ry;
+  }
+
+  target_ps_map.header.frame_id = goal_pose_it->header.frame_id;
+  target_ps_map.header.stamp = goal_pose_it->header.stamp;
+
+  theta = atan2(goal_pose_it->pose.position.y - prev_pose_it->pose.position.y,
+                goal_pose_it->pose.position.x - prev_pose_it->pose.position.x);
 }
 
 }  // namespace pid_planner

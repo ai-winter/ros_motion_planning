@@ -4,12 +4,12 @@
  * @file: pid_planner.h
  * @brief: Contains the Proportional–Integral–Derivative (PID) controller local planner class
  * @author: Yang Haodong, Guo Zhanyu, Wu Maojia
- * @date: 2023-10-01
- * @version: 1.1
+ * @date: 2024-01-20
+ * @version: 1.2
  *
- * Copyright (c) 2024, Yang Haodong, Guo Zhanyu, Wu Maojia. 
+ * Copyright (c) 2024, Yang Haodong, Guo Zhanyu, Wu Maojia.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -67,7 +67,7 @@ public:
 
   /**
    * @brief Check if the goal pose has been achieved
-   * @return True if achieved, false otherwise
+   * @return true if achieved, false otherwise
    */
   bool isGoalReached();
 
@@ -78,21 +78,10 @@ public:
    */
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
 
-  /**
-   * @brief linear velocity regularization
-   * @param base_odometry odometry of the robot, to get velocity
-   * @param v_d           desired velocity magnitude
-   * @return v            regulated linear velocity
-   */
-  double linearRegularization(nav_msgs::Odometry& base_odometry, double v_d);
-
-  /**
-   * @brief angular velocity regularization
-   * @param base_odometry odometry of the robot, to get velocity
-   * @param w_d           desired angular velocity
-   * @return  w           regulated angular velocity
-   */
-  double angularRegularization(nav_msgs::Odometry& base_odometry, double w_d);
+protected:
+  double lookahead_time_;      // lookahead time gain
+  double min_lookahead_dist_;  // minimum lookahead distance
+  double max_lookahead_dist_;  // maximum lookahead distance
 
 private:
   bool initialized_;                       // initialized flag
@@ -100,25 +89,56 @@ private:
   tf2_ros::Buffer* tf_;                    // transform buffer
   costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
 
-  int plan_index_;
   std::vector<geometry_msgs::PoseStamped> global_plan_;
-  geometry_msgs::PoseStamped target_ps_, current_ps_;
 
-  double p_window_;  // next point distance
-  double d_t_;       // control time step
-
-  double k_v_p_, k_v_i_, k_v_d_;  // pid controller params
-  double k_w_p_, k_w_i_, k_w_d_;  // pid controller params
-  double k_theta_;                // pid controller params
+  // pid controller params
+  double k_v_p_, k_v_i_, k_v_d_;
+  double k_w_p_, k_w_i_, k_w_d_;
+  double k_theta_;
 
   double e_v_, e_w_;
   double i_v_, i_w_;
+
+  double d_t_;  // control time step
 
   ros::Publisher target_pose_pub_, current_pose_pub_;
 
   // goal parameters
   double goal_x_, goal_y_;
   Eigen::Vector3d goal_rpy_;
+
+  /**
+   * @brief Prune the path, removing the waypoints that the robot has already passed and distant waypoints
+   * @param robot_pose_global the robot's pose  [global]
+   * @return pruned path
+   */
+  std::vector<geometry_msgs::PoseStamped> _prune(const geometry_msgs::PoseStamped robot_pose_global);
+
+  /**
+   * @brief Calculate the look-ahead distance with current speed dynamically
+   * @param vt the current speed
+   * @return L the look-ahead distance
+   */
+  double _getLookAheadDistance(double vt);
+
+  /**
+   * @brief find the point on the path that is exactly the lookahead distance away from the robot
+   * @param lookahead_dist    the lookahead distance
+   * @param robot_pose_global the robot's pose  [global]
+   * @param prune_plan        the pruned plan
+   */
+  void _getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseStamped robot_pose_global,
+                          const std::vector<geometry_msgs::PoseStamped>& prune_plan, geometry_msgs::PoseStamped& ps,
+                          double& theta);
+
+  /**
+   * @brief Execute PID control process (no model pid)
+   * @param s   current state
+   * @param s_d desired state
+   * @param u_r refered input
+   * @return u  control vector
+   */
+  Eigen::Vector2d _pidControl(Eigen::Vector3d s, Eigen::Vector3d s_d, Eigen::Vector2d u_r);
 };
 };  // namespace pid_planner
 

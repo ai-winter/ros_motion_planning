@@ -1,6 +1,6 @@
 PIDPlanner:
-  # next point distance
-  p_window: 0.5
+  # offset of transform from world(x,y) to grid map(x,y)
+  convert_offset: 0.0
 
   # goal reached tolerance
   goal_dist_tolerance: 0.2
@@ -26,3 +26,12 @@ PIDPlanner:
   k_w_d: 0.10
 
   k_theta: 0.7
+
+  # lookahead
+  lookahead_time: 0.5
+  min_lookahead_dist: 0.3
+  max_lookahead_dist: 0.9
+
+  # frame id
+  base_frame: base_link
+  map_frame: map
