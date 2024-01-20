@@ -78,18 +78,13 @@ public:
    */
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
 
-protected:
-  double lookahead_time_;      // lookahead time gain
-  double min_lookahead_dist_;  // minimum lookahead distance
-  double max_lookahead_dist_;  // maximum lookahead distance
-
 private:
-  bool initialized_;                       // initialized flag
-  bool goal_reached_;                      // goal reached flag
-  tf2_ros::Buffer* tf_;                    // transform buffer
-  costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
+  bool initialized_;     // initialized flag
+  bool goal_reached_;    // goal reached flag
+  tf2_ros::Buffer* tf_;  // transform buffer
+  // costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
 
-  std::vector<geometry_msgs::PoseStamped> global_plan_;
+  // std::vector<geometry_msgs::PoseStamped> global_plan_;
 
   // pid controller params
   double k_v_p_, k_v_i_, k_v_d_;
@@ -106,30 +101,6 @@ private:
   // goal parameters
   double goal_x_, goal_y_;
   Eigen::Vector3d goal_rpy_;
-
-  /**
-   * @brief Prune the path, removing the waypoints that the robot has already passed and distant waypoints
-   * @param robot_pose_global the robot's pose  [global]
-   * @return pruned path
-   */
-  std::vector<geometry_msgs::PoseStamped> _prune(const geometry_msgs::PoseStamped robot_pose_global);
-
-  /**
-   * @brief Calculate the look-ahead distance with current speed dynamically
-   * @param vt the current speed
-   * @return L the look-ahead distance
-   */
-  double _getLookAheadDistance(double vt);
-
-  /**
-   * @brief find the point on the path that is exactly the lookahead distance away from the robot
-   * @param lookahead_dist    the lookahead distance
-   * @param robot_pose_global the robot's pose  [global]
-   * @param prune_plan        the pruned plan
-   */
-  void _getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseStamped robot_pose_global,
-                          const std::vector<geometry_msgs::PoseStamped>& prune_plan, geometry_msgs::PoseStamped& ps,
-                          double& theta);
 
   /**
    * @brief Execute PID control process (no model pid)

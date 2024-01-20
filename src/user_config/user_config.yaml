@@ -41,8 +41,10 @@ robots_config:
 #   * pid
 #   * apf
 #   * rpp
+#   * lqr
+#   * static
 
 plugins:
-#   pedestrians: "pedestrian_config.yaml"
+  # pedestrians: "pedestrian_config.yaml"
   # obstacles: "obstacles_config.yaml"
   map_layers: "map_layers_config.yaml"

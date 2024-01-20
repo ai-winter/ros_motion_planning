@@ -4,12 +4,12 @@
  * @file: local_planner.h
  * @brief: Contains the abstract local planner class
  * @author: Yang Haodong
- * @date: 2023-10-02
- * @version: 1.2
+ * @date: 2024-01-20
+ * @version: 1.3
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -154,6 +154,32 @@ public:
    */
   bool worldToMap(double wx, double wy, int& mx, int& my);
 
+  /**
+   * @brief Prune the path, removing the waypoints that the robot has already passed and distant waypoints
+   * @param robot_pose_global the robot's pose  [global]
+   * @return pruned path
+   */
+  std::vector<geometry_msgs::PoseStamped> prune(const geometry_msgs::PoseStamped robot_pose_global);
+
+  /**
+   * @brief Calculate the look-ahead distance with current speed dynamically
+   * @param vt the current speed
+   * @return L the look-ahead distance
+   */
+  double getLookAheadDistance(double vt);
+
+  /**
+   * @brief find the point on the path that is exactly the lookahead distance away from the robot
+   * @param lookahead_dist    the lookahead distance
+   * @param robot_pose_global the robot's pose  [global]
+   * @param prune_plan        the pruned plan
+   * @param pt                the lookahead point
+   * @param theta             the angle on traj
+   */
+  void getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseStamped robot_pose_global,
+                                       const std::vector<geometry_msgs::PoseStamped>& prune_plan,
+                                       geometry_msgs::PointStamped& pt, double& theta);
+
 protected:
   // lethal cost and neutral cost
   unsigned char lethal_cost_, neutral_cost_;
@@ -178,6 +204,13 @@ protected:
 
   // odometry helper
   base_local_planner::OdometryHelperRos* odom_helper_;
+
+  costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
+  std::vector<geometry_msgs::PoseStamped> global_plan_;
+
+  double lookahead_time_;      // lookahead time gain
+  double min_lookahead_dist_;  // minimum lookahead distance
+  double max_lookahead_dist_;  // maximum lookahead distance
 };
 }  // namespace local_planner
 

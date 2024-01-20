@@ -73,31 +73,6 @@ public:
    */
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
 
-protected:
-  /**
-   * @brief calculate the look-ahead distance with current speed dynamically
-   * @param vt the current speed
-   * @return L the look-ahead distance
-   */
-  double _getLookAheadDistance(double vt);
-
-  /**
-   * @brief find the point on the path that is exactly the lookahead distance away from the robot
-   * @param lookahead_dist    the lookahead distance
-   * @param robot_pose_global the robot's pose  [global]
-   * @param prune_plan        the pruned plan
-   * @return point            the lookahead point
-   */
-  geometry_msgs::PointStamped _getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseStamped robot_pose_global,
-                                                 const std::vector<geometry_msgs::PoseStamped>& prune_plan);
-
-  /**
-   * @brief Prune the path, removing the waypoints that the robot has already passed and distant waypoints
-   * @param robot_pose_global the robot's pose  [global]
-   * @return pruned path
-   */
-  std::vector<geometry_msgs::PoseStamped> _prune(const geometry_msgs::PoseStamped robot_pose_global);
-
 private:
   /**
    * @brief Execute LQR control process
@@ -107,16 +82,11 @@ private:
    */
   Eigen::Vector2d _lqrControl(Eigen::Vector3d x, std::vector<double> ref);
 
-protected:
-  double lookahead_time_;      // lookahead time gain
-  double min_lookahead_dist_;  // minimum lookahead distance
-  double max_lookahead_dist_;  // maximum lookahead distance
-
 private:
   bool initialized_;                       // initialized flag
   bool goal_reached_;                      // goal reached flag
   tf2_ros::Buffer* tf_;                    // transform buffer
-  costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
+  // costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
 
   double d_t_;         // control time interval
   Eigen::Matrix3d Q_;  // state error matrix
@@ -124,7 +94,7 @@ private:
   int max_iter_;       // maximum iteration for ricatti solution
   double eps_iter_;    // iteration ending threshold
 
-  std::vector<geometry_msgs::PoseStamped> global_plan_;
+  // std::vector<geometry_msgs::PoseStamped> global_plan_;
   ros::Publisher target_pt_pub_, current_pose_pub_;
 
   // goal parameters

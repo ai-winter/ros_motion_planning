@@ -25,7 +25,7 @@ namespace pid_planner
 /**
  * @brief Construct a new PIDPlanner object
  */
-PIDPlanner::PIDPlanner() : initialized_(false), goal_reached_(false), tf_(nullptr), costmap_ros_(nullptr)
+PIDPlanner::PIDPlanner() : initialized_(false), goal_reached_(false), tf_(nullptr)  //, costmap_ros_(nullptr)
 {
 }
 
@@ -184,16 +184,19 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   transformPose(tf_, map_frame_, current_ps_odom, current_ps_map);
 
   // prune the global plan
-  std::vector<geometry_msgs::PoseStamped> prune_plan = _prune(current_ps_map);
+  std::vector<geometry_msgs::PoseStamped> prune_plan = prune(current_ps_map);
 
   // calculate look-ahead distance
   double vt = std::hypot(base_odom.twist.twist.linear.x, base_odom.twist.twist.linear.y);
   double wt = base_odom.twist.twist.angular.z;
-  double L = _getLookAheadDistance(vt);
+  double L = getLookAheadDistance(vt);
 
   // get the particular point on the path at the lookahead distance
+  geometry_msgs::PointStamped lookahead_pt;
   double theta_d, theta_dir, theta_trj;
-  _getLookAheadPoint(L, current_ps_map, prune_plan, target_ps_map, theta_trj);
+  getLookAheadPoint(L, current_ps_map, prune_plan, lookahead_pt, theta_trj);
+  target_ps_map.pose.position.x = lookahead_pt.point.x;
+  target_ps_map.pose.position.y = lookahead_pt.point.y;
   theta_dir = atan2((target_ps_map.pose.position.y - current_ps_map.pose.position.y),
                     (target_ps_map.pose.position.x - current_ps_map.pose.position.x));
   theta_d = regularizeAngle((1 - k_theta_) * theta_trj + k_theta_ * theta_dir);
@@ -307,104 +310,6 @@ Eigen::Vector2d PIDPlanner::_pidControl(Eigen::Vector3d s, Eigen::Vector3d s_d, 
   u[1] = w_cmd;
 
   return u;
-}
-
-/**
- * @brief Prune the path, removing the waypoints that the robot has already passed and distant waypoints
- * @param robot_pose_global the robot's pose  [global]
- * @return pruned path
- */
-std::vector<geometry_msgs::PoseStamped> PIDPlanner::_prune(const geometry_msgs::PoseStamped robot_pose_global)
-{
-  auto calPoseDistance = [](const geometry_msgs::PoseStamped& ps_1, const geometry_msgs::PoseStamped& ps_2) {
-    return helper::dist(ps_1, ps_2);
-  };
-
-  auto closest_pose_upper_bound = helper::firstIntegratedDistance(
-      global_plan_.begin(), global_plan_.end(), calPoseDistance, costmap_ros_->getCostmap()->getSizeInMetersX() / 2.0);
-
-  // find the closest pose on the path to the robot
-  auto transform_begin =
-      helper::getMinFuncVal(global_plan_.begin(), closest_pose_upper_bound, [&](const geometry_msgs::PoseStamped& ps) {
-        return calPoseDistance(robot_pose_global, ps);
-      });
-
-  // Transform the near part of the global plan into the robot's frame of reference.
-  std::vector<geometry_msgs::PoseStamped> prune_path;
-  for (auto it = transform_begin; it < global_plan_.end(); it++)
-    prune_path.push_back(*it);
-
-  // path pruning: remove the portion of the global plan that already passed so don't process it on the next iteration
-  global_plan_.erase(std::begin(global_plan_), transform_begin);
-
-  return prune_path;
-}
-
-/**
- * @brief Calculate the look-ahead distance with current speed dynamically
- * @param vt the current speed
- * @return L the look-ahead distance
- */
-double PIDPlanner::_getLookAheadDistance(double vt)
-{
-  double lookahead_dist = fabs(vt) * lookahead_time_;
-  return helper::clamp(lookahead_dist, min_lookahead_dist_, max_lookahead_dist_);
-}
-
-/**
- * @brief find the point on the path that is exactly the lookahead distance away from the robot
- * @param lookahead_dist    the lookahead distance
- * @param robot_pose_global the robot's pose  [global]
- * @param prune_plan        the pruned plan
- */
-void PIDPlanner::_getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseStamped robot_pose_global,
-                                    const std::vector<geometry_msgs::PoseStamped>& prune_plan,
-                                    geometry_msgs::PoseStamped& target_ps_map, double& theta)
-{
-  double rx = robot_pose_global.pose.position.x;
-  double ry = robot_pose_global.pose.position.y;
-
-  // Find the first pose which is at a distance greater than the lookahead distance
-  auto goal_pose_it = std::find_if(prune_plan.begin(), prune_plan.end(), [&](const auto& ps) {
-    return helper::dist(ps, robot_pose_global) >= lookahead_dist;
-  });
-
-  std::vector<geometry_msgs::PoseStamped>::const_iterator prev_pose_it;
-  // If the no pose is not far enough, take the last pose
-  if (goal_pose_it == prune_plan.end())
-  {
-    goal_pose_it = std::prev(prune_plan.end());
-    prev_pose_it = std::prev(goal_pose_it);
-    target_ps_map = *goal_pose_it;
-  }
-  else
-  {
-    // find the point on the line segment between the two poses
-    // that is exactly the lookahead distance away from the robot pose (the origin)
-    // This can be found with a closed form for the intersection of a segment and a circle
-    // Because of the way we did the std::find_if, prev_pose is guaranteed to be inside the circle,
-    // and goal_pose is guaranteed to be outside the circle.
-    prev_pose_it = std::prev(goal_pose_it);
-
-    double px = prev_pose_it->pose.position.x;
-    double py = prev_pose_it->pose.position.y;
-    double gx = goal_pose_it->pose.position.x;
-    double gy = goal_pose_it->pose.position.y;
-
-    // transform to the robot frame so that the circle centers at (0,0)
-    std::pair<double, double> prev_p(px - rx, py - ry);
-    std::pair<double, double> goal_p(gx - rx, gy - ry);
-    std::vector<std::pair<double, double>> i_points = helper::circleSegmentIntersection(prev_p, goal_p, lookahead_dist);
-
-    target_ps_map.pose.position.x = i_points[0].first + rx;
-    target_ps_map.pose.position.y = i_points[0].second + ry;
-  }
-
-  target_ps_map.header.frame_id = goal_pose_it->header.frame_id;
-  target_ps_map.header.stamp = goal_pose_it->header.stamp;
-
-  theta = atan2(goal_pose_it->pose.position.y - prev_pose_it->pose.position.y,
-                goal_pose_it->pose.position.x - prev_pose_it->pose.position.x);
 }
 
 }  // namespace pid_planner

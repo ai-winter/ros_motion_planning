@@ -7,9 +7,9 @@
  * @date: 2024-01-08
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -75,36 +75,12 @@ public:
 
 protected:
   /**
-   * @brief calculate the look-ahead distance with current speed dynamically
-   * @param vt  the current speed
-   * @return L  the look-ahead distance
-   */
-  double _getLookAheadDistance(double vt);
-
-  /**
    * @brief calculate the relative angle between robot' yaw and relative lookahead vector
    * @param lookahead_pt      the lookahead pose [global]
    * @param robot_pose_global the robot's pose  [global]
    * @return dphi             the lookahead angle - robot's yaw
    */
   double _dphi(geometry_msgs::PointStamped lookahead_pt, geometry_msgs::PoseStamped robot_pose_global);
-
-  /**
-   * @brief find the point on the path that is exactly the lookahead distance away from the robot
-   * @param lookahead_dist    the lookahead distance
-   * @param robot_pose_global the robot's pose  [global]
-   * @param prune_plan        the pruned plan
-   * @return point            the lookahead point
-   */
-  geometry_msgs::PointStamped _getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseStamped robot_pose_global,
-                                                 const std::vector<geometry_msgs::PoseStamped>& prune_plan);
-
-  /**
-   * @brief Prune the path, removing the waypoints that the robot has already passed and distant waypoints
-   * @param robot_pose_global the robot's pose  [global]
-   * @return pruned path
-   */
-  std::vector<geometry_msgs::PoseStamped> _prune(const geometry_msgs::PoseStamped robot_pose_global);
 
 private:
   /**
@@ -132,25 +108,20 @@ private:
   double _applyApproachConstraint(const double raw_linear_vel, geometry_msgs::PoseStamped robot_pose_global,
                                   const std::vector<geometry_msgs::PoseStamped>& prune_plan);
 
-protected:
-  double lookahead_time_;      // lookahead time gain
-  double min_lookahead_dist_;  // minimum lookahead distance
-  double max_lookahead_dist_;  // maximum lookahead distance
-
 private:
-  bool initialized_;                       // initialized flag
-  bool goal_reached_;                      // goal reached flag
-  tf2_ros::Buffer* tf_;                    // transform buffer
-  costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
+  bool initialized_;     // initialized flag
+  bool goal_reached_;    // goal reached flag
+  tf2_ros::Buffer* tf_;  // transform buffer
+  // costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
 
-  double d_t_;  // control time interval
+  double d_t_;                          // control time interval
   double regulated_min_radius_;         // the threshold to apply curvature constraint
   double inflation_cost_factor_;        // the heuristical factor to calculate minimum distance to obstacles
   double scaling_dist_, scaling_gain_;  // the threshold to apply obstacle constraint
   double approach_dist_;                // the threshold to apply approaching goal constraint
   double approach_min_v_;               // minimum approaching velocity
 
-  std::vector<geometry_msgs::PoseStamped> global_plan_;
+  // std::vector<geometry_msgs::PoseStamped> global_plan_;
   ros::Publisher target_pt_pub_, current_pose_pub_;
 
   // goal parameters

@@ -25,7 +25,7 @@ namespace lqr_planner
 /**
  * @brief Construct a new RPP planner object
  */
-LQRPlanner::LQRPlanner() : initialized_(false), goal_reached_(false), tf_(nullptr), costmap_ros_(nullptr)
+LQRPlanner::LQRPlanner() : initialized_(false), goal_reached_(false), tf_(nullptr)  //, costmap_ros_(nullptr)
 {
 }
 
@@ -192,15 +192,17 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   transformPose(tf_, map_frame_, robot_pose_odom, robot_pose_map);
 
   // transform global plan to robot frame
-  std::vector<geometry_msgs::PoseStamped> prune_plan = _prune(robot_pose_map);
+  std::vector<geometry_msgs::PoseStamped> prune_plan = prune(robot_pose_map);
 
   // calculate look-ahead distance
   double vt = std::hypot(base_odom.twist.twist.linear.x, base_odom.twist.twist.linear.y);
   double wt = base_odom.twist.twist.angular.z;
-  double L = _getLookAheadDistance(vt);
+  double L = getLookAheadDistance(vt);
 
   // get the particular point on the path at the lookahead distance
-  auto lookahead_pt = _getLookAheadPoint(L, robot_pose_map, prune_plan);
+  geometry_msgs::PointStamped lookahead_pt;
+  double theta;
+  getLookAheadPoint(L, robot_pose_map, prune_plan, lookahead_pt, theta);
 
   // calculate commands
   if (shouldRotateToGoal(robot_pose_map, global_plan_.back()))
@@ -247,104 +249,6 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   current_pose_pub_.publish(robot_pose_map);
 
   return true;
-}
-
-/**
- * @brief calculate the look-ahead distance with current speed dynamically
- * @param vt the current speed
- * @return L the look-ahead distance
- */
-double LQRPlanner::_getLookAheadDistance(double vt)
-{
-  double lookahead_dist = fabs(vt) * lookahead_time_;
-  return helper::clamp(lookahead_dist, min_lookahead_dist_, max_lookahead_dist_);
-}
-
-/**
- * @brief find the point on the path that is exactly the lookahead distance away from the robot
- * @param lookahead_dist    the lookahead distance
- * @param robot_pose_global the robot's pose  [global]
- * @param prune_plan        the pruned plan
- * @return point            the lookahead point
- */
-geometry_msgs::PointStamped LQRPlanner::_getLookAheadPoint(double lookahead_dist,
-                                                           geometry_msgs::PoseStamped robot_pose_global,
-                                                           const std::vector<geometry_msgs::PoseStamped>& prune_plan)
-{
-  geometry_msgs::PointStamped pt;
-
-  double rx = robot_pose_global.pose.position.x;
-  double ry = robot_pose_global.pose.position.y;
-
-  // Find the first pose which is at a distance greater than the lookahead distance
-  auto goal_pose_it = std::find_if(prune_plan.begin(), prune_plan.end(), [&](const auto& ps) {
-    return helper::dist(ps, robot_pose_global) >= lookahead_dist;
-  });
-
-  // If the no pose is not far enough, take the last pose
-  if (goal_pose_it == prune_plan.end())
-  {
-    goal_pose_it = std::prev(prune_plan.end());
-    pt.point.x = goal_pose_it->pose.position.x;
-    pt.point.y = goal_pose_it->pose.position.y;
-  }
-  else
-  {
-    // find the point on the line segment between the two poses
-    // that is exactly the lookahead distance away from the robot pose (the origin)
-    // This can be found with a closed form for the intersection of a segment and a circle
-    // Because of the way we did the std::find_if, prev_pose is guaranteed to be inside the circle,
-    // and goal_pose is guaranteed to be outside the circle.
-    auto prev_pose_it = std::prev(goal_pose_it);
-
-    double px = prev_pose_it->pose.position.x;
-    double py = prev_pose_it->pose.position.y;
-    double gx = goal_pose_it->pose.position.x;
-    double gy = goal_pose_it->pose.position.y;
-
-    // transform to the robot frame so that the circle centers at (0,0)
-    std::pair<double, double> prev_p(px - rx, py - ry);
-    std::pair<double, double> goal_p(gx - rx, gy - ry);
-    std::vector<std::pair<double, double>> i_points = helper::circleSegmentIntersection(prev_p, goal_p, lookahead_dist);
-
-    pt.point.x = i_points[0].first + rx;
-    pt.point.y = i_points[0].second + ry;
-  }
-
-  pt.header.frame_id = goal_pose_it->header.frame_id;
-  pt.header.stamp = goal_pose_it->header.stamp;
-  return pt;
-}
-
-/**
- * @brief Prune the path, removing the waypoints that the robot has already passed and distant waypoints
- * @param robot_pose_global the robot's pose  [global]
- * @return pruned path
- */
-std::vector<geometry_msgs::PoseStamped> LQRPlanner::_prune(const geometry_msgs::PoseStamped robot_pose_global)
-{
-  auto calPoseDistance = [](const geometry_msgs::PoseStamped& ps_1, const geometry_msgs::PoseStamped& ps_2) {
-    return helper::dist(ps_1, ps_2);
-  };
-
-  auto closest_pose_upper_bound = helper::firstIntegratedDistance(
-      global_plan_.begin(), global_plan_.end(), calPoseDistance, costmap_ros_->getCostmap()->getSizeInMetersX() / 2.0);
-
-  // find the closest pose on the path to the robot
-  auto transform_begin =
-      helper::getMinFuncVal(global_plan_.begin(), closest_pose_upper_bound, [&](const geometry_msgs::PoseStamped& ps) {
-        return calPoseDistance(robot_pose_global, ps);
-      });
-
-  // Transform the near part of the global plan into the robot's frame of reference.
-  std::vector<geometry_msgs::PoseStamped> prune_path;
-  for (auto it = transform_begin; it < global_plan_.end(); it++)
-    prune_path.push_back(*it);
-
-  // path pruning: remove the portion of the global plan that already passed so don't process it on the next iteration
-  global_plan_.erase(std::begin(global_plan_), transform_begin);
-
-  return prune_path;
 }
 
 /**

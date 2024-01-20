@@ -102,12 +102,12 @@ private:
   bool initialized_;                       // initialized flag
   bool goal_reached_;                      // goal reached flag
   tf2_ros::Buffer* tf_;                    // transform buffer
-  costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
+  // costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
   unsigned char* local_costmap_;           // costmap char map
   nav_msgs::OccupancyGrid potential_map_;  // local potential field map
 
   int plan_index_;
-  std::vector<geometry_msgs::PoseStamped> global_plan_;
+  // std::vector<geometry_msgs::PoseStamped> global_plan_;
   geometry_msgs::PoseStamped target_ps_, current_ps_;
 
   double p_window_;     // next point distance

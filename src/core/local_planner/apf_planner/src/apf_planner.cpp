@@ -26,7 +26,7 @@ namespace apf_planner
  * @brief Construct a new APFPlanner object
  */
 APFPlanner::APFPlanner()
-  : initialized_(false), tf_(nullptr), costmap_ros_(nullptr), goal_reached_(false), plan_index_(0)
+  : initialized_(false), tf_(nullptr), goal_reached_(false), plan_index_(0)  //, costmap_ros_(nullptr)
 {
 }
 
