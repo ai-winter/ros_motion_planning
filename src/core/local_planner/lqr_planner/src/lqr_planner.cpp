@@ -7,9 +7,9 @@
  * @date: 2024-01-12
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -25,7 +25,7 @@ namespace lqr_planner
 /**
  * @brief Construct a new RPP planner object
  */
-LQRPlanner::LQRPlanner() : initialized_(false), tf_(nullptr), costmap_ros_(nullptr), goal_reached_(false)
+LQRPlanner::LQRPlanner() : initialized_(false), goal_reached_(false), tf_(nullptr), costmap_ros_(nullptr)
 {
 }
 
@@ -95,32 +95,33 @@ void LQRPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     // weight matrix for penalizing state error while tracking [x,y,theta]
     std::vector<double> diag_vec;
     nh.getParam("Q_matrix_diag", diag_vec);
-    for (size_t i = 0; i < diag_vec.size(); i++)
+    for (size_t i = 0; i < diag_vec.size(); ++i)
       Q_(i, i) = diag_vec[i];
 
     // weight matrix for penalizing input error while tracking[v, w]
     nh.getParam("R_matrix_diag", diag_vec);
-    for (size_t i = 0; i < diag_vec.size(); i++)
+    for (size_t i = 0; i < diag_vec.size(); ++i)
       R_(i, i) = diag_vec[i];
 
     double controller_freqency;
     nh.param("/move_base/controller_frequency", controller_freqency, 10.0);
     d_t_ = 1 / controller_freqency;
 
-    odom_helper_ = new base_local_planner::OdometryHelperRos("/odom");
     target_pt_pub_ = nh.advertise<geometry_msgs::PointStamped>("/target_point", 10);
     current_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
 
     ROS_INFO("LQR planner initialized!");
   }
   else
+  {
     ROS_WARN("LQR planner has already been initialized.");
+  }
 }
 
 /**
- * @brief  Set the plan that the controller is following
+ * @brief Set the plan that the controller is following
  * @param orig_global_plan the plan to pass to the controller
- * @return  true if the plan was updated successfully, else false
+ * @return true if the plan was updated successfully, else false
  */
 bool LQRPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
 {
@@ -149,8 +150,8 @@ bool LQRPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_glo
 }
 
 /**
- * @brief  Check if the goal pose has been achieved
- * @return True if achieved, false otherwise
+ * @brief Check if the goal pose has been achieved
+ * @return true if achieved, false otherwise
  */
 bool LQRPlanner::isGoalReached()
 {
@@ -171,13 +172,13 @@ bool LQRPlanner::isGoalReached()
 /**
  * @brief Given the current position, orientation, and velocity of the robot, compute the velocity commands
  * @param cmd_vel will be filled with the velocity command to be passed to the robot base
- * @return  true if a valid trajectory was found, else false
+ * @return true if a valid trajectory was found, else false
  */
 bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 {
   if (!initialized_)
   {
-    ROS_ERROR("RPP planner has not been initialized");
+    ROS_ERROR("LQR planner has not been initialized");
     return false;
   }
 
@@ -232,6 +233,7 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     std::vector<double> ref = { vt, theta_r };
 
     // control vector
+    // NOTE: maybe some bugs...
     Eigen::Vector2d u = _lqrControl(x, ref);
 
     cmd_vel.linear.x = linearRegularization(base_odom, u[0]);
@@ -249,8 +251,8 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
 /**
  * @brief calculate the look-ahead distance with current speed dynamically
- * @param vt  the current speed
- * @return L  the look-ahead distance
+ * @param vt the current speed
+ * @return L the look-ahead distance
  */
 double LQRPlanner::_getLookAheadDistance(double vt)
 {

@@ -7,9 +7,9 @@
  * @date: 2024-01-12
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -56,28 +56,28 @@ public:
   /**
    * @brief Set the plan that the controller is following
    * @param orig_global_plan the plan to pass to the controller
-   * @return  true if the plan was updated successfully, else false
+   * @return true if the plan was updated successfully, else false
    */
   bool setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan);
 
   /**
-   * @brief  Check if the goal pose has been achieved
-   * @return True if achieved, false otherwise
+   * @brief Check if the goal pose has been achieved
+   * @return true if achieved, false otherwise
    */
   bool isGoalReached();
 
   /**
    * @brief Given the current position, orientation, and velocity of the robot, compute the velocity commands
    * @param cmd_vel will be filled with the velocity command to be passed to the robot base
-   * @return  true if a valid trajectory was found, else false
+   * @return true if a valid trajectory was found, else false
    */
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
 
 protected:
   /**
    * @brief calculate the look-ahead distance with current speed dynamically
-   * @param vt  the current speed
-   * @return L  the look-ahead distance
+   * @param vt the current speed
+   * @return L the look-ahead distance
    */
   double _getLookAheadDistance(double vt);
 
