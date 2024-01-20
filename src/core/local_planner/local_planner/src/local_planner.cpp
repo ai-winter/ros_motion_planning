@@ -45,8 +45,8 @@ LocalPlanner::~LocalPlanner()
 
 /**
  * @brief Set or reset costmap size
- * @param nx  pixel number in costmap x direction
- * @param ny  pixel number in costmap y direction
+ * @param nx pixel number in costmap x direction
+ * @param ny pixel number in costmap y direction
  */
 void LocalPlanner::setSize(int nx, int ny)
 {
@@ -57,7 +57,7 @@ void LocalPlanner::setSize(int nx, int ny)
 
 /**
  * @brief Set or reset costmap resolution
- * @param resolution  costmap resolution
+ * @param resolution costmap resolution
  */
 void LocalPlanner::setResolution(double resolution)
 {
@@ -66,8 +66,8 @@ void LocalPlanner::setResolution(double resolution)
 
 /**
  * @brief Set or reset costmap origin
- * @param origin_x  origin in costmap x direction
- * @param origin_y  origin in costmap y direction
+ * @param origin_x origin in costmap x direction
+ * @param origin_y origin in costmap y direction
  */
 void LocalPlanner::setOrigin(double origin_x, double origin_y)
 {
@@ -77,7 +77,7 @@ void LocalPlanner::setOrigin(double origin_x, double origin_y)
 
 /**
  * @brief Set or reset lethal cost
- * @param neutral_cost  neutral cost
+ * @param neutral_cost neutral cost
  */
 void LocalPlanner::setLethalCost(unsigned char lethal_cost)
 {
@@ -86,7 +86,7 @@ void LocalPlanner::setLethalCost(unsigned char lethal_cost)
 
 /**
  * @brief Set or reset neutral cost
- * @param neutral_cost  neutral cost
+ * @param neutral_cost neutral cost
  */
 void LocalPlanner::setNeutralCost(unsigned char neutral_cost)
 {
@@ -95,7 +95,7 @@ void LocalPlanner::setNeutralCost(unsigned char neutral_cost)
 
 /**
  * @brief Set or reset obstacle factor
- * @param factor  obstacle factor
+ * @param factor obstacle factor
  */
 void LocalPlanner::setFactor(double factor)
 {
@@ -127,8 +127,8 @@ double LocalPlanner::regularizeAngle(double angle)
 
 /**
  * @brief Get the Euler Angles from PoseStamped
- * @param ps  PoseStamped to calculate
- * @return  roll, pitch and yaw in XYZ order
+ * @param ps PoseStamped to calculate
+ * @return roll, pitch and yaw in XYZ order
  */
 Eigen::Vector3d LocalPlanner::getEulerAngles(geometry_msgs::PoseStamped& ps)
 {
@@ -143,8 +143,8 @@ Eigen::Vector3d LocalPlanner::getEulerAngles(geometry_msgs::PoseStamped& ps)
 
 /**
  * @brief Whether to reach the target pose through rotation operation
- * @param cur   current pose of robot
- * @param goal  goal pose of robot
+ * @param cur  current pose of robot
+ * @param goal goal pose of robot
  * @return true if robot should perform rotation
  */
 bool LocalPlanner::shouldRotateToGoal(const geometry_msgs::PoseStamped& cur, const geometry_msgs::PoseStamped& goal)
@@ -157,7 +157,7 @@ bool LocalPlanner::shouldRotateToGoal(const geometry_msgs::PoseStamped& cur, con
 
 /**
  * @brief Whether to correct the tracking path with rotation operation
- * @param angle_to_path  the angle deviation
+ * @param angle_to_path the angle deviation
  * @return true if robot should perform rotation
  */
 bool LocalPlanner::shouldRotateToPath(double angle_to_path, double tolerance)
@@ -192,7 +192,7 @@ double LocalPlanner::linearRegularization(nav_msgs::Odometry& base_odometry, dou
  * @brief angular velocity regularization
  * @param base_odometry odometry of the robot, to get velocity
  * @param w_d           desired angular velocity
- * @return  w           regulated angular velocity
+ * @return w            regulated angular velocity
  */
 double LocalPlanner::angularRegularization(nav_msgs::Odometry& base_odometry, double w_d)
 {
@@ -229,10 +229,10 @@ void LocalPlanner::transformPose(tf2_ros::Buffer* tf, const std::string out_fram
 
 /**
  * @brief Tranform from world map(x, y) to costmap(x, y)
- * @param mx  costmap x
- * @param my  costmap y
- * @param wx  world map x
- * @param wy  world map y
+ * @param mx costmap x
+ * @param my costmap y
+ * @param wx world map x
+ * @param wy world map y
  * @return true if successfull, else false
  */
 bool LocalPlanner::worldToMap(double wx, double wy, int& mx, int& my)
