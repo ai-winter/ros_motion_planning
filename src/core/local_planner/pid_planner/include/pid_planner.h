@@ -90,6 +90,7 @@ private:
   double k_v_p_, k_v_i_, k_v_d_;
   double k_w_p_, k_w_i_, k_w_d_;
   double k_theta_;
+  double k_, l_;
 
   double e_v_, e_w_;
   double i_v_, i_w_;

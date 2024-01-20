@@ -27,6 +27,9 @@ PIDPlanner:
 
   k_theta: 0.7
 
+  k: 1.0
+  l: 0.2
+
   # lookahead
   lookahead_time: 0.5
   min_lookahead_dist: 0.3

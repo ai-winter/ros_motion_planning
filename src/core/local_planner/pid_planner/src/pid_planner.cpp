@@ -89,6 +89,9 @@ void PIDPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("k_w_i", k_w_i_, 0.01);
     nh.param("k_w_d", k_w_d_, 0.10);
     nh.param("k_theta", k_theta_, 0.5);
+    nh.param("k", k_, 1.0);
+    nh.param("l", l_, 0.2);
+
     e_v_ = i_v_ = 0.0;
     e_w_ = i_w_ = 0.0;
 
@@ -233,8 +236,9 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     Eigen::Vector3d s_d(target_ps_map.pose.position.x, target_ps_map.pose.position.y, theta_d);  // desired state
     Eigen::Vector2d u_r(vt, wt);                                                                 // refered input
     Eigen::Vector2d u = _pidControl(s, s_d, u_r);
-    cmd_vel.linear.x = u[0];
-    cmd_vel.angular.z = u[1];
+
+    cmd_vel.linear.x = linearRegularization(base_odom, u[0]);
+    cmd_vel.angular.z = angularRegularization(base_odom, u[1]);
   }
 
   // publish next target_ps_map pose
@@ -257,57 +261,76 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
  * @param u_r refered input
  * @return u  control vector
  */
+// Eigen::Vector2d PIDPlanner::_pidControl(Eigen::Vector3d s, Eigen::Vector3d s_d, Eigen::Vector2d u_r)
+// {
+//   Eigen::Vector2d u;
+//   Eigen::Vector3d e = s_d - s;
+
+//   double e_x = e[0];
+//   double e_y = e[1];
+//   double e_theta = e[2];
+
+//   double v_d = std::hypot(e_x, e_y) / d_t_;
+//   double w_d = e_theta / d_t_;
+
+//   if (std::fabs(v_d) > max_v_)
+//     v_d = std::copysign(max_v_, v_d);
+//   if (std::fabs(w_d) > max_w_)
+//     w_d = std::copysign(max_w_, w_d);
+
+//   double e_v = v_d - u_r[0];
+//   double e_w = w_d - u_r[1];
+
+//   i_v_ += e_v * d_t_;
+//   i_w_ += e_w * d_t_;
+
+//   double d_v = (e_v - e_v_) / d_t_;
+//   double d_w = (e_w - e_w_) / d_t_;
+
+//   e_v_ = e_v;
+//   e_w_ = e_w;
+
+//   double v_inc = k_v_p_ * e_v + k_v_i_ * i_v_ + k_v_d_ * d_v;
+//   double w_inc = k_w_p_ * e_w + k_w_i_ * i_w_ + k_w_d_ * d_w;
+
+//   if (std::fabs(v_inc) > max_v_inc_)
+//     v_inc = std::copysign(max_v_inc_, v_inc);
+//   if (std::fabs(w_inc) > max_w_inc_)
+//     w_inc = std::copysign(max_w_inc_, w_inc);
+
+//   double v_cmd = u_r[0] + v_inc;
+//   if (std::fabs(v_cmd) > max_v_)
+//     v_cmd = std::copysign(max_v_, v_cmd);
+//   else if (std::fabs(v_cmd) < min_v_)
+//     v_cmd = std::copysign(min_v_, v_cmd);
+
+//   double w_cmd = u_r[1] + w_inc;
+//   if (std::fabs(w_cmd) > max_w_)
+//     w_cmd = std::copysign(max_w_, w_cmd);
+//   else if (std::fabs(w_cmd) < min_w_)
+//     w_cmd = std::copysign(min_w_, w_cmd);
+
+//   u[0] = v_cmd;
+//   u[1] = w_cmd;
+
+//   return u;
+// }
+
+/**
+ * @brief Execute PID control process (with model)
+ * @param s   current state
+ * @param s_d desired state
+ * @param u_r refered input
+ * @return u  control vector
+ */
 Eigen::Vector2d PIDPlanner::_pidControl(Eigen::Vector3d s, Eigen::Vector3d s_d, Eigen::Vector2d u_r)
 {
   Eigen::Vector2d u;
-  Eigen::Vector3d e = s_d - s;
-
-  double e_x = e[0];
-  double e_y = e[1];
-  double e_theta = e[2];
-
-  double v_d = std::hypot(e_x, e_y) / d_t_;
-  double w_d = e_theta / d_t_;
-
-  if (std::fabs(v_d) > max_v_)
-    v_d = std::copysign(max_v_, v_d);
-  if (std::fabs(w_d) > max_w_)
-    w_d = std::copysign(max_w_, w_d);
-
-  double e_v = v_d - u_r[0];
-  double e_w = w_d - u_r[1];
-
-  i_v_ += e_v * d_t_;
-  i_w_ += e_w * d_t_;
-
-  double d_v = (e_v - e_v_) / d_t_;
-  double d_w = (e_w - e_w_) / d_t_;
-
-  e_v_ = e_v;
-  e_w_ = e_w;
-
-  double v_inc = k_v_p_ * e_v + k_v_i_ * i_v_ + k_v_d_ * d_v;
-  double w_inc = k_w_p_ * e_w + k_w_i_ * i_w_ + k_w_d_ * d_w;
-
-  if (std::fabs(v_inc) > max_v_inc_)
-    v_inc = std::copysign(max_v_inc_, v_inc);
-  if (std::fabs(w_inc) > max_w_inc_)
-    w_inc = std::copysign(max_w_inc_, w_inc);
-
-  double v_cmd = u_r[0] + v_inc;
-  if (std::fabs(v_cmd) > max_v_)
-    v_cmd = std::copysign(max_v_, v_cmd);
-  else if (std::fabs(v_cmd) < min_v_)
-    v_cmd = std::copysign(min_v_, v_cmd);
-
-  double w_cmd = u_r[1] + w_inc;
-  if (std::fabs(w_cmd) > max_w_)
-    w_cmd = std::copysign(max_w_, w_cmd);
-  else if (std::fabs(w_cmd) < min_w_)
-    w_cmd = std::copysign(min_w_, w_cmd);
-
-  u[0] = v_cmd;
-  u[1] = w_cmd;
+  Eigen::Vector3d e(s_d - s);
+  Eigen::Vector2d sx_dot(k_ * e[0], k_ * e[1]);
+  Eigen::Matrix2d R_inv;
+  R_inv << cos(s[2]), sin(s[2]), -sin(s[2]) / l_, cos(s[2]) / l_;
+  u = R_inv * sx_dot;
 
   return u;
 }
