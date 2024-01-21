@@ -1,0 +1,8 @@
+<library path="lib/liborca_planner">
+    <class name="orca_planner/OrcaPlanner" type="orca_planner::OrcaPlanner"
+        base_class_type="nav_core::BaseLocalPlanner">
+        <description>
+            A implementation of a ORCA planner.
+        </description>
+    </class>
+</library>

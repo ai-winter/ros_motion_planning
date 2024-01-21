@@ -118,6 +118,10 @@
 
         <param name="base_local_planner" value="static_planner/StaticPlanner" if="$(eval arg('local_planner')=='static')" />
 
+        <param name="base_local_planner" value="orca_planner/OrcaPlanner" if="$(eval arg('local_planner')=='orca')" />
+        <rosparam file="$(find sim_env)/config/planner/orca_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='orca')" />
+        
+
         <!-- loading navigation parameters -->
         <rosparam file="$(eval find('sim_env') + '/config/' + arg('robot') + '/costmap_common_params_' + arg('robot') + '.yaml')" command="load"
             ns="global_costmap" />
