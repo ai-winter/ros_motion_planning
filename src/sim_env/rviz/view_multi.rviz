@@ -5,8 +5,9 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /RobotModel1/Status1
       Splitter Ratio: 0.5
-    Tree Height: 843
+    Tree Height: 787
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -15,17 +16,18 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679016
+    Splitter Ratio: 0.5886790156364441
   - Class: rviz/Views
     Expanded:
       - /Current View1
     Name: Views
     Splitter Ratio: 0.5
   - Class: rviz/Time
-    Experimental: false
     Name: Time
     SyncMode: 0
     SyncSource: LaserScan
+Preferences:
+  PromptSaveOnExit: true
 Toolbars:
   toolButtonStyle: 2
 Visualization Manager:
@@ -37,7 +39,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.029999999329447746
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -51,9 +53,12 @@ Visualization Manager:
       Value: true
     - Class: rviz/TF
       Enabled: false
+      Filter (blacklist): ""
+      Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: false
+      Marker Alpha: 1
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -63,6 +68,16 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: false
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /map
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
@@ -82,44 +97,52 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        base_scan:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        camera_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        camera_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         camera_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        camera_link_optical:
+        camera_rgb_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        camera_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        caster_back_left_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        caster_back_right_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         imu_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        laser:
+        wheel_left_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        laser_mount_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        left_wheel:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pitch_platform:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        right_wheel:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        yaw_platform:
+        wheel_right_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -127,6 +150,81 @@ Visualization Manager:
       Name: RobotModel
       Robot Description: robot1/robot_description
       TF Prefix: robot1
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_scan:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        camera_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        camera_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        camera_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        camera_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        caster_back_left_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        caster_back_right_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wheel_left_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_right_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Name: RobotModel
+      Robot Description: robot2/robot_description
+      TF Prefix: robot2
       Update Interval: 0
       Value: true
       Visual Enabled: true
@@ -145,15 +243,13 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 0
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: LaserScan
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.0299999993
+      Size (m): 0.029999999329447746
       Style: Squares
       Topic: /robot1/scan
       Unreliable: false
@@ -168,70 +264,50 @@ Visualization Manager:
         Value: true
       Axis: Z
       Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: RGB8
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.0199999996
-      Style: Flat Squares
-      Topic: /robot1/camera/depth/points
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Class: rviz/RobotModel
-      Collision Enabled: false
-      Enabled: false
-      Links:
-        All Links Enabled: true
-        Expand Joint Details: false
-        Expand Link Details: false
-        Expand Tree: false
-        Link Tree Style: Links in Alphabetic Order
-      Name: RobotModel
-      Robot Description: robot2/robot_description
-      TF Prefix: robot2
-      Update Interval: 0
-      Value: false
-      Visual Enabled: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
       Class: rviz/LaserScan
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 0
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: LaserScan
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.0299999993
+      Size (m): 0.029999999329447746
       Style: Squares
       Topic: /robot2/scan
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.019999999552965164
+      Style: Flat Squares
+      Topic: /robot2/camera/depth/points
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -251,17 +327,15 @@ Visualization Manager:
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: PointCloud2
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.0199999996
+      Size (m): 0.019999999552965164
       Style: Flat Squares
-      Topic: /robot2/camera/depth/points
+      Topic: /robot1/camera/depth/points
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -270,7 +344,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: robot1/odom
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -279,7 +353,10 @@ Visualization Manager:
       Hide Inactive Objects: true
     - Class: rviz/Select
     - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
       Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
     - Class: rviz/SetGoal
       Topic: /move_base_simple/goal
     - Class: rviz/Measure
@@ -290,33 +367,33 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 14.9153643
+      Distance: 26.8455753326416
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.0599999987
+        Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Field of View: 0.7853981852531433
       Focal Point:
-        X: 1.28042281
-        Y: -2.00316596
-        Z: 1.72873592
+        X: -0.004037755075842142
+        Y: 0.059102050960063934
+        Z: 0.951465368270874
       Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.00999999978
-      Pitch: 0.539797246
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 1.57499635
+      Yaw: 1.5399965047836304
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1056
+  Height: 1016
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a000003dafc0200000005fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000028000003da000000d700ffffff00000001000001d5000003dafc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730100000028000003da000000ad00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a00000030000fffffffb0000000800540069006d00650100000000000004500000000000000000000003f4000003da00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a0000039efc0200000005fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000039e000000c900ffffff00000001000001d50000039efc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d0000039e000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a00000041800fffffffb0000000800540069006d00650100000000000004500000000000000000000003ed0000039e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -325,6 +402,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1855
-  X: 65
-  Y: 24
+  Width: 1848
+  X: 72
+  Y: 27
