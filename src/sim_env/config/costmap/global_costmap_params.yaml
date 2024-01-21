@@ -12,9 +12,9 @@ global_costmap:
 
   ### Sensor management parameters ###
   obstacle_layer:
-    observation_sources: laserscan
-    laserscan: { 
-      topic:                    /scan, 
+    observation_sources: scan
+    scan: { 
+      topic:                    scan, 
       sensor_frame:             base_footprint, 
       observation_persistence:  0.0,
       expected_update_rate:     0.8,
