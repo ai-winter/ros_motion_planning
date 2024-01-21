@@ -97,6 +97,9 @@
                     or arg('global_planner')=='pso'
                     or arg('global_planner')=='ga')" />
 
+        <!-- lazy -->
+        <param name="base_global_planner" value="lazy_planner/LazyPlanner" if="$(eval arg('global_planner')=='lazy')" />
+
         <!-- local planner plugin -->
         <param name="base_local_planner" value="dwa_planner/DWAPlanner" if="$(eval arg('local_planner')=='dwa')" />
         <rosparam file="$(find sim_env)/config/planner/dwa_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='dwa')" />

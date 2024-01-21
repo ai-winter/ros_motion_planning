@@ -21,13 +21,13 @@ TBD
 
 - Odometer
   - [x] Use gazebo's ground-truth. The `/odom` topic published by `libgazebo_ros_diff_drive`. Transform from `map` to `robotx/odom`. By `tf_map2odom.py`
-  - [ ] Use `amcl` in a locatable environment, which will introduce static obstacles.
+  - [ ] Use `amcl` in a locatable environment, which will introduce static obstacles. [P1]
     - Remember to disable the `tf_map2odom`, because `amcl` will publish one.
 
 - Global planner
-  - [ ] Output a one-point path as the result.
+  - [x] Output a one-point path as the result.
 
-- Local planner
+- Local planner [P0]
   - [ ] Subscribe to others' odom.
   - [ ] Calculate new velocities and publish them.
 
