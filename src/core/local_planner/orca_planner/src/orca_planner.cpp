@@ -33,12 +33,13 @@ void OrcaPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::
     nh.param("agent_number", agent_number_, -1);
     nh.param("agent_id", agent_id_, -1);
 
+    other_odoms_.resize(agent_number_);
     for (int i = 0; i < agent_number_; ++i)
     {
       ros::Subscriber odom_sub = nh.subscribe<nav_msgs::Odometry>(
-          "/robot" + std::to_string(i) + "/odom", 1, boost::bind(&OrcaPlanner::odometryCallback, this, _1, i));
+          "/robot" + std::to_string(i + 1) + "/odom", 1, boost::bind(&OrcaPlanner::odometryCallback, this, _1, i + 1));
       odom_subs_.push_back(odom_sub);
-      ROS_WARN("agent %d, subscribe to agent %d.", agent_id_, i);
+      ROS_WARN("agent %d, subscribe to agent %d.", agent_id_, i + 1);
     }
   }
 }
@@ -48,7 +49,7 @@ void OrcaPlanner::odometryCallback(const nav_msgs::OdometryConstPtr& msg, int ag
   if (!odom_flag_)
     odom_flag_ = true;
 
-  other_odoms_[agent_id] = *msg;
+  other_odoms_[agent_id - 1] = *msg;
 }
 
 bool OrcaPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)

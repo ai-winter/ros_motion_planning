@@ -11,6 +11,8 @@
 -->
 
 <launch>
+    <arg name="agent_number" default="1" />
+    <arg name="agent_id" default="1" />
     <!-- robot's type -->
     <arg name="robot" default="turtlebot3_waffle" />
     <!-- robot's namespace -->
@@ -55,6 +57,8 @@
 
         <!-- MoveBase -->
         <include file="$(find sim_env)/launch/include/navigation/move_base.launch.xml">
+            <arg name="agent_number" value="$(arg agent_number)" />
+            <arg name="agent_id" value="$(arg agent_id)" />
             <arg name="robot_namespace" value="$(arg robot_namespace)" />
             <arg name="start_ns" value="$(arg start_ns)" />
             <arg name="robot" value="$(arg robot)" />

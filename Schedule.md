@@ -28,7 +28,8 @@ TBD
   - [x] Output a one-point path as the result.
 
 - Local planner [P0]
-  - [ ] Subscribe to others' odom.
+  - [x] Subscribe to others' odom.
+    - [x] Transfer `agent_num` and `agent_id` from `start_robots.launch.xml` to `move_base.launch.xml`.
   - [ ] Calculate new velocities and publish them.
 
 - Bugs
