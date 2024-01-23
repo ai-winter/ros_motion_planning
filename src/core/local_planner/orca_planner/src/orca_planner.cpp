@@ -24,6 +24,9 @@ void OrcaPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::
 {
   if (!initialized_)
   {
+    RVO::RVOSimulator* sim = new RVO::RVOSimulator();
+    sim->setTimeStep(0.25f);
+
     initialized_ = true;
     tf_ = tf;
     costmap_ros_ = costmap_ros;

@@ -12,6 +12,8 @@
 #include <nav_msgs/Odometry.h>
 #include <boost/bind.hpp>
 
+#include "RVO/RVO.h"
+
 using namespace std;
 
 namespace orca_planner
