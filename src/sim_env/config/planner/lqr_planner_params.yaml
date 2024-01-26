@@ -7,18 +7,18 @@ LQRPlanner:
   rotate_tolerance: 0.5
 
   # max iteration for ricatti solution
-  max_iter: 100
-  eps_iter: 1.e-1
+  max_iter: 1e6
+  eps_iter: 1e-2
 
   # linear velocity
-  max_v: 0.4
+  max_v: 1e6
   min_v: 0.0
-  max_v_inc: 0.2
+  max_v_inc: 1e6
 
   # angular velocity
-  max_w: 1.57
+  max_w: 1e6
   min_w: 0.0
-  max_w_inc: 0.5236
+  max_w_inc: 1e6
 
   # frame id
   base_frame: base_link
@@ -30,9 +30,7 @@ LQRPlanner:
   max_lookahead_dist: 0.9
 
   # weight matrix for penalizing state error while tracking [x,y,theta]
-  Q_matrix_diag: [0.03, 0.03, 0.04]
+  Q_matrix_diag: [1.0, 1.0, 1.0]
 
   # weight matrix for penalizing input error while tracking[v, w]
-  R_matrix_diag: [0.01, 0.02]
-
-
+  R_matrix_diag: [1.0, 1.0]

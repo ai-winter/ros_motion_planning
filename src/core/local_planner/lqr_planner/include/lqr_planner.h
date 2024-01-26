@@ -76,11 +76,12 @@ public:
 private:
   /**
    * @brief Execute LQR control process
-   * @param x   state error vector
-   * @param ref reference point
+   * @param s   current state
+   * @param s_d desired state
+   * @param u_r refered control
    * @return u  control vector
    */
-  Eigen::Vector2d _lqrControl(Eigen::Vector3d x, std::vector<double> ref);
+  Eigen::Vector2d _lqrControl(Eigen::Vector3d s, Eigen::Vector3d s_d, Eigen::Vector2d u_r);
 
 private:
   bool initialized_;                       // initialized flag
