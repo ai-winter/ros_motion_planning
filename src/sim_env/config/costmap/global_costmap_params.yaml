@@ -6,8 +6,6 @@ global_costmap:
   publish_frequency: 1.0
   transform_tolerance: 0.5
 
-  static_map: true
-
   inflation_radius: 1.0
 
   ### Sensor management parameters ###

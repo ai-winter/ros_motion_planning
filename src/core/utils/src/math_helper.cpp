@@ -7,9 +7,9 @@
  * @date: 2024-01-03
  * @version: 1.2
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -60,6 +60,10 @@ double angle(const std::pair<double, double>& node1, const std::pair<double, dou
   return atan2(node2.second - node1.second, node2.first - node1.first);
 }
 
+double angle(const geometry_msgs::PoseStamped& node1, const geometry_msgs::PoseStamped& node2)
+{
+  return atan2(node2.pose.position.y - node1.pose.position.y, node2.pose.position.x - node1.pose.position.x);
+}
 /**
  * @brief Perform modulus operation on 2π.
  * @param theta    the angle to modulu

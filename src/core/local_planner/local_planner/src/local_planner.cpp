@@ -337,8 +337,6 @@ void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseS
     double py = prev_pose_it->pose.position.y;
     double gx = goal_pose_it->pose.position.x;
     double gy = goal_pose_it->pose.position.y;
-    double ppx = pprev_pose_it->pose.position.x;
-    double ppy = pprev_pose_it->pose.position.y;
 
     // transform to the robot frame so that the circle centers at (0,0)
     std::pair<double, double> prev_p(px - rx, py - ry);

@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <launch>
 	<arg name="world_parameter" value="warehouse" />
+	<node pkg="dynamic_xml_config" type="obstacles_generate_ros.py" name="obstacles_generate" args="user_config.yaml" output="screen" />
 	<include file="$(find sim_env)/launch/config.launch">
 		<arg name="world" value="$(arg world_parameter)" />
 		<arg name="map" value="warehouse" />
