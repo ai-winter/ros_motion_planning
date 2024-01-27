@@ -7,25 +7,25 @@ LQRPlanner:
   rotate_tolerance: 0.5
 
   # max iteration for ricatti solution
-  max_iter: 1e6
-  eps_iter: 1e-2
+  max_iter: 100
+  eps_iter: 1e-1
 
   # linear velocity
-  max_v: 1e6
+  max_v: 0.5
   min_v: 0.0
-  max_v_inc: 1e6
+  max_v_inc: 0.5
 
   # angular velocity
-  max_w: 1e6
+  max_w: 1.57
   min_w: 0.0
-  max_w_inc: 1e6
+  max_w_inc: 1.57
 
   # frame id
   base_frame: base_link
   map_frame: map
 
   # lookahead
-  lookahead_time: 1.5
+  lookahead_time: 1.0
   min_lookahead_dist: 0.3
   max_lookahead_dist: 0.9
 

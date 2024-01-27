@@ -201,8 +201,8 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
   // get the particular point on the path at the lookahead distance
   geometry_msgs::PointStamped lookahead_pt;
-  double theta_dir, theta_trj;
-  getLookAheadPoint(L, robot_pose_map, prune_plan, lookahead_pt, theta_trj);
+  double theta_dir, theta_trj, kappa;
+  getLookAheadPoint(L, robot_pose_map, prune_plan, lookahead_pt, theta_trj, kappa);
   theta_dir = atan2(lookahead_pt.point.y - robot_pose_map.pose.position.y,
                     lookahead_pt.point.x - robot_pose_map.pose.position.x);
 
@@ -232,7 +232,7 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   {
     Eigen::Vector3d s(robot_pose_map.pose.position.x, robot_pose_map.pose.position.y, theta);  // current state
     Eigen::Vector3d s_d(lookahead_pt.point.x, lookahead_pt.point.y, theta_trj);                // desired state
-    Eigen::Vector2d u_r(vt, wt);  // refered input, TODO: calculate trajectory angle velocity
+    Eigen::Vector2d u_r(vt, vt * kappa);                                                     // refered input
     Eigen::Vector2d u = _lqrControl(s, s_d, u_r);
 
     cmd_vel.linear.x = linearRegularization(base_odom, u[0]);
