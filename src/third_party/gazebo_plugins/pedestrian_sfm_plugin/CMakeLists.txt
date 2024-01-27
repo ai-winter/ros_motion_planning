@@ -23,7 +23,7 @@ generate_messages(
 
 include_directories(include)
 include_directories(SYSTEM
-  /usr/local/include  #to find lightsfm
+  # /usr/local/include  #to find lightsfm
   ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${GAZEBO_INCLUDE_DIRS}
