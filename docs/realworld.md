@@ -4,8 +4,6 @@
 
 ### Example
 
-We use another [gazebo simulation](https://github.com/ZhanyuGuo/ackermann_ws) as an example, like we have a robot which has the capacity of localization, mapping and navigation (*using move_base*).
-
 1. Download and compile this repository.
     ```bash
     git clone https://github.com/ai-winter/ros_motion_planning.git
@@ -14,8 +12,9 @@ We use another [gazebo simulation](https://github.com/ZhanyuGuo/ackermann_ws) as
     catkin_make
     ```
 
-2. Download and compile the 'real robot' software.
+2. Download and compile the 'real robot' software. The software is usually obtained from your robot supplier. Here we use another [gazebo simulation](https://github.com/ZhanyuGuo/ackermann_ws) as an example, like we have a robot which has the capacity of localization, mapping and navigation (*using move_base*).
     ```bash
+    # ---- EXAMPLE SOFTWARE ----
     git clone https://github.com/ZhanyuGuo/ackermann_ws.git
 
     cd ackermann_ws/
@@ -30,44 +29,38 @@ We use another [gazebo simulation](https://github.com/ZhanyuGuo/ackermann_ws) as
     
     **NOTE2: Remove the old `build/` and `devel/` of the current workspace before doing this, otherwise it will not work.**
 
-3. Change the **base_global_planner** and **base_local_planner** in real robot's `move_base` as you need.
+3. Before navigation, you need to do a mapping and save the map. Your real robot software should have provided a mapping program.
+
+4. Create a `navigation.launch` file in your workspace. Edit it as follows. You should refill the annotated lines according to your real robot software.
     ```xml
     <?xml version="1.0"?>
     <launch>
-        <!-- something else ... -->
-        <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-            <!-- something else ... -->
+        <!--include file="your_control_drive" /-->
+        <!--include file="your_lidar_drive" /-->
+        <!--node name="map_server" pkg="map_server" type="map_server" args="your_map" /-->
 
-            <!-- Params -->
-            <!-- for graph_planner -->
-            <rosparam file="$(find sim_env)/config/planner/graph_planner_params.yaml" command="load" />
-            <!-- for sample_planner -->
-            <rosparam file="$(find sim_env)/config/planner/sample_planner_params.yaml" command="load" />
-            <!-- for dwa_planner -->
-            <rosparam file="$(find sim_env)/config/planner/dwa_planner_params.yaml" command="load" />
-            <!-- for pid_planner -->
-            <rosparam file="$(find sim_env)/config/planner/pid_planner_params.yaml" command="load" />
+        <!--Use tf package to perform coordinate system transformation, if neccessary-->
+        <!--node pkg="tf" type="" name="" args="" /-->
 
-            <!-- Default Global Planner -->
-            <!-- <param name="base_global_planner" value="global_planner/GlobalPlanner" /> -->
-            <!-- GraphPlanner -->
-            <param name="base_global_planner" value="graph_planner/GraphPlanner" />
-            <!-- options: a_star, jps, gbfs, dijkstra, d_star, lpa_star, d_star_lite -->
-            <param name="GraphPlanner/planner_name" value="a_star" />
-            <!-- SamplePlanner -->
-            <!-- <param name="base_global_planner" value="sample_planner/SamplePlanner" /> -->
-            <!-- options: rrt, rrt_star, informed_rrt, rrt_connect -->
-            <!-- <param name="SamplePlanner/planner_name" value="rrt_star" /> -->
-
-            <!-- Default Local Planner -->
-            <!-- <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" /> -->
-            <param name="base_local_planner" value="pid_planner/PIDPlanner" />
-            <!-- <param name="base_local_planner" value="dwa_planner/DWAPlanner" /> -->
-
-            <!-- something else ... -->
+        <!-- AMCL -->
+        <node pkg="amcl" type="amcl" name="amcl">
+            <rosparam file="$(find sim_env)/config/amcl_params.yaml" command="load" />
+            <param name="initial_pose_x" value="0.0" />
+            <param name="initial_pose_y" value="0.0" />
+            <param name="initial_pose_z" value="0.0" />
+            <remap from="static_map" to="/static_map" />
         </node>
-        <!-- something else ... -->
+    
+        <!-- MoveBase-->
+        <include file="$(find sim_env)/launch/include/navigation/move_base.launch.xml">
+            <arg name="robot" value="turtlebot3_waffle" />
+            <arg name="global_planner" value="a_star" />
+            <arg name="local_planner" value="dwa" />
+        </include>
+    
+        <!-- Rviz-->
+        <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim_env)/rviz/sim_env.rviz" />
     </launch>
     ```
 
-4. Run! But maybe there are still some details that you have to deal with...
+5. Now you can run `navigation.launch` in your workspace to do motion planning. But maybe there are still some details that you have to deal with...
