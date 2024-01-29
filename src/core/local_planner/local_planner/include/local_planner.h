@@ -28,6 +28,7 @@
 
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PointStamped.h>
 
 #include <Eigen/Dense>
 

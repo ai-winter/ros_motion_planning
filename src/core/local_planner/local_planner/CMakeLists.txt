@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   costmap_2d
   geometry_msgs
   utils
+  base_local_planner
 )
 
 catkin_package(

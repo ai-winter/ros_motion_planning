@@ -54,6 +54,12 @@
   <depend>nav_core</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
+  <depend>local_planner</depend>
+  <depend>angles</depend>
+  <depend>nav_msgs</depend>
+  <depend>navfn</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
 
   <export>
     <nav_core plugin="${prefix}/orca_planner_plugin.xml" />

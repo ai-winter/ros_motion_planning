@@ -11,15 +11,17 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <boost/bind.hpp>
+#include <tf2/utils.h>
 
 #include "RVO/RVO.h"
+#include "local_planner.h"
 
 using namespace std;
 
 namespace orca_planner
 {
 
-class OrcaPlanner : public nav_core::BaseLocalPlanner
+class OrcaPlanner : public nav_core::BaseLocalPlanner, local_planner::LocalPlanner
 {
 public:
   OrcaPlanner();
@@ -41,11 +43,17 @@ private:
   bool initialized_, odom_flag_;
 
   int agent_number_;
-  int agent_id_;
+  int agent_id_;  // NOTE: begin from 1
+  RVO::RVOSimulator* sim_;
+  double d_t_;         // control time step
+  bool goal_reached_;  // goal reached flag
+  RVO::Vector2 goal_;
   std::vector<ros::Subscriber> odom_subs_;
   std::vector<nav_msgs::Odometry> other_odoms_;
 
   void odometryCallback(const nav_msgs::OdometryConstPtr& msg, int agent_id);
+  void initializeStates();
+  void updateStates();
 };
 };  // namespace orca_planner
 

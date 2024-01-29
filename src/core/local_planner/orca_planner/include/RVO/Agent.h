@@ -125,6 +125,12 @@ class Agent {
 
   friend class KdTree;
   friend class RVOSimulator;
+
+public:
+  Vector2 getNewVelocity()
+  {
+    return newVelocity_;
+  }
 };
 } /* namespace RVO */
 

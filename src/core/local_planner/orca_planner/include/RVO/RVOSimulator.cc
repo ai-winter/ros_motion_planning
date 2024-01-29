@@ -214,6 +214,14 @@ void RVOSimulator::doStep() {
   globalTime_ += timeStep_;
 }
 
+RVO::Vector2 RVOSimulator::getAgentNewSpeed(std::size_t agentNo)
+{
+  kdTree_->buildAgentTree();
+  agents_[agentNo]->computeNeighbors(kdTree_);
+  agents_[agentNo]->computeNewVelocity(timeStep_);
+  return agents_[agentNo]->getNewVelocity();
+}
+
 std::size_t RVOSimulator::getAgentAgentNeighbor(std::size_t agentNo,
                                                 std::size_t neighborNo) const {
   return agents_[agentNo]->agentNeighbors_[neighborNo].second->id_;

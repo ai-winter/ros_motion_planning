@@ -262,6 +262,7 @@ class RVOSimulator {
    *        two-dimensional position and two-dimensional velocity of each agent.
    */
   void doStep();
+  RVO::Vector2 getAgentNewSpeed(std::size_t agentNo);
 
   /**
    * @brief     Returns the specified agent neighbor of the specified agent.
