@@ -5,15 +5,15 @@
 	<arg name="robot1_type" value="turtlebot3_waffle" />
 	<arg name="robot1_global_planner" value="lazy" />
 	<arg name="robot1_local_planner" value="orca" />
-	<arg name="robot1_x_pos" value="0.0" />
-	<arg name="robot1_y_pos" value="0.0" />
+	<arg name="robot1_x_pos" value="1.0" />
+	<arg name="robot1_y_pos" value="1.0" />
 	<arg name="robot1_z_pos" value="0.0" />
-	<arg name="robot1_yaw" value="0.0" />
+	<arg name="robot1_yaw" value="3.14" />
 	<arg name="robot2_type" value="turtlebot3_waffle" />
 	<arg name="robot2_global_planner" value="lazy" />
 	<arg name="robot2_local_planner" value="orca" />
-	<arg name="robot2_x_pos" value="2.0" />
-	<arg name="robot2_y_pos" value="0.0" />
+	<arg name="robot2_x_pos" value="-1.0" />
+	<arg name="robot2_y_pos" value="-1.0" />
 	<arg name="robot2_z_pos" value="0.0" />
 	<arg name="robot2_yaw" value="0.0" />
 	<include file="$(find sim_env)/launch/app/environment_single.launch.xml">

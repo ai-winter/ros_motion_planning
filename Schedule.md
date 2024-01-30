@@ -26,11 +26,14 @@ TBD
 
 - Global planner
   - [x] Output a one-point path as the result.
+  - [x] Goal publisher script.
 
 - Local planner [P0]
   - [x] Subscribe to others' odom.
     - [x] Transfer `agent_num` and `agent_id` from `start_robots.launch.xml` to `move_base.launch.xml`.
-  - [ ] Calculate new velocities and publish them.
+  - [x] Calculate new velocities and publish them.
+  - [x] Fine-tune the parameters.
+  - [ ] Goal reached check.
 
 - Bugs
   - [x] Wrong scan topic name in `move_base`.
