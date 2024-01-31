@@ -28,12 +28,35 @@ void OrcaPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::
     initialized_ = true;
     tf_ = tf;
     costmap_ros_ = costmap_ros;
-    max_v_ = 0.5, min_v_ = 0.0, max_v_inc_ = 0.5;
-    max_w_ = 1.57, min_w_ = 0.0, max_w_inc_ = 1.57;
+
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
 
+    // base
+    nh.param("goal_dist_tolerance", goal_dist_tol_, 0.2);
+    nh.param("rotate_tolerance", rotate_tol_, 0.5);
+    nh.param("base_frame", base_frame_, base_frame_);
+    nh.param("map_frame", map_frame_, map_frame_);
+
+    // multi-robot info
     nh.param("agent_number", agent_number_, -1);
     nh.param("agent_id", agent_id_, -1);
+
+    // linear velocity
+    nh.param("max_v", max_v_, 0.5);
+    nh.param("min_v", min_v_, 0.0);
+    nh.param("max_v_inc", max_v_inc_, 0.5);
+
+    // angular velocity
+    nh.param("max_w", max_w_, 1.57);
+    nh.param("min_w", min_w_, 0.0);
+    nh.param("max_w_inc", max_w_inc_, 1.57);
+
+    // orca parameters
+    nh.param("neighbor_dist", neighbor_dist_, 3.0);
+    nh.param("time_horizon", time_horizon_, 5.0);
+    nh.param("time_horizon_obst", time_horizon_obst_, 3.0);
+    nh.param("radius", radius_, 0.2);
+    nh.param("max_neighbors", max_neighbors_, 10);
 
     other_odoms_.resize(agent_number_);
     for (int i = 0; i < agent_number_; ++i)
@@ -44,9 +67,8 @@ void OrcaPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::
       ROS_INFO("agent %d, subscribe to agent %d.", agent_id_, i + 1);
     }
 
-    int spin_freq = 10;
     int spin_cnt = 5 * agent_number_;
-    ros::Rate rate(spin_freq);
+    ros::Rate rate(10);
     ROS_WARN("[ORCA] Waiting for odoms...");
     while (spin_cnt-- > 0)
     {
@@ -95,22 +117,30 @@ bool OrcaPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     return false;
   }
 
-  updateState();
-  RVO::Vector2 new_speed = sim_->getAgentNewSpeed(agent_id_ - 1);
-
-  // transform from linear.x and linear.y to linear.x and angular.z
   nav_msgs::Odometry agent_odom = other_odoms_[agent_id_ - 1];
-  double theta = tf2::getYaw(agent_odom.pose.pose.orientation);
+  RVO::Vector2 curr_pose(agent_odom.pose.pose.position.x, agent_odom.pose.pose.position.y);
+  if (RVO::abs(goal_ - curr_pose) < goal_dist_tol_)
+  {
+    cmd_vel.linear.x = 0.0;
+    cmd_vel.angular.z = 0.0;
+    goal_reached_ = true;
+  }
+  else
+  {
+    updateState();
+    RVO::Vector2 new_speed = sim_->getAgentNewSpeed(agent_id_ - 1);
 
-  double v_d = RVO::abs(new_speed);
-  double theta_d = std::atan2(new_speed.y(), new_speed.x());
-  double e_theta = regularizeAngle(theta_d - theta);
-  double w_d = e_theta / d_t_;
-  // ROS_WARN("new_speed: (%.2f, %.2f), theta_d: %.2f, theta: %.2f, e_theta: %.2f", new_speed.x(), new_speed.y(),
-  // theta_d, theta, e_theta);
+    // transform from linear.x and linear.y to linear.x and angular.z
+    double theta = tf2::getYaw(agent_odom.pose.pose.orientation);
 
-  cmd_vel.linear.x = linearRegularization(agent_odom, v_d);
-  cmd_vel.angular.z = angularRegularization(agent_odom, w_d);
+    double v_d = RVO::abs(new_speed);
+    double theta_d = std::atan2(new_speed.y(), new_speed.x());
+    double e_theta = regularizeAngle(theta_d - theta);
+    double w_d = e_theta / d_t_;
+
+    cmd_vel.linear.x = linearRegularization(agent_odom, v_d);
+    cmd_vel.angular.z = angularRegularization(agent_odom, w_d);
+  }
 
   return true;
 }
@@ -140,9 +170,7 @@ void OrcaPlanner::initState()
   }
 
   sim_->setTimeStep(d_t_);
-
-  // neighborDist, maxNeighbors, timeHorizon, timeHorizonObst, radius, maxSpeed
-  sim_->setAgentDefaults(3.0f, 10, 5.0f, 3.0f, 0.2f, max_v_);  // TODO
+  sim_->setAgentDefaults(neighbor_dist_, max_neighbors_, time_horizon_, time_horizon_obst_, radius_, max_v_);
 
   for (int i = 0; i < agent_number_; ++i)
   {
@@ -167,7 +195,6 @@ void OrcaPlanner::updateState()
     sim_->setAgentVelocity(i, RVO::Vector2(other_odoms_[i].twist.twist.linear.x, other_odoms_[i].twist.twist.linear.y));
   }
 
-  // TODO: 1m/s towards goal, set the custom prefered vel
   sim_->setAgentPrefVelocity(agent_id_ - 1, RVO::normalize(goal_ - sim_->getAgentPosition(agent_id_ - 1)) * max_v_);
 }
 

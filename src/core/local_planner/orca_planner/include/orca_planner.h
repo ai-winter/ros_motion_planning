@@ -41,8 +41,10 @@ private:
   tf2_ros::Buffer* tf_;
   bool initialized_, odom_flag_, goal_reached_;
 
-  int agent_number_, agent_id_;  // id begin from 1
-  double d_t_;                   // control time step
+  int agent_number_, agent_id_;                                       // id begin from 1
+  double d_t_;                                                        // control time step
+  double neighbor_dist_, time_horizon_, time_horizon_obst_, radius_;  // orca parameters
+  int max_neighbors_;
 
   RVO::RVOSimulator* sim_;
   RVO::Vector2 goal_;

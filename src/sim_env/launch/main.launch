@@ -4,7 +4,7 @@
 	<include file="$(find sim_env)/launch/config.launch">
 		<arg name="world" value="$(arg world_parameter)" />
 		<arg name="map" value="warehouse" />
-		<arg name="robot_number" value="2" />
+		<arg name="robot_number" value="4" />
 		<arg name="rviz_file" value="view_multi.rviz" />
 	</include>
 </launch>

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <launch>
-	<arg name="agent_number" default="2" />
-	<arg name="agent_id" default="2" />
+	<arg name="agent_number" default="4" />
+	<arg name="agent_id" default="4" />
 	<arg name="robot1_type" value="turtlebot3_waffle" />
 	<arg name="robot1_global_planner" value="lazy" />
 	<arg name="robot1_local_planner" value="orca" />
@@ -13,9 +13,23 @@
 	<arg name="robot2_global_planner" value="lazy" />
 	<arg name="robot2_local_planner" value="orca" />
 	<arg name="robot2_x_pos" value="-1.0" />
-	<arg name="robot2_y_pos" value="-1.0" />
+	<arg name="robot2_y_pos" value="1.0" />
 	<arg name="robot2_z_pos" value="0.0" />
-	<arg name="robot2_yaw" value="0.0" />
+	<arg name="robot2_yaw" value="-1.57" />
+	<arg name="robot3_type" value="turtlebot3_waffle" />
+	<arg name="robot3_global_planner" value="lazy" />
+	<arg name="robot3_local_planner" value="orca" />
+	<arg name="robot3_x_pos" value="-1.0" />
+	<arg name="robot3_y_pos" value="-1.0" />
+	<arg name="robot3_z_pos" value="0.0" />
+	<arg name="robot3_yaw" value="0.0" />
+	<arg name="robot4_type" value="turtlebot3_waffle" />
+	<arg name="robot4_global_planner" value="lazy" />
+	<arg name="robot4_local_planner" value="orca" />
+	<arg name="robot4_x_pos" value="1.0" />
+	<arg name="robot4_y_pos" value="-1.0" />
+	<arg name="robot4_z_pos" value="0.0" />
+	<arg name="robot4_yaw" value="1.57" />
 	<include file="$(find sim_env)/launch/app/environment_single.launch.xml">
 		<arg name="agent_number" value="$(arg agent_number)" />
 		<arg name="agent_id" value="$(arg agent_id)" />
