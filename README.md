@@ -57,7 +57,9 @@ This repository provides the implementation of common **Motion Planning** algori
     git clone https://github.com/ai-winter/ros_motion_planning.git
     ```
 
-5. Compile the code. 
+5. Compile the code.
+
+   **NOTE: Please refer to [#48](https://github.com/ai-winter/ros_motion_planning/issues/48) if you meet libignition dependency error.**
     ```bash
     cd ros_motion_planning/
     catkin_make
@@ -75,7 +77,7 @@ This repository provides the implementation of common **Motion Planning** algori
 
 7. Use **2D Nav Goal** in RViz to select the goal.
 
-8. Moving!
+8.  Moving!
 
 9.  You can use the other script to shutdown them rapidly.
     ```bash

@@ -1,35 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
 <launch>
-	<arg name="agent_number" default="4" />
-	<arg name="agent_id" default="4" />
+	<arg name="agent_number" default="1" />
+	<arg name="agent_id" default="1" />
 	<arg name="robot1_type" value="turtlebot3_waffle" />
-	<arg name="robot1_global_planner" value="lazy" />
-	<arg name="robot1_local_planner" value="orca" />
-	<arg name="robot1_x_pos" value="1.0" />
-	<arg name="robot1_y_pos" value="1.0" />
+	<arg name="robot1_global_planner" value="a_star" />
+	<arg name="robot1_local_planner" value="pid" />
+	<arg name="robot1_x_pos" value="0.0" />
+	<arg name="robot1_y_pos" value="0.0" />
 	<arg name="robot1_z_pos" value="0.0" />
-	<arg name="robot1_yaw" value="3.14" />
-	<arg name="robot2_type" value="turtlebot3_waffle" />
-	<arg name="robot2_global_planner" value="lazy" />
-	<arg name="robot2_local_planner" value="orca" />
-	<arg name="robot2_x_pos" value="-1.0" />
-	<arg name="robot2_y_pos" value="1.0" />
-	<arg name="robot2_z_pos" value="0.0" />
-	<arg name="robot2_yaw" value="-1.57" />
-	<arg name="robot3_type" value="turtlebot3_waffle" />
-	<arg name="robot3_global_planner" value="lazy" />
-	<arg name="robot3_local_planner" value="orca" />
-	<arg name="robot3_x_pos" value="-1.0" />
-	<arg name="robot3_y_pos" value="-1.0" />
-	<arg name="robot3_z_pos" value="0.0" />
-	<arg name="robot3_yaw" value="0.0" />
-	<arg name="robot4_type" value="turtlebot3_waffle" />
-	<arg name="robot4_global_planner" value="lazy" />
-	<arg name="robot4_local_planner" value="orca" />
-	<arg name="robot4_x_pos" value="1.0" />
-	<arg name="robot4_y_pos" value="-1.0" />
-	<arg name="robot4_z_pos" value="0.0" />
-	<arg name="robot4_yaw" value="1.57" />
+	<arg name="robot1_yaw" value="0.0" />
 	<include file="$(find sim_env)/launch/app/environment_single.launch.xml">
 		<arg name="agent_number" value="$(arg agent_number)" />
 		<arg name="agent_id" value="$(arg agent_id)" />
@@ -37,7 +16,7 @@
 		<arg name="global_planner" value="$(eval arg('robot' + str(arg('agent_id')) + '_global_planner'))" />
 		<arg name="local_planner" value="$(eval arg('robot' + str(arg('agent_id')) + '_local_planner'))" />
 		<arg name="robot_namespace" value="robot$(arg agent_id)" />
-		<arg name="start_ns" value="true" />
+		<arg name="start_ns" value="false" />
 		<arg name="robot_x" value="$(eval arg('robot' + str(arg('agent_id')) + '_x_pos'))" />
 		<arg name="robot_y" value="$(eval arg('robot' + str(arg('agent_id')) + '_y_pos'))" />
 		<arg name="robot_z" value="$(eval arg('robot' + str(arg('agent_id')) + '_z_pos'))" />

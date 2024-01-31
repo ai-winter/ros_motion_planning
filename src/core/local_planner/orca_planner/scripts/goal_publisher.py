@@ -50,4 +50,3 @@ if __name__ == "__main__":
     gp.pub()
 
     rospy.loginfo("Goal Published!")
-    rospy.spin()

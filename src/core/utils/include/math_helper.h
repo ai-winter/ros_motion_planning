@@ -44,6 +44,7 @@ double dist(const geometry_msgs::PoseStamped& node1, const geometry_msgs::PoseSt
  */
 double angle(const Node& node1, const Node& node2);
 double angle(const std::pair<double, double>& node1, const std::pair<double, double>& node2);
+double angle(const geometry_msgs::PoseStamped& node1, const geometry_msgs::PoseStamped& node2);
 
 /**
  * @brief Perform modulus operation on 2π.

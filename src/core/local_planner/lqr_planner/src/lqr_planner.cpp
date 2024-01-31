@@ -201,13 +201,18 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
   // get the particular point on the path at the lookahead distance
   geometry_msgs::PointStamped lookahead_pt;
-  double theta;
-  getLookAheadPoint(L, robot_pose_map, prune_plan, lookahead_pt, theta);
+  double theta_dir, theta_trj, kappa;
+  getLookAheadPoint(L, robot_pose_map, prune_plan, lookahead_pt, theta_trj, kappa);
+  theta_dir = atan2(lookahead_pt.point.y - robot_pose_map.pose.position.y,
+                    lookahead_pt.point.x - robot_pose_map.pose.position.x);
+
+  // current angle
+  double theta = tf2::getYaw(robot_pose_map.pose.orientation);  // [-pi, pi]
 
   // calculate commands
   if (shouldRotateToGoal(robot_pose_map, global_plan_.back()))
   {
-    double e_theta = regularizeAngle(goal_rpy_.z() - tf2::getYaw(robot_pose_map.pose.orientation));
+    double e_theta = regularizeAngle(goal_rpy_.z() - theta);
 
     // orientation reached
     if (!shouldRotateToPath(std::fabs(e_theta)))
@@ -225,18 +230,10 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   }
   else
   {
-    double theta_r = atan2(lookahead_pt.point.y - robot_pose_map.pose.position.y,
-                           lookahead_pt.point.x - robot_pose_map.pose.position.x);
-    double e_theta = regularizeAngle(tf2::getYaw(robot_pose_map.pose.orientation) - theta_r);
-
-    // state vector (p - p_ref)
-    Eigen::Vector3d x(robot_pose_map.pose.position.x - lookahead_pt.point.x,
-                      robot_pose_map.pose.position.y - lookahead_pt.point.y, e_theta);
-    std::vector<double> ref = { vt, theta_r };
-
-    // control vector
-    // NOTE: maybe some bugs...
-    Eigen::Vector2d u = _lqrControl(x, ref);
+    Eigen::Vector3d s(robot_pose_map.pose.position.x, robot_pose_map.pose.position.y, theta);  // current state
+    Eigen::Vector3d s_d(lookahead_pt.point.x, lookahead_pt.point.y, theta_trj);                // desired state
+    Eigen::Vector2d u_r(vt, vt * kappa);                                                     // refered input
+    Eigen::Vector2d u = _lqrControl(s, s_d, u_r);
 
     cmd_vel.linear.x = linearRegularization(base_odom, u[0]);
     cmd_vel.angular.z = angularRegularization(base_odom, u[1]);
@@ -253,29 +250,31 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
 /**
  * @brief Execute LQR control process
- * @param x   state error vector
- * @param ref reference point
+ * @param s   current state
+ * @param s_d desired state
+ * @param u_r refered control
  * @return u  control vector
  */
-Eigen::Vector2d LQRPlanner::_lqrControl(Eigen::Vector3d x, std::vector<double> ref)
+Eigen::Vector2d LQRPlanner::_lqrControl(Eigen::Vector3d s, Eigen::Vector3d s_d, Eigen::Vector2d u_r)
 {
-  // for diffrential wheel model
-  double v_r = ref[0], theta_r = ref[1];
+  Eigen::Vector2d u;
+  Eigen::Vector3d e(s - s_d);
+  e[2] = regularizeAngle(e[2]);
 
-  // state equation
+  // state equation on error
   Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
-  A(0, 2) = -v_r * sin(theta_r) * d_t_;
-  A(1, 2) = v_r * cos(theta_r) * d_t_;
+  A(0, 2) = -u_r[0] * sin(s_d[2]) * d_t_;
+  A(1, 2) = u_r[0] * cos(s_d[2]) * d_t_;
 
   Eigen::MatrixXd B = Eigen::MatrixXd::Zero(3, 2);
-  B(0, 0) = cos(theta_r) * d_t_;
-  B(1, 0) = sin(theta_r) * d_t_;
+  B(0, 0) = cos(s_d[2]) * d_t_;
+  B(1, 0) = sin(s_d[2]) * d_t_;
   B(2, 1) = d_t_;
 
   // discrete iteration Ricatti equation
   Eigen::Matrix3d P, P_;
   P = Q_;
-  for (int i = 0; i < max_iter_; i++)
+  for (int i = 0; i < max_iter_; ++i)
   {
     Eigen::Matrix2d temp = R_ + B.transpose() * P * B;
     P_ = Q_ + A.transpose() * P * A - A.transpose() * P * B * temp.inverse() * B.transpose() * P * A;
@@ -286,7 +285,9 @@ Eigen::Vector2d LQRPlanner::_lqrControl(Eigen::Vector3d x, std::vector<double> r
 
   // feedback
   Eigen::MatrixXd K = -(R_ + B.transpose() * P_ * B).inverse() * B.transpose() * P_ * A;
-  return K * x;
+
+  u = u_r + K * e;
+  return u;
 }
 
 }  // namespace lqr_planner

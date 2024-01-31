@@ -298,10 +298,11 @@ double LocalPlanner::getLookAheadDistance(double vt)
  * @param prune_plan        the pruned plan
  * @param pt                the lookahead point
  * @param theta             the angle on traj
+ * @param kappa             the curvature on traj
  */
 void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseStamped robot_pose_global,
                                      const std::vector<geometry_msgs::PoseStamped>& prune_plan,
-                                     geometry_msgs::PointStamped& pt, double& theta)
+                                     geometry_msgs::PointStamped& pt, double& theta, double& kappa)
 {
   double rx = robot_pose_global.pose.position.x;
   double ry = robot_pose_global.pose.position.y;
@@ -312,11 +313,13 @@ void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseS
   });
 
   std::vector<geometry_msgs::PoseStamped>::const_iterator prev_pose_it;
+  std::vector<geometry_msgs::PoseStamped>::const_iterator pprev_pose_it;
   // If the no pose is not far enough, take the last pose
   if (goal_pose_it == prune_plan.end())
   {
     goal_pose_it = std::prev(prune_plan.end());
     prev_pose_it = std::prev(goal_pose_it);
+    pprev_pose_it = std::prev(prev_pose_it);
     pt.point.x = goal_pose_it->pose.position.x;
     pt.point.y = goal_pose_it->pose.position.y;
   }
@@ -328,6 +331,7 @@ void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseS
     // Because of the way we did the std::find_if, prev_pose is guaranteed to be inside the circle,
     // and goal_pose is guaranteed to be outside the circle.
     prev_pose_it = std::prev(goal_pose_it);
+    pprev_pose_it = std::prev(prev_pose_it);
 
     double px = prev_pose_it->pose.position.x;
     double py = prev_pose_it->pose.position.y;
@@ -348,6 +352,23 @@ void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseS
 
   theta = atan2(goal_pose_it->pose.position.y - prev_pose_it->pose.position.y,
                 goal_pose_it->pose.position.x - prev_pose_it->pose.position.x);
+
+  double ax = pprev_pose_it->pose.position.x;
+  double ay = pprev_pose_it->pose.position.y;
+  double bx = prev_pose_it->pose.position.x;
+  double by = prev_pose_it->pose.position.y;
+  double cx = goal_pose_it->pose.position.x;
+  double cy = goal_pose_it->pose.position.y;
+
+  double a = std::hypot(bx - cx, by - cy);
+  double b = std::hypot(cx - ax, cy - ay);
+  double c = std::hypot(ax - bx, ay - by);
+
+  double cosB = (a * a + c * c - b * b) / (2 * a * c);
+  double sinB = std::sin(std::acos(cosB));
+
+  double cross = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+  kappa = std::copysign(2 * sinB / b, cross);
 }
 
 }  // namespace local_planner

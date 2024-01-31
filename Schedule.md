@@ -33,7 +33,7 @@ TBD
     - [x] Transfer `agent_num` and `agent_id` from `start_robots.launch.xml` to `move_base.launch.xml`.
   - [x] Calculate new velocities and publish them.
   - [x] Fine-tune the parameters.
-  - [ ] Goal reached check.
+  - [x] Goal reached check.
 
 - Bugs
   - [x] Wrong scan topic name in `move_base`.

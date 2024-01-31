@@ -193,8 +193,8 @@ bool RPPPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
   // get the particular point on the path at the lookahead distance
   geometry_msgs::PointStamped lookahead_pt;
-  double theta;
-  getLookAheadPoint(L, robot_pose_map, prune_plan, lookahead_pt, theta);
+  double theta, kappa;
+  getLookAheadPoint(L, robot_pose_map, prune_plan, lookahead_pt, theta, kappa);
 
   // get the tracking curvature with goalahead point
   double lookahead_k = 2 * sin(_dphi(lookahead_pt, robot_pose_map)) / L;

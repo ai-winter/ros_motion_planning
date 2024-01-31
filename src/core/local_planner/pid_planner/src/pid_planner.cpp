@@ -196,8 +196,8 @@ bool PIDPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
   // get the particular point on the path at the lookahead distance
   geometry_msgs::PointStamped lookahead_pt;
-  double theta_d, theta_dir, theta_trj;
-  getLookAheadPoint(L, current_ps_map, prune_plan, lookahead_pt, theta_trj);
+  double theta_d, theta_dir, theta_trj, kappa;
+  getLookAheadPoint(L, current_ps_map, prune_plan, lookahead_pt, theta_trj, kappa);
   target_ps_map.pose.position.x = lookahead_pt.point.x;
   target_ps_map.pose.position.y = lookahead_pt.point.y;
   theta_dir = atan2((target_ps_map.pose.position.y - current_ps_map.pose.position.y),

@@ -176,10 +176,11 @@ public:
    * @param prune_plan        the pruned plan
    * @param pt                the lookahead point
    * @param theta             the angle on traj
+   * @param kappa             the curvature on traj
    */
   void getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseStamped robot_pose_global,
-                                       const std::vector<geometry_msgs::PoseStamped>& prune_plan,
-                                       geometry_msgs::PointStamped& pt, double& theta);
+                         const std::vector<geometry_msgs::PoseStamped>& prune_plan, geometry_msgs::PointStamped& pt,
+                         double& theta, double& kappa);
 
 protected:
   // lethal cost and neutral cost
