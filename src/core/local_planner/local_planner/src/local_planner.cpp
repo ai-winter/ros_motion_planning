@@ -163,7 +163,7 @@ bool LocalPlanner::shouldRotateToGoal(const geometry_msgs::PoseStamped& cur, con
  */
 bool LocalPlanner::shouldRotateToPath(double angle_to_path, double tolerance)
 {
-  return (tolerance && (angle_to_path > tolerance)) || (angle_to_path > rotate_tol_);
+  return (tolerance && (angle_to_path > tolerance)) || (!tolerance && (angle_to_path > rotate_tol_));
 }
 
 /**
@@ -322,6 +322,7 @@ void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseS
     pprev_pose_it = std::prev(prev_pose_it);
     pt.point.x = goal_pose_it->pose.position.x;
     pt.point.y = goal_pose_it->pose.position.y;
+    kappa = 0;
   }
   else
   {
@@ -345,6 +346,23 @@ void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseS
 
     pt.point.x = i_points[0].first + rx;
     pt.point.y = i_points[0].second + ry;
+
+    double ax = pprev_pose_it->pose.position.x;
+    double ay = pprev_pose_it->pose.position.y;
+    double bx = prev_pose_it->pose.position.x;
+    double by = prev_pose_it->pose.position.y;
+    double cx = goal_pose_it->pose.position.x;
+    double cy = goal_pose_it->pose.position.y;
+
+    double a = std::hypot(bx - cx, by - cy);
+    double b = std::hypot(cx - ax, cy - ay);
+    double c = std::hypot(ax - bx, ay - by);
+
+    double cosB = (a * a + c * c - b * b) / (2 * a * c);
+    double sinB = std::sin(std::acos(cosB));
+
+    double cross = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+    kappa = std::copysign(2 * sinB / b, cross);
   }
 
   pt.header.frame_id = goal_pose_it->header.frame_id;
@@ -353,22 +371,6 @@ void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseS
   theta = atan2(goal_pose_it->pose.position.y - prev_pose_it->pose.position.y,
                 goal_pose_it->pose.position.x - prev_pose_it->pose.position.x);
 
-  double ax = pprev_pose_it->pose.position.x;
-  double ay = pprev_pose_it->pose.position.y;
-  double bx = prev_pose_it->pose.position.x;
-  double by = prev_pose_it->pose.position.y;
-  double cx = goal_pose_it->pose.position.x;
-  double cy = goal_pose_it->pose.position.y;
-
-  double a = std::hypot(bx - cx, by - cy);
-  double b = std::hypot(cx - ax, cy - ay);
-  double c = std::hypot(ax - bx, ay - by);
-
-  double cosB = (a * a + c * c - b * b) / (2 * a * c);
-  double sinB = std::sin(std::acos(cosB));
-
-  double cross = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
-  kappa = std::copysign(2 * sinB / b, cross);
 }
 
 }  // namespace local_planner

@@ -23,14 +23,14 @@ PLUGINLIB_EXPORT_CLASS(lqr_planner::LQRPlanner, nav_core::BaseLocalPlanner)
 namespace lqr_planner
 {
 /**
- * @brief Construct a new RPP planner object
+ * @brief Construct a new LQR planner object
  */
 LQRPlanner::LQRPlanner() : initialized_(false), goal_reached_(false), tf_(nullptr)  //, costmap_ros_(nullptr)
 {
 }
 
 /**
- * @brief Construct a new RPP planner object
+ * @brief Construct a new LQR planner object
  */
 LQRPlanner::LQRPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros) : LQRPlanner()
 {
@@ -38,7 +38,7 @@ LQRPlanner::LQRPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costma
 }
 
 /**
- * @brief Destroy the RPP planner object
+ * @brief Destroy the LQR planner object
  */
 LQRPlanner::~LQRPlanner()
 {
@@ -201,10 +201,8 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 
   // get the particular point on the path at the lookahead distance
   geometry_msgs::PointStamped lookahead_pt;
-  double theta_dir, theta_trj, kappa;
+  double theta_trj, kappa;
   getLookAheadPoint(L, robot_pose_map, prune_plan, lookahead_pt, theta_trj, kappa);
-  theta_dir = atan2(lookahead_pt.point.y - robot_pose_map.pose.position.y,
-                    lookahead_pt.point.x - robot_pose_map.pose.position.x);
 
   // current angle
   double theta = tf2::getYaw(robot_pose_map.pose.orientation);  // [-pi, pi]
@@ -232,7 +230,7 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   {
     Eigen::Vector3d s(robot_pose_map.pose.position.x, robot_pose_map.pose.position.y, theta);  // current state
     Eigen::Vector3d s_d(lookahead_pt.point.x, lookahead_pt.point.y, theta_trj);                // desired state
-    Eigen::Vector2d u_r(vt, vt * kappa);                                                     // refered input
+    Eigen::Vector2d u_r(vt, vt * kappa);                                                       // refered input
     Eigen::Vector2d u = _lqrControl(s, s_d, u_r);
 
     cmd_vel.linear.x = linearRegularization(base_odom, u[0]);
@@ -287,6 +285,7 @@ Eigen::Vector2d LQRPlanner::_lqrControl(Eigen::Vector3d s, Eigen::Vector3d s_d, 
   Eigen::MatrixXd K = -(R_ + B.transpose() * P_ * B).inverse() * B.transpose() * P_ * A;
 
   u = u_r + K * e;
+
   return u;
 }
 

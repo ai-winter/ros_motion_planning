@@ -42,7 +42,29 @@ This repository provides the implementation of common **Motion Planning** algori
     sudo apt install git
     ```
 
-3. Other dependence.
+3. Install dependence
+
+    - OSQP
+    ```bash
+    git clone -b release-0.6.3 --recursive https://github.com/oxfordcontrol/osqp
+    cd osqp && mkdir build && cd build
+    cmake .. -DBUILD_SHARED_LIBS=ON
+    make -j6
+    sudo make install
+    sudo cp /usr/local/include/osqp/* /usr/local/include
+    ```
+
+    - OSQP-Eigen
+
+    ```bash
+    git clone https://github.com/robotology/osqp-eigen.git
+    cd osqp-eigen && mkdir build && cd build
+    cmake ..
+    make
+    sudo make install
+    ```
+
+    - Other dependence.
     ```bash
     sudo apt install python-is-python3 \
     ros-noetic-amcl \
@@ -180,7 +202,7 @@ For the efficient operation of the motion planning system, we provide a series o
 |   **APF**   |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/local_planner/apf_planner/src/apf_planner.cpp)     | ![apf_ros.gif](assets/apf_ros.gif)|[Real-time obstacle avoidance for manipulators and mobile robots](https://ieeexplore.ieee.org/document/1087247)
 |   **RPP**   |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/local_planner/rpp_planner/src/rpp_planner.cpp)     | ![rpp_ros.gif](assets/rpp_ros.gif)|[Regulated Pure Pursuit for Robot Path Tracking](https://arxiv.org/pdf/2305.20026.pdf)
 |   **TEB**   |                                                                ![Status](https://img.shields.io/badge/develop-v1.0-red)                                                                 | ![Status](https://img.shields.io/badge/gif-none-yellow) |
-|   **MPC**   |                                                                ![Status](https://img.shields.io/badge/develop-v1.0-red)                                                                 | ![Status](https://img.shields.io/badge/gif-none-yellow) |
+|   **MPC**   |                                                              [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/local_planner/mpc_planner/src/mpc_planner.cpp)     | ![mpc_ros.gif](assets/mpc_ros.gif) | -
 | **Lattice** |                                                                ![Status](https://img.shields.io/badge/develop-v1.0-red)                                                                 | ![Status](https://img.shields.io/badge/gif-none-yellow) |
 
 

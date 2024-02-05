@@ -1,0 +1,8 @@
+<library path="lib/libmpc_planner">
+    <class name="mpc_planner/MPCPlanner" type="mpc_planner::MPCPlanner"
+        base_class_type="nav_core::BaseLocalPlanner">
+        <description>
+            A implementation of a local model predicted control (MPC) planner.
+        </description>
+    </class>
+</library>
