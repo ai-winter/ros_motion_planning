@@ -127,6 +127,12 @@
         <param name="OrcaPlanner/agent_id" value="$(arg agent_id)" if="$(eval arg('local_planner')=='orca')" />
         <rosparam file="$(find sim_env)/config/planner/orca_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='orca')" />
 
+        <!-- SFM -->
+        <param name="base_local_planner" value="sfm_planner/SfmPlanner" if="$(eval arg('local_planner')=='sfm')" />
+        <param name="SfmPlanner/agent_number" value="$(arg agent_number)" if="$(eval arg('local_planner')=='sfm')" />
+        <param name="SfmPlanner/agent_id" value="$(arg agent_id)" if="$(eval arg('local_planner')=='sfm')" />
+        <rosparam file="$(find sim_env)/config/planner/sfm_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='sfm')" />
+
         <!-- loading navigation parameters -->
         <rosparam file="$(eval find('sim_env') + '/config/' + arg('robot') + '/costmap_common_params_' + arg('robot') + '.yaml')" command="load"
             ns="global_costmap" />

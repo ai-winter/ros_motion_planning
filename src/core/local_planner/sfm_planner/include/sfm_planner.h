@@ -1,5 +1,5 @@
-#ifndef ORCA_PLANNER_H
-#define ORCA_PLANNER_H
+#ifndef SFM_PLANNER_H
+#define SFM_PLANNER_H
 
 #include <nav_core/base_local_planner.h>
 
@@ -12,21 +12,20 @@
 #include <boost/bind.hpp>
 #include <tf2/utils.h>
 
-#include "RVO/RVO.h"
+#include "lightsfm/sfm.hpp"
 #include "local_planner.h"
 
 using namespace std;
 
-namespace orca_planner
+namespace sfm_planner
 {
-
-class OrcaPlanner : public nav_core::BaseLocalPlanner, local_planner::LocalPlanner
+class SfmPlanner : public nav_core::BaseLocalPlanner, local_planner::LocalPlanner
 {
 public:
-  OrcaPlanner();
-  OrcaPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  SfmPlanner();
+  SfmPlanner(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
 
-  ~OrcaPlanner();
+  ~SfmPlanner();
 
   void initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
 
@@ -41,22 +40,20 @@ private:
   tf2_ros::Buffer* tf_;
   bool initialized_, odom_flag_, goal_reached_, first_plan_;
 
-  int agent_number_, agent_id_;                                       // id begin from 1
-  double d_t_;                                                        // control time step
-  double neighbor_dist_, time_horizon_, time_horizon_obst_, radius_;  // orca parameters
-  int max_neighbors_;
+  int agent_number_, agent_id_;  // id begin from 1
+  double d_t_;                   // control time step
 
-  RVO::RVOSimulator* sim_;
-  RVO::Vector2 goal_;
+  sfm::Goal goal_;
+  sfm::Agent agent_;
+  std::vector<sfm::Agent> others_;
   std::vector<ros::Subscriber> odom_subs_;
   std::vector<nav_msgs::Odometry> other_odoms_;
 
-  void odometryCallback(const nav_msgs::OdometryConstPtr& msg, int agent_id);
-
   void initState();
+  void handleAgents();
 
-  void updateState();
+  void odometryCallback(const nav_msgs::OdometryConstPtr& msg, int agent_id);
 };
-};  // namespace orca_planner
 
+};  // namespace sfm_planner
 #endif
