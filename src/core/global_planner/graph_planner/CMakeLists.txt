@@ -39,6 +39,7 @@ add_library(${PROJECT_NAME}
   src/voronoi.cpp
   src/theta_star.cpp
   src/lazy_theta_star.cpp
+  src/s_theta_star.cpp
   src/hybrid_a_star.cpp
 )
 
