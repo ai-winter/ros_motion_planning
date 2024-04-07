@@ -40,6 +40,7 @@
                     or arg('global_planner')=='d_star_lite'
                     or arg('global_planner')=='theta_star'
                     or arg('global_planner')=='lazy_theta_star'
+                    or arg('global_planner')=='s_theta_star'
                     or arg('global_planner')=='hybrid_a_star'
                 )" />
         <param name="GraphPlanner/planner_name" value="$(arg global_planner)"
@@ -53,6 +54,7 @@
                     or arg('global_planner')=='d_star_lite'
                     or arg('global_planner')=='theta_star'
                     or arg('global_planner')=='lazy_theta_star'
+                    or arg('global_planner')=='s_theta_star'
                     or arg('global_planner')=='hybrid_a_star'
                 )" />
         <rosparam file="$(find sim_env)/config/planner/graph_planner_params.yaml" command="load"
@@ -66,6 +68,7 @@
                     or arg('global_planner')=='d_star_lite'
                     or arg('global_planner')=='theta_star'
                     or arg('global_planner')=='lazy_theta_star'
+                    or arg('global_planner')=='s_theta_star'
                     or arg('global_planner')=='hybrid_a_star'
                 )" />
 
@@ -118,6 +121,9 @@
 
         <param name="base_local_planner" value="lqr_planner/LQRPlanner" if="$(eval arg('local_planner')=='lqr')" />
         <rosparam file="$(find sim_env)/config/planner/lqr_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='lqr')" />
+
+        <param name="base_local_planner" value="mpc_planner/MPCPlanner" if="$(eval arg('local_planner')=='mpc')" />
+        <rosparam file="$(find sim_env)/config/planner/mpc_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='mpc')" />
 
         <param name="base_local_planner" value="static_planner/StaticPlanner" if="$(eval arg('local_planner')=='static')" />
 

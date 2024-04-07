@@ -84,10 +84,9 @@ private:
   Eigen::Vector2d _lqrControl(Eigen::Vector3d s, Eigen::Vector3d s_d, Eigen::Vector2d u_r);
 
 private:
-  bool initialized_;                       // initialized flag
-  bool goal_reached_;                      // goal reached flag
-  tf2_ros::Buffer* tf_;                    // transform buffer
-  // costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
+  bool initialized_;     // initialized flag
+  bool goal_reached_;    // goal reached flag
+  tf2_ros::Buffer* tf_;  // transform buffer
 
   double d_t_;         // control time interval
   Eigen::Matrix3d Q_;  // state error matrix
@@ -95,7 +94,6 @@ private:
   int max_iter_;       // maximum iteration for ricatti solution
   double eps_iter_;    // iteration ending threshold
 
-  // std::vector<geometry_msgs::PoseStamped> global_plan_;
   ros::Publisher target_pt_pub_, current_pose_pub_;
 
   // goal parameters

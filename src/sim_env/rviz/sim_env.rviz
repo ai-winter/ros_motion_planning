@@ -24,6 +24,8 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: LaserScan
+  - Class: rmpv/RMPV
+    Name: RMPV - ROS Motion Planning Visualizer
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -372,6 +374,23 @@ Visualization Manager:
       Reference Frame: map
       Show Trail: false
       Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /rmpv_paths
+      Name: MarkerArray
+      Namespaces:
+        path_marker: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: InteractiveMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /rmpv_interactive_markers/update
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

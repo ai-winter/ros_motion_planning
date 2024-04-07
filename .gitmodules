@@ -1,0 +1,4 @@
+[submodule "src/third_party/rviz_plugins/rmpv"]
+	path = src/third_party/rviz_plugins/rmpv
+	url = https://github.com/ai-winter/ros_motion_planning_visualizer.git
+	branch = 1.0.x

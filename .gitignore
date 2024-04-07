@@ -58,3 +58,7 @@ qtcreator-*
 
 # Catkin custom files
 CATKIN_IGNORE
+
+# osqp
+osqp/
+osqp-eigen/

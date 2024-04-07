@@ -42,7 +42,29 @@ This repository provides the implementation of common **Motion Planning** algori
     sudo apt install git
     ```
 
-3. Other dependence.
+3. Install dependence
+
+    - OSQP
+    ```bash
+    git clone -b release-0.6.3 --recursive https://github.com/oxfordcontrol/osqp
+    cd osqp && mkdir build && cd build
+    cmake .. -DBUILD_SHARED_LIBS=ON
+    make -j6
+    sudo make install
+    sudo cp /usr/local/include/osqp/* /usr/local/include
+    ```
+
+    - OSQP-Eigen
+
+    ```bash
+    git clone https://github.com/robotology/osqp-eigen.git
+    cd osqp-eigen && mkdir build && cd build
+    cmake ..
+    make
+    sudo make install
+    ```
+
+    - Other dependence.
     ```bash
     sudo apt install python-is-python3 \
     ros-noetic-amcl \
@@ -54,7 +76,7 @@ This repository provides the implementation of common **Motion Planning** algori
 
 4. Clone the reposity.
     ```bash
-    git clone https://github.com/ai-winter/ros_motion_planning.git
+    git clone --recurse-submodules https://github.com/ai-winter/ros_motion_planning.git
     ```
 
 5. Compile the code.
@@ -140,17 +162,17 @@ For more information about the project usage, please refer to the following tabl
 
 For the efficient operation of the motion planning system, we provide a series of user-friendly simulation tools that allow for on-demand selection of these lightweight repositories.
 
-| Tool Version | Introduction |
-|:-------:|:---------:|
-|[![Status](https://img.shields.io/badge/Pedestrian-v2.0-8A2BE2?logo=iledefrancemobilites)](https://github.com/ai-winter/ros_pedestrians_simulation) | This is a Gazebo plugin for pedestians with collision property. You can construct a dynamic environment in ROS easily using plugin.
-|[![Status](https://img.shields.io/badge/RMPV-v2.0-8A2BE2?logo=v)](https://github.com/ai-winter/path_visualization_plugins)|This repository provides a ROS-based visualization Rviz plugins for path planning and curve generation algorithms.
+|                                                                    Tool Version                                                                     | Introduction |
+|:---------------------------------------------------------------------------------------------------------------------------------------------------:|:---------:|
+| [![Status](https://img.shields.io/badge/Pedestrian-v2.0-8A2BE2?logo=iledefrancemobilites)](https://github.com/ai-winter/ros_pedestrians_simulation) | This is a Gazebo plugin for pedestians with collision property. You can construct a dynamic environment in ROS easily using plugin.
+|            [![Status](https://img.shields.io/badge/RMPV-v1.0.0-8A2BE2?logo=v)](https://github.com/ai-winter/path_visualization_plugins)             |This repository provides a ROS-based visualization Rviz plugins for path planning and curve generation algorithms.
 
 ## <span id="3">03. Version
 
 ### Global Planner
 
-| Planner | Version | Animation | Papers
-|:-------:|:-------:|:---------:|:---------:|
+|     Planner      |                                                                                            Version                                                                                            |                         Animation                          | Papers
+|:----------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------:|:---------:|
 |     **GBFS**     |      [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/a_star.cpp)       |            ![gbfs_ros.gif](assets/gbfs_ros.gif)            |-
 |   **Dijkstra**   |      [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/a_star.cpp)       |        ![dijkstra_ros.gif](assets/dijkstra_ros.gif)        |-
 |     **A\***      |      [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/a_star.cpp)       |          ![a_star_ros.gif](assets/a_star_ros.gif)          |[A Formal Basis for the heuristic Determination of Minimum Cost Paths](https://ieeexplore.ieee.org/document/4082128)
@@ -161,14 +183,15 @@ For the efficient operation of the motion planning system, we provide a series o
 |   **Voronoi**    |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/voronoi.cpp))     |         ![voronoi_ros.gif](assets/voronoi_ros.gif)         |-
 |   **Theta\***    |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/theta_star.cpp))    |      ![theta_star_ros.gif](assets/theta_star_ros.gif)      |[Theta*: Any-Angle Path Planning on Grids](https://www.jair.org/index.php/jair/article/view/10676), [Any-angle path planning on non-uniform costmaps](https://ieeexplore.ieee.org/abstract/document/5979769)
 | **Lazy Theta\*** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/lazy_theta_star.cpp)) | ![lazy_theta_star_ros.gif](assets/lazy_theta_star_ros.gif) |[Lazy Theta*: Any-Angle Path Planning and Path Length Analysis in 3D](https://ojs.aaai.org/index.php/AAAI/article/view/7566)
-| **Hybrid A\*** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/hybrid_astar.cpp)) | ![hybrid_astar_ros.gif](assets/hybrid_astar_ros.gif) |[Practical search techniques in path planning for autonomous driving](https://ai.stanford.edu/~ddolgov/papers/dolgov_gpp_stair08.pdf)
+|  **S-Theta\***   |  [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/s_theta_star.cpp))   |    ![s_theta_star_ros.gif](assets/s_theta_star_ros.gif)    |[S-Theta*: low steering path-planning algorithm](https://link.springer.com/chapter/10.1007/978-1-4471-4739-8_8)
+|  **Hybrid A\***  |  [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)]((https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/graph_planner/src/hybrid_astar.cpp))   |    ![hybrid_astar_ros.gif](assets/hybrid_astar_ros.gif)    |[Practical search techniques in path planning for autonomous driving](https://ai.stanford.edu/~ddolgov/papers/dolgov_gpp_stair08.pdf)
 |     **RRT**      |       [![Status](https://img.shields.io/badge/done-v1.1-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/sample_planner/src/rrt.cpp)        |             ![rrt_ros.gif](assets/rrt_ros.gif)             |[Rapidly-Exploring Random Trees: A New Tool for Path Planning](http://msl.cs.uiuc.edu/~lavalle/papers/Lav98c.pdf)
 |    **RRT\***     |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/sample_planner/src/rrt_star.cpp)     |        ![rrt_star_ros.gif](assets/rrt_star_ros.gif)        |[Sampling-based algorithms for optimal motion planning](https://journals.sagepub.com/doi/abs/10.1177/0278364911406761)
 | **Informed RRT** |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/sample_planner/src/informed_rrt.cpp)   |    ![informed_rrt_ros.gif](assets/informed_rrt_ros.gif)    |[Optimal Sampling-based Path Planning Focused via Direct Sampling of an Admissible Ellipsoidal heuristic](https://arxiv.org/abs/1404.2334)
 | **RRT-Connect**  |   [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/sample_planner/src/rrt_connect.cpp)    |     ![rrt_connect_ros.gif](assets/rrt_connect_ros.gif)     |[RRT-Connect: An Efficient Approach to Single-Query Path Planning](http://www-cgi.cs.cmu.edu/afs/cs/academic/class/15494-s12/readings/kuffner_icra2000.pdf)
-| **ACO** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/evolutionary_planner/src/aco.cpp) | ![aco_ros.gif](assets/aco_ros.gif)  |[Ant Colony Optimization: A New Meta-Heuristic](http://www.cs.yale.edu/homes/lans/readings/routing/dorigo-ants-1999.pdf)
-| **GA**  | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/evolutionary_planner/src/ga.cpp) | ![ga_ros.gif](assets/ga_ros.gif)  |[Adaptation in Natural and Artificial Systems](https://ieeexplore.ieee.org/book/6267401)
-| **PSO** | [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/evolutionary_planner/src/pso.cpp) | ![pso_ros.gif](assets/pso_ros.gif) |[Particle Swarm Optimization](https://ieeexplore.ieee.org/document/488968)
+|     **ACO**      |    [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/evolutionary_planner/src/aco.cpp)     |             ![aco_ros.gif](assets/aco_ros.gif)             |[Ant Colony Optimization: A New Meta-Heuristic](http://www.cs.yale.edu/homes/lans/readings/routing/dorigo-ants-1999.pdf)
+|      **GA**      |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/evolutionary_planner/src/ga.cpp)     |              ![ga_ros.gif](assets/ga_ros.gif)              |[Adaptation in Natural and Artificial Systems](https://ieeexplore.ieee.org/book/6267401)
+|     **PSO**      |    [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/global_planner/evolutionary_planner/src/pso.cpp)     |             ![pso_ros.gif](assets/pso_ros.gif)             |[Particle Swarm Optimization](https://ieeexplore.ieee.org/document/488968)
 
 ### Local Planner
 
@@ -180,7 +203,7 @@ For the efficient operation of the motion planning system, we provide a series o
 |   **APF**   |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/local_planner/apf_planner/src/apf_planner.cpp)     | ![apf_ros.gif](assets/apf_ros.gif)|[Real-time obstacle avoidance for manipulators and mobile robots](https://ieeexplore.ieee.org/document/1087247)
 |   **RPP**   |     [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/local_planner/rpp_planner/src/rpp_planner.cpp)     | ![rpp_ros.gif](assets/rpp_ros.gif)|[Regulated Pure Pursuit for Robot Path Tracking](https://arxiv.org/pdf/2305.20026.pdf)
 |   **TEB**   |                                                                ![Status](https://img.shields.io/badge/develop-v1.0-red)                                                                 | ![Status](https://img.shields.io/badge/gif-none-yellow) |
-|   **MPC**   |                                                                ![Status](https://img.shields.io/badge/develop-v1.0-red)                                                                 | ![Status](https://img.shields.io/badge/gif-none-yellow) |
+|   **MPC**   |                                                              [![Status](https://img.shields.io/badge/done-v1.0-brightgreen)](https://github.com/ai-winter/ros_motion_planning/blob/master/src/core/local_planner/mpc_planner/src/mpc_planner.cpp)     | ![mpc_ros.gif](assets/mpc_ros.gif) | -
 | **Lattice** |                                                                ![Status](https://img.shields.io/badge/develop-v1.0-red)                                                                 | ![Status](https://img.shields.io/badge/gif-none-yellow) |
 
 

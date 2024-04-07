@@ -1,9 +1,11 @@
 # Dynamic Configuration
 ## Contents
-- [Introduction](#0)
-- [Dynamic Obstacles](#1)
-- [Static Obstacles](#2)
-- [Costmap Layers](#3)
+- [Dynamic Configuration](#dynamic-configuration)
+  - [Contents](#contents)
+  - [0. Introduction](#0-introduction)
+  - [1. Dynamic Obstacles](#1-dynamic-obstacles)
+  - [2. Static Obstacles](#2-static-obstacles)
+  - [3. Costmap Layers](#3-costmap-layers)
 
 ## <span id="0">0. Introduction
 
@@ -27,15 +29,15 @@ robots_config:
   - robot2_type: "turtlebot3_burger"
     robot2_global_planner: "jps"
     robot2_local_planner: "pid"
-    robot2_x_pos: "-5.0"
-    robot2_y_pos: "-7.5"
+    robot2_x_pos: "1.0"
+    robot2_y_pos: "0.0"
     robot2_z_pos: "0.0"
     robot2_yaw: "0.0"
 
 plugins:
   pedestrians: "pedestrian_config.yaml"
   obstacles: "obstacles_config.yaml"
-  map_layers: "maps_layer_config.yaml"
+  map_layers: "map_layers_config.yaml"
 ```
 
 Explanation:

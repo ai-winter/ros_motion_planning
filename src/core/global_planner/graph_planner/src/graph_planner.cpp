@@ -26,6 +26,7 @@
 #include "voronoi.h"
 #include "theta_star.h"
 #include "lazy_theta_star.h"
+#include "s_theta_star.h"
 #include "hybrid_a_star.h"
 
 PLUGINLIB_EXPORT_CLASS(graph_planner::GraphPlanner, nav_core::BaseGlobalPlanner)
@@ -127,6 +128,8 @@ void GraphPlanner::initialize(std::string name)
       g_planner_ = new global_planner::ThetaStar(nx_, ny_, resolution_);
     else if (planner_name_ == "lazy_theta_star")
       g_planner_ = new global_planner::LazyThetaStar(nx_, ny_, resolution_);
+    else if (planner_name_ == "s_theta_star")
+      g_planner_ = new global_planner::SThetaStar(nx_, ny_, resolution_);
     else if (planner_name_ == "hybrid_a_star")
     {
       bool is_reverse;  // whether reverse operation is allowed
