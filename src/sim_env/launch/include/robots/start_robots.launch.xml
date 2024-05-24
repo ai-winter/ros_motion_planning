@@ -3,12 +3,12 @@
 	<arg name="agent_number" default="1" />
 	<arg name="agent_id" default="1" />
 	<arg name="robot1_type" value="turtlebot3_waffle" />
-	<arg name="robot1_global_planner" value="a_star" />
-	<arg name="robot1_local_planner" value="pid" />
+	<arg name="robot1_global_planner" value="theta_star" />
+	<arg name="robot1_local_planner" value="lqr" />
 	<arg name="robot1_x_pos" value="0.0" />
 	<arg name="robot1_y_pos" value="0.0" />
 	<arg name="robot1_z_pos" value="0.0" />
-	<arg name="robot1_yaw" value="1.57" />
+	<arg name="robot1_yaw" value="0.0" />
 	<include file="$(find sim_env)/launch/app/environment_single.launch.xml">
 		<arg name="agent_number" value="$(arg agent_number)" />
 		<arg name="agent_id" value="$(arg agent_id)" />

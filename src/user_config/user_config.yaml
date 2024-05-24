@@ -4,8 +4,8 @@ rviz_file: "sim_env.rviz"
 
 robots_config:
   - robot1_type: "turtlebot3_waffle"
-    robot1_global_planner: "a_star"
-    robot1_local_planner: "pid"
+    robot1_global_planner: "theta_star"
+    robot1_local_planner: "lqr"
     robot1_x_pos: "0.0"
     robot1_y_pos: "0.0"
     robot1_z_pos: "0.0"
