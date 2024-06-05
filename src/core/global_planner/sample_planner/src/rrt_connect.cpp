@@ -7,9 +7,9 @@
  * @date: 2023-01-18
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -22,32 +22,28 @@ namespace global_planner
 {
 /**
  * @brief  Constructor
- * @param   nx          pixel number in costmap x direction
- * @param   ny          pixel number in costmap y direction
+ * @param   costmap   the environment for path planning
  * @param   sample_num  andom sample points
  * @param   max_dist    max distance between sample points
  */
-RRTConnect::RRTConnect(int nx, int ny, double resolution, int sample_num, double max_dist)
-  : RRT(nx, ny, resolution, sample_num, max_dist)
+RRTConnect::RRTConnect(costmap_2d::Costmap2D* costmap, int sample_num, double max_dist)
+  : RRT(costmap, sample_num, max_dist)
 {
 }
 
 /**
  * @brief RRT-Connect implementation
- * @param global_costmap     costmap
  * @param start     start node
  * @param goal      goal node
  * @param expand    containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool RRTConnect::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-                      std::vector<Node>& expand)
+bool RRTConnect::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   sample_list_f_.clear();
   sample_list_b_.clear();
   // copy
   start_ = start, goal_ = goal;
-  costs_ = global_costmap;
   sample_list_f_.insert(std::make_pair(start.id_, start));
   sample_list_b_.insert(std::make_pair(goal.id_, goal));
   expand.push_back(start);
@@ -61,7 +57,7 @@ bool RRTConnect::plan(const unsigned char* global_costmap, const Node& start, co
     Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (global_costmap[sample_node.id_] >= lethal_cost_ * factor_)
+    if (costmap_->getCharMap()[sample_node.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_)
       continue;
 
     // visited
@@ -88,8 +84,8 @@ bool RRTConnect::plan(const unsigned char* global_costmap, const Node& start, co
           double dist_ = std::min(max_dist_, helper::dist(new_node, new_node_b));
           double theta = helper::angle(new_node_b, new_node);
           Node new_node_b2;
-          new_node_b2.x_ = new_node_b.x_ + (int)(dist_ * cos(theta));
-          new_node_b2.y_ = new_node_b.y_ + (int)(dist_ * sin(theta));
+          new_node_b2.x_ = new_node_b.x_ + static_cast<int>(dist_ * cos(theta));
+          new_node_b2.y_ = new_node_b.y_ + static_cast<int>(dist_ * sin(theta));
           new_node_b2.id_ = grid2Index(new_node_b2.x_, new_node_b2.y_);
           new_node_b2.pid_ = new_node_b.id_;
           new_node_b2.g_ = dist_ + new_node_b.g_;

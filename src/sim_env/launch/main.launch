@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <launch>
-	<arg name="world_parameter" value="workshop" />
+	<arg name="world_parameter" value="warehouse" />
 	<include file="$(find sim_env)/launch/config.launch">
 		<arg name="world" value="$(arg world_parameter)" />
-		<arg name="map" value="workshop" />
+		<arg name="map" value="warehouse" />
 		<arg name="robot_number" value="1" />
 		<arg name="rviz_file" value="sim_env.rviz" />
 	</include>

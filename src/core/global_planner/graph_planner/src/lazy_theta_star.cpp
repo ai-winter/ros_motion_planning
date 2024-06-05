@@ -20,33 +20,27 @@ namespace global_planner
 {
 /**
  * @brief Construct a new LazyThetaStar object
- * @param nx          pixel number in costmap x direction
- * @param ny          pixel number in costmap y direction
- * @param resolution  costmap resolution
+ * @param costmap   the environment for path planning
  */
-LazyThetaStar::LazyThetaStar(int nx, int ny, double resolution) : ThetaStar(nx, ny, resolution)
+LazyThetaStar::LazyThetaStar(costmap_2d::Costmap2D* costmap) : ThetaStar(costmap)
 {
-  factor_ = 0.35;
+  motion_ = Node::getMotion();
 };
 
 /**
  * @brief Lazy Theta* implementation
- * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
  * @param path          optimal path consists of Node
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool LazyThetaStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal,
-                         std::vector<Node>& path, std::vector<Node>& expand)
+bool LazyThetaStar::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   // initialize
-  costs_ = global_costmap;
   closed_list_.clear();
   path.clear();
   expand.clear();
-  motion_ = Node::getMotion();
 
   // push the start node into open list
   std::priority_queue<Node, std::vector<Node>, Node::compare_cost> open_list;
@@ -61,7 +55,7 @@ bool LazyThetaStar::plan(const unsigned char* global_costmap, const Node& start,
 
     _setVertex(current);
 
-    if (current.g_ >= INFINITE_COST)
+    if (current.g_ >= std::numeric_limits<double>::max())
       continue;
 
     // current node does not exist in closed list
@@ -93,8 +87,9 @@ bool LazyThetaStar::plan(const unsigned char* global_costmap, const Node& start,
         continue;
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) ||
-          (costs_[node_new.id_] >= lethal_cost_ * factor_ && costs_[node_new.id_] >= costs_[current.id_]))
+      if ((node_new.id_ < 0) || (node_new.id_ >= map_size_) ||
+          (costmap_->getCharMap()[node_new.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+           costmap_->getCharMap()[node_new.id_] >= costmap_->getCharMap()[current.id_]))
         continue;
 
       // get parent node
@@ -151,7 +146,7 @@ void LazyThetaStar::_setVertex(Node& node)
   if (!_lineOfSight(parent, node))
   {
     // path 1
-    node.g_ = INFINITE_COST;
+    node.g_ = std::numeric_limits<double>::max();
     for (const auto& m : motion_)
     {
       Node parent_new = node + m;

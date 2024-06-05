@@ -7,9 +7,9 @@
  * @date: 2023-07-21
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -25,48 +25,44 @@ namespace global_planner
 {
 /**
  * @brief Construct a new Voronoi-based planning object
- * @param nx                    pixel number in costmap x direction
- * @param ny                    pixel number in costmap y direction
- * @param resolution            costmap resolution
+ * @param costmap   the environment for path planning
  * @param circumscribed_radius  the circumscribed radius of robot
  */
-VoronoiPlanner::VoronoiPlanner(int nx, int ny, double resolution, double circumscribed_radius)
-  : GlobalPlanner(nx, ny, resolution), circumscribed_radius_(circumscribed_radius)
+VoronoiPlanner::VoronoiPlanner(costmap_2d::Costmap2D* costmap, double circumscribed_radius)
+  : GlobalPlanner(costmap), circumscribed_radius_(circumscribed_radius)
 {
-  voronoi_diagram_ = new VoronoiData*[nx_];
-  for (unsigned int i = 0; i < nx_; i++)
-    voronoi_diagram_[i] = new VoronoiData[ny_];
+  voronoi_diagram_ = new VoronoiData*[costmap_->getSizeInCellsX()];
+  for (unsigned int i = 0; i < costmap_->getSizeInCellsX(); i++)
+    voronoi_diagram_[i] = new VoronoiData[costmap_->getSizeInCellsY()];
 }
 
 VoronoiPlanner::~VoronoiPlanner()
 {
-  for (unsigned int i = 0; i < nx_; i++)
+  for (unsigned int i = 0; i < costmap_->getSizeInCellsX(); i++)
     delete[] voronoi_diagram_[i];
   delete[] voronoi_diagram_;
 }
 
 /**
  * @brief Voronoi-based planning implementation
- * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
  * @param path          optimal path consists of Node
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool VoronoiPlanner::plan(const unsigned char* global_costmap, const Node& start, const Node& goal,
-                          std::vector<Node>& path, std::vector<Node>& expand)
+bool VoronoiPlanner::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   return true;
 }
 bool VoronoiPlanner::plan(const DynamicVoronoi& voronoi, const Node& start, const Node& goal, std::vector<Node>& path)
 {
   // update voronoi diagram
-  for (unsigned int j = 0; j < ny_; j++)
+  for (unsigned int j = 0; j < costmap_->getSizeInCellsY(); j++)
   {
-    for (unsigned int i = 0; i < nx_; i++)
+    for (unsigned int i = 0; i < costmap_->getSizeInCellsX(); i++)
     {
-      voronoi_diagram_[i][j].dist = voronoi.getDistance(i, j) * resolution_;
+      voronoi_diagram_[i][j].dist = voronoi.getDistance(i, j) * costmap_->getResolution();
       voronoi_diagram_[i][j].is_voronoi = voronoi.isVoronoi(i, j);
     }
   }
@@ -157,7 +153,7 @@ bool VoronoiPlanner::searchPathWithVoronoi(const Node& start, const Node& goal, 
       node_new.pid_ = current.id_;
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) ||
+      if ((node_new.id_ < 0) || (node_new.id_ >= map_size_) ||
           (voronoi_diagram_[node_new.x_][node_new.y_].dist < circumscribed_radius_))
         continue;
 

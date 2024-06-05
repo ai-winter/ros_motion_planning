@@ -7,9 +7,9 @@
  * @date: 2023-03-19
  * @version: 1.0
  *
- * Copyright (c) 2024, Zhanyu Guo. 
+ * Copyright (c) 2024, Zhanyu Guo.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -20,17 +20,13 @@ namespace global_planner
 {
 /**
  * @brief Construct a new DStarLite object
- *
- * @param nx          pixel number in costmap x direction
- * @param ny          pixel number in costmap y direction
- * @param resolution  costmap resolution
+ * @param costmap   the environment for path planning
  */
-DStarLite::DStarLite(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resolution)
+DStarLite::DStarLite(costmap_2d::Costmap2D* costmap) : GlobalPlanner(costmap)
 {
-  curr_global_costmap_ = new unsigned char[ns_];
-  last_global_costmap_ = new unsigned char[ns_];
+  curr_global_costmap_ = new unsigned char[map_size_];
+  last_global_costmap_ = new unsigned char[map_size_];
   start_.x_ = start_.y_ = goal_.x_ = goal_.y_ = INF;
-  factor_ = 0.4;
   initMap();
 }
 
@@ -39,11 +35,11 @@ DStarLite::DStarLite(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, 
  */
 void DStarLite::initMap()
 {
-  map_ = new LNodePtr*[nx_];
-  for (int i = 0; i < nx_; i++)
+  map_ = new LNodePtr*[costmap_->getSizeInCellsX()];
+  for (int i = 0; i < costmap_->getSizeInCellsX(); i++)
   {
-    map_[i] = new LNodePtr[ny_];
-    for (int j = 0; j < ny_; j++)
+    map_[i] = new LNodePtr[costmap_->getSizeInCellsY()];
+    for (int j = 0; j < costmap_->getSizeInCellsY(); j++)
     {
       map_[i][j] = new LNode(i, j, INF, INF, grid2Index(i, j), -1, INF, INF);
       map_[i][j]->open_it = open_list_.end();  // allocate empty memory
@@ -59,11 +55,11 @@ void DStarLite::reset()
   open_list_.clear();
   km_ = 0.0;
 
-  for (int i = 0; i < nx_; i++)
-    for (int j = 0; j < ny_; j++)
+  for (int i = 0; i < costmap_->getSizeInCellsX(); i++)
+    for (int j = 0; j < costmap_->getSizeInCellsY(); j++)
       delete map_[i][j];
 
-  for (int i = 0; i < nx_; i++)
+  for (int i = 0; i < costmap_->getSizeInCellsX(); i++)
     delete[] map_[i];
 
   delete[] map_;
@@ -103,8 +99,8 @@ double DStarLite::calculateKey(LNodePtr s)
  */
 bool DStarLite::isCollision(LNodePtr n1, LNodePtr n2)
 {
-  return (curr_global_costmap_[n1->id_] > lethal_cost_ * factor_) ||
-         (curr_global_costmap_[n2->id_] > lethal_cost_ * factor_);
+  return (curr_global_costmap_[n1->id_] > costmap_2d::LETHAL_OBSTACLE * factor_) ||
+         (curr_global_costmap_[n2->id_] > costmap_2d::LETHAL_OBSTACLE * factor_);
 }
 
 /**
@@ -124,7 +120,7 @@ void DStarLite::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
         continue;
 
       int x_n = x + i, y_n = y + j;
-      if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
+      if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
         continue;
       LNodePtr neigbour_ptr = map_[x_n][y_n];
 
@@ -303,18 +299,16 @@ Node DStarLite::getState(const Node& current)
 
 /**
  * @brief D* lite implementation
- * @param global_costmap   costmap
  * @param start   start node
  * @param goal    goal node
  * @param expand  containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool DStarLite::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-                     std::vector<Node>& expand)
+bool DStarLite::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   // update costmap
-  memcpy(last_global_costmap_, curr_global_costmap_, ns_);
-  memcpy(curr_global_costmap_, global_costmap, ns_);
+  memcpy(last_global_costmap_, curr_global_costmap_, map_size_);
+  memcpy(curr_global_costmap_, costmap_->getCharMap(), map_size_);
 
   expand_.clear();
 
@@ -354,7 +348,7 @@ bool DStarLite::plan(const unsigned char* global_costmap, const Node& start, con
       for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; j++)
       {
         int x_n = start.x_ + i, y_n = start.y_ + j;
-        if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
+        if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
           continue;
 
         int idx = grid2Index(x_n, y_n);

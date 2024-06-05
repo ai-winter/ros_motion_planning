@@ -7,9 +7,9 @@
  * @date: 2023-03-19
  * @version: 1.0
  *
- * Copyright (c) 2024, Zhanyu Guo. 
+ * Copyright (c) 2024, Zhanyu Guo.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -32,17 +32,16 @@ typedef LNode* LNodePtr;
 
 /**
  * @brief Class for objects that plan using the LPA* algorithm
+ * @param costmap   the environment for path planning
  */
 class LPAStar : public GlobalPlanner
 {
 public:
   /**
    * @brief Construct a new LPAStar object
-   * @param nx         pixel number in costmap x direction
-   * @param ny         pixel number in costmap y direction
-   * @param resolution costmap resolution
+   * @param costmap   the environment for path planning
    */
-  LPAStar(int nx, int ny, double resolution);
+  LPAStar(costmap_2d::Costmap2D* costmap);
 
   /**
    * @brief Init map
@@ -121,14 +120,12 @@ public:
 
   /**
    * @brief LPA* implementation
-   * @param costs  costmap
    * @param start  start node
    * @param goal   goal node
    * @param expand containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
-  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-            std::vector<Node>& expand);
+  bool plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand);
 
 public:
   // start and goal ptr

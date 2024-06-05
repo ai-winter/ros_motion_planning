@@ -7,9 +7,9 @@
  * @date: 2023-12-20
  * @version: 1.1
  *
- * Copyright (c) 2024, Jing Zongxin, Yang Haodong. 
+ * Copyright (c) 2024, Jing Zongxin, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -61,9 +61,7 @@ class PSO : public GlobalPlanner
 public:
   /**
    * @brief Construct a new PSO object
-   * @param nx            pixel number in costmap x direction
-   * @param ny            pixel number in costmap y direction
-   * @param resolution    costmap resolution
+   * @param costmap   the environment for path planning
    * @param n_particles	  number of particles
    * @param n_inherited   number of inherited particles
    * @param point_num      number of position points contained in each particle
@@ -74,21 +72,19 @@ public:
    * @param init_mode	  Set the generation mode for the initial position points of the particle swarm
    * @param max_iter		  maximum iterations
    */
-  PSO(int nx, int ny, double resolution, int n_particles, int n_inherited, int point_num, double w_inertial,
+  PSO(costmap_2d::Costmap2D* costmap, int n_particles, int n_inherited, int point_num, double w_inertial,
       double w_social, double w_cognitive, int max_speed, int init_mode, int max_iter);
   ~PSO();
 
   /**
    * @brief PSO implementation
-   * @param global_costmap global costmap
    * @param start         start node
    * @param goal          goal node
    * @param path          optimal path consists of Node
    * @param expand        containing the node been search during the process
    * @return  true if path found, else false
    */
-  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-            std::vector<Node>& expand);
+  bool plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand);
 
   /**
    * @brief Generate n particles with pointNum_ positions each within the map range
@@ -140,7 +136,6 @@ protected:
   int max_speed_;    // The maximum velocity of particle motion
   int init_mode_;    // Set the generation mode for the initial position points of the particle swarm
   std::pair<double, double> start_, goal_;  // paired start and goal point for path smoothing
-  const unsigned char* costmap_;
 
 private:
   std::mutex particles_lock_;                   // thread lock

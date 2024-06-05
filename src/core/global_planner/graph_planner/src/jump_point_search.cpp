@@ -7,9 +7,9 @@
  * @date: 2023-12-14
  * @version: 1.1
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -20,27 +20,22 @@ namespace global_planner
 {
 /**
  * @brief Constructor
- * @param nx         pixel number in costmap x direction
- * @param ny         pixel number in costmap y direction
- * @param resolution costmap resolution
+ * @param costmap   the environment for path planning
  */
-JumpPointSearch::JumpPointSearch(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resolution)
+JumpPointSearch::JumpPointSearch(costmap_2d::Costmap2D* costmap) : GlobalPlanner(costmap)
 {
 }
 
 /**
  * @brief Jump Point Search(JPS) implementation
- * @param global_costmap costmap
  * @param start          start node
  * @param goal           goal node
  * @param expand         containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool JumpPointSearch::plan(const unsigned char* global_costmap, const Node& start, const Node& goal,
-                           std::vector<Node>& path, std::vector<Node>& expand)
+bool JumpPointSearch::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   // copy
-  costs_ = global_costmap;
   start_ = start, goal_ = goal;
 
   // clear vector
@@ -108,7 +103,8 @@ Node JumpPointSearch::jump(const Node& point, const Node& motion)
   new_point.h_ = std::sqrt(std::pow(new_point.x_ - goal_.x_, 2) + std::pow(new_point.y_ - goal_.y_, 2));
 
   // next node hit the boundary or obstacle
-  if (new_point.id_ < 0 || new_point.id_ >= ns_ || costs_[new_point.id_] >= lethal_cost_ * factor_)
+  if (new_point.id_ < 0 || new_point.id_ >= map_size_ ||
+      costmap_->getCharMap()[new_point.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_)
     return Node(-1, -1, -1, -1, -1, -1);
 
   // goal found
@@ -144,37 +140,38 @@ bool JumpPointSearch::detectForceNeighbor(const Node& point, const Node& motion)
   int y = point.y_;
   int x_dir = motion.x_;
   int y_dir = motion.y_;
+  auto costs = costmap_->getCharMap();
 
   // horizontal
   if (x_dir && !y_dir)
   {
-    if (costs_[grid2Index(x, y + 1)] >= lethal_cost_ * factor_ &&
-        costs_[grid2Index(x + x_dir, y + 1)] < lethal_cost_ * factor_)
+    if (costs[grid2Index(x, y + 1)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+        costs[grid2Index(x + x_dir, y + 1)] < costmap_2d::LETHAL_OBSTACLE * factor_)
       return true;
-    if (costs_[grid2Index(x, y - 1)] >= lethal_cost_ * factor_ &&
-        costs_[grid2Index(x + x_dir, y - 1)] < lethal_cost_ * factor_)
+    if (costs[grid2Index(x, y - 1)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+        costs[grid2Index(x + x_dir, y - 1)] < costmap_2d::LETHAL_OBSTACLE * factor_)
       return true;
   }
 
   // vertical
   if (!x_dir && y_dir)
   {
-    if (costs_[grid2Index(x + 1, y)] >= lethal_cost_ * factor_ &&
-        costs_[grid2Index(x + 1, y + y_dir)] < lethal_cost_ * factor_)
+    if (costs[grid2Index(x + 1, y)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+        costs[grid2Index(x + 1, y + y_dir)] < costmap_2d::LETHAL_OBSTACLE * factor_)
       return true;
-    if (costs_[grid2Index(x - 1, y)] >= lethal_cost_ * factor_ &&
-        costs_[grid2Index(x - 1, y + y_dir)] < lethal_cost_ * factor_)
+    if (costs[grid2Index(x - 1, y)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+        costs[grid2Index(x - 1, y + y_dir)] < costmap_2d::LETHAL_OBSTACLE * factor_)
       return true;
   }
 
   // diagonal
   if (x_dir && y_dir)
   {
-    if (costs_[grid2Index(x - x_dir, y)] >= lethal_cost_ * factor_ &&
-        costs_[grid2Index(x - x_dir, y + y_dir)] < lethal_cost_ * factor_)
+    if (costs[grid2Index(x - x_dir, y)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+        costs[grid2Index(x - x_dir, y + y_dir)] < costmap_2d::LETHAL_OBSTACLE * factor_)
       return true;
-    if (costs_[grid2Index(x, y - y_dir)] >= lethal_cost_ * factor_ &&
-        costs_[grid2Index(x + x_dir, y - y_dir)] < lethal_cost_ * factor_)
+    if (costs[grid2Index(x, y - y_dir)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+        costs[grid2Index(x + x_dir, y - y_dir)] < costmap_2d::LETHAL_OBSTACLE * factor_)
       return true;
   }
 

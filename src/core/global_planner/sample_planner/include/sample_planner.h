@@ -7,9 +7,9 @@
  * @date: 2022-10-26
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -51,7 +51,7 @@ public:
    * @return No return value
    * @details default
    */
-  ~SamplePlanner();
+  ~SamplePlanner() = default;
 
   /**
    * @brief  Planner initialization
@@ -119,26 +119,21 @@ protected:
   void _pubLine(visualization_msgs::Marker* line_msg, ros::Publisher* line_pub, int id, int pid);
 
 protected:
-  costmap_2d::Costmap2D* costmap_;            // costmap
-  unsigned int nx_, ny_;                      // costmap size
-  double resolution_;                         // costmap resolution
-  std::string frame_id_;                      // costmap frame ID
-  ros::Publisher plan_pub_;                   // path planning publisher
-  bool initialized_;                          // initialization flag
-  global_planner::GlobalPlanner* g_planner_;  // global graph planner
-  ros::Publisher expand_pub_;                 // nodes explorer publisher
-  ros::ServiceServer make_plan_srv_;          // planning service
+  std::string frame_id_;                                      // costmap frame ID
+  ros::Publisher plan_pub_;                                   // path planning publisher
+  bool initialized_;                                          // initialization flag
+  std::shared_ptr<global_planner::GlobalPlanner> g_planner_;  // global graph planner
+  ros::Publisher expand_pub_;                                 // nodes explorer publisher
+  ros::ServiceServer make_plan_srv_;                          // planning service
 
 private:
-  boost::mutex mutex_;     // thread mutex
-  double convert_offset_;  // offset of transform from world(x,y) to grid map(x,y)
-  double tolerance_;       // tolerance
-  bool is_outline_;        // whether outline the boudary of map
-  double factor_;          // obstacle inflation factor
-  bool is_expand_;         // whether publish expand map or not
-  int sample_points_;      // random sample points
-  double sample_max_d_;    // max distance between sample points
-  double opt_r_;           // optimization raidus
+  double tolerance_;     // tolerance
+  bool is_outline_;      // whether outline the boudary of map
+  double factor_;        // obstacle inflation factor
+  bool is_expand_;       // whether publish expand map or not
+  int sample_points_;    // random sample points
+  double sample_max_d_;  // max distance between sample points
+  double opt_r_;         // optimization raidus
 };
 }  // namespace sample_planner
 #endif

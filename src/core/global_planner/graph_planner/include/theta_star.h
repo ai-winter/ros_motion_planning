@@ -7,9 +7,9 @@
  * @date: 2023-10-01
  * @version: 1.3
  *
- * Copyright (c) 2024, Wu Maojia, Yang Haodong. 
+ * Copyright (c) 2024, Wu Maojia, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -31,23 +31,19 @@ class ThetaStar : public GlobalPlanner
 public:
   /**
    * @brief Construct a new ThetaStar object
-   * @param nx          pixel number in costmap x direction
-   * @param ny          pixel number in costmap y direction
-   * @param resolution  costmap resolution
+   * @param costmap   the environment for path planning
    */
-  ThetaStar(int nx, int ny, double resolution);
+  ThetaStar(costmap_2d::Costmap2D* costmap);
 
   /**
    * @brief Theta* implementation
-   * @param global_costmap global costmap
    * @param start         start node
    * @param goal          goal node
    * @param path          optimal path consists of Node
    * @param expand        containing the node been search during the process
    * @return  true if path found, else false
    */
-  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-            std::vector<Node>& expand);
+  bool plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand);
 
 protected:
   /**
@@ -64,9 +60,6 @@ protected:
    * @return true if no obstacle, else false
    */
   bool _lineOfSight(const Node& parent, const Node& child);
-
-protected:
-  const unsigned char* costs_;  // costmap copy
 };
 }  // namespace global_planner
 #endif

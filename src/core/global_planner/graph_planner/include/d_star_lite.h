@@ -7,9 +7,9 @@
  * @date: 2023-03-19
  * @version: 1.0
  *
- * Copyright (c) 2024, Zhanyu Guo. 
+ * Copyright (c) 2024, Zhanyu Guo.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -38,12 +38,9 @@ class DStarLite : public GlobalPlanner
 public:
   /**
    * @brief Construct a new DStarLite object
-   *
-   * @param nx          pixel number in costmap x direction
-   * @param ny          pixel number in costmap y direction
-   * @param resolution  costmap resolution
+   * @param costmap   the environment for path planning
    */
-  DStarLite(int nx, int ny, double resolution);
+  DStarLite(costmap_2d::Costmap2D* costmap);
 
   /**
    * @brief Init map
@@ -129,14 +126,12 @@ public:
 
   /**
    * @brief D* lite implementation
-   * @param costs   costmap
    * @param start   start node
    * @param goal    goal node
    * @param expand  containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
-  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-            std::vector<Node>& expand);
+  bool plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand);
 
 public:
   unsigned char* curr_global_costmap_;         // current global costmap

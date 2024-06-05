@@ -7,9 +7,9 @@
  * @date: 2022-10-27
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -23,28 +23,24 @@ namespace global_planner
 {
 /**
  * @brief  Constructor
- * @param   nx          pixel number in costmap x direction
- * @param   ny          pixel number in costmap y direction
+ * @param   costmap   the environment for path planning
  * @param   sample_num  andom sample points
  * @param   max_dist    max distance between sample points
  */
-RRT::RRT(int nx, int ny, double resolution, int sample_num, double max_dist)
-  : GlobalPlanner(nx, ny, resolution), sample_num_(sample_num), max_dist_(max_dist)
+RRT::RRT(costmap_2d::Costmap2D* costmap, int sample_num, double max_dist)
+  : GlobalPlanner(costmap), sample_num_(sample_num), max_dist_(max_dist)
 {
 }
 
 /**
  * @brief RRT implementation
- *
- * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
  * @param path          optimal path consists of Node
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool RRT::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-               std::vector<Node>& expand)
+bool RRT::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   path.clear();
   expand.clear();
@@ -52,7 +48,6 @@ bool RRT::plan(const unsigned char* global_costmap, const Node& start, const Nod
   sample_list_.clear();
   // copy
   start_ = start, goal_ = goal;
-  costs_ = global_costmap;
   sample_list_.insert(std::make_pair(start.id_, start));
   expand.push_back(start);
 
@@ -64,7 +59,7 @@ bool RRT::plan(const unsigned char* global_costmap, const Node& start, const Nod
     Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (global_costmap[sample_node.id_] >= lethal_cost_ * factor_)
+    if (costmap_->getCharMap()[sample_node.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_)
       continue;
 
     // visited
@@ -109,7 +104,7 @@ Node RRT::_generateRandomNode()
   if (p(eng) > 0.05)
   {
     // generate node
-    std::uniform_int_distribution<int> distr(0, ns_ - 1);
+    std::uniform_int_distribution<int> distr(0, map_size_ - 1);
     const int id = distr(eng);
     int x, y;
     index2Grid(id, x, y);
@@ -130,7 +125,7 @@ Node RRT::_findNearestPoint(std::unordered_map<int, Node> list, const Node& node
   Node nearest_node, new_node(node);
   double min_dist = std::numeric_limits<double>::max();
 
-  for (const auto & p : list)
+  for (const auto& p : list)
   {
     // calculate distance
     double new_dist = helper::dist(p.second, new_node);
@@ -151,8 +146,8 @@ Node RRT::_findNearestPoint(std::unordered_map<int, Node> list, const Node& node
     // connect sample node and nearest node, then move the nearest node
     // forward to sample node with `max_distance` as result
     double theta = helper::angle(nearest_node, new_node);
-    new_node.x_ = nearest_node.x_ + (int)(max_dist_ * cos(theta));
-    new_node.y_ = nearest_node.y_ + (int)(max_dist_ * sin(theta));
+    new_node.x_ = nearest_node.x_ + static_cast<int>(max_dist_ * cos(theta));
+    new_node.y_ = nearest_node.y_ + static_cast<int>(max_dist_ * sin(theta));
     new_node.id_ = grid2Index(new_node.x_, new_node.y_);
     new_node.g_ = max_dist_ + nearest_node.g_;
   }
@@ -180,12 +175,14 @@ bool RRT::_isAnyObstacleInPath(const Node& n1, const Node& n2)
     return true;
 
   // sample the line between two nodes and check obstacle
-  int n_step = (int)(dist_ / resolution_);
+  float resolution = costmap_->getResolution();
+  int n_step = static_cast<int>(dist_ / resolution);
   for (int i = 0; i < n_step; i++)
   {
-    float line_x = (float)n1.x_ + (float)(i * resolution_ * cos(theta));
-    float line_y = (float)n1.y_ + (float)(i * resolution_ * sin(theta));
-    if (costs_[grid2Index((int)line_x, (int)line_y)] >= lethal_cost_ * factor_)
+    float line_x = (float)n1.x_ + (float)(i * resolution * cos(theta));
+    float line_y = (float)n1.y_ + (float)(i * resolution * sin(theta));
+    if (costmap_->getCharMap()[grid2Index(static_cast<int>(line_x), static_cast<int>(line_y))] >=
+        costmap_2d::LETHAL_OBSTACLE * factor_)
       return true;
   }
   return false;

@@ -7,9 +7,9 @@
  * @date: 2023-12-14
  * @version: 1.1
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -33,22 +33,18 @@ class JumpPointSearch : public GlobalPlanner
 public:
   /**
    * @brief Constructor
-   * @param nx         pixel number in costmap x direction
-   * @param ny         pixel number in costmap y direction
-   * @param resolution costmap resolution
+   * @param costmap   the environment for path planning
    */
-  JumpPointSearch(int nx, int ny, double resolution);
+  JumpPointSearch(costmap_2d::Costmap2D* costmap);
 
   /**
    * @brief Jump Point Search(JPS) implementation
-   * @param costs  costmap
    * @param start  start node
    * @param goal   goal node
    * @param expand containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
-  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-            std::vector<Node>& expand);
+  bool plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand);
 
   /**
    * @brief Calculate jump node recursively
@@ -67,8 +63,7 @@ public:
   bool detectForceNeighbor(const Node& point, const Node& motion);
 
 private:
-  Node start_, goal_;           // start and goal node
-  const unsigned char* costs_;  // costmap
+  Node start_, goal_;  // start and goal node
 };
 }  // namespace global_planner
 #endif  // JUMP_POINT_SEARCH_H

@@ -26,7 +26,7 @@ namespace rpp_planner
 /**
  * @brief Construct a new RPP planner object
  */
-RPPPlanner::RPPPlanner() : initialized_(false), tf_(nullptr), goal_reached_(false)  //, costmap_ros_(nullptr)
+RPPPlanner::RPPPlanner() : initialized_(false), tf_(nullptr), goal_reached_(false)
 {
 }
 
@@ -58,19 +58,12 @@ void RPPPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     initialized_ = true;
     tf_ = tf;
     costmap_ros_ = costmap_ros;
-    costmap_2d::Costmap2D* costmap = costmap_ros_->getCostmap();
-
-    // set costmap properties
-    setSize(costmap->getSizeInCellsX(), costmap->getSizeInCellsY());
-    setOrigin(costmap->getOriginX(), costmap->getOriginY());
-    setResolution(costmap->getResolution());
 
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
 
     // base
     nh.param("goal_dist_tolerance", goal_dist_tol_, 0.2);
     nh.param("rotate_tolerance", rotate_tol_, 0.5);
-    nh.param("convert_offset", convert_offset_, 0.0);
     nh.param("base_frame", base_frame_, base_frame_);
     nh.param("map_frame", map_frame_, map_frame_);
 
@@ -101,7 +94,6 @@ void RPPPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("/move_base/controller_frequency", controller_freqency, 10.0);
     d_t_ = 1 / controller_freqency;
 
-    odom_helper_ = new base_local_planner::OdometryHelperRos("/odom");
     target_pt_pub_ = nh.advertise<geometry_msgs::PointStamped>("/target_point", 10);
     current_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
 

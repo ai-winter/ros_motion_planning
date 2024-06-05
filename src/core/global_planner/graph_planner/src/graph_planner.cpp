@@ -7,9 +7,9 @@
  * @date: 2023-10-26
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -36,7 +36,7 @@ namespace graph_planner
 /**
  * @brief Construct a new Graph Planner object
  */
-GraphPlanner::GraphPlanner() : initialized_(false), costmap_(nullptr), g_planner_(nullptr)
+GraphPlanner::GraphPlanner() : initialized_(false), g_planner_(nullptr)
 {
 }
 
@@ -48,18 +48,6 @@ GraphPlanner::GraphPlanner() : initialized_(false), costmap_(nullptr), g_planner
 GraphPlanner::GraphPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros) : GraphPlanner()
 {
   initialize(name, costmap_ros);
-}
-
-/**
- * @brief Destroy the Graph Planner object
- */
-GraphPlanner::~GraphPlanner()
-{
-  if (g_planner_)
-  {
-    delete g_planner_;
-    g_planner_ = nullptr;
-  }
 }
 
 /**
@@ -88,62 +76,54 @@ void GraphPlanner::initialize(std::string name)
     // initialize ROS node
     ros::NodeHandle private_nh("~/" + name);
 
-    // initialize costmap
-    costmap_ = costmap_ros_->getCostmap();
-
     // costmap frame ID
     frame_id_ = costmap_ros_->getGlobalFrameID();
 
-    // get costmap properties
-    nx_ = costmap_->getSizeInCellsX(), ny_ = costmap_->getSizeInCellsY();
-    resolution_ = costmap_->getResolution();
-
-    private_nh.param("convert_offset", convert_offset_, 0.0);  // offset of transform from world(x,y) to grid map(x,y)
-    private_nh.param("default_tolerance", tolerance_, 0.0);    // error tolerance
-    private_nh.param("outline_map", is_outline_, false);       // whether outline the map or not
-    private_nh.param("obstacle_factor", factor_, 0.5);         // obstacle factor, NOTE: no use...
-    private_nh.param("expand_zone", is_expand_, false);        // whether publish expand zone or not
-    private_nh.param("voronoi_map", is_voronoi_map_, false);   // whether to store Voronoi map or not
+    private_nh.param("default_tolerance", tolerance_, 0.0);   // error tolerance
+    private_nh.param("outline_map", is_outline_, false);      // whether outline the map or not
+    private_nh.param("obstacle_factor", factor_, 0.5);        // obstacle factor, NOTE: no use...
+    private_nh.param("expand_zone", is_expand_, false);       // whether publish expand zone or not
+    private_nh.param("voronoi_map", is_voronoi_map_, false);  // whether to store Voronoi map or not
 
     // planner name
     private_nh.param("planner_name", planner_name_, (std::string) "a_star");
+    auto costmap = costmap_ros_->getCostmap();
     if (planner_name_ == "a_star")
-      g_planner_ = new global_planner::AStar(nx_, ny_, resolution_);
+      g_planner_ = std::make_shared<global_planner::AStar>(costmap);
     else if (planner_name_ == "dijkstra")
-      g_planner_ = new global_planner::AStar(nx_, ny_, resolution_, true);
+      g_planner_ = std::make_shared<global_planner::AStar>(costmap, true);
     else if (planner_name_ == "gbfs")
-      g_planner_ = new global_planner::AStar(nx_, ny_, resolution_, false, true);
+      g_planner_ = std::make_shared<global_planner::AStar>(costmap, false, true);
     else if (planner_name_ == "jps")
-      g_planner_ = new global_planner::JumpPointSearch(nx_, ny_, resolution_);
+      g_planner_ = std::make_shared<global_planner::JumpPointSearch>(costmap);
     else if (planner_name_ == "d_star")
-      g_planner_ = new global_planner::DStar(nx_, ny_, resolution_);
+      g_planner_ = std::make_shared<global_planner::DStar>(costmap);
     else if (planner_name_ == "lpa_star")
-      g_planner_ = new global_planner::LPAStar(nx_, ny_, resolution_);
+      g_planner_ = std::make_shared<global_planner::LPAStar>(costmap);
     else if (planner_name_ == "d_star_lite")
-      g_planner_ = new global_planner::DStarLite(nx_, ny_, resolution_);
+      g_planner_ = std::make_shared<global_planner::DStarLite>(costmap);
     else if (planner_name_ == "voronoi")
-      g_planner_ = new global_planner::VoronoiPlanner(nx_, ny_, resolution_,
-                                                      costmap_ros_->getLayeredCostmap()->getCircumscribedRadius());
+      g_planner_ = std::make_shared<global_planner::VoronoiPlanner>(
+          costmap, costmap_ros_->getLayeredCostmap()->getCircumscribedRadius());
     else if (planner_name_ == "theta_star")
-      g_planner_ = new global_planner::ThetaStar(nx_, ny_, resolution_);
+      g_planner_ = std::make_shared<global_planner::ThetaStar>(costmap);
     else if (planner_name_ == "lazy_theta_star")
-      g_planner_ = new global_planner::LazyThetaStar(nx_, ny_, resolution_);
+      g_planner_ = std::make_shared<global_planner::LazyThetaStar>(costmap);
     else if (planner_name_ == "s_theta_star")
-      g_planner_ = new global_planner::SThetaStar(nx_, ny_, resolution_);
+      g_planner_ = std::make_shared<global_planner::SThetaStar>(costmap);
     else if (planner_name_ == "hybrid_a_star")
     {
       bool is_reverse;  // whether reverse operation is allowed
       double max_curv;  // maximum curvature of model
       private_nh.param("is_reverse", is_reverse, false);
       private_nh.param("max_curv", max_curv, 1.0);
-      g_planner_ = new global_planner::HybridAStar(nx_, ny_, resolution_, is_reverse, max_curv);
+      g_planner_ = std::make_shared<global_planner::HybridAStar>(costmap, is_reverse, max_curv);
     }
     else
       ROS_ERROR("Unknown planner name: %s", planner_name_.c_str());
 
     // pass costmap information to planner (required)
-    g_planner_->setOrigin(costmap_->getOriginX(), costmap_->getOriginY());
-    g_planner_->setConvertOffset(convert_offset_);
+    g_planner_->setFactor(factor_);
 
     ROS_INFO("Using global graph planner: %s", planner_name_.c_str());
 
@@ -187,7 +167,7 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
                             double tolerance, std::vector<geometry_msgs::PoseStamped>& plan)
 {
   // start thread mutex
-  boost::mutex::scoped_lock lock(mutex_);
+  std::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*g_planner_->getCostMap()->getMutex());
   if (!initialized_)
   {
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
@@ -213,8 +193,8 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
 
   // get goal and start node coordinate tranform from world to costmap
   double wx = start.pose.position.x, wy = start.pose.position.y;
-  double m_start_x, m_start_y, m_goal_x, m_goal_y;
-  if (!g_planner_->world2Map(wx, wy, m_start_x, m_start_y))
+  unsigned int g_start_x, g_start_y, g_goal_x, g_goal_y;
+  if (!g_planner_->world2Map(wx, wy, g_start_x, g_start_y))
   {
     ROS_WARN(
         "The robot's start position is off the global costmap. Planning will always fail, are you sure the robot has "
@@ -222,7 +202,7 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
     return false;
   }
   wx = goal.pose.position.x, wy = goal.pose.position.y;
-  if (!g_planner_->world2Map(wx, wy, m_goal_x, m_goal_y))
+  if (!g_planner_->world2Map(wx, wy, g_goal_x, g_goal_y))
   {
     ROS_WARN_THROTTLE(1.0,
                       "The goal sent to the global planner is off the global costmap. Planning will always fail to "
@@ -230,18 +210,13 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
     return false;
   }
 
-  // tranform from costmap to grid map
-  int g_start_x, g_start_y, g_goal_x, g_goal_y;
-  g_planner_->map2Grid(m_start_x, m_start_y, g_start_x, g_start_y);
-  g_planner_->map2Grid(m_goal_x, m_goal_y, g_goal_x, g_goal_y);
-
   // NOTE: how to init start and goal?
   Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
   Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
 
   // outline the map
   if (is_outline_)
-    g_planner_->outlineMap(costmap_->getCharMap());
+    g_planner_->outlineMap();
 
   // calculate voronoi map
   bool voronoi_layer_exist = false;
@@ -274,7 +249,8 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
   {
     if (!voronoi_layer_exist)
       ROS_ERROR("Failed to get a Voronoi layer for Voronoi planner.");
-    path_found = dynamic_cast<global_planner::VoronoiPlanner*>(g_planner_)->plan(voronoi_, start_node, goal_node, path);
+    path_found = std::dynamic_pointer_cast<global_planner::VoronoiPlanner>(g_planner_)
+                     ->plan(voronoi_, start_node, goal_node, path);
   }
   else if (planner_name_ == "hybrid_a_star")
   {
@@ -283,11 +259,11 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
                                                     tf2::getYaw(start.pose.orientation));
     global_planner::HybridAStar::HybridNode h_goal(goal.pose.position.x, goal.pose.position.y,
                                                    tf2::getYaw(goal.pose.orientation));
-    path_found = dynamic_cast<global_planner::HybridAStar*>(g_planner_)
-                     ->plan(costmap_->getCharMap(), h_start, h_goal, path, expand);
+    path_found =
+        std::dynamic_pointer_cast<global_planner::HybridAStar>(g_planner_)->plan(h_start, h_goal, path, expand);
   }
   else
-    path_found = g_planner_->plan(costmap_->getCharMap(), start_node, goal_node, path, expand);
+    path_found = g_planner_->plan(start_node, goal_node, path, expand);
 
   // convert path to ros plan
   if (path_found)
@@ -362,21 +338,22 @@ void GraphPlanner::_publishExpand(std::vector<Node>& expand)
   ROS_DEBUG("Expand Zone Size: %ld", expand.size());
 
   nav_msgs::OccupancyGrid grid;
+  float resolution = g_planner_->getCostMap()->getResolution();
 
   // build expand
   grid.header.frame_id = frame_id_;
   grid.header.stamp = ros::Time::now();
-  grid.info.resolution = resolution_;
-  grid.info.width = nx_;
-  grid.info.height = ny_;
+  grid.info.resolution = resolution;
+  grid.info.width = g_planner_->getCostMap()->getSizeInCellsX();
+  grid.info.height = g_planner_->getCostMap()->getSizeInCellsY();
 
   double wx, wy;
-  costmap_->mapToWorld(0, 0, wx, wy);
-  grid.info.origin.position.x = wx - resolution_ / 2;
-  grid.info.origin.position.y = wy - resolution_ / 2;
+  g_planner_->getCostMap()->mapToWorld(0, 0, wx, wy);
+  grid.info.origin.position.x = wx - resolution / 2;
+  grid.info.origin.position.y = wy - resolution / 2;
   grid.info.origin.position.z = 0.0;
   grid.info.origin.orientation.w = 1.0;
-  grid.data.resize(nx_ * ny_);
+  grid.data.resize(g_planner_->getMapSize());
 
   for (unsigned int i = 0; i < grid.data.size(); i++)
     grid.data[i] = 0;
@@ -405,7 +382,7 @@ bool GraphPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometr
   for (int i = path.size() - 1; i >= 0; i--)
   {
     double wx, wy;
-    g_planner_->map2World((double)path[i].x_, (double)path[i].y_, wx, wy);
+    g_planner_->map2World(path[i].x_, path[i].y_, wx, wy);
 
     // coding as message type
     geometry_msgs::PoseStamped pose;

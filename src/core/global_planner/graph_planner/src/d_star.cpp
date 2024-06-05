@@ -20,16 +20,13 @@ namespace global_planner
 {
 /**
  * @brief Construct a new DStar object
- * @param nx         pixel number in costmap x direction
- * @param ny         pixel number in costmap y direction
- * @param resolution costmap resolution
+ * @param costmap   the environment for path planning
  */
-DStar::DStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resolution)
+DStar::DStar(costmap_2d::Costmap2D* costmap) : GlobalPlanner(costmap)
 {
-  curr_global_costmap_ = new unsigned char[ns_];
-  last_global_costmap_ = new unsigned char[ns_];
+  curr_global_costmap_ = new unsigned char[map_size_];
+  last_global_costmap_ = new unsigned char[map_size_];
   goal_.x_ = goal_.y_ = INF;
-  factor_ = 0.25;
   initMap();
 }
 
@@ -38,11 +35,11 @@ DStar::DStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resoluti
  */
 void DStar::initMap()
 {
-  map_ = new DNodePtr*[nx_];
-  for (int i = 0; i < nx_; ++i)
+  map_ = new DNodePtr*[costmap_->getSizeInCellsX()];
+  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
   {
-    map_[i] = new DNodePtr[ny_];
-    for (int j = 0; j < ny_; ++j)
+    map_[i] = new DNodePtr[costmap_->getSizeInCellsY()];
+    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
     {
       map_[i][j] = new DNode(i, j, INF, INF, grid2Index(i, j), -1, DNode::NEW, INF);
     }
@@ -56,11 +53,11 @@ void DStar::reset()
 {
   open_list_.clear();
 
-  for (int i = 0; i < nx_; ++i)
-    for (int j = 0; j < ny_; ++j)
+  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
+    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
       delete map_[i][j];
 
-  for (int i = 0; i < nx_; ++i)
+  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
     delete[] map_[i];
 
   delete[] map_;
@@ -95,8 +92,8 @@ void DStar::insert(DNodePtr node_ptr, double h_new)
  */
 bool DStar::isCollision(DNodePtr n1, DNodePtr n2)
 {
-  return curr_global_costmap_[n1->id_] > lethal_cost_ * factor_ ||
-         curr_global_costmap_[n2->id_] > lethal_cost_ * factor_;
+  return curr_global_costmap_[n1->id_] > costmap_2d::LETHAL_OBSTACLE * factor_ ||
+         curr_global_costmap_[n2->id_] > costmap_2d::LETHAL_OBSTACLE * factor_;
 }
 
 /**
@@ -115,7 +112,7 @@ void DStar::getNeighbours(DNodePtr node_ptr, std::vector<DNodePtr>& neighbours)
         continue;
 
       int x_n = x + i, y_n = y + j;
-      if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
+      if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
         continue;
 
       DNodePtr neigbour_ptr = map_[x_n][y_n];
@@ -211,9 +208,9 @@ double DStar::processState()
  */
 void DStar::extractExpand(std::vector<Node>& expand)
 {
-  for (int i = 0; i < nx_; ++i)
+  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
   {
-    for (int j = 0; j < ny_; ++j)
+    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
     {
       DNodePtr node_ptr = map_[i][j];
       if (node_ptr->t_ == DNode::CLOSED)
@@ -278,18 +275,16 @@ void DStar::modify(DNodePtr x)
 
 /**
  * @brief D* implementation
- * @param global_costmap costmap
  * @param start          start node
  * @param goal           goal node
  * @param expand         containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool DStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-                 std::vector<Node>& expand)
+bool DStar::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   // update costmap
-  memcpy(last_global_costmap_, curr_global_costmap_, ns_);
-  memcpy(curr_global_costmap_, global_costmap, ns_);
+  memcpy(last_global_costmap_, curr_global_costmap_, map_size_);
+  memcpy(curr_global_costmap_, costmap_->getCharMap(), map_size_);
 
   expand_.clear();
 
@@ -330,7 +325,7 @@ bool DStar::plan(const unsigned char* global_costmap, const Node& start, const N
       for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; ++j)
       {
         int x_n = state.x_ + i, y_n = state.y_ + j;
-        if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
+        if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
           continue;
 
         DNodePtr x = map_[x_n][y_n];

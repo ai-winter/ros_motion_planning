@@ -24,16 +24,9 @@ namespace local_planner
  * @brief Construct a new Local Planner object
  */
 LocalPlanner::LocalPlanner()
-  : lethal_cost_(LETHAL_COST)
-  , neutral_cost_(NEUTRAL_COST)
-  , factor_(OBSTACLE_FACTOR)
-  , base_frame_("base_link")
-  , map_frame_("map")
-  , odom_frame_("odom")
-  , convert_offset_(0.0)
-  , costmap_ros_(nullptr)
+  : factor_(0.5), base_frame_("base_link"), map_frame_("map"), odom_frame_("odom"), costmap_ros_(nullptr)
 {
-  odom_helper_ = new base_local_planner::OdometryHelperRos(odom_frame_);
+  odom_helper_ = std::make_shared<base_local_planner::OdometryHelperRos>(odom_frame_);
 }
 
 /**
@@ -41,57 +34,7 @@ LocalPlanner::LocalPlanner()
  */
 LocalPlanner::~LocalPlanner()
 {
-  delete odom_helper_;
-}
-
-/**
- * @brief Set or reset costmap size
- * @param nx pixel number in costmap x direction
- * @param ny pixel number in costmap y direction
- */
-void LocalPlanner::setSize(int nx, int ny)
-{
-  nx_ = nx;
-  ny_ = ny;
-  ns_ = nx * ny;
-}
-
-/**
- * @brief Set or reset costmap resolution
- * @param resolution costmap resolution
- */
-void LocalPlanner::setResolution(double resolution)
-{
-  resolution_ = resolution;
-}
-
-/**
- * @brief Set or reset costmap origin
- * @param origin_x origin in costmap x direction
- * @param origin_y origin in costmap y direction
- */
-void LocalPlanner::setOrigin(double origin_x, double origin_y)
-{
-  origin_x_ = origin_x;
-  origin_y_ = origin_y;
-}
-
-/**
- * @brief Set or reset lethal cost
- * @param neutral_cost neutral cost
- */
-void LocalPlanner::setLethalCost(unsigned char lethal_cost)
-{
-  lethal_cost_ = lethal_cost;
-}
-
-/**
- * @brief Set or reset neutral cost
- * @param neutral_cost neutral cost
- */
-void LocalPlanner::setNeutralCost(unsigned char neutral_cost)
-{
-  neutral_cost_ = neutral_cost;
+  // delete odom_helper_;
 }
 
 /**
@@ -238,15 +181,11 @@ void LocalPlanner::transformPose(tf2_ros::Buffer* tf, const std::string out_fram
  */
 bool LocalPlanner::worldToMap(double wx, double wy, int& mx, int& my)
 {
-  if (wx < origin_x_ || wy < origin_y_)
-    return false;
-
-  mx = (int)((wx - origin_x_) / resolution_ - convert_offset_);
-  my = (int)((wy - origin_y_) / resolution_ - convert_offset_);
-  if (mx < nx_ && my < ny_)
-    return true;
-
-  return false;
+  unsigned int mx_u, my_u;
+  bool flag = costmap_ros_->getCostmap()->worldToMap(wx, wy, mx_u, my_u);
+  mx = static_cast<int>(mx_u);
+  my = static_cast<int>(my_u);
+  return flag;
 }
 
 /**
@@ -364,13 +303,13 @@ void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseS
     double cross = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
     kappa = std::copysign(2 * sinB / b, cross);
   }
-
+  if (std::isnan(kappa))
+    kappa = 0.0;
   pt.header.frame_id = goal_pose_it->header.frame_id;
   pt.header.stamp = goal_pose_it->header.stamp;
 
   theta = atan2(goal_pose_it->pose.position.y - prev_pose_it->pose.position.y,
                 goal_pose_it->pose.position.x - prev_pose_it->pose.position.x);
-
 }
 
 }  // namespace local_planner

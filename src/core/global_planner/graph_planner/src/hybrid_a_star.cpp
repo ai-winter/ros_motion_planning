@@ -131,52 +131,37 @@ std::vector<HybridAStar::HybridNode> HybridAStar::HybridNode::getMotion()
 
 /**
  * @brief Construct a new Hybrid A* object
- * @param nx         pixel number in costmap x direction
- * @param ny         pixel number in costmap y direction
- * @param resolution costmap resolution
+ * @param costmap   the environment for path planning
  * @param is_reverse whether reverse operation is allowed
  * @param max_curv   maximum curvature of model
  */
-HybridAStar::HybridAStar(int nx, int ny, double resolution, bool is_reverse, double max_curv)
-  : GlobalPlanner(nx, ny, resolution), is_reverse_(is_reverse), max_curv_(max_curv)
+HybridAStar::HybridAStar(costmap_2d::Costmap2D* costmap, bool is_reverse, double max_curv)
+  : GlobalPlanner(costmap), is_reverse_(is_reverse), max_curv_(max_curv)
 {
   dubins_gen_.setStep(1.5);
   dubins_gen_.setMaxCurv(max_curv_);
   goal_ = HybridNode();
-  a_star_planner_ = new AStar(nx, ny, resolution);
-}
-
-/**
- * @brief Destory the Hybrid A* object
- */
-HybridAStar::~HybridAStar()
-{
-  delete costmap_;
-  delete a_star_planner_;
+  a_star_planner_ = std::make_shared<AStar>(costmap);
 }
 
 /**
  * @brief Hybrid A* implementation
- * @param global_costmap global costmap
  * @param start          start node
  * @param goal           goal node
  * @param path           optimal path consists of Node
  * @param expand         containing the node been search during the process
  * @return true if path found, else false
  */
-bool HybridAStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal,
-                       std::vector<Node>& path, std::vector<Node>& expand)
+bool HybridAStar::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   return false;
 }
-bool HybridAStar::plan(const unsigned char* global_costmap, HybridNode& start, HybridNode& goal,
-                       std::vector<Node>& path, std::vector<Node>& expand)
+bool HybridAStar::plan(HybridNode& start, HybridNode& goal, std::vector<Node>& path, std::vector<Node>& expand)
 
 {
   // intialization
   path.clear();
   expand.clear();
-  costmap_ = global_costmap;
   updateIndex(start);
   updateIndex(goal);
 
@@ -184,7 +169,7 @@ bool HybridAStar::plan(const unsigned char* global_costmap, HybridNode& start, H
   if (goal_ != goal)
   {
     goal_ = goal;
-    double gx, gy;
+    unsigned int gx, gy;
     world2Map(goal.x_, goal.y_, gx, gy);
     Node h_start(gx, gy, 0, 0, grid2Index(gx, gy), 0);
     genHeurisiticMap(h_start);
@@ -241,11 +226,11 @@ bool HybridAStar::plan(const unsigned char* global_costmap, HybridNode& start, H
 
       // next node hit the boundary or obstacle
       // prevent planning failed when the current within inflation
-      if ((_worldToIndex(node_new.x_, node_new.y_) < 0) || (_worldToIndex(node_new.x_, node_new.y_) >= ns_) ||
+      if ((_worldToIndex(node_new.x_, node_new.y_) < 0) || (_worldToIndex(node_new.x_, node_new.y_) >= map_size_) ||
           (node_new.t_ / DELTA_HEADING >= HEADINGS) ||
-          (global_costmap[_worldToIndex(node_new.x_, node_new.y_)] >= lethal_cost_ * factor_ &&
-           global_costmap[_worldToIndex(node_new.x_, node_new.y_)] >=
-               global_costmap[_worldToIndex(current.x_, current.y_)]))
+          (costmap_->getCharMap()[_worldToIndex(node_new.x_, node_new.y_)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+           costmap_->getCharMap()[_worldToIndex(node_new.x_, node_new.y_)] >=
+               costmap_->getCharMap()[_worldToIndex(current.x_, current.y_)]))
         continue;
 
       node_new.pid_ = current.id_;
@@ -256,11 +241,11 @@ bool HybridAStar::plan(const unsigned char* global_costmap, HybridNode& start, H
   }
 
   // candidate A* path
-  double sx, sy, gx, gy;
+  unsigned int sx, sy, gx, gy;
   world2Map(start.x_, start.y_, sx, sy);
   world2Map(goal.x_, goal.y_, gx, gy);
-  return a_star_planner_->plan(global_costmap, Node(sx, sy, 0, 0, grid2Index(sx, sy)),
-                               Node(gx, gy, 0, 0, grid2Index(gx, gy)), path, expand);
+  return a_star_planner_->plan(Node(sx, sy, 0, 0, grid2Index(sx, sy)), Node(gx, gy, 0, 0, grid2Index(gx, gy)), path,
+                               expand);
 }
 
 /**
@@ -272,7 +257,7 @@ bool HybridAStar::plan(const unsigned char* global_costmap, HybridNode& start, H
  */
 bool HybridAStar::dubinsShot(const HybridNode& start, const HybridNode& goal, std::vector<Node>& path)
 {
-  double sx, sy, gx, gy;
+  unsigned int sx, sy, gx, gy;
   world2Map(start.x_, start.y_, sx, sy);
   world2Map(goal.x_, goal.y_, gx, gy);
   std::vector<std::tuple<double, double, double>> poes = { { sx, sy, start.t_ }, { gx, gy, goal.t_ } };
@@ -283,7 +268,7 @@ bool HybridAStar::dubinsShot(const HybridNode& start, const HybridNode& goal, st
     path.clear();
     for (auto const& p : path_dubins)
     {
-      if (costmap_[grid2Index(p.first, p.second)] >= lethal_cost_ * factor_)
+      if (costmap_->getCharMap()[grid2Index(p.first, p.second)] >= costmap_2d::LETHAL_OBSTACLE * factor_)
         return false;
       else
         path.emplace_back(p.first, p.second);
@@ -318,7 +303,7 @@ void HybridAStar::updateHeuristic(HybridNode& node)
   //   cost_dubins = dubins_gen_.len(path_dubins);
 
   // 2D search cost function
-  double cost_2d = h_map_[_worldToIndex(node.x_, node.y_)].g_ * resolution_;
+  double cost_2d = h_map_[_worldToIndex(node.x_, node.y_)].g_ * costmap_->getResolution();
   node.h_ = std::max(cost_2d, cost_dubins);
 }
 
@@ -360,7 +345,7 @@ void HybridAStar::genHeurisiticMap(const Node& start)
 
       // next node hit the boundary or obstacle
       // prevent planning failed when the current within inflation
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_))
+      if ((node_new.id_ < 0) || (node_new.id_ >= map_size_))
         continue;
 
       if (open_set.find(node_new.id_) != open_set.end())
@@ -378,20 +363,6 @@ void HybridAStar::genHeurisiticMap(const Node& start)
 }
 
 /**
- * @brief Tranform from world map(x, y) to grid map(x, y)
- * @param gx grid map x
- * @param gy grid map y
- * @param wx world map x
- * @param wy world map y
- */
-void HybridAStar::_worldToGrid(double wx, double wy, int& gx, int& gy)
-{
-  double mx, my;
-  world2Map(wx, wy, mx, my);
-  map2Grid(mx, my, gx, gy);
-}
-
-/**
  * @brief Tranform from world map(x, y) to grid index(i)
  * @param wx world map x
  * @param wy world map y
@@ -399,8 +370,8 @@ void HybridAStar::_worldToGrid(double wx, double wy, int& gx, int& gy)
  */
 int HybridAStar::_worldToIndex(double wx, double wy)
 {
-  int gx, gy;
-  _worldToGrid(wx, wy, gx, gy);
+  unsigned int gx, gy;
+  world2Map(wx, wy, gx, gy);
   return grid2Index(gx, gy);
 }
 
@@ -414,12 +385,12 @@ int HybridAStar::_worldToIndex(double wx, double wy)
 std::vector<Node> HybridAStar::_convertClosedListToPath(std::unordered_map<int, HybridNode>& closed_list,
                                                         const HybridNode& start, const HybridNode& goal)
 {
-  int cur_x, cur_y;
+  unsigned int cur_x, cur_y;
   std::vector<Node> path;
   auto current = closed_list.find(goal.id_);
   while (current->second != start)
   {
-    _worldToGrid(current->second.x_, current->second.y_, cur_x, cur_y);
+    world2Map(current->second.x_, current->second.y_, cur_x, cur_y);
     path.emplace_back(cur_x, cur_y);
     auto it = closed_list.find(current->second.pid_);
     if (it != closed_list.end())
@@ -427,7 +398,7 @@ std::vector<Node> HybridAStar::_convertClosedListToPath(std::unordered_map<int, 
     else
       return {};
   }
-  _worldToGrid(start.x_, start.y_, cur_x, cur_y);
+  world2Map(start.x_, start.y_, cur_x, cur_y);
   path.emplace_back(cur_x, cur_y);
   return path;
 }

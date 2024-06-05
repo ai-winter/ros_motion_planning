@@ -7,9 +7,9 @@
  * @date: 2023-01-19
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -22,26 +22,22 @@ namespace global_planner
 {
 /**
  * @brief  Constructor
- * @param   nx          pixel number in costmap x direction
- * @param   ny          pixel number in costmap y direction
- * @param   sample_num  andom sample points
+ * @param   costmap   the environment for path planning
  * @param   max_dist    max distance between sample points
  */
-InformedRRT::InformedRRT(int nx, int ny, double resolution, int sample_num, double max_dist, double r)
-  : RRTStar(nx, ny, resolution, sample_num, max_dist, r)
+InformedRRT::InformedRRT(costmap_2d::Costmap2D* costmap, int sample_num, double max_dist, double r)
+  : RRTStar(costmap, sample_num, max_dist, r)
 {
 }
 
 /**
  * @brief Informed RRT* implementation
- * @param global_costmap     costmap
  * @param start     start node
  * @param goal      goal node
  * @param expand    containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool InformedRRT::plan(const unsigned char* global_costmap, const Node& start, const Node& goal,
-                       std::vector<Node>& path, std::vector<Node>& expand)
+bool InformedRRT::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   // initialization
   c_best_ = std::numeric_limits<double>::max();
@@ -50,7 +46,6 @@ bool InformedRRT::plan(const unsigned char* global_costmap, const Node& start, c
   sample_list_.clear();
   // copy
   start_ = start, goal_ = goal;
-  costs_ = global_costmap;
   sample_list_.insert(std::make_pair(start.id_, start));
   expand.push_back(start);
 
@@ -64,7 +59,7 @@ bool InformedRRT::plan(const unsigned char* global_costmap, const Node& start, c
     Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (global_costmap[sample_node.id_] >= lethal_cost_ * factor_)
+    if (costmap_->getCharMap()[sample_node.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_)
       continue;
 
     // visited
@@ -131,7 +126,7 @@ Node InformedRRT::_generateRandomNode()
       }
       // transform to ellipse
       Node temp = _transform(x, y);
-      if (temp.id_ < ns_ - 1)
+      if (temp.id_ < map_size_ - 1)
         return temp;
     }
   }
@@ -160,8 +155,8 @@ Node InformedRRT::_transform(double x, double y)
   double b = std::sqrt(a * a - c * c);
 
   // transform
-  int tx = (int)(a * cos(theta) * x + b * sin(theta) * y + center_x);
-  int ty = (int)(-a * sin(theta) * x + b * cos(theta) * y + center_y);
+  int tx = static_cast<int>(a * cos(theta) * x + b * sin(theta) * y + center_x);
+  int ty = static_cast<int>(-a * sin(theta) * x + b * cos(theta) * y + center_y);
   int id = grid2Index(tx, ty);
   return Node(tx, ty, 0, 0, id, 0);
 }

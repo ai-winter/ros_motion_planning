@@ -7,9 +7,9 @@
  * @date: 2023-10-01
  * @version: 1.3
  *
- * Copyright (c) 2024, Wu Maojia, Yang Haodong. 
+ * Copyright (c) 2024, Wu Maojia, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -20,29 +20,23 @@ namespace global_planner
 {
 /**
  * @brief Construct a new ThetaStar object
- * @param nx          pixel number in costmap x direction
- * @param ny          pixel number in costmap y direction
- * @param resolution  costmap resolution
+ * @param costmap   the environment for path planning
  */
-ThetaStar::ThetaStar(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resolution)
+ThetaStar::ThetaStar(costmap_2d::Costmap2D* costmap) : GlobalPlanner(costmap)
 {
-  factor_ = 0.35;
 };
 
 /**
  * @brief Theta* implementation
- * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
  * @param path          optimal path consists of Node
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-                     std::vector<Node>& expand)
+bool ThetaStar::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   // initialize
-  costs_ = global_costmap;
   path.clear();
   expand.clear();
 
@@ -91,8 +85,9 @@ bool ThetaStar::plan(const unsigned char* global_costmap, const Node& start, con
         continue;
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) ||
-          (costs_[node_new.id_] >= lethal_cost_ * factor_ && costs_[node_new.id_] >= costs_[current.id_]))
+      if ((node_new.id_ < 0) || (node_new.id_ >= map_size_) ||
+          (costmap_->getCharMap()[node_new.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+           costmap_->getCharMap()[node_new.id_] >= costmap_->getCharMap()[current.id_]))
         continue;
 
       // get the coordinate of parent node
@@ -170,7 +165,8 @@ bool ThetaStar::_lineOfSight(const Node& parent, const Node& child)
         y += s_y;
         e += d_x - d_y;
       }
-      if (costs_[grid2Index(x, y)] >= lethal_cost_ * factor_ && costs_[grid2Index(x, y)] >= costs_[parent.id_])
+      if (costmap_->getCharMap()[grid2Index(x, y)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+          costmap_->getCharMap()[grid2Index(x, y)] >= costmap_->getCharMap()[parent.id_])
         // obstacle detected
         return false;
     }
@@ -199,7 +195,8 @@ bool ThetaStar::_lineOfSight(const Node& parent, const Node& child)
         y += s_y;
         e += d_y - d_x;
       }
-      if (costs_[grid2Index(x, y)] >= lethal_cost_ * factor_ && costs_[grid2Index(x, y)] >= costs_[parent.id_])
+      if (costmap_->getCharMap()[grid2Index(x, y)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+          costmap_->getCharMap()[grid2Index(x, y)] >= costmap_->getCharMap()[parent.id_])
         // obstacle detected
         return false;
     }
