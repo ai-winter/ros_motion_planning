@@ -113,7 +113,7 @@ bool QuickInformedRRT::plan(const Node& start, const Node& goal, std::vector<Nod
     else // if do not update, decrease mu termly
     {
       mu_cnt ++;
-      if(mu_cnt * 100 == 0)
+      if(mu_cnt % 100 == 0)
         mu = std::fmax(0, mu - 0.5);
     }
   }
