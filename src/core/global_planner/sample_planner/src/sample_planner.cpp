@@ -22,6 +22,7 @@
 #include "rrt_star.h"
 #include "rrt_connect.h"
 #include "informed_rrt.h"
+#include "quick_informed_rrt.h"
 
 PLUGINLIB_EXPORT_CLASS(sample_planner::SamplePlanner, nav_core::BaseGlobalPlanner)
 
@@ -76,6 +77,10 @@ void SamplePlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
     private_nh.param("sample_points", sample_points_, 500);  // random sample points
     private_nh.param("sample_max_d", sample_max_d_, 5.0);    // max distance between sample points
     private_nh.param("optimization_r", opt_r_, 10.0);        // optimization radius
+    private_nh.param("prior_sample_set_r", prior_set_r_, 10.0);   // radius of priority circles set
+    private_nh.param("rewire_threads_num", rewire_threads_n_, 2); // threads number of rewire process
+    private_nh.param("step_extend_d", step_ext_d_, 5.0);     // threads number of rewire process
+    private_nh.param("t_distr_freedom", t_freedom_, 1.0);    // freedom of t distribution
 
     // planner name
     std::string planner_name;
@@ -88,6 +93,8 @@ void SamplePlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
       g_planner_ = std::make_shared<global_planner::RRTConnect>(costmap, sample_points_, sample_max_d_);
     else if (planner_name == "informed_rrt")
       g_planner_ = std::make_shared<global_planner::InformedRRT>(costmap, sample_points_, sample_max_d_, opt_r_);
+    else if (planner_name == "quick_informed_rrt")
+      g_planner_ = std::make_shared<global_planner::QuickInformedRRT>(costmap, sample_points_, sample_max_d_, opt_r_, prior_set_r_, rewire_threads_n_, step_ext_d_, t_freedom_);
 
     // pass costmap information to planner (required)
     g_planner_->setFactor(factor_);
