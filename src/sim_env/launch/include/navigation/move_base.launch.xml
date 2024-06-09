@@ -77,16 +77,19 @@
             if="$(eval arg('global_planner')=='rrt'
                     or arg('global_planner')=='rrt_star'
                     or arg('global_planner')=='informed_rrt'
+                    or arg('global_planner')=='quick_informed_rrt'
                     or arg('global_planner')=='rrt_connect')" />
         <param name="SamplePlanner/planner_name" value="$(arg global_planner)"
             if="$(eval arg('global_planner')=='rrt'
                     or arg('global_planner')=='rrt_star'
                     or arg('global_planner')=='informed_rrt'
+                    or arg('global_planner')=='quick_informed_rrt'
                     or arg('global_planner')=='rrt_connect')" />
         <rosparam file="$(find sim_env)/config/planner/sample_planner_params.yaml" command="load"
             if="$(eval arg('global_planner')=='rrt'
                     or arg('global_planner')=='rrt_star'
                     or arg('global_planner')=='informed_rrt'
+                    or arg('global_planner')=='quick_informed_rrt'
                     or arg('global_planner')=='rrt_connect')" />
 
         <!-- evolutionary search -->

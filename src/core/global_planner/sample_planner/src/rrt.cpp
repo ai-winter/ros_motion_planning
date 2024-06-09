@@ -101,7 +101,7 @@ Node RRT::_generateRandomNode()
   // define the range
   std::uniform_real_distribution<float> p(0, 1);
   // heuristic
-  if (p(eng) > 0.05)
+  if (p(eng) > opti_sample_p_)
   {
     // generate node
     std::uniform_int_distribution<int> distr(0, map_size_ - 1);

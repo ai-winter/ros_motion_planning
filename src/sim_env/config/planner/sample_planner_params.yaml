@@ -15,3 +15,12 @@ SamplePlanner:
   obstacle_factor: 0.5
   # whether publish expand zone or not
   expand_zone: true
+  # qi-rrt*:
+  # radius of priority circles set
+  prior_circle_set_r: 15.0
+  # increased distance of adaptive extend step size
+  step_extend_d: 30.0 # suggest between half and one times sample_max_d
+  # parallel rewire process
+  rewire_threads_num: 4
+  # aggressive or gradual optimizing strategy
+  t_distr_freedom: 1.0 # suggest from 0.2 to 3

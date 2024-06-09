@@ -79,6 +79,7 @@ protected:
   std::unordered_map<int, Node> sample_list_;  // set of sample nodes
   int sample_num_;                             // max sample number
   double max_dist_;                            // max distance threshold
+  double opti_sample_p_ = 0.05;                // optimized sample probability, default to 0.05
 };
 }  // namespace global_planner
 #endif  // RRT_H

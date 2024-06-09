@@ -134,6 +134,10 @@ private:
   int sample_points_;    // random sample points
   double sample_max_d_;  // max distance between sample points
   double opt_r_;         // optimization raidus
+  double prior_set_r_;   // radius of priority sample circles
+  int rewire_threads_n_; // threads number of rewire process
+  double step_ext_d_;    // increased distance of adaptive extend step size
+  double t_freedom_;     // freedom of t distribution
 };
 }  // namespace sample_planner
 #endif
