@@ -79,7 +79,6 @@ bool RRTStar::plan(const Node& start, const Node& goal, std::vector<Node>& path,
       path = _convertClosedListToPath(sample_list_, start, goal);
       optimized = true;
     }
-
     iteration++;
   }
 
@@ -92,12 +91,11 @@ bool RRTStar::plan(const Node& start, const Node& goal, std::vector<Node>& path,
  * @param node     sample node
  * @return nearest node
  */
-Node RRTStar::_findNearestPoint(std::unordered_map<int, Node> list, Node& node)
+Node RRTStar::_findNearestPoint(std::unordered_map<int, Node>& list, Node& node)
 {
   Node nearest_node, new_node(node);
   double min_dist = std::numeric_limits<double>::max();
-
-  for (const auto p : list)
+  for (const auto& p : list)
   {
     // calculate distance
     double new_dist = helper::dist(p.second, new_node);
@@ -128,7 +126,7 @@ Node RRTStar::_findNearestPoint(std::unordered_map<int, Node> list, Node& node)
   if (!_isAnyObstacleInPath(new_node, nearest_node))
   {
     // rewire optimization
-    for (auto p : sample_list_)
+    for (auto& p : sample_list_)
     {
       // inside the optimization circle
       double new_dist = helper::dist(p.second, new_node);

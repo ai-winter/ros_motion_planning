@@ -5,7 +5,7 @@ global_costmap:
   update_frequency: 1.0
   publish_frequency: 1.0
   transform_tolerance: 0.5
-  cost_scaling_factor:  1.2
+  cost_scaling_factor:  2.0
   inflation_radius: 0.8
 
   ### Sensor management parameters ###
@@ -19,7 +19,7 @@ global_costmap:
       data_type:                LaserScan, 
       clearing:                 true, 
       marking:                  true, 
-      max_obstacle_height:      2.0,
+      max_obstacle_height:      0.8,
       min_obstacle_height:      0.0,
       obstacle_range:           2.5,
       raytrace_range:           3.0,
@@ -28,7 +28,7 @@ global_costmap:
 
   inflation_layer:
     enabled:              true
-    cost_scaling_factor:  1.2  # exponential rate at which the obstacle cost drops off (default: 10)
+    cost_scaling_factor:  2.0  # exponential rate at which the obstacle cost drops off (default: 10)
     inflation_radius:     0.8  # max. distance from an obstacle at which costs are incurred for planning paths.
 
   static_map:

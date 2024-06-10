@@ -28,7 +28,9 @@
 Node::Node(int x, int y, double g, double h, int id, int pid) : x_(x), y_(y), g_(g), h_(h), id_(id), pid_(pid)
 {
 }
-
+Node::Node(const Node& n) : x_(n.x_), y_(n.y_), g_(n.g_), h_(n.h_), id_(n.id_), pid_(n.pid_)
+{
+}
 /**
  * @brief Overloading operator + for Node class
  * @param n another Node

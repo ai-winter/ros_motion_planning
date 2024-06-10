@@ -198,12 +198,18 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
       geometry_msgs::PoseStamped goalCopy = goal;
       goalCopy.header.stamp = ros::Time::now();
       plan.push_back(goalCopy);
+      history_plan_ = plan;
     }
     else
       ROS_ERROR("Failed to get a plan from path when a legal path was found. This shouldn't happen.");
   }
+  else if (history_plan_.size() > 0) {
+    plan = history_plan_;
+    ROS_WARN("Using history path.");
+  }
   else
     ROS_ERROR("Failed to get a path.");
+    
   // publish expand zone
   if (is_expand_)
     _publishExpand(expand);

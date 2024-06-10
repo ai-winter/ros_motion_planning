@@ -251,17 +251,14 @@ void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseS
     return helper::dist(ps, robot_pose_global) >= lookahead_dist;
   });
 
-  std::vector<geometry_msgs::PoseStamped>::const_iterator prev_pose_it;
-  std::vector<geometry_msgs::PoseStamped>::const_iterator pprev_pose_it;
   // If the no pose is not far enough, take the last pose
   if (goal_pose_it == prune_plan.end())
   {
     goal_pose_it = std::prev(prune_plan.end());
-    prev_pose_it = std::prev(goal_pose_it);
-    pprev_pose_it = std::prev(prev_pose_it);
     pt.point.x = goal_pose_it->pose.position.x;
     pt.point.y = goal_pose_it->pose.position.y;
     kappa = 0;
+    theta = atan2(pt.point.y - ry, pt.point.x - rx);
   }
   else
   {
@@ -270,13 +267,20 @@ void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseS
     // This can be found with a closed form for the intersection of a segment and a circle
     // Because of the way we did the std::find_if, prev_pose is guaranteed to be inside the circle,
     // and goal_pose is guaranteed to be outside the circle.
-    prev_pose_it = std::prev(goal_pose_it);
-    pprev_pose_it = std::prev(prev_pose_it);
-
-    double px = prev_pose_it->pose.position.x;
-    double py = prev_pose_it->pose.position.y;
+    double px, py;
     double gx = goal_pose_it->pose.position.x;
     double gy = goal_pose_it->pose.position.y;
+    if (goal_pose_it == prune_plan.begin())
+    {
+      px = rx;
+      py = ry;
+    }
+    else
+    {
+      auto prev_pose_it = std::prev(goal_pose_it);
+      px = prev_pose_it->pose.position.x;
+      py = prev_pose_it->pose.position.y;
+    }
 
     // transform to the robot frame so that the circle centers at (0,0)
     std::pair<double, double> prev_p(px - rx, py - ry);
@@ -286,30 +290,36 @@ void LocalPlanner::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseS
     pt.point.x = i_points[0].first + rx;
     pt.point.y = i_points[0].second + ry;
 
-    double ax = pprev_pose_it->pose.position.x;
-    double ay = pprev_pose_it->pose.position.y;
-    double bx = prev_pose_it->pose.position.x;
-    double by = prev_pose_it->pose.position.y;
-    double cx = goal_pose_it->pose.position.x;
-    double cy = goal_pose_it->pose.position.y;
+    auto next_pose_it = std::next(goal_pose_it);
+    if (next_pose_it != prune_plan.end())
+    {
+      double ax = px;
+      double ay = py;
+      double bx = gx;
+      double by = gy;
+      double cx = next_pose_it->pose.position.x;
+      double cy = next_pose_it->pose.position.y;
+      double a = std::hypot(bx - cx, by - cy);
+      double b = std::hypot(cx - ax, cy - ay);
+      double c = std::hypot(ax - bx, ay - by);
 
-    double a = std::hypot(bx - cx, by - cy);
-    double b = std::hypot(cx - ax, cy - ay);
-    double c = std::hypot(ax - bx, ay - by);
+      double cosB = (a * a + c * c - b * b) / (2 * a * c);
+      double sinB = std::sin(std::acos(cosB));
 
-    double cosB = (a * a + c * c - b * b) / (2 * a * c);
-    double sinB = std::sin(std::acos(cosB));
-
-    double cross = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
-    kappa = std::copysign(2 * sinB / b, cross);
+      double cross = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+      kappa = std::copysign(2 * sinB / b, cross);
+    }
+    else
+    {
+      kappa = 0.0;
+    }
+    theta = atan2(gy - py, gx - px);
   }
+
   if (std::isnan(kappa))
     kappa = 0.0;
   pt.header.frame_id = goal_pose_it->header.frame_id;
   pt.header.stamp = goal_pose_it->header.stamp;
-
-  theta = atan2(goal_pose_it->pose.position.y - prev_pose_it->pose.position.y,
-                goal_pose_it->pose.position.x - prev_pose_it->pose.position.x);
 }
 
 }  // namespace local_planner

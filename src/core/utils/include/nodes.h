@@ -7,9 +7,9 @@
  * @date: 2023-07-21
  * @version: 2.1
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -40,7 +40,8 @@ public:
    * @param pid node's parent's id
    */
   Node(int x = 0, int y = 0, double g = 0.0, double h = 0.0, int id = 0, int pid = 0);
-
+  Node(const Node& n);
+  
   /**
    * @brief Overloading operator + for Node class
    * @param n another Node
@@ -203,7 +204,5 @@ public:
   double key;                                       // priority
   std::multimap<double, LNode*>::iterator open_it;  // iterator
 };
-
-
 
 #endif  // NODES_H

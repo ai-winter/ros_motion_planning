@@ -227,10 +227,6 @@ bool LQRPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     Eigen::Vector3d s_d(lookahead_pt.point.x, lookahead_pt.point.y, theta_trj);                // desired state
     Eigen::Vector2d u_r(vt, vt * kappa);                                                       // refered input
     Eigen::Vector2d u = _lqrControl(s, s_d, u_r);
-    // ROS_WARN("[INPUT] vt: %f, kappa: %f, s_x: %f, s_y: %f, s_t: %f, s_d_x: %f, s_d_y: %f, s_d_t: %f", vt, kappa,
-    // s[0],
-    //          s[1], s[2], s_d[0], s_d[1], s_d[2]);
-    // ROS_WARN("ux: %f, uy: %f", u[0], u[1]);
 
     cmd_vel.linear.x = linearRegularization(base_odom, u[0]);
     cmd_vel.angular.z = angularRegularization(base_odom, u[1]);

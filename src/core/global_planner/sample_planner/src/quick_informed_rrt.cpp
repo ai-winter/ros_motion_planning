@@ -26,14 +26,15 @@ namespace global_planner
  * @param   costmap   the environment for path planning
  * @param   max_dist    max distance between sample points
  */
-QuickInformedRRT::QuickInformedRRT(costmap_2d::Costmap2D* costmap, int sample_num, double max_dist, double r, double r_set, int n_threads, double d_extend, double t_freedom)
+QuickInformedRRT::QuickInformedRRT(costmap_2d::Costmap2D* costmap, int sample_num, double max_dist, double r,
+                                   double r_set, int n_threads, double d_extend, double t_freedom)
   : InformedRRT(costmap, sample_num, max_dist, r)
 {
   set_r_ = r_set;
-  rewire_threads_   = n_threads;
-  step_extend_d_    = d_extend;
+  rewire_threads_ = n_threads;
+  step_extend_d_ = d_extend;
   recover_max_dist_ = max_dist;
-  t_distr_freedom_  = t_freedom;
+  t_distr_freedom_ = t_freedom;
 }
 
 /**
@@ -68,7 +69,7 @@ bool QuickInformedRRT::plan(const Node& start, const Node& goal, std::vector<Nod
     iteration++;
 
     // update probability of sampling bias
-    opti_sample_p_ = std::min(0.75, 1 - dist_m2g/dist_s2g);
+    opti_sample_p_ = std::min(0.75, 1 - dist_m2g / dist_s2g);
 
     // generate a random node in the map
     Node sample_node = _generateRandomNode(mu, path);
@@ -93,7 +94,8 @@ bool QuickInformedRRT::plan(const Node& start, const Node& goal, std::vector<Nod
 
     auto dist_ = helper::dist(new_node, goal_);
     // update min dist from tree to goal
-    if (dist_ < dist_m2g) dist_m2g = dist_;
+    if (dist_ < dist_m2g)
+      dist_m2g = dist_;
     // goal found
     if (dist_ <= max_dist_ && !_isAnyObstacleInPath(new_node, goal_))
     {
@@ -110,10 +112,10 @@ bool QuickInformedRRT::plan(const Node& start, const Node& goal, std::vector<Nod
         mu = std::fmin(5, mu + 0.5);
       }
     }
-    else // if do not update, decrease mu termly
+    else  // if do not update, decrease mu termly
     {
-      mu_cnt ++;
-      if(mu_cnt % 100 == 0)
+      mu_cnt++;
+      if (mu_cnt % 100 == 0)
         mu = std::fmax(0, mu - 0.5);
     }
   }
@@ -140,15 +142,15 @@ Node QuickInformedRRT::_generateRandomNode(int mu, std::vector<Node> path)
   std::mt19937 eng(rd());
   std::student_t_distribution<> t_distr(t_distr_freedom_);
 
-  if(std::abs(t_distr(eng)) < mu && path.size() != 0) // sample in priority circles
+  if (std::abs(t_distr(eng)) < mu && path.size() != 0)  // sample in priority circles
   {
-      int wc = rand() % path.size();
-      std::uniform_real_distribution<float> p(-set_r_, set_r_);
-      int cx = path[wc].x_ + p(eng);
-      int cy = path[wc].y_ + p(eng);
-      return Node(cx, cy, 0, 0, grid2Index(cx, cy), 0);
+    int wc = rand() % path.size();
+    std::uniform_real_distribution<float> p(-set_r_, set_r_);
+    int cx = path[wc].x_ + p(eng);
+    int cy = path[wc].y_ + p(eng);
+    return Node(cx, cy, 0, 0, grid2Index(cx, cy), 0);
   }
-  else // ellipse sample
+  else  // ellipse sample
   {
     if (c_best_ < std::numeric_limits<double>::max())
     {
@@ -159,15 +161,15 @@ Node QuickInformedRRT::_generateRandomNode(int mu, std::vector<Node> path)
         std::uniform_real_distribution<float> p(-1, 1);
         while (true)
         {
-            x = p(eng);
-            y = p(eng);
-            if (x * x + y * y < 1)
+          x = p(eng);
+          y = p(eng);
+          if (x * x + y * y < 1)
             break;
         }
         // transform to ellipse
         Node temp = _transform(x, y);
         if (temp.id_ < map_size_ - 1)
-            return temp;
+          return temp;
       }
     }
     else
@@ -220,26 +222,28 @@ Node QuickInformedRRT::_findNearestPoint(std::unordered_map<int, Node> list, Nod
 
     // parallel rewire optimization
     std::vector<int> v_iters;
-    for (auto p : sample_list_) {
+    for (auto p : sample_list_)
+    {
       v_iters.push_back(p.first);
     }
 
-#   pragma omp parallel for num_threads(rewire_threads_)
+#pragma omp parallel for num_threads(rewire_threads_)
     for (int i = 0; i < v_iters.size(); i++)
     {
-      auto &p = sample_list_[v_iters[i]];
+      auto& p = sample_list_[v_iters[i]];
       // inside the optimization circle
       double new_dist = helper::dist(p, new_node);
-      if (new_dist > r_) continue;
-      
+      if (new_dist > r_)
+        continue;
+
       double cost = p.g_ + new_dist;
       // update new sample node's cost and parent
       if (new_node.g_ > cost)
       {
         if (!_isAnyObstacleInPath(new_node, p))
         {
-          // other thread may update new_node.g_ 
-#         pragma omp critical
+          // other thread may update new_node.g_
+#pragma omp critical
           if (new_node.g_ > cost)
           {
             new_node.pid_ = p.id_;

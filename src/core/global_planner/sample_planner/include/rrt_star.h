@@ -51,7 +51,7 @@ protected:
    * @param node     sample node
    * @return nearest node
    */
-  Node _findNearestPoint(std::unordered_map<int, Node> list, Node& node);
+  Node _findNearestPoint(std::unordered_map<int, Node>& list, Node& node);
 
 protected:
   double r_;  // optimization radius
