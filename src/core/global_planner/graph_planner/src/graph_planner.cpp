@@ -358,7 +358,7 @@ void GraphPlanner::_publishExpand(std::vector<Node>& expand)
   for (unsigned int i = 0; i < grid.data.size(); i++)
     grid.data[i] = 0;
   for (unsigned int i = 0; i < expand.size(); i++)
-    grid.data[expand[i].id_] = 50;
+    grid.data[expand[i].id()] = 50;
 
   expand_pub_.publish(grid);
 }
@@ -382,7 +382,7 @@ bool GraphPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometr
   for (int i = path.size() - 1; i >= 0; i--)
   {
     double wx, wy;
-    g_planner_->map2World(path[i].x_, path[i].y_, wx, wy);
+    g_planner_->map2World(path[i].x(), path[i].y(), wx, wy);
 
     // coding as message type
     geometry_msgs::PoseStamped pose;

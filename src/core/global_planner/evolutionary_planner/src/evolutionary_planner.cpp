@@ -325,7 +325,7 @@ bool EvolutionaryPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<
   for (int i = path.size() - 1; i >= 0; i--)
   {
     double wx, wy;
-    g_planner_->map2World((double)path[i].x_, (double)path[i].y_, wx, wy);
+    g_planner_->map2World((double)path[i].x(), (double)path[i].y(), wx, wy);
 
     // coding as message type
     geometry_msgs::PoseStamped pose;
@@ -375,8 +375,8 @@ void EvolutionaryPlanner::_publishExpand(std::vector<Node>& expand)
   for (const auto& node : expand)
   {
     geometry_msgs::Point p;
-    p.x = origin_x + node.x_ * resolution;
-    p.y = origin_y + node.y_ * resolution;
+    p.x = origin_x + node.x() * resolution;
+    p.y = origin_y + node.y() * resolution;
     p.z = 0.0;
     marker.points.push_back(p);
   }

@@ -70,17 +70,17 @@ void SamplePlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
     frame_id_ = frame_id;
 
     /*======================= static parameters loading ==========================*/
-    private_nh.param("default_tolerance", tolerance_, 0.0);  // error tolerance
-    private_nh.param("outline_map", is_outline_, false);     // whether outline the map or not
-    private_nh.param("obstacle_factor", factor_, 0.5);       // obstacle inflation factor
-    private_nh.param("expand_zone", is_expand_, false);      // whether publish expand zone or not
-    private_nh.param("sample_points", sample_points_, 500);  // random sample points
-    private_nh.param("sample_max_d", sample_max_d_, 5.0);    // max distance between sample points
-    private_nh.param("optimization_r", opt_r_, 10.0);        // optimization radius
-    private_nh.param("prior_sample_set_r", prior_set_r_, 10.0);   // radius of priority circles set
-    private_nh.param("rewire_threads_num", rewire_threads_n_, 2); // threads number of rewire process
-    private_nh.param("step_extend_d", step_ext_d_, 5.0);     // threads number of rewire process
-    private_nh.param("t_distr_freedom", t_freedom_, 1.0);    // freedom of t distribution
+    private_nh.param("default_tolerance", tolerance_, 0.0);        // error tolerance
+    private_nh.param("outline_map", is_outline_, false);           // whether outline the map or not
+    private_nh.param("obstacle_factor", factor_, 0.5);             // obstacle inflation factor
+    private_nh.param("expand_zone", is_expand_, false);            // whether publish expand zone or not
+    private_nh.param("sample_points", sample_points_, 500);        // random sample points
+    private_nh.param("sample_max_d", sample_max_d_, 5.0);          // max distance between sample points
+    private_nh.param("optimization_r", opt_r_, 10.0);              // optimization radius
+    private_nh.param("prior_sample_set_r", prior_set_r_, 10.0);    // radius of priority circles set
+    private_nh.param("rewire_threads_num", rewire_threads_n_, 2);  // threads number of rewire process
+    private_nh.param("step_extend_d", step_ext_d_, 5.0);           // threads number of rewire process
+    private_nh.param("t_distr_freedom", t_freedom_, 1.0);          // freedom of t distribution
 
     // planner name
     std::string planner_name;
@@ -94,7 +94,8 @@ void SamplePlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
     else if (planner_name == "informed_rrt")
       g_planner_ = std::make_shared<global_planner::InformedRRT>(costmap, sample_points_, sample_max_d_, opt_r_);
     else if (planner_name == "quick_informed_rrt")
-      g_planner_ = std::make_shared<global_planner::QuickInformedRRT>(costmap, sample_points_, sample_max_d_, opt_r_, prior_set_r_, rewire_threads_n_, step_ext_d_, t_freedom_);
+      g_planner_ = std::make_shared<global_planner::QuickInformedRRT>(
+          costmap, sample_points_, sample_max_d_, opt_r_, prior_set_r_, rewire_threads_n_, step_ext_d_, t_freedom_);
 
     // pass costmap information to planner (required)
     g_planner_->setFactor(factor_);
@@ -203,13 +204,14 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
     else
       ROS_ERROR("Failed to get a plan from path when a legal path was found. This shouldn't happen.");
   }
-  else if (history_plan_.size() > 0) {
+  else if (history_plan_.size() > 0)
+  {
     plan = history_plan_;
     ROS_WARN("Using history path.");
   }
   else
     ROS_ERROR("Failed to get a path.");
-    
+
   // publish expand zone
   if (is_expand_)
     _publishExpand(expand);
@@ -274,8 +276,8 @@ void SamplePlanner::_publishExpand(std::vector<Node>& expand)
 
   // Publish all edges
   for (auto node : expand)
-    if (node.pid_ != 0)
-      _pubLine(&tree_msg, &expand_pub_, node.id_, node.pid_);
+    if (node.pid() != 0)
+      _pubLine(&tree_msg, &expand_pub_, node.id(), node.pid());
 }
 
 /**
@@ -298,7 +300,7 @@ bool SamplePlanner::_getPlanFromPath(std::vector<Node> path, std::vector<geometr
   for (int i = path.size() - 1; i >= 0; i--)
   {
     double wx, wy;
-    g_planner_->map2World((double)path[i].x_, (double)path[i].y_, wx, wy);
+    g_planner_->map2World((double)path[i].x(), (double)path[i].y(), wx, wy);
 
     // coding as message type
     geometry_msgs::PoseStamped pose;

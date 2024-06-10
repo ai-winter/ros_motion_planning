@@ -41,7 +41,27 @@ public:
    */
   Node(int x = 0, int y = 0, double g = 0.0, double h = 0.0, int id = 0, int pid = 0);
   Node(const Node& n);
-  
+
+  /**
+   * @brief get the property of node
+   */
+  int x() const;
+  int y() const;
+  double g() const;
+  double h() const;
+  int id() const;
+  int pid() const;
+
+  /**
+   * @brief set the property of node
+   */
+  void set_x(int x);
+  void set_y(int y);
+  void set_g(double g);
+  void set_h(double h);
+  void set_id(int id);
+  void set_pid(int pid);
+
   /**
    * @brief Overloading operator + for Node class
    * @param n another Node
@@ -106,7 +126,7 @@ public:
     bool operator()(const Node& n1, const Node& n2) const;
   };
 
-public:
+private:
   int x_, y_;     // x and y value
   double g_, h_;  // g value, cost to reach this node. h value, heuristic cost to reach the goal
   int id_, pid_;  // Node's index and parent's index
@@ -141,7 +161,7 @@ public:
    * @brief Construct a new Plane Node object
    * @param n another Node
    */
-  PlaneNode(const Node& n) : PlaneNode(n.x_, n.y_, n.g_, n.h_, n.id_, n.pid_)
+  PlaneNode(const Node& n) : PlaneNode(n.x(), n.y(), n.g(), n.h(), n.id(), n.pid())
   {
   }
 

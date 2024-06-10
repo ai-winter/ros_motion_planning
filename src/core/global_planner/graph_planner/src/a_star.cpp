@@ -74,10 +74,10 @@ bool AStar::plan(const Node& start, const Node& goal, std::vector<Node>& path, s
     open_list.pop();
 
     // current node does not exist in closed list
-    if (closed_list.find(current.id_) != closed_list.end())
+    if (closed_list.find(current.id()) != closed_list.end())
       continue;
 
-    closed_list.insert(std::make_pair(current.id_, current));
+    closed_list.insert(std::make_pair(current.id(), current));
     expand.push_back(current);
 
     // goal found
@@ -92,28 +92,28 @@ bool AStar::plan(const Node& start, const Node& goal, std::vector<Node>& path, s
     {
       // explore a new node
       Node node_new = current + motion;
-      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
+      node_new.set_id(grid2Index(node_new.x(), node_new.y()));
 
       // node_new in closed list
-      if (closed_list.find(node_new.id_) != closed_list.end())
+      if (closed_list.find(node_new.id()) != closed_list.end())
         continue;
 
-      node_new.pid_ = current.id_;
+      node_new.set_pid(current.id());
 
       // next node hit the boundary or obstacle
       // prevent planning failed when the current within inflation
-      if ((node_new.id_ < 0) || (node_new.id_ >= map_size_) ||
-          (costmap_->getCharMap()[node_new.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
-           costmap_->getCharMap()[node_new.id_] >= costmap_->getCharMap()[current.id_]))
+      if ((node_new.id() < 0) || (node_new.id() >= map_size_) ||
+          (costmap_->getCharMap()[node_new.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+           costmap_->getCharMap()[node_new.id()] >= costmap_->getCharMap()[current.id()]))
         continue;
 
       // if using dijkstra implementation, do not consider heuristics cost
       if (!is_dijkstra_)
-        node_new.h_ = helper::dist(node_new, goal);
+        node_new.set_h(helper::dist(node_new, goal));
 
       // if using GBFS implementation, only consider heuristics cost
       if (is_gbfs_)
-        node_new.g_ = 0.0;
+        node_new.set_g(0.0);
       // else, g will be calculate through node_new = current + m
 
       open_list.push(node_new);

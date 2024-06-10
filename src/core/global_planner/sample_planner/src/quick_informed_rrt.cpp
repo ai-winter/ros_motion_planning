@@ -53,7 +53,7 @@ bool QuickInformedRRT::plan(const Node& start, const Node& goal, std::vector<Nod
   sample_list_.clear();
   // copy
   start_ = start, goal_ = goal;
-  sample_list_.insert(std::make_pair(start.id_, start));
+  sample_list_.insert(std::make_pair(start.id(), start));
   expand.push_back(start);
   // adaptive sampling bias
   double dist_s2g = helper::dist(start, goal);
@@ -75,20 +75,20 @@ bool QuickInformedRRT::plan(const Node& start, const Node& goal, std::vector<Nod
     Node sample_node = _generateRandomNode(mu, path);
 
     // obstacle
-    if (costmap_->getCharMap()[sample_node.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_)
+    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
       continue;
 
     // visited
-    if (sample_list_.find(sample_node.id_) != sample_list_.end())
+    if (sample_list_.find(sample_node.id()) != sample_list_.end())
       continue;
 
     // regular the sample node
     Node new_node = _findNearestPoint(sample_list_, sample_node);
-    if (new_node.id_ == -1)
+    if (new_node.id() == -1)
       continue;
     else
     {
-      sample_list_.insert(std::make_pair(new_node.id_, new_node));
+      sample_list_.insert(std::make_pair(new_node.id(), new_node));
       expand.push_back(new_node);
     }
 
@@ -99,16 +99,16 @@ bool QuickInformedRRT::plan(const Node& start, const Node& goal, std::vector<Nod
     // goal found
     if (dist_ <= max_dist_ && !_isAnyObstacleInPath(new_node, goal_))
     {
-      double cost = dist_ + new_node.g_;
+      double cost = dist_ + new_node.g();
       if (cost < c_best_)
       {
-        best_parent = new_node.id_;
+        best_parent = new_node.id();
         c_best_ = cost;
         // update path
-        Node goal_star(goal_.x_, goal_.y_, c_best_, 0, grid2Index(goal_.x_, goal_.y_), best_parent);
-        sample_list_.insert(std::make_pair(goal_star.id_, goal_star));
+        Node goal_star(goal_.x(), goal_.y(), c_best_, 0, grid2Index(goal_.x(), goal_.y()), best_parent);
+        sample_list_.insert(std::make_pair(goal_star.id(), goal_star));
         path = _convertClosedListToPath(sample_list_, start, goal);
-        sample_list_.erase(goal_star.id_);
+        sample_list_.erase(goal_star.id());
         mu = std::fmin(5, mu + 0.5);
       }
     }
@@ -122,8 +122,8 @@ bool QuickInformedRRT::plan(const Node& start, const Node& goal, std::vector<Nod
 
   if (best_parent != -1)
   {
-    Node goal_star(goal_.x_, goal_.y_, c_best_, 0, grid2Index(goal_.x_, goal_.y_), best_parent);
-    sample_list_.insert(std::make_pair(goal_star.id_, goal_star));
+    Node goal_star(goal_.x(), goal_.y(), c_best_, 0, grid2Index(goal_.x(), goal_.y()), best_parent);
+    sample_list_.insert(std::make_pair(goal_star.id(), goal_star));
 
     path = _convertClosedListToPath(sample_list_, start, goal);
     return true;
@@ -146,8 +146,8 @@ Node QuickInformedRRT::_generateRandomNode(int mu, std::vector<Node> path)
   {
     int wc = rand() % path.size();
     std::uniform_real_distribution<float> p(-set_r_, set_r_);
-    int cx = path[wc].x_ + p(eng);
-    int cy = path[wc].y_ + p(eng);
+    int cx = path[wc].x() + p(eng);
+    int cy = path[wc].y() + p(eng);
     return Node(cx, cy, 0, 0, grid2Index(cx, cy), 0);
   }
   else  // ellipse sample
@@ -168,7 +168,7 @@ Node QuickInformedRRT::_generateRandomNode(int mu, std::vector<Node> path)
         }
         // transform to ellipse
         Node temp = _transform(x, y);
-        if (temp.id_ < map_size_ - 1)
+        if (temp.id() < map_size_ - 1)
           return temp;
       }
     }
@@ -197,8 +197,8 @@ Node QuickInformedRRT::_findNearestPoint(std::unordered_map<int, Node> list, Nod
     if (new_dist < min_dist)
     {
       nearest_node = p.second;
-      new_node.pid_ = nearest_node.id_;
-      new_node.g_ = new_dist + p.second.g_;
+      new_node.set_pid(nearest_node.id());
+      new_node.set_g(new_dist + p.second.g());
       min_dist = new_dist;
     }
   }
@@ -209,10 +209,10 @@ Node QuickInformedRRT::_findNearestPoint(std::unordered_map<int, Node> list, Nod
     // connect sample node and nearest node, then move the nearest node
     // forward to sample node with `max_distance` as result
     double theta = helper::angle(nearest_node, new_node);
-    new_node.x_ = nearest_node.x_ + (int)(max_dist_ * cos(theta));
-    new_node.y_ = nearest_node.y_ + (int)(max_dist_ * sin(theta));
-    new_node.id_ = grid2Index(new_node.x_, new_node.y_);
-    new_node.g_ = max_dist_ + nearest_node.g_;
+    new_node.set_x(nearest_node.x() + (int)(max_dist_ * cos(theta)));
+    new_node.set_y(nearest_node.y() + (int)(max_dist_ * sin(theta)));
+    new_node.set_id(grid2Index(new_node.x(), new_node.y()));
+    new_node.set_g(max_dist_ + nearest_node.g());
   }
 
   // obstacle check
@@ -236,30 +236,30 @@ Node QuickInformedRRT::_findNearestPoint(std::unordered_map<int, Node> list, Nod
       if (new_dist > r_)
         continue;
 
-      double cost = p.g_ + new_dist;
+      double cost = p.g() + new_dist;
       // update new sample node's cost and parent
-      if (new_node.g_ > cost)
+      if (new_node.g() > cost)
       {
         if (!_isAnyObstacleInPath(new_node, p))
         {
-          // other thread may update new_node.g_
+          // other thread may update new_node.g()
 #pragma omp critical
-          if (new_node.g_ > cost)
+          if (new_node.g() > cost)
           {
-            new_node.pid_ = p.id_;
-            new_node.g_ = cost;
+            new_node.set_pid(p.id());
+            new_node.set_g(cost);
           }
         }
       }
       else
       {
         // update nodes' cost inside the radius
-        cost = new_node.g_ + new_dist;
-        if (cost < p.g_)
+        cost = new_node.g() + new_dist;
+        if (cost < p.g())
           if (!_isAnyObstacleInPath(new_node, p))
           {
-            p.pid_ = new_node.id_;
-            p.g_ = cost;
+            p.set_pid(new_node.id());
+            p.set_g(cost);
           }
       }
     }
@@ -267,7 +267,7 @@ Node QuickInformedRRT::_findNearestPoint(std::unordered_map<int, Node> list, Nod
   else
   {
     max_dist_ = recover_max_dist_;
-    new_node.id_ = -1;
+    new_node.set_id(-1);
   }
   return new_node;
 }

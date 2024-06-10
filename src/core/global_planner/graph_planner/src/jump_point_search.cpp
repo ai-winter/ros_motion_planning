@@ -59,10 +59,10 @@ bool JumpPointSearch::plan(const Node& start, const Node& goal, std::vector<Node
     open_list.pop();
 
     // current node do not exist in closed list
-    if (closed_list.find(current.id_) != closed_list.end())
+    if (closed_list.find(current.id()) != closed_list.end())
       continue;
 
-    closed_list.insert(std::make_pair(current.id_, current));
+    closed_list.insert(std::make_pair(current.id(), current));
     expand.push_back(current);
 
     // goal found
@@ -78,10 +78,10 @@ bool JumpPointSearch::plan(const Node& start, const Node& goal, std::vector<Node
       Node node_new = jump(current, motion);
 
       // node_new not exits or in closed list
-      if (node_new.id_ == -1 || closed_list.find(node_new.id_) != closed_list.end())
+      if (node_new.id() == -1 || closed_list.find(node_new.id()) != closed_list.end())
         continue;
 
-      node_new.pid_ = current.id_;
+      node_new.set_pid(current.id());
       open_list.push(node_new);
     }
   }
@@ -98,13 +98,13 @@ bool JumpPointSearch::plan(const Node& start, const Node& goal, std::vector<Node
 Node JumpPointSearch::jump(const Node& point, const Node& motion)
 {
   Node new_point = point + motion;
-  new_point.id_ = grid2Index(new_point.x_, new_point.y_);
-  new_point.pid_ = point.id_;
-  new_point.h_ = std::sqrt(std::pow(new_point.x_ - goal_.x_, 2) + std::pow(new_point.y_ - goal_.y_, 2));
+  new_point.set_id(grid2Index(new_point.x(), new_point.y()));
+  new_point.set_pid(point.id());
+  new_point.set_h(helper::dist(new_point, goal_));
 
   // next node hit the boundary or obstacle
-  if (new_point.id_ < 0 || new_point.id_ >= map_size_ ||
-      costmap_->getCharMap()[new_point.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_)
+  if (new_point.id() < 0 || new_point.id() >= map_size_ ||
+      costmap_->getCharMap()[new_point.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
     return Node(-1, -1, -1, -1, -1, -1);
 
   // goal found
@@ -112,12 +112,12 @@ Node JumpPointSearch::jump(const Node& point, const Node& motion)
     return new_point;
 
   // diagonal
-  if (motion.x_ && motion.y_)
+  if (motion.x() && motion.y())
   {
     // if exists jump point at horizontal or vertical
-    Node x_dir = Node(motion.x_, 0, 1, 0, 0, 0);
-    Node y_dir = Node(0, motion.y_, 1, 0, 0, 0);
-    if (jump(new_point, x_dir).id_ != -1 || jump(new_point, y_dir).id_ != -1)
+    Node x_dir = Node(motion.x(), 0, 1, 0, 0, 0);
+    Node y_dir = Node(0, motion.y(), 1, 0, 0, 0);
+    if (jump(new_point, x_dir).id() != -1 || jump(new_point, y_dir).id() != -1)
       return new_point;
   }
 
@@ -136,10 +136,10 @@ Node JumpPointSearch::jump(const Node& point, const Node& motion)
  */
 bool JumpPointSearch::detectForceNeighbor(const Node& point, const Node& motion)
 {
-  int x = point.x_;
-  int y = point.y_;
-  int x_dir = motion.x_;
-  int y_dir = motion.y_;
+  int x = point.x();
+  int y = point.y();
+  int x_dir = motion.x();
+  int y_dir = motion.y();
   auto costs = costmap_->getCharMap();
 
   // horizontal

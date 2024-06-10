@@ -64,8 +64,8 @@ GA::~GA()
  */
 bool GA::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
-  start_ = std::pair<double, double>(static_cast<double>(start.x_), static_cast<double>(start.y_));
-  goal_ = std::pair<double, double>(static_cast<double>(goal.x_), static_cast<double>(goal.y_));
+  start_ = std::pair<double, double>(static_cast<double>(start.x()), static_cast<double>(start.y()));
+  goal_ = std::pair<double, double>(static_cast<double>(goal.x()), static_cast<double>(goal.y()));
   expand.clear();
 
   if ((n_genets_ <= 0) || (n_genets_ % 2 != 0))
@@ -134,10 +134,10 @@ bool GA::plan(const Node& start, const Node& goal, std::vector<Node>& path, std:
 
   // Generating Paths from Optimal Genets
   std::vector<std::pair<double, double>> points, b_path;
-  points.emplace_back(static_cast<double>(start.x_), static_cast<double>(start.y_));
+  points.emplace_back(static_cast<double>(start.x()), static_cast<double>(start.y()));
   for (const auto& pos : best_genet.position)
     points.emplace_back(static_cast<double>(pos.first), static_cast<double>(pos.second));
-  points.emplace_back(static_cast<double>(goal.x_), static_cast<double>(goal.y_));
+  points.emplace_back(static_cast<double>(goal.x()), static_cast<double>(goal.y()));
   points.erase(std::unique(std::begin(points), std::end(points)), std::end(points));
 
   bspline_gen_.run(points, b_path);
@@ -157,7 +157,7 @@ bool GA::plan(const Node& start, const Node& goal, std::vector<Node>& path, std:
       int x = static_cast<int>(b_path[p].first);
       int y = static_cast<int>(b_path[p].second);
       // Check if the current point is different from the last point
-      if (x != path.back().x_ || y != path.back().y_)
+      if (x != path.back().x() || y != path.back().y())
       {
         path.emplace_back(x, y, 0.0, 0.0, p, 0);
       }
@@ -191,8 +191,8 @@ void GA::initializePositions(PositionSequence& initial_positions, const Node& st
   int point_id, pos_id;
 
   // Calculate sequence direction
-  bool x_order = (goal.x_ > start.x_);
-  bool y_order = (goal.y_ > start.y_);
+  bool x_order = (goal.x() > start.x());
+  bool y_order = (goal.y() > start.y());
 
   // circle generation
   int center_x, center_y;
@@ -200,8 +200,8 @@ void GA::initializePositions(PositionSequence& initial_positions, const Node& st
   if (gen_mode == GEN_MODE_CIRCLE)
   {
     // Calculate the center and the radius of the circle (midpoint between start and goal)
-    center_x = (start.x_ + goal.x_) / 2;
-    center_y = (start.y_ + goal.y_) / 2;
+    center_x = (start.x() + goal.x()) / 2;
+    center_y = (start.y() + goal.y()) / 2;
     radius = helper::dist(start, goal) / 2.0 < 5 ? 5 : helper::dist(start, goal) / 2.0;
   }
 

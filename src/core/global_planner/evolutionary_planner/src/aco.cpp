@@ -61,8 +61,8 @@ ACO::~ACO()
  */
 bool ACO::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
-  start_ = std::pair<double, double>(static_cast<double>(start.x_), static_cast<double>(start.y_));
-  goal_ = std::pair<double, double>(static_cast<double>(goal.x_), static_cast<double>(goal.y_));
+  start_ = std::pair<double, double>(static_cast<double>(start.x()), static_cast<double>(start.y()));
+  goal_ = std::pair<double, double>(static_cast<double>(goal.x()), static_cast<double>(goal.y()));
   expand.clear();
   for (size_t i = 0; i < map_size_; i++)
     pheromone_mat_[i] = 1.0;
@@ -98,10 +98,10 @@ bool ACO::plan(const Node& start, const Node& goal, std::vector<Node>& path, std
 
   // Generating Paths from Optimal Particles
   std::vector<std::pair<double, double>> points, b_path;
-  points.emplace_back(static_cast<double>(start.x_), static_cast<double>(start.y_));
+  points.emplace_back(static_cast<double>(start.x()), static_cast<double>(start.y()));
   for (const auto& pos : best_ant.position)
     points.emplace_back(static_cast<double>(pos.first), static_cast<double>(pos.second));
-  points.emplace_back(static_cast<double>(goal.x_), static_cast<double>(goal.y_));
+  points.emplace_back(static_cast<double>(goal.x()), static_cast<double>(goal.y()));
   points.erase(std::unique(std::begin(points), std::end(points)), std::end(points));
 
   bspline_gen_.run(points, b_path);
@@ -122,7 +122,7 @@ bool ACO::plan(const Node& start, const Node& goal, std::vector<Node>& path, std
       int y = static_cast<int>(b_path[p].second);
 
       // Check if the current point is different from the last point
-      if (x != path.back().x_ || y != path.back().y_)
+      if (x != path.back().x() || y != path.back().y())
         path.emplace_back(x, y, 0.0, 0.0, p, 0);
     }
   }
@@ -153,8 +153,8 @@ void ACO::initializePositions(PositionSequence& initial_positions, const Node& s
   int point_id, pos_id;
 
   // Calculate sequence direction
-  bool x_order = (goal.x_ > start.x_);
-  bool y_order = (goal.y_ > start.y_);
+  bool x_order = (goal.x() > start.x());
+  bool y_order = (goal.y() > start.y());
 
   // circle generation
   int center_x, center_y;
@@ -162,8 +162,8 @@ void ACO::initializePositions(PositionSequence& initial_positions, const Node& s
   if (gen_mode == GEN_MODE_CIRCLE)
   {
     // Calculate the center and the radius of the circle (midpoint between start and goal)
-    center_x = (start.x_ + goal.x_) / 2;
-    center_y = (start.y_ + goal.y_) / 2;
+    center_x = (start.x() + goal.x()) / 2;
+    center_y = (start.y() + goal.y()) / 2;
     radius = helper::dist(start, goal) / 2.0 < 5 ? 5 : helper::dist(start, goal) / 2.0;
   }
 
@@ -210,7 +210,7 @@ void ACO::initializePositions(PositionSequence& initial_positions, const Node& s
         point_id++;
         visited.insert(pos_id);
         double prob_new = std::pow(pheromone_mat_[pos_id], alpha_) *
-                          std::pow(1.0 / hypot(temp_x[point_id] - goal.x_, temp_y[point_id] - goal.y_), beta_);
+                          std::pow(1.0 / hypot(temp_x[point_id] - goal.x(), temp_y[point_id] - goal.y()), beta_);
         probabilities.push_back(prob_new);
         prob_sum += prob_new;
       }

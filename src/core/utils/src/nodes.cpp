@@ -28,9 +28,66 @@
 Node::Node(int x, int y, double g, double h, int id, int pid) : x_(x), y_(y), g_(g), h_(h), id_(id), pid_(pid)
 {
 }
-Node::Node(const Node& n) : x_(n.x_), y_(n.y_), g_(n.g_), h_(n.h_), id_(n.id_), pid_(n.pid_)
+Node::Node(const Node& n) : x_(n.x()), y_(n.y()), g_(n.g()), h_(n.h()), id_(n.id()), pid_(n.pid())
 {
 }
+
+/**
+ * @brief get the property of node
+ */
+int Node::x() const
+{
+  return x_;
+}
+int Node::y() const
+{
+  return y_;
+}
+double Node::g() const
+{
+  return g_;
+}
+double Node::h() const
+{
+  return h_;
+}
+int Node::id() const
+{
+  return id_;
+}
+int Node::pid() const
+{
+  return pid_;
+}
+
+/**
+ * @brief set the property of node
+ */
+void Node::set_x(int x)
+{
+  x_ = x;
+}
+void Node::set_y(int y)
+{
+  y_ = y;
+}
+void Node::set_g(double g)
+{
+  g_ = g;
+}
+void Node::set_h(double h)
+{
+  h_ = h;
+}
+void Node::set_id(int id)
+{
+  id_ = id;
+}
+void Node::set_pid(int pid)
+{
+  pid_ = pid;
+}
+
 /**
  * @brief Overloading operator + for Node class
  * @param n another Node
@@ -39,9 +96,9 @@ Node::Node(const Node& n) : x_(n.x_), y_(n.y_), g_(n.g_), h_(n.h_), id_(n.id_), 
 Node Node::operator+(const Node& n) const
 {
   Node result;
-  result.x_ = x_ + n.x_;
-  result.y_ = y_ + n.y_;
-  result.g_ = g_ + n.g_;
+  result.set_x(x_ + n.x());
+  result.set_y(y_ + n.y());
+  result.set_g(g_ + n.g());
 
   return result;
 }
@@ -54,8 +111,8 @@ Node Node::operator+(const Node& n) const
 Node Node::operator-(const Node& n) const
 {
   Node result;
-  result.x_ = x_ - n.x_;
-  result.y_ = y_ - n.y_;
+  result.set_x(x_ - n.x());
+  result.set_y(y_ - n.y());
 
   return result;
 }
@@ -67,7 +124,7 @@ Node Node::operator-(const Node& n) const
  */
 bool Node::operator==(const Node& n) const
 {
-  return x_ == n.x_ && y_ == n.y_;
+  return x_ == n.x() && y_ == n.y();
 }
 
 /**
@@ -107,7 +164,7 @@ std::vector<Node> Node::getMotion()
 bool Node::compare_cost::operator()(const Node& n1, const Node& n2) const
 {
   // Can modify this to allow tie breaks based on heuristic cost if required
-  return (n1.g_ + n1.h_ > n2.g_ + n2.h_) || ((n1.g_ + n1.h_ == n2.g_ + n2.h_) && (n1.h_ > n2.h_));
+  return (n1.g() + n1.h() > n2.g() + n2.h()) || ((n1.g() + n1.h() == n2.g() + n2.h()) && (n1.h() > n2.h()));
 }
 
 /**
@@ -118,5 +175,5 @@ bool Node::compare_cost::operator()(const Node& n1, const Node& n2) const
  */
 bool Node::compare_coordinates::operator()(const Node& n1, const Node& n2) const
 {
-  return (n1.x_ == n2.x_) && (n1.y_ == n2.y_);
+  return (n1.x() == n2.x()) && (n1.y() == n2.y());
 }

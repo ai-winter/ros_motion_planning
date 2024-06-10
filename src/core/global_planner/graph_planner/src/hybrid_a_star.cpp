@@ -58,12 +58,12 @@ HybridAStar::HybridNode HybridAStar::HybridNode::operator+(const HybridNode& n) 
     {
       // penalize change of direction
       if (n.prim_ > 2)
-        result.g_ = g_ + n.x_ * PENALTY_TURNING * PENALTY_COD;
+        result.set_g(g() + n.x_ * PENALTY_TURNING * PENALTY_COD);
       else
-        result.g_ = g_ + n.x_ * PENALTY_TURNING;
+        result.set_g(g() + n.x_ * PENALTY_TURNING);
     }
     else
-      result.g_ = g_ + n.x_;
+      result.set_g(g() + n.x_);
   }
   // reverse driving
   else
@@ -73,12 +73,12 @@ HybridAStar::HybridNode HybridAStar::HybridNode::operator+(const HybridNode& n) 
     {
       // penalize change of direction
       if (n.prim_ < 3)
-        result.g_ = g_ + n.x_ * PENALTY_TURNING * PENALTY_COD * PENALTY_REVERSING;
+        result.set_g(g() + n.x_ * PENALTY_TURNING * PENALTY_COD * PENALTY_REVERSING);
       else
-        result.g_ = g_ + n.x_ * PENALTY_TURNING * PENALTY_REVERSING;
+        result.set_g(g() + n.x_ * PENALTY_TURNING * PENALTY_REVERSING);
     }
     else
-      result.g_ = g_ + n.x_ * PENALTY_REVERSING;
+      result.set_g(g() + n.x_ * PENALTY_REVERSING);
   }
 
   return result;
@@ -193,10 +193,10 @@ bool HybridAStar::plan(HybridNode& start, HybridNode& goal, std::vector<Node>& p
     open_list.pop();
 
     // current node does not exist in closed list
-    if (closed_list.find(current.id_) != closed_list.end())
+    if (closed_list.find(current.id()) != closed_list.end())
       continue;
 
-    closed_list.insert(std::make_pair(current.id_, current));
+    closed_list.insert(std::make_pair(current.id(), current));
     expand.emplace_back(current.x_, current.y_, 0, 0, _worldToIndex(current.x_, current.y_));
 
     // goal shot
@@ -221,7 +221,7 @@ bool HybridAStar::plan(HybridNode& start, HybridNode& goal, std::vector<Node>& p
       updateIndex(node_new);
 
       // node_new in closed list
-      if (closed_list.find(node_new.id_) != closed_list.end())
+      if (closed_list.find(node_new.id()) != closed_list.end())
         continue;
 
       // next node hit the boundary or obstacle
@@ -233,7 +233,7 @@ bool HybridAStar::plan(HybridNode& start, HybridNode& goal, std::vector<Node>& p
                costmap_->getCharMap()[_worldToIndex(current.x_, current.y_)]))
         continue;
 
-      node_new.pid_ = current.id_;
+      node_new.set_pid(current.id());
       updateHeuristic(node_new);
 
       open_list.push(node_new);
@@ -285,7 +285,7 @@ bool HybridAStar::dubinsShot(const HybridNode& start, const HybridNode& goal, st
  */
 void HybridAStar::updateIndex(HybridNode& node)
 {
-  node.id_ = static_cast<int>(node.t_ / DELTA_HEADING) + _worldToIndex(node.x_, node.y_);
+  node.set_id(static_cast<int>(node.t_ / DELTA_HEADING) + _worldToIndex(node.x(), node.y()));
 }
 
 /**
@@ -303,8 +303,8 @@ void HybridAStar::updateHeuristic(HybridNode& node)
   //   cost_dubins = dubins_gen_.len(path_dubins);
 
   // 2D search cost function
-  double cost_2d = h_map_[_worldToIndex(node.x_, node.y_)].g_ * costmap_->getResolution();
-  node.h_ = std::max(cost_2d, cost_dubins);
+  double cost_2d = h_map_[_worldToIndex(node.x_, node.y_)].g() * costmap_->getResolution();
+  node.set_h(std::max(cost_2d, cost_dubins));
 }
 
 /**
@@ -318,7 +318,7 @@ void HybridAStar::genHeurisiticMap(const Node& start)
   std::unordered_map<int, Node> open_set;
 
   open_list.push(start);
-  open_set.emplace(start.id_, start);
+  open_set.emplace(start.id(), start);
 
   // get all possible motions
   const std::vector<Node> motions = Node::getMotion();
@@ -330,33 +330,33 @@ void HybridAStar::genHeurisiticMap(const Node& start)
     Node current = open_list.top();
     open_list.pop();
 
-    h_map_.emplace(current.id_, current);
+    h_map_.emplace(current.id(), current);
 
     // explore neighbor of current node
     for (const auto& motion : motions)
     {
       // explore a new node
       Node node_new = current + motion;
-      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
+      node_new.set_id(grid2Index(node_new.x(), node_new.y()));
 
       // node_new in closed list
-      if (h_map_.find(node_new.id_) != h_map_.end())
+      if (h_map_.find(node_new.id()) != h_map_.end())
         continue;
 
       // next node hit the boundary or obstacle
       // prevent planning failed when the current within inflation
-      if ((node_new.id_ < 0) || (node_new.id_ >= map_size_))
+      if ((node_new.id() < 0) || (node_new.id() >= map_size_))
         continue;
 
-      if (open_set.find(node_new.id_) != open_set.end())
+      if (open_set.find(node_new.id()) != open_set.end())
       {
-        if (open_set[node_new.id_].g_ > node_new.g_)
-          open_set[node_new.id_].g_ = node_new.g_;
+        if (open_set[node_new.id()].g() > node_new.g())
+          open_set[node_new.id()].set_g(node_new.g());
       }
       else
       {
         open_list.push(node_new);
-        open_set.emplace(node_new.id_, node_new);
+        open_set.emplace(node_new.id(), node_new);
       }
     }
   }
@@ -387,12 +387,12 @@ std::vector<Node> HybridAStar::_convertClosedListToPath(std::unordered_map<int, 
 {
   unsigned int cur_x, cur_y;
   std::vector<Node> path;
-  auto current = closed_list.find(goal.id_);
+  auto current = closed_list.find(goal.id());
   while (current->second != start)
   {
     world2Map(current->second.x_, current->second.y_, cur_x, cur_y);
     path.emplace_back(cur_x, cur_y);
-    auto it = closed_list.find(current->second.pid_);
+    auto it = closed_list.find(current->second.pid());
     if (it != closed_list.end())
       current = it;
     else

@@ -48,7 +48,7 @@ bool RRT::plan(const Node& start, const Node& goal, std::vector<Node>& path, std
   sample_list_.clear();
   // copy
   start_ = start, goal_ = goal;
-  sample_list_.insert(std::make_pair(start.id_, start));
+  sample_list_.insert(std::make_pair(start.id(), start));
   expand.push_back(start);
 
   // main loop
@@ -59,20 +59,20 @@ bool RRT::plan(const Node& start, const Node& goal, std::vector<Node>& path, std
     Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (costmap_->getCharMap()[sample_node.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_)
+    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
       continue;
 
     // visited
-    if (sample_list_.find(sample_node.id_) != sample_list_.end())
+    if (sample_list_.find(sample_node.id()) != sample_list_.end())
       continue;
 
     // regular the sample node
     Node new_node = _findNearestPoint(sample_list_, sample_node);
-    if (new_node.id_ == -1)
+    if (new_node.id() == -1)
       continue;
     else
     {
-      sample_list_.insert(std::make_pair(new_node.id_, new_node));
+      sample_list_.insert(std::make_pair(new_node.id(), new_node));
       expand.push_back(new_node);
     }
 
@@ -111,7 +111,7 @@ Node RRT::_generateRandomNode()
     return Node(x, y, 0, 0, id, 0);
   }
   else
-    return Node(goal_.x_, goal_.y_, 0, 0, goal_.id_, 0);
+    return Node(goal_.x(), goal_.y(), 0, 0, goal_.id(), 0);
 }
 
 /**
@@ -120,7 +120,7 @@ Node RRT::_generateRandomNode()
  * @param node  sample node
  * @return nearest node
  */
-Node RRT::_findNearestPoint(std::unordered_map<int, Node> list, const Node& node)
+Node RRT::_findNearestPoint(std::unordered_map<int, Node>& list, const Node& node)
 {
   Node nearest_node, new_node(node);
   double min_dist = std::numeric_limits<double>::max();
@@ -134,8 +134,8 @@ Node RRT::_findNearestPoint(std::unordered_map<int, Node> list, const Node& node
     if (new_dist < min_dist)
     {
       nearest_node = p.second;
-      new_node.pid_ = nearest_node.id_;
-      new_node.g_ = new_dist + p.second.g_;
+      new_node.set_pid(nearest_node.id());
+      new_node.set_g(new_dist + p.second.g());
       min_dist = new_dist;
     }
   }
@@ -146,15 +146,15 @@ Node RRT::_findNearestPoint(std::unordered_map<int, Node> list, const Node& node
     // connect sample node and nearest node, then move the nearest node
     // forward to sample node with `max_distance` as result
     double theta = helper::angle(nearest_node, new_node);
-    new_node.x_ = nearest_node.x_ + static_cast<int>(max_dist_ * cos(theta));
-    new_node.y_ = nearest_node.y_ + static_cast<int>(max_dist_ * sin(theta));
-    new_node.id_ = grid2Index(new_node.x_, new_node.y_);
-    new_node.g_ = max_dist_ + nearest_node.g_;
+    new_node.set_x(nearest_node.x() + static_cast<int>(max_dist_ * cos(theta)));
+    new_node.set_y(nearest_node.y() + static_cast<int>(max_dist_ * sin(theta)));
+    new_node.set_id(grid2Index(new_node.x(), new_node.y()));
+    new_node.set_g(max_dist_ + nearest_node.g());
   }
 
   // obstacle check
   if (_isAnyObstacleInPath(new_node, nearest_node))
-    new_node.id_ = -1;
+    new_node.set_id(-1);
 
   return new_node;
 }
@@ -179,8 +179,8 @@ bool RRT::_isAnyObstacleInPath(const Node& n1, const Node& n2)
   int n_step = static_cast<int>(dist_ / resolution);
   for (int i = 0; i < n_step; i++)
   {
-    float line_x = (float)n1.x_ + (float)(i * resolution * cos(theta));
-    float line_y = (float)n1.y_ + (float)(i * resolution * sin(theta));
+    float line_x = (float)n1.x() + (float)(i * resolution * cos(theta));
+    float line_y = (float)n1.y() + (float)(i * resolution * sin(theta));
     if (costmap_->getCharMap()[grid2Index(static_cast<int>(line_x), static_cast<int>(line_y))] >=
         costmap_2d::LETHAL_OBSTACLE * factor_)
       return true;
@@ -201,8 +201,8 @@ bool RRT::_checkGoal(const Node& new_node)
 
   if (!_isAnyObstacleInPath(new_node, goal_))
   {
-    Node goal(goal_.x_, goal_.y_, dist_ + new_node.g_, 0, grid2Index(goal_.x_, goal_.y_), new_node.id_);
-    sample_list_.insert(std::make_pair(goal.id_, goal));
+    Node goal(goal_.x(), goal_.y(), dist_ + new_node.g(), 0, grid2Index(goal_.x(), goal_.y()), new_node.id());
+    sample_list_.insert(std::make_pair(goal.id(), goal));
     return true;
   }
   return false;

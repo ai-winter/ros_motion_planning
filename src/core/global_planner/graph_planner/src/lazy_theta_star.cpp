@@ -55,14 +55,14 @@ bool LazyThetaStar::plan(const Node& start, const Node& goal, std::vector<Node>&
 
     _setVertex(current);
 
-    if (current.g_ >= std::numeric_limits<double>::max())
+    if (current.g() >= std::numeric_limits<double>::max())
       continue;
 
     // current node does not exist in closed list
-    if (closed_list_.find(current.id_) != closed_list_.end())
+    if (closed_list_.find(current.id()) != closed_list_.end())
       continue;
 
-    closed_list_.insert(std::make_pair(current.id_, current));
+    closed_list_.insert(std::make_pair(current.id(), current));
     expand.push_back(current);
 
     // goal found
@@ -77,26 +77,29 @@ bool LazyThetaStar::plan(const Node& start, const Node& goal, std::vector<Node>&
     {
       // explore a new node
       // path 1
-      Node node_new = current + m;  // add the x_, y_, g_
-      node_new.h_ = helper::dist(node_new, goal);
-      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
-      node_new.pid_ = current.id_;
+      Node node_new = current + m;  // add the .x(), .y(), g_
+      node_new.set_h(helper::dist(node_new, goal));
+      node_new.set_id(grid2Index(node_new.x(), node_new.y()));
+      node_new.set_pid(current.id());
 
       // current node do not exist in closed list
-      if (closed_list_.find(node_new.id_) != closed_list_.end())
+      if (closed_list_.find(node_new.id()) != closed_list_.end())
         continue;
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= map_size_) ||
-          (costmap_->getCharMap()[node_new.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
-           costmap_->getCharMap()[node_new.id_] >= costmap_->getCharMap()[current.id_]))
+      if ((node_new.id() < 0) || (node_new.id() >= map_size_) ||
+          (costmap_->getCharMap()[node_new.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+           costmap_->getCharMap()[node_new.id()] >= costmap_->getCharMap()[current.id()]))
         continue;
 
       // get parent node
       Node parent;
-      parent.id_ = current.pid_;
-      index2Grid(parent.id_, parent.x_, parent.y_);
-      auto find_parent = closed_list_.find(parent.id_);
+      parent.set_id(current.pid());
+      int tmp_x, tmp_y;
+      index2Grid(parent.id(), tmp_x, tmp_y);
+      parent.set_x(tmp_x);
+      parent.set_y(tmp_y);
+      auto find_parent = closed_list_.find(parent.id());
       if (find_parent != closed_list_.end())
       {
         parent = find_parent->second;
@@ -119,10 +122,10 @@ bool LazyThetaStar::plan(const Node& start, const Node& goal, std::vector<Node>&
 void LazyThetaStar::_updateVertex(const Node& parent, Node& child)
 {
   // path 2
-  if (parent.g_ + helper::dist(parent, child) < child.g_)
+  if (parent.g() + helper::dist(parent, child) < child.g())
   {
-    child.g_ = parent.g_ + helper::dist(parent, child);
-    child.pid_ = parent.id_;
+    child.set_g(parent.g() + helper::dist(parent, child));
+    child.set_pid(parent.id());
   }
 }
 
@@ -134,11 +137,14 @@ void LazyThetaStar::_setVertex(Node& node)
 {
   // get the coordinate of parent node
   Node parent;
-  parent.id_ = node.pid_;
-  index2Grid(parent.id_, parent.x_, parent.y_);
+  parent.set_id(node.pid());
+  int tmp_x, tmp_y;
+  index2Grid(parent.id(), tmp_x, tmp_y);
+  parent.set_x(tmp_x);
+  parent.set_y(tmp_y);
 
   // if no parent, no need to check the line of sight
-  auto find_parent = closed_list_.find(parent.id_);
+  auto find_parent = closed_list_.find(parent.id());
   if (find_parent == closed_list_.end())
     return;
   parent = find_parent->second;
@@ -146,21 +152,21 @@ void LazyThetaStar::_setVertex(Node& node)
   if (!_lineOfSight(parent, node))
   {
     // path 1
-    node.g_ = std::numeric_limits<double>::max();
+    node.set_g(std::numeric_limits<double>::max());
     for (const auto& m : motion_)
     {
       Node parent_new = node + m;
-      parent_new.id_ = grid2Index(parent_new.x_, parent_new.y_);
-      auto find_parent_new = closed_list_.find(parent_new.id_);
+      parent_new.set_id(grid2Index(parent_new.x(), parent_new.y()));
+      auto find_parent_new = closed_list_.find(parent_new.id());
 
       if (find_parent_new != closed_list_.end())
       {
         // parent_new exists in closed list
         parent_new = find_parent_new->second;
-        if (parent_new.g_ + helper::dist(parent_new, node) < node.g_)
+        if (parent_new.g() + helper::dist(parent_new, node) < node.g())
         {
-          node.g_ = parent_new.g_ + helper::dist(parent_new, node);
-          node.pid_ = parent_new.id_;
+          node.set_g(parent_new.g() + helper::dist(parent_new, node));
+          node.set_pid(parent_new.id());
         }
       }
     }

@@ -46,7 +46,7 @@ bool InformedRRT::plan(const Node& start, const Node& goal, std::vector<Node>& p
   sample_list_.clear();
   // copy
   start_ = start, goal_ = goal;
-  sample_list_.insert(std::make_pair(start.id_, start));
+  sample_list_.insert(std::make_pair(start.id(), start));
   expand.push_back(start);
 
   // main loop
@@ -59,20 +59,20 @@ bool InformedRRT::plan(const Node& start, const Node& goal, std::vector<Node>& p
     Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (costmap_->getCharMap()[sample_node.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_)
+    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
       continue;
 
     // visited
-    if (sample_list_.find(sample_node.id_) != sample_list_.end())
+    if (sample_list_.find(sample_node.id()) != sample_list_.end())
       continue;
 
     // regular the sample node
     Node new_node = _findNearestPoint(sample_list_, sample_node);
-    if (new_node.id_ == -1)
+    if (new_node.id() == -1)
       continue;
     else
     {
-      sample_list_.insert(std::make_pair(new_node.id_, new_node));
+      sample_list_.insert(std::make_pair(new_node.id(), new_node));
       expand.push_back(new_node);
     }
 
@@ -80,10 +80,10 @@ bool InformedRRT::plan(const Node& start, const Node& goal, std::vector<Node>& p
     auto dist_ = helper::dist(new_node, goal_);
     if (dist_ <= max_dist_ && !_isAnyObstacleInPath(new_node, goal_))
     {
-      double cost = dist_ + new_node.g_;
+      double cost = dist_ + new_node.g();
       if (cost < c_best_)
       {
-        best_parent = new_node.id_;
+        best_parent = new_node.id();
         c_best_ = cost;
       }
     }
@@ -91,8 +91,8 @@ bool InformedRRT::plan(const Node& start, const Node& goal, std::vector<Node>& p
 
   if (best_parent != -1)
   {
-    Node goal_star(goal_.x_, goal_.y_, c_best_, 0, grid2Index(goal_.x_, goal_.y_), best_parent);
-    sample_list_.insert(std::make_pair(goal_star.id_, goal_star));
+    Node goal_star(goal_.x(), goal_.y(), c_best_, 0, grid2Index(goal_.x(), goal_.y()), best_parent);
+    sample_list_.insert(std::make_pair(goal_star.id(), goal_star));
 
     path = _convertClosedListToPath(sample_list_, start, goal);
     return true;
@@ -126,7 +126,7 @@ Node InformedRRT::_generateRandomNode()
       }
       // transform to ellipse
       Node temp = _transform(x, y);
-      if (temp.id_ < map_size_ - 1)
+      if (temp.id() < map_size_ - 1)
         return temp;
     }
   }
@@ -143,8 +143,8 @@ Node InformedRRT::_generateRandomNode()
 Node InformedRRT::_transform(double x, double y)
 {
   // center
-  double center_x = (start_.x_ + goal_.x_) / 2;
-  double center_y = (start_.y_ + goal_.y_) / 2;
+  double center_x = (start_.x() + goal_.x()) / 2;
+  double center_y = (start_.y() + goal_.y()) / 2;
 
   // rotation
   double theta = -helper::angle(start_, goal_);

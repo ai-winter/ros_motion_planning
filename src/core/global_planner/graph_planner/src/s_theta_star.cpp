@@ -57,10 +57,10 @@ bool SThetaStar::plan(const Node& start, const Node& goal, std::vector<Node>& pa
     open_list.pop();
 
     // current node does not exist in closed list
-    if (closed_list.find(current.id_) != closed_list.end())
+    if (closed_list.find(current.id()) != closed_list.end())
       continue;
 
-    closed_list.insert(std::make_pair(current.id_, current));
+    closed_list.insert(std::make_pair(current.id(), current));
     expand.push_back(current);
 
     // goal found
@@ -77,35 +77,37 @@ bool SThetaStar::plan(const Node& start, const Node& goal, std::vector<Node>& pa
       // path 1
 
       Node node_new = current + m;  // add the x_, y_, g_
-      node_new.h_ = _getDistance(node_new, goal);
-      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
-      node_new.pid_ = current.id_;
+      node_new.set_h(_getDistance(node_new, goal));
+      node_new.set_id(grid2Index(node_new.x(), node_new.y()));
+      node_new.set_pid(current.id());
 
       // current node do not exist in closed list
-      if (closed_list.find(node_new.id_) != closed_list.end())
+      if (closed_list.find(node_new.id()) != closed_list.end())
         continue;
 
       double alpha = 0.0;
 
       // get the coordinate of parent node
       Node parent;
-      parent.id_ = current.pid_;
-      index2Grid(parent.id_, parent.x_, parent.y_);
-
+      parent.set_id(current.pid());
+      int tmp_x, tmp_y;
+      index2Grid(parent.id(), tmp_x, tmp_y);
+      parent.set_x(tmp_x);
+      parent.set_y(tmp_y);
       // update g value
-      auto find_parent = closed_list.find(parent.id_);
+      auto find_parent = closed_list.find(parent.id());
       if (find_parent != closed_list.end())
       {
         parent = find_parent->second;
         alpha = _alpha(parent, node_new, goal);
         // update g
-        node_new.g_ = current.g_ + _getDistance(parent, node_new) + alpha;
+        node_new.set_g(current.g() + _getDistance(parent, node_new) + alpha);
       }
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= map_size_) ||
-          (costmap_->getCharMap()[node_new.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
-           costmap_->getCharMap()[node_new.id_] >= costmap_->getCharMap()[current.id_]))
+      if ((node_new.id() < 0) || (node_new.id() >= map_size_) ||
+          (costmap_->getCharMap()[node_new.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+           costmap_->getCharMap()[node_new.id()] >= costmap_->getCharMap()[current.id()]))
         continue;
 
       if (find_parent != closed_list.end())
@@ -133,11 +135,11 @@ void SThetaStar::_updateVertex(const Node& parent, Node& child, const double alp
   if (_lineOfSight(parent, child))
   {
     // path 2
-    double new_g = parent.g_ + _getDistance(parent, child) + alpha;
-    if (new_g < child.g_)
+    double new_g = parent.g() + _getDistance(parent, child) + alpha;
+    if (new_g < child.g())
     {
-      child.g_ = new_g;
-      child.pid_ = parent.id_;
+      child.set_g(new_g);
+      child.set_pid(parent.id());
     }
   }
 }
@@ -173,6 +175,6 @@ double SThetaStar::_alpha(const Node& parent, const Node& child, const Node& goa
  */
 double SThetaStar::_getDistance(const Node& node, const Node& goal)
 {
-  return std::hypot(node.x_ - goal.x_, node.y_ - goal.y_);
+  return std::hypot(node.x() - goal.x(), node.y() - goal.y());
 }
 }  // namespace global_planner

@@ -22,9 +22,7 @@ namespace global_planner
  * @brief Construct a new ThetaStar object
  * @param costmap   the environment for path planning
  */
-ThetaStar::ThetaStar(costmap_2d::Costmap2D* costmap) : GlobalPlanner(costmap)
-{
-};
+ThetaStar::ThetaStar(costmap_2d::Costmap2D* costmap) : GlobalPlanner(costmap){};
 
 /**
  * @brief Theta* implementation
@@ -57,10 +55,10 @@ bool ThetaStar::plan(const Node& start, const Node& goal, std::vector<Node>& pat
     open_list.pop();
 
     // current node does not exist in closed list
-    if (closed_list.find(current.id_) != closed_list.end())
+    if (closed_list.find(current.id()) != closed_list.end())
       continue;
 
-    closed_list.insert(std::make_pair(current.id_, current));
+    closed_list.insert(std::make_pair(current.id(), current));
     expand.push_back(current);
 
     // goal found
@@ -76,27 +74,30 @@ bool ThetaStar::plan(const Node& start, const Node& goal, std::vector<Node>& pat
       // explore a new node
       // path 1
       Node node_new = current + m;  // add the x_, y_, g_
-      node_new.h_ = helper::dist(node_new, goal);
-      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
-      node_new.pid_ = current.id_;
+      node_new.set_h(helper::dist(node_new, goal));
+      node_new.set_id(grid2Index(node_new.x(), node_new.y()));
+      node_new.set_pid(current.id());
 
       // current node do not exist in closed list
-      if (closed_list.find(node_new.id_) != closed_list.end())
+      if (closed_list.find(node_new.id()) != closed_list.end())
         continue;
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= map_size_) ||
-          (costmap_->getCharMap()[node_new.id_] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
-           costmap_->getCharMap()[node_new.id_] >= costmap_->getCharMap()[current.id_]))
+      if ((node_new.id() < 0) || (node_new.id() >= map_size_) ||
+          (costmap_->getCharMap()[node_new.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+           costmap_->getCharMap()[node_new.id()] >= costmap_->getCharMap()[current.id()]))
         continue;
 
       // get the coordinate of parent node
       Node parent;
-      parent.id_ = current.pid_;
-      index2Grid(parent.id_, parent.x_, parent.y_);
+      parent.set_id(current.pid());
+      int tmp_x, tmp_y;
+      index2Grid(parent.id(), tmp_x, tmp_y);
+      parent.set_x(tmp_x);
+      parent.set_y(tmp_y);
 
       // update g value
-      auto find_parent = closed_list.find(parent.id_);
+      auto find_parent = closed_list.find(parent.id());
       if (find_parent != closed_list.end())
       {
         parent = find_parent->second;
@@ -120,10 +121,10 @@ void ThetaStar::_updateVertex(const Node& parent, Node& child)
   if (_lineOfSight(parent, child))
   {
     // path 2
-    if (parent.g_ + helper::dist(parent, child) < child.g_)
+    if (parent.g() + helper::dist(parent, child) < child.g())
     {
-      child.g_ = parent.g_ + helper::dist(parent, child);
-      child.pid_ = parent.id_;
+      child.set_g(parent.g() + helper::dist(parent, child));
+      child.set_pid(parent.id());
     }
   }
 }
@@ -136,18 +137,18 @@ void ThetaStar::_updateVertex(const Node& parent, Node& child)
  */
 bool ThetaStar::_lineOfSight(const Node& parent, const Node& child)
 {
-  int s_x = (parent.x_ - child.x_ == 0) ? 0 : (parent.x_ - child.x_) / std::abs(parent.x_ - child.x_);
-  int s_y = (parent.y_ - child.y_ == 0) ? 0 : (parent.y_ - child.y_) / std::abs(parent.y_ - child.y_);
-  int d_x = std::abs(parent.x_ - child.x_);
-  int d_y = std::abs(parent.y_ - child.y_);
+  int s_x = (parent.x() - child.x() == 0) ? 0 : (parent.x() - child.x()) / std::abs(parent.x() - child.x());
+  int s_y = (parent.y() - child.y() == 0) ? 0 : (parent.y() - child.y()) / std::abs(parent.y() - child.y());
+  int d_x = std::abs(parent.x() - child.x());
+  int d_y = std::abs(parent.y() - child.y());
 
   // check if any obstacle exists between parent and child
   if (d_x > d_y)
   {
     int tau = d_y - d_x;
-    int x = child.x_, y = child.y_;
+    int x = child.x(), y = child.y();
     int e = 0;
-    while (x != parent.x_)
+    while (x != parent.x())
     {
       if (e * 2 > tau)
       {
@@ -166,7 +167,7 @@ bool ThetaStar::_lineOfSight(const Node& parent, const Node& child)
         e += d_x - d_y;
       }
       if (costmap_->getCharMap()[grid2Index(x, y)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
-          costmap_->getCharMap()[grid2Index(x, y)] >= costmap_->getCharMap()[parent.id_])
+          costmap_->getCharMap()[grid2Index(x, y)] >= costmap_->getCharMap()[parent.id()])
         // obstacle detected
         return false;
     }
@@ -175,9 +176,9 @@ bool ThetaStar::_lineOfSight(const Node& parent, const Node& child)
   {
     // similar. swap x and y
     int tau = d_x - d_y;
-    int x = child.x_, y = child.y_;
+    int x = child.x(), y = child.y();
     int e = 0;
-    while (y != parent.y_)
+    while (y != parent.y())
     {
       if (e * 2 > tau)
       {
@@ -196,7 +197,7 @@ bool ThetaStar::_lineOfSight(const Node& parent, const Node& child)
         e += d_y - d_x;
       }
       if (costmap_->getCharMap()[grid2Index(x, y)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
-          costmap_->getCharMap()[grid2Index(x, y)] >= costmap_->getCharMap()[parent.id_])
+          costmap_->getCharMap()[grid2Index(x, y)] >= costmap_->getCharMap()[parent.id()])
         // obstacle detected
         return false;
     }

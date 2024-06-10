@@ -26,7 +26,10 @@ DStarLite::DStarLite(costmap_2d::Costmap2D* costmap) : GlobalPlanner(costmap)
 {
   curr_global_costmap_ = new unsigned char[map_size_];
   last_global_costmap_ = new unsigned char[map_size_];
-  start_.x_ = start_.y_ = goal_.x_ = goal_.y_ = INF;
+  start_.set_x(INF);
+  start_.set_y(INF);
+  goal_.set_x(INF);
+  goal_.set_y(INF);
   initMap();
 }
 
@@ -76,7 +79,7 @@ void DStarLite::reset()
  */
 double DStarLite::getH(LNodePtr n1, LNodePtr n2)
 {
-  return std::hypot(n1->x_ - n2->x_, n1->y_ - n2->y_);
+  return std::hypot(n1->x() - n2->x(), n1->y() - n2->y());
 }
 
 /**
@@ -87,7 +90,7 @@ double DStarLite::getH(LNodePtr n1, LNodePtr n2)
  */
 double DStarLite::calculateKey(LNodePtr s)
 {
-  return std::min(s->g_, s->rhs) + 0.9 * (getH(s, start_ptr_) + km_);
+  return std::min(s->g(), s->rhs) + 0.9 * (getH(s, start_ptr_) + km_);
 }
 
 /**
@@ -99,8 +102,8 @@ double DStarLite::calculateKey(LNodePtr s)
  */
 bool DStarLite::isCollision(LNodePtr n1, LNodePtr n2)
 {
-  return (curr_global_costmap_[n1->id_] > costmap_2d::LETHAL_OBSTACLE * factor_) ||
-         (curr_global_costmap_[n2->id_] > costmap_2d::LETHAL_OBSTACLE * factor_);
+  return (curr_global_costmap_[n1->id()] > costmap_2d::LETHAL_OBSTACLE * factor_) ||
+         (curr_global_costmap_[n2->id()] > costmap_2d::LETHAL_OBSTACLE * factor_);
 }
 
 /**
@@ -111,7 +114,7 @@ bool DStarLite::isCollision(LNodePtr n1, LNodePtr n2)
  */
 void DStarLite::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
 {
-  int x = u->x_, y = u->y_;
+  int x = u->x(), y = u->y();
   for (int i = -1; i <= 1; i++)
   {
     for (int j = -1; j <= 1; j++)
@@ -143,7 +146,7 @@ double DStarLite::getCost(LNodePtr n1, LNodePtr n2)
 {
   if (isCollision(n1, n2))
     return INF;
-  return std::hypot(n1->x_ - n2->x_, n1->y_ - n2->y_);
+  return std::hypot(n1->x() - n2->x(), n1->y() - n2->y());
 }
 
 /**
@@ -154,7 +157,7 @@ double DStarLite::getCost(LNodePtr n1, LNodePtr n2)
 void DStarLite::updateVertex(LNodePtr u)
 {
   // u != goal
-  if (u->x_ != goal_.x_ || u->y_ != goal_.y_)
+  if (u->x() != goal_.x() || u->y() != goal_.y())
   {
     std::vector<LNodePtr> neigbours;
     getNeighbours(u, neigbours);
@@ -163,9 +166,9 @@ void DStarLite::updateVertex(LNodePtr u)
     u->rhs = INF;
     for (LNodePtr s : neigbours)
     {
-      if (s->g_ + getCost(s, u) < u->rhs)
+      if (s->g() + getCost(s, u) < u->rhs)
       {
-        u->rhs = s->g_ + getCost(s, u);
+        u->rhs = s->g() + getCost(s, u);
       }
     }
   }
@@ -178,7 +181,7 @@ void DStarLite::updateVertex(LNodePtr u)
   }
 
   // g(u) != rhs(u)
-  if (u->g_ != u->rhs)
+  if (u->g() != u->rhs)
   {
     u->key = calculateKey(u);
     u->open_it = open_list_.insert(std::make_pair(u->key, u));
@@ -202,7 +205,7 @@ void DStarLite::computeShortestPath()
     expand_.push_back(*u);
 
     // start reached
-    if (u->key >= calculateKey(start_ptr_) && start_ptr_->rhs == start_ptr_->g_)
+    if (u->key >= calculateKey(start_ptr_) && start_ptr_->rhs == start_ptr_->g())
       break;
 
     // affected by obstacles
@@ -212,14 +215,14 @@ void DStarLite::computeShortestPath()
       u->open_it = open_list_.insert(std::make_pair(u->key, u));
     }
     // Locally over-consistent -> Locally consistent
-    else if (u->g_ > u->rhs)
+    else if (u->g() > u->rhs)
     {
-      u->g_ = u->rhs;
+      u->set_g(u->rhs);
     }
     // Locally under-consistent -> Locally over-consistent
     else
     {
-      u->g_ = INF;
+      u->set_g(INF);
       updateVertex(u);
     }
 
@@ -240,9 +243,9 @@ void DStarLite::computeShortestPath()
 bool DStarLite::extractPath(const Node& start, const Node& goal)
 {
   std::vector<Node> path_temp;
-  LNodePtr node_ptr = map_[start.x_][start.y_];
+  LNodePtr node_ptr = map_[start.x()][start.y()];
   int count = 0;
-  while (node_ptr->x_ != goal.x_ || node_ptr->y_ != goal.y_)
+  while (node_ptr->x() != goal.x() || node_ptr->y() != goal.y())
   {
     path_temp.push_back(*node_ptr);
 
@@ -253,9 +256,9 @@ bool DStarLite::extractPath(const Node& start, const Node& goal)
     LNodePtr next_node_ptr;
     for (LNodePtr node_n_ptr : neigbours)
     {
-      if (node_n_ptr->g_ < min_cost)
+      if (node_n_ptr->g() < min_cost)
       {
-        min_cost = node_n_ptr->g_;
+        min_cost = node_n_ptr->g();
         next_node_ptr = node_n_ptr;
       }
     }
@@ -279,20 +282,20 @@ bool DStarLite::extractPath(const Node& start, const Node& goal)
  */
 Node DStarLite::getState(const Node& current)
 {
-  Node state(path_[0].x_, path_[0].y_);
-  double dis_min = std::hypot(state.x_ - current.x_, state.y_ - current.y_);
+  Node state(path_[0].x(), path_[0].y());
+  double dis_min = std::hypot(state.x() - current.x(), state.y() - current.y());
   int idx_min = 0;
   for (int i = 1; i < path_.size(); i++)
   {
-    double dis = std::hypot(path_[i].x_ - current.x_, path_[i].y_ - current.y_);
+    double dis = std::hypot(path_[i].x() - current.x(), path_[i].y() - current.y());
     if (dis < dis_min)
     {
       dis_min = dis;
       idx_min = i;
     }
   }
-  state.x_ = path_[idx_min].x_;
-  state.y_ = path_[idx_min].y_;
+  state.set_x(path_[idx_min].x());
+  state.set_y(path_[idx_min].y());
 
   return state;
 }
@@ -313,14 +316,14 @@ bool DStarLite::plan(const Node& start, const Node& goal, std::vector<Node>& pat
   expand_.clear();
 
   // new goal set
-  if (goal_.x_ != goal.x_ || goal_.y_ != goal.y_)
+  if (goal_.x() != goal.x() || goal_.y() != goal.y())
   {
     reset();
     goal_ = goal;
     start_ = start;
 
-    start_ptr_ = map_[start.x_][start.y_];
-    goal_ptr_ = map_[goal.x_][goal.y_];
+    start_ptr_ = map_[start.x()][start.y()];
+    goal_ptr_ = map_[goal.x()][goal.y()];
     last_ptr_ = start_ptr_;
 
     goal_ptr_->rhs = 0.0;
@@ -341,13 +344,13 @@ bool DStarLite::plan(const Node& start, const Node& goal, std::vector<Node>& pat
   else
   {
     start_ = start;
-    start_ptr_ = map_[start.x_][start.y_];
+    start_ptr_ = map_[start.x()][start.y()];
 
     for (int i = -WINDOW_SIZE / 2; i < WINDOW_SIZE / 2; i++)
     {
       for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; j++)
       {
-        int x_n = start.x_ + i, y_n = start.y_ + j;
+        int x_n = start.x() + i, y_n = start.y() + j;
         if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
           continue;
 

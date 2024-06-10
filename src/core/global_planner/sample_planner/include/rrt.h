@@ -54,7 +54,7 @@ protected:
    * @param node  sample node
    * @return nearest node
    */
-  Node _findNearestPoint(std::unordered_map<int, Node> list, const Node& node);
+  Node _findNearestPoint(std::unordered_map<int, Node>& list, const Node& node);
   /**
    * @brief Check if there is any obstacle between the 2 nodes.
    * @param n1        Node 1

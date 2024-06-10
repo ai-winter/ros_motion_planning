@@ -26,7 +26,7 @@ namespace helper
  */
 double dist(const Node& node1, const Node& node2)
 {
-  return std::hypot(node1.x_ - node2.x_, node1.y_ - node2.y_);
+  return std::hypot(node1.x() - node2.x(), node1.y() - node2.y());
 }
 
 double dist(const std::pair<double, double>& node1, const std::pair<double, double>& node2)
@@ -52,7 +52,7 @@ double dist(const geometry_msgs::PoseStamped& node1, const geometry_msgs::PoseSt
  */
 double angle(const Node& node1, const Node& node2)
 {
-  return atan2(node2.y_ - node1.y_, node2.x_ - node1.x_);
+  return atan2(node2.y() - node1.y(), node2.x() - node1.x());
 }
 
 double angle(const std::pair<double, double>& node1, const std::pair<double, double>& node2)
