@@ -186,7 +186,7 @@ Visualization Manager:
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
-      Topic: /move_base/SamplePlanner/plan
+      Topic: /move_base/GraphPlanner/plan
       Unreliable: false
       Value: true
     - Alpha: 0.5
@@ -224,7 +224,7 @@ Visualization Manager:
       Marker Topic: /move_base/SamplePlanner/tree
       Name: Marker
       Namespaces:
-        tree: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1

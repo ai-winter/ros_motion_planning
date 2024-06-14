@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+  <scene>
+    <ambient>0.68 0.68 0.68 1.0</ambient>
+    <sky>
+      <sunrise/>
+      <clouds>
+        <speed>12</speed>
+    </clouds>
+    </sky>
+  </scene>
+    <physics type='ode'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <gravity>0 0 -9.8</gravity>
+    </physics>
+
+    <include>
+      <uri>model://ISCAS_museum/ISCAS_groundplane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ISCAS_museum/ISCAS_museum</uri>
+      <pose>0 0 0 0 0 -1.57</pose>
+    </include>
+    <!--<include>
+      <uri>model://ISCAS_Museum/ISCAS_post</uri>
+      <name>table1</name>
+      <pose>8 3.5 0 0 0 1</pose>
+    </include>
+    <include>
+      <uri>model://ISCAS_Museum/ISCAS_post</uri>
+      <name>table2</name>
+      <pose>6 5 0 0 0 1.57</pose>
+    </include>-->
+  </world>
+</sdf>
