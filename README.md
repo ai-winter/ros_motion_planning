@@ -51,7 +51,6 @@ This repository provides the implementation of common **Motion Planning** algori
     cmake .. -DBUILD_SHARED_LIBS=ON
     make -j6
     sudo make install
-    sudo cp /usr/local/include/osqp/* /usr/local/include
     ```
 
     - OSQP-Eigen
