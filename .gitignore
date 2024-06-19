@@ -47,10 +47,6 @@ srv/_*.py
 qtcreator-*
 *.user
 
-/planning/cfg
-/planning/docs
-/planning/src
-
 *~
 
 # Emacs
@@ -59,6 +55,9 @@ qtcreator-*
 # Catkin custom files
 CATKIN_IGNORE
 
-# osqp
-osqp/
-osqp-eigen/
+# 3rd
+3rd/build/
+3rd/*.lock
+3rd/*.cmake
+3rd/*.json
+3rd/conanbuildinfo.txt

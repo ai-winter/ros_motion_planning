@@ -43,25 +43,10 @@ This repository provides the implementation of common **Motion Planning** algori
     ```
 
 3. Install dependence
-
-    - OSQP
+    - conan
     ```bash
-    git clone -b release-0.6.3 --recursive https://github.com/oxfordcontrol/osqp
-    cd osqp && mkdir build && cd build
-    cmake .. -DBUILD_SHARED_LIBS=ON
-    make -j6
-    sudo make install
-    sudo cp /usr/local/include/osqp/* /usr/local/include
-    ```
-
-    - OSQP-Eigen
-
-    ```bash
-    git clone https://github.com/robotology/osqp-eigen.git
-    cd osqp-eigen && mkdir build && cd build
-    cmake ..
-    make
-    sudo make install
+    pip install conan==1.59.0
+    conan remote add conancenter https://center.conan.io
     ```
 
     - Other dependence.
@@ -82,8 +67,15 @@ This repository provides the implementation of common **Motion Planning** algori
 5. Compile the code.
 
    **NOTE: Please refer to [#48](https://github.com/ai-winter/ros_motion_planning/issues/48) if you meet libignition dependency error.**
+
+   - Compile 3rd-party libraries
     ```bash
-    cd ros_motion_planning/
+    cd ros_motion_planning/3rd
+    ./conan_install.sh
+    ```
+   - Compile our project
+    ```bash
+    cd ../
     catkin_make
     # or catkin build
     # you may need to install it by: sudo apt install python-catkin-tools
@@ -112,6 +104,9 @@ The overall file structure is shown below.
 
 ```
 ros_motion_planner
+├── 3rd
+├── docs
+├── docker
 ├── assets
 ├── scripts
 └── src
@@ -129,7 +124,7 @@ ros_motion_planner
     │   ├── rviz
     │   ├── urdf
     │   └── worlds
-    ├── third_party
+    ├── plugins
     │   ├── dynamic_rviz_config
     │   ├── dynamic_xml_config
     │   ├── gazebo_plugins

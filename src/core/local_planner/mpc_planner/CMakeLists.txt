@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(mpc_planner)
 
+get_filename_component(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
+include(${PROJECT_ROOT_DIR}/3rd/conanbuildinfo.cmake)
+conan_basic_setup()
+
 find_package(catkin REQUIRED COMPONENTS
   angles
   costmap_2d
@@ -16,7 +20,6 @@ find_package(catkin REQUIRED COMPONENTS
   local_planner
 )
 
-find_package(OsqpEigen REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 catkin_package(
@@ -33,7 +36,11 @@ add_library(${PROJECT_NAME}
   src/mpc_planner.cpp
 )
 
+target_include_directories(${PROJECT_NAME} PUBLIC
+  ${CONAN_INCLUDE_DIRS}
+)
+
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  OsqpEigen
+  ${CONAN_LIBS}
 )

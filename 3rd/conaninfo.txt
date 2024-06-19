@@ -1,0 +1,34 @@
+[settings]
+    arch=x86_64
+    build_type=Release
+    compiler=gcc
+    compiler.libcxx=libstdc++
+    compiler.version=9
+    os=Linux
+
+[requires]
+    osqp/0.6.3
+
+[options]
+
+
+[full_settings]
+    arch=x86_64
+    build_type=Release
+    compiler=gcc
+    compiler.libcxx=libstdc++
+    compiler.version=9
+    os=Linux
+
+[full_requires]
+    osqp/0.6.3:6af9cc7cb931c5ad942174fd7838eb655717c709
+
+[full_options]
+    osqp:fPIC=True
+    osqp:shared=False
+
+[recipe_hash]
+
+
+[env]
+
