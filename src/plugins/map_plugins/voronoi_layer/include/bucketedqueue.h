@@ -16,8 +16,8 @@
  */
 
 template <typename T>
-class BucketPrioQueue {
-
+class BucketPrioQueue
+{
 public:
   //! Standard constructor
   /** Standard constructor. When called for the first time it creates a look up table
@@ -25,8 +25,8 @@ public:
    */
   BucketPrioQueue();
 
-
-  void clear() {
+  void clear()
+  {
     buckets.clear();
     count = 0;
     nextPop = buckets.end();
@@ -39,18 +39,24 @@ public:
   //! return and pop the element with the lowest squared distance */
   T pop();
 
-  int size() { return count; }
-  int getNumBuckets() { return buckets.size(); }
+  int size()
+  {
+    return count;
+  }
+  int getNumBuckets()
+  {
+    return buckets.size();
+  }
 
-  int getTopPriority(){
+  int getTopPriority()
+  {
     return nextPop->first;
   }
 
 private:
-
   int count;
 
-  typedef std::map< int, std::queue<T> > BucketType;
+  typedef std::map<int, std::queue<T> > BucketType;
   BucketType buckets;
   typename BucketType::iterator nextPop;
 };
