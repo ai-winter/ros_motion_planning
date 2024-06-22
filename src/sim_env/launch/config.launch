@@ -1,5 +1,5 @@
 <!--
-  ******************************************************************************************
+******************************************************************************************
 *  Copyright (c) 2023 Yang Haodong, All Rights Reserved                                  *
 *                                                                                        *
 *  @brief    Launch gazebo simulation with world and multi robots.                       *
@@ -11,39 +11,38 @@
 -->
 
 <launch>
-    <!-- Select the robots , the world and the map -->
-    <arg name="world" default="warehouse" doc="model type [warehouse, workshop, turtlebot3_house, ...]" />
-    <arg name="map" default="warehouse" doc="map type [warehouse, workshop, turtlebot3_house, ...]" />
+  <!-- select the robots, the world and the map -->
+  <arg name="world" default="warehouse" />
+  <arg name="map" default="warehouse" />
 
-    <!-- Select the number of robots -->
-    <arg name="robot_number" default="1" />
+  <!-- select the number of robots -->
+  <arg name="robot_number" default="1" />
 
-    <!-- Tune some other parameters -->
-    <arg name="debug" default="false" />
-    <arg name="gui" default="true" />
-    <arg name="headless" default="false" />
+  <!-- some other parameters -->
+  <arg name="debug" default="false" />
+  <arg name="gui" default="true" />
+  <arg name="headless" default="false" />
+  <arg name="rviz_file" default="" />
 
-    <!-- Start Gazebo with a specific world -->
-    <include file="$(find gazebo_ros)/launch/empty_world.launch" unless="$(eval arg('world') == '')">
-        <arg name="world_name" value="$(find sim_env)/worlds/$(arg world).world" />
-        <arg name="debug" value="$(arg debug)" />
-        <arg name="gui" value="$(arg gui)" />
-        <arg name="paused" value="false" />
-        <arg name="use_sim_time" value="true" />
-        <arg name="headless" value="$(arg headless)" />
-    </include>
+  <!-- start Gazebo with a specific world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" unless="$(eval arg('world') == '')">
+    <arg name="world_name" value="$(find sim_env)/worlds/$(arg world).world" />
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="headless" value="$(arg headless)" />
+    <arg name="paused" value="false" />
+    <arg name="use_sim_time" value="true" />
+  </include>
 
-    <!-- start map-server and publish user map -->
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find sim_env)/maps/$(arg map)/$(arg map).yaml"
-        unless="$(eval arg('map') == '')" />
+  <!-- start map-server and publish user's map -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find sim_env)/maps/$(arg map)/$(arg map).yaml"
+    unless="$(eval arg('map') == '')" />
 
-    <!-- Spawn multi robots with specific pose, and add robot control and state publisher. -->
-    <include file="$(find sim_env)/launch/include/robots/start_robots.launch.xml" />
+  <!-- spawn multi robots with specific pose, and add robot control and state publisher. -->
+  <include file="$(find sim_env)/launch/include/robots/start_robots.launch.xml" />
 
-    <!-- Open Rviz to visualize information -->
-    <arg name="rviz_file" default="" />
-    <node pkg="dynamic_rviz_config" type="rviz_generate.py" name="rosapp_rviz" args="$(arg robot_number)" output="screen"
-        if="$(eval arg('rviz_file') == '')" />
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim_env)/rviz/$(arg rviz_file)"
-        unless="$(eval arg('rviz_file') == '')" />
+  <!-- open rviz for visualization -->
+  <node pkg="dynamic_rviz_config" type="rviz_generate.py" name="rosapp_rviz" args="$(arg robot_number)" output="screen"
+    if="$(eval arg('rviz_file') == '')" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim_env)/rviz/$(arg rviz_file)" unless="$(eval arg('rviz_file') == '')" />
 </launch>

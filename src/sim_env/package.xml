@@ -1,12 +1,13 @@
-<package>
+<?xml version="1.0"?>
+<package format="2">
   <name>sim_env</name>
   <version>0.0.1</version>
-  <description>
-    ROS motion planning simulation environment.
-  </description>
-  <author>Winter</author>
+  <description>Simulation environment</description>
   <maintainer email="913982779@qq.com">Winter</maintainer>
+  <maintainer email="guo.zhanyu@qq.com">ZhanyuGuo</maintainer>
   <license>BSD</license>
+  <author email="913982779@qq.com">Winter</author>
+
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
@@ -15,26 +16,25 @@
   <build_depend>gazebo_ros</build_depend>
   <build_depend>rviz</build_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>controller_manager</run_depend>
-  <run_depend>urdf</run_depend>
-  <run_depend>effort_controllers</run_depend>
-  <run_depend>gazebo_plugins</run_depend>
-  <run_depend>gazebo_ros</run_depend>
-  <run_depend>gazebo_ros_control</run_depend>
-  <run_depend>joint_state_controller</run_depend>
-  <run_depend>joint_state_publisher</run_depend>
-  <run_depend>robot_state_publisher</run_depend>
-  <run_depend>yocs_cmd_vel_mux</run_depend>
-  <run_depend>message_runtime</run_depend>
-  <run_depend>xacro</run_depend>
-  <run_depend>rviz</run_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>urdf</exec_depend>
+  <exec_depend>effort_controllers</exec_depend>
+  <exec_depend>gazebo_plugins</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>gazebo_ros_control</exec_depend>
+  <exec_depend>joint_state_controller</exec_depend>
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>yocs_cmd_vel_mux</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>rviz</exec_depend>
 
+  <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <!-- <gazebo_ros gazebo_media_path="${prefix}"/> -->
-    <!-- <gazebo_ros gazebo_model_path="${prefix}/models/"/> -->
     <gazebo_ros gazebo_model_path="${prefix}/.." />
   </export>
 </package>
