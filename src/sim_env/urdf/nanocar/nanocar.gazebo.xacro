@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot name="NanoCar" xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:arg name="robot_name" default=""/>
+  <xacro:arg name="robot_name" default="" />
 
   <gazebo reference="base_link">
     <material>Gazebo/DarkGrey</material>
@@ -38,7 +38,7 @@
     <fdir1>1 0 0</fdir1>
     <material>Gazebo/FlatBlack</material>
   </gazebo>
-  
+
   <gazebo reference="back_right_wheel_link">
     <mu1>0.5</mu1>
     <mu2>0.5</mu2>
@@ -82,7 +82,7 @@
   <gazebo>
     <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
       <alwaysOn>true</alwaysOn>
-      <bodyName>imu_link</bodyName>  
+      <bodyName>imu_link</bodyName>
       <frameName>imu</frameName>
       <topicName>imu</topicName>
       <serviceName>imu_service</serviceName>
@@ -141,22 +141,22 @@
     </sensor>
   </gazebo>
 
-  
+
   <gazebo reference="camera_rgb_frame">
     <sensor type="depth" name="realsense_R200">
       <always_on>true</always_on>
       <visualize>$(arg camera_visual)</visualize>
       <camera>
-          <horizontal_fov>1.085595</horizontal_fov>
-          <image>
-              <width>640</width>
-              <height>480</height>
-              <format>R8G8B8</format>
-          </image>
-          <clip>
-              <near>0.03</near>
-              <far>100</far>
-          </clip>
+        <horizontal_fov>1.085595</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.03</near>
+          <far>100</far>
+        </clip>
       </camera>
       <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
         <baseline>0.2</baseline>
@@ -170,12 +170,12 @@
         <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
         <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
         <pointCloudCutoff>0.4</pointCloudCutoff>
-            <hackBaseline>0.07</hackBaseline>
-            <distortionK1>0.0</distortionK1>
-            <distortionK2>0.0</distortionK2>
-            <distortionK3>0.0</distortionK3>
-            <distortionT1>0.0</distortionT1>
-            <distortionT2>0.0</distortionT2>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
         <CxPrime>0.0</CxPrime>
         <Cx>0.0</Cx>
         <Cy>0.0</Cy>

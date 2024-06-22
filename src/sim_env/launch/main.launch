@@ -5,6 +5,6 @@
 		<arg name="world" value="$(arg world_parameter)" />
 		<arg name="map" value="warehouse" />
 		<arg name="robot_number" value="1" />
-		<arg name="rviz_file" value="" />
+		<arg name="rviz_file" value="sim_env.rviz" />
 	</include>
 </launch>
