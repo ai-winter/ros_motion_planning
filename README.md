@@ -68,16 +68,9 @@ This repository provides the implementation of common **Motion Planning** algori
 
    **NOTE: Please refer to [#48](https://github.com/ai-winter/ros_motion_planning/issues/48) if you meet libignition dependency error.**
 
-   - Compile 3rd-party libraries
     ```bash
-    cd ros_motion_planning/3rd
-    ./conan_install.sh
-    ```
-   - Compile our project
-    ```bash
-    cd ../
-    catkin_make
-    # or catkin build
+    cd scripts/
+    ./build.sh
     # you may need to install it by: sudo apt install python-catkin-tools
     ```
 
@@ -95,6 +88,7 @@ This repository provides the implementation of common **Motion Planning** algori
 
 9.  You can use the other script to shutdown them rapidly.
     ```bash
+    cd scripts/
     ./killpro.sh
     ```
 

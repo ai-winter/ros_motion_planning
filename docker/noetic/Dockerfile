@@ -4,8 +4,10 @@ FROM osrf/ros:noetic-desktop-full
 # Set the working directory
 WORKDIR /project
 
+SHELL ["/bin/bash", "-c"]
+
 # Install additional dependencies if needed
-RUN apt-get update \
+RUN apt-get update --fix-missing\
     && apt-get -y --no-install-recommends install \
     git \
     gcc \
@@ -23,7 +25,7 @@ RUN apt-get update \
     ros-noetic-navfn
 
 # python packages
-RUN pip3 install setuptools && pip3 install catkin-tools
+RUN pip3 install setuptools && pip3 install catkin-tools && pip3 install conan==1.59.0
 
 # bash
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
@@ -32,4 +34,5 @@ RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 COPY . /project
 
 # catkin build
-RUN /bin/bash -c '. /opt/ros/noetic/setup.bash; catkin_make'
+RUN cd ./3rd && source ./conan_install.sh && cd ../ && source /opt/ros/noetic/setup.bash && catkin_make
+# RUN /bin/bash -c '. /opt/ros/noetic/setup.bash; catkin_make'
