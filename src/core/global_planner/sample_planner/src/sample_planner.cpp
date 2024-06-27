@@ -70,32 +70,52 @@ void SamplePlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
     frame_id_ = frame_id;
 
     /*======================= static parameters loading ==========================*/
-    private_nh.param("default_tolerance", tolerance_, 0.0);        // error tolerance
-    private_nh.param("outline_map", is_outline_, false);           // whether outline the map or not
-    private_nh.param("obstacle_factor", factor_, 0.5);             // obstacle inflation factor
-    private_nh.param("expand_zone", is_expand_, false);            // whether publish expand zone or not
-    private_nh.param("sample_points", sample_points_, 500);        // random sample points
-    private_nh.param("sample_max_d", sample_max_d_, 5.0);          // max distance between sample points
-    private_nh.param("optimization_r", opt_r_, 10.0);              // optimization radius
-    private_nh.param("prior_sample_set_r", prior_set_r_, 10.0);    // radius of priority circles set
-    private_nh.param("rewire_threads_num", rewire_threads_n_, 2);  // threads number of rewire process
-    private_nh.param("step_extend_d", step_ext_d_, 5.0);           // threads number of rewire process
-    private_nh.param("t_distr_freedom", t_freedom_, 1.0);          // freedom of t distribution
+    private_nh.param("default_tolerance", tolerance_, 0.0);  // error tolerance
+    private_nh.param("outline_map", is_outline_, false);     // whether outline the map or not
+    private_nh.param("obstacle_factor", factor_, 0.5);       // obstacle inflation factor
+    private_nh.param("expand_zone", is_expand_, false);      // whether publish expand zone or not
+
+    // planner parameters
+    int sample_points;
+    double sample_max_d;
+    private_nh.param("sample_points", sample_points, 500);  // random sample points
+    private_nh.param("sample_max_d", sample_max_d, 5.0);    // max distance between sample points
 
     // planner name
     std::string planner_name;
     private_nh.param("planner_name", planner_name, (std::string) "rrt");
     if (planner_name == "rrt")
-      g_planner_ = std::make_shared<global_planner::RRT>(costmap, sample_points_, sample_max_d_);
+    {
+      g_planner_ = std::make_shared<global_planner::RRT>(costmap, sample_points, sample_max_d);
+    }
     else if (planner_name == "rrt_star")
-      g_planner_ = std::make_shared<global_planner::RRTStar>(costmap, sample_points_, sample_max_d_, opt_r_);
+    {
+      double optimization_r;
+      private_nh.param("optimization_r", optimization_r, 10.0);  // optimization radius
+      g_planner_ = std::make_shared<global_planner::RRTStar>(costmap, sample_points, sample_max_d, optimization_r);
+    }
     else if (planner_name == "rrt_connect")
-      g_planner_ = std::make_shared<global_planner::RRTConnect>(costmap, sample_points_, sample_max_d_);
+    {
+      g_planner_ = std::make_shared<global_planner::RRTConnect>(costmap, sample_points, sample_max_d);
+    }
     else if (planner_name == "informed_rrt")
-      g_planner_ = std::make_shared<global_planner::InformedRRT>(costmap, sample_points_, sample_max_d_, opt_r_);
+    {
+      double optimization_r;
+      private_nh.param("optimization_r", optimization_r, 10.0);  // optimization radius
+      g_planner_ = std::make_shared<global_planner::InformedRRT>(costmap, sample_points, sample_max_d, optimization_r);
+    }
     else if (planner_name == "quick_informed_rrt")
+    {
+      int rewire_threads_n;
+      double optimization_r, prior_set_r, step_ext_d, t_freedom;
+      private_nh.param("optimization_r", optimization_r, 10.0);     // optimization radius
+      private_nh.param("prior_sample_set_r", prior_set_r, 10.0);    // radius of priority circles set
+      private_nh.param("rewire_threads_num", rewire_threads_n, 2);  // threads number of rewire process
+      private_nh.param("step_extend_d", step_ext_d, 5.0);          // threads number of rewire process
+      private_nh.param("t_distr_freedom", t_freedom, 1.0);         // freedom of t distribution
       g_planner_ = std::make_shared<global_planner::QuickInformedRRT>(
-          costmap, sample_points_, sample_max_d_, opt_r_, prior_set_r_, rewire_threads_n_, step_ext_d_, t_freedom_);
+          costmap, sample_points, sample_max_d, optimization_r, prior_set_r, rewire_threads_n, step_ext_d, t_freedom);
+    }
 
     // pass costmap information to planner (required)
     g_planner_->setFactor(factor_);

@@ -131,13 +131,6 @@ private:
   bool is_outline_;                                       // whether outline the boudary of map
   double factor_;                                         // obstacle inflation factor
   bool is_expand_;                                        // whether publish expand map or not
-  int sample_points_;                                     // random sample points
-  double sample_max_d_;                                   // max distance between sample points
-  double opt_r_;                                          // optimization raidus
-  double prior_set_r_;                                    // radius of priority sample circles
-  int rewire_threads_n_;                                  // threads number of rewire process
-  double step_ext_d_;                                     // increased distance of adaptive extend step size
-  double t_freedom_;                                      // freedom of t distribution
   std::vector<geometry_msgs::PoseStamped> history_plan_;  // history plan
 };
 }  // namespace sample_planner
