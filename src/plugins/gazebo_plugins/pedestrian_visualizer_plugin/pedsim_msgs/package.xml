@@ -3,9 +3,7 @@
   <name>pedsim_msgs</name>
   <version>0.0.2</version>
   <description>The pedsim_msgs package: contains messages for pedsim</description>
-
   <maintainer email="okal@cs.uni-freiburg.de">Billy Okal</maintainer>
-
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -25,5 +23,4 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
-
 </package>

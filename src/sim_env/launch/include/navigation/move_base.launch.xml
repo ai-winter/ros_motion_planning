@@ -11,157 +11,152 @@
 -->
 
 <launch>
-    <arg name="agent_number" default="1" />
-    <arg name="agent_id" default="1" />
+  <arg name="agent_number" default="1" />
+  <arg name="agent_id" default="1" />
 
-    <!-- robot's namespace -->
-    <arg name="robot_namespace" />
-    <!-- whether use namespace or not -->
-    <arg name="start_ns" default="false" />
-    <!-- robot's type -->
-    <arg name="robot" default="turtlebot3_waffle" />
-    <!-- global path planner name -->
-    <arg name="global_planner" default="a_star" />
-    <!-- local planner name -->
-    <arg name="local_planner" default="dwa" />
+  <arg name="robot" default="turtlebot3_waffle" />
+  <arg name="robot_namespace" />
+  <arg name="start_ns" default="false" />
+  <arg name="global_planner" default="a_star" />
+  <arg name="local_planner" default="dwa" />
 
-    <!-- move base module -->
-    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-        <!-- global planner plugin -->
-        <!-- graph search -->
-        <param name="base_global_planner" value="graph_planner/GraphPlanner"
-            if="$(eval arg('global_planner')=='a_star'
-                    or arg('global_planner')=='jps' 
-                    or arg('global_planner')=='gbfs'
-                    or arg('global_planner')=='dijkstra'
-                    or arg('global_planner')=='d_star'
-                    or arg('global_planner')=='lpa_star'
-                    or arg('global_planner')=='voronoi'
-                    or arg('global_planner')=='d_star_lite'
-                    or arg('global_planner')=='theta_star'
-                    or arg('global_planner')=='lazy_theta_star'
-                    or arg('global_planner')=='s_theta_star'
-                    or arg('global_planner')=='hybrid_a_star'
-                )" />
-        <param name="GraphPlanner/planner_name" value="$(arg global_planner)"
-            if="$(eval arg('global_planner')=='a_star'
-                    or arg('global_planner')=='jps' 
-                    or arg('global_planner')=='gbfs'
-                    or arg('global_planner')=='dijkstra'
-                    or arg('global_planner')=='d_star'
-                    or arg('global_planner')=='lpa_star'
-                    or arg('global_planner')=='voronoi'
-                    or arg('global_planner')=='d_star_lite'
-                    or arg('global_planner')=='theta_star'
-                    or arg('global_planner')=='lazy_theta_star'
-                    or arg('global_planner')=='s_theta_star'
-                    or arg('global_planner')=='hybrid_a_star'
-                )" />
-        <rosparam file="$(find sim_env)/config/planner/graph_planner_params.yaml" command="load"
-            if="$(eval arg('global_planner')=='a_star'
-                    or arg('global_planner')=='jps' 
-                    or arg('global_planner')=='gbfs'
-                    or arg('global_planner')=='dijkstra'
-                    or arg('global_planner')=='d_star'
-                    or arg('global_planner')=='lpa_star'
-                    or arg('global_planner')=='voronoi'
-                    or arg('global_planner')=='d_star_lite'
-                    or arg('global_planner')=='theta_star'
-                    or arg('global_planner')=='lazy_theta_star'
-                    or arg('global_planner')=='s_theta_star'
-                    or arg('global_planner')=='hybrid_a_star'
-                )" />
+  <!-- move base module -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <!-- global planner plugin -->
+    <!-- graph search -->
+    <param name="base_global_planner" value="graph_planner/GraphPlanner"
+      if="$(eval arg('global_planner')=='a_star'
+              or arg('global_planner')=='jps' 
+              or arg('global_planner')=='gbfs'
+              or arg('global_planner')=='dijkstra'
+              or arg('global_planner')=='d_star'
+              or arg('global_planner')=='lpa_star'
+              or arg('global_planner')=='voronoi'
+              or arg('global_planner')=='d_star_lite'
+              or arg('global_planner')=='theta_star'
+              or arg('global_planner')=='lazy_theta_star'
+              or arg('global_planner')=='s_theta_star'
+              or arg('global_planner')=='hybrid_a_star'
+          )" />
+    <param name="GraphPlanner/planner_name" value="$(arg global_planner)"
+      if="$(eval arg('global_planner')=='a_star'
+              or arg('global_planner')=='jps' 
+              or arg('global_planner')=='gbfs'
+              or arg('global_planner')=='dijkstra'
+              or arg('global_planner')=='d_star'
+              or arg('global_planner')=='lpa_star'
+              or arg('global_planner')=='voronoi'
+              or arg('global_planner')=='d_star_lite'
+              or arg('global_planner')=='theta_star'
+              or arg('global_planner')=='lazy_theta_star'
+              or arg('global_planner')=='s_theta_star'
+              or arg('global_planner')=='hybrid_a_star'
+          )" />
+    <rosparam file="$(find sim_env)/config/planner/graph_planner_params.yaml" command="load"
+      if="$(eval arg('global_planner')=='a_star'
+              or arg('global_planner')=='jps' 
+              or arg('global_planner')=='gbfs'
+              or arg('global_planner')=='dijkstra'
+              or arg('global_planner')=='d_star'
+              or arg('global_planner')=='lpa_star'
+              or arg('global_planner')=='voronoi'
+              or arg('global_planner')=='d_star_lite'
+              or arg('global_planner')=='theta_star'
+              or arg('global_planner')=='lazy_theta_star'
+              or arg('global_planner')=='s_theta_star'
+              or arg('global_planner')=='hybrid_a_star'
+          )" />
 
-        <!-- sample search -->
-        <param name="base_global_planner" value="sample_planner/SamplePlanner"
-            if="$(eval arg('global_planner')=='rrt'
-                    or arg('global_planner')=='rrt_star'
-                    or arg('global_planner')=='informed_rrt'
-                    or arg('global_planner')=='quick_informed_rrt'
-                    or arg('global_planner')=='rrt_connect')" />
-        <param name="SamplePlanner/planner_name" value="$(arg global_planner)"
-            if="$(eval arg('global_planner')=='rrt'
-                    or arg('global_planner')=='rrt_star'
-                    or arg('global_planner')=='informed_rrt'
-                    or arg('global_planner')=='quick_informed_rrt'
-                    or arg('global_planner')=='rrt_connect')" />
-        <rosparam file="$(find sim_env)/config/planner/sample_planner_params.yaml" command="load"
-            if="$(eval arg('global_planner')=='rrt'
-                    or arg('global_planner')=='rrt_star'
-                    or arg('global_planner')=='informed_rrt'
-                    or arg('global_planner')=='quick_informed_rrt'
-                    or arg('global_planner')=='rrt_connect')" />
+    <!-- sample search -->
+    <param name="base_global_planner" value="sample_planner/SamplePlanner"
+      if="$(eval arg('global_planner')=='rrt'
+              or arg('global_planner')=='rrt_star'
+              or arg('global_planner')=='informed_rrt'
+              or arg('global_planner')=='quick_informed_rrt'
+              or arg('global_planner')=='rrt_connect')" />
+    <param name="SamplePlanner/planner_name" value="$(arg global_planner)"
+      if="$(eval arg('global_planner')=='rrt'
+              or arg('global_planner')=='rrt_star'
+              or arg('global_planner')=='informed_rrt'
+              or arg('global_planner')=='quick_informed_rrt'
+              or arg('global_planner')=='rrt_connect')" />
+    <rosparam file="$(find sim_env)/config/planner/sample_planner_params.yaml" command="load"
+      if="$(eval arg('global_planner')=='rrt'
+              or arg('global_planner')=='rrt_star'
+              or arg('global_planner')=='informed_rrt'
+              or arg('global_planner')=='quick_informed_rrt'
+              or arg('global_planner')=='rrt_connect')" />
 
-        <!-- evolutionary search -->
-        <param name="base_global_planner" value="evolutionary_planner/EvolutionaryPlanner"
-            if="$(eval arg('global_planner')=='aco'
-                    or arg('global_planner')=='pso'
-                    or arg('global_planner')=='ga')" />
-        <param name="EvolutionaryPlanner/planner_name" value="$(arg global_planner)"
-            if="$(eval arg('global_planner')=='aco'
-                    or arg('global_planner')=='pso'
-                    or arg('global_planner')=='ga')" />
-        <rosparam file="$(find sim_env)/config/planner/evolutionary_planner_params.yaml" command="load"
-            if="$(eval arg('global_planner')=='aco'
-                    or arg('global_planner')=='pso'
-                    or arg('global_planner')=='ga')" />
+    <!-- evolutionary search -->
+    <param name="base_global_planner" value="evolutionary_planner/EvolutionaryPlanner"
+      if="$(eval arg('global_planner')=='aco'
+              or arg('global_planner')=='pso'
+              or arg('global_planner')=='ga')" />
+    <param name="EvolutionaryPlanner/planner_name" value="$(arg global_planner)"
+      if="$(eval arg('global_planner')=='aco'
+              or arg('global_planner')=='pso'
+              or arg('global_planner')=='ga')" />
+    <rosparam file="$(find sim_env)/config/planner/evolutionary_planner_params.yaml" command="load"
+      if="$(eval arg('global_planner')=='aco'
+              or arg('global_planner')=='pso'
+              or arg('global_planner')=='ga')" />
 
-        <!-- lazy -->
-        <param name="base_global_planner" value="lazy_planner/LazyPlanner" if="$(eval arg('global_planner')=='lazy')" />
+    <!-- lazy -->
+    <param name="base_global_planner" value="lazy_planner/LazyPlanner" if="$(eval arg('global_planner')=='lazy')" />
 
-        <!-- local planner plugin -->
-        <param name="base_local_planner" value="dwa_planner/DWAPlanner" if="$(eval arg('local_planner')=='dwa')" />
-        <rosparam file="$(find sim_env)/config/planner/dwa_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='dwa')" />
+    <!-- local planner plugin -->
+    <param name="base_local_planner" value="dwa_planner/DWAPlanner" if="$(eval arg('local_planner')=='dwa')" />
+    <rosparam file="$(find sim_env)/config/planner/dwa_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='dwa')" />
 
-        <param name="base_local_planner" value="pid_planner/PIDPlanner" if="$(eval arg('local_planner')=='pid')" />
-        <rosparam file="$(find sim_env)/config/planner/pid_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='pid')" />
+    <param name="base_local_planner" value="pid_planner/PIDPlanner" if="$(eval arg('local_planner')=='pid')" />
+    <rosparam file="$(find sim_env)/config/planner/pid_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='pid')" />
 
-        <param name="base_local_planner" value="apf_planner/APFPlanner" if="$(eval arg('local_planner')=='apf')" />
-        <rosparam file="$(find sim_env)/config/planner/apf_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='apf')" />
+    <param name="base_local_planner" value="apf_planner/APFPlanner" if="$(eval arg('local_planner')=='apf')" />
+    <rosparam file="$(find sim_env)/config/planner/apf_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='apf')" />
 
-        <param name="base_local_planner" value="rpp_planner/RPPPlanner" if="$(eval arg('local_planner')=='rpp')" />
-        <rosparam file="$(find sim_env)/config/planner/rpp_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='rpp')" />
+    <param name="base_local_planner" value="rpp_planner/RPPPlanner" if="$(eval arg('local_planner')=='rpp')" />
+    <rosparam file="$(find sim_env)/config/planner/rpp_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='rpp')" />
 
-        <param name="base_local_planner" value="lqr_planner/LQRPlanner" if="$(eval arg('local_planner')=='lqr')" />
-        <rosparam file="$(find sim_env)/config/planner/lqr_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='lqr')" />
+    <param name="base_local_planner" value="lqr_planner/LQRPlanner" if="$(eval arg('local_planner')=='lqr')" />
+    <rosparam file="$(find sim_env)/config/planner/lqr_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='lqr')" />
 
-        <param name="base_local_planner" value="mpc_planner/MPCPlanner" if="$(eval arg('local_planner')=='mpc')" />
-        <rosparam file="$(find sim_env)/config/planner/mpc_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='mpc')" />
+    <param name="base_local_planner" value="mpc_planner/MPCPlanner" if="$(eval arg('local_planner')=='mpc')" />
+    <rosparam file="$(find sim_env)/config/planner/mpc_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='mpc')" />
 
-        <param name="base_local_planner" value="static_planner/StaticPlanner" if="$(eval arg('local_planner')=='static')" />
+    <param name="base_local_planner" value="static_planner/StaticPlanner" if="$(eval arg('local_planner')=='static')" />
 
-        <!-- ORCA -->
-        <param name="base_local_planner" value="orca_planner/OrcaPlanner" if="$(eval arg('local_planner')=='orca')" />
-        <param name="OrcaPlanner/agent_number" value="$(arg agent_number)" if="$(eval arg('local_planner')=='orca')" />
-        <param name="OrcaPlanner/agent_id" value="$(arg agent_id)" if="$(eval arg('local_planner')=='orca')" />
-        <rosparam file="$(find sim_env)/config/planner/orca_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='orca')" />
+    <!-- ORCA -->
+    <param name="base_local_planner" value="orca_planner/OrcaPlanner" if="$(eval arg('local_planner')=='orca')" />
+    <param name="OrcaPlanner/agent_number" value="$(arg agent_number)" if="$(eval arg('local_planner')=='orca')" />
+    <param name="OrcaPlanner/agent_id" value="$(arg agent_id)" if="$(eval arg('local_planner')=='orca')" />
+    <rosparam file="$(find sim_env)/config/planner/orca_planner_params.yaml" command="load" if="$(eval arg('local_planner')=='orca')" />
 
-        <!-- loading navigation parameters -->
-        <rosparam file="$(eval find('sim_env') + '/config/' + arg('robot') + '/costmap_common_params_' + arg('robot') + '.yaml')" command="load"
-            ns="global_costmap" />
-        <rosparam file="$(eval find('sim_env') + '/config/' + arg('robot') + '/costmap_common_params_' + arg('robot') + '.yaml')" command="load"
-            ns="local_costmap" />
+    <!-- loading navigation parameters -->
+    <rosparam file="$(eval find('sim_env') + '/config/' + arg('robot') + '/costmap_common_params_' + arg('robot') + '.yaml')" command="load"
+      ns="global_costmap" />
+    <rosparam file="$(eval find('sim_env') + '/config/' + arg('robot') + '/costmap_common_params_' + arg('robot') + '.yaml')" command="load"
+      ns="local_costmap" />
 
-        <rosparam file="$(find sim_env)/config/costmap/local_costmap_params.yaml" command="load" />
-        <rosparam file="$(find sim_env)/config/costmap/local_costmap_plugins.yaml" command="load" />
-        <rosparam file="$(find sim_env)/config/costmap/global_costmap_params.yaml" command="load" />
-        <rosparam file="$(find sim_env)/config/costmap/global_costmap_plugins.yaml" command="load" />
-        <rosparam file="$(find sim_env)/config/move_base_params.yaml" command="load" />
+    <rosparam file="$(find sim_env)/config/costmap/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find sim_env)/config/costmap/local_costmap_plugins.yaml" command="load" />
+    <rosparam file="$(find sim_env)/config/costmap/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find sim_env)/config/costmap/global_costmap_plugins.yaml" command="load" />
+    <rosparam file="$(find sim_env)/config/move_base_params.yaml" command="load" />
 
-        <!-- set coordinate transformation namespace -->
-        <param name="global_costmap/scan/sensor_frame" value="$(arg robot_namespace)/base_scan" if="$(arg start_ns)" />
-        <param name="global_costmap/scan/topic" value="/$(arg robot_namespace)/scan" if="$(arg start_ns)" />
-        <param name="global_costmap/obstacle_layer/scan/sensor_frame" value="$(arg robot_namespace)/base_footprint" if="$(arg start_ns)" />
-        <param name="global_costmap/obstacle_layer/scan/topic" value="/$(arg robot_namespace)/scan" if="$(arg start_ns)" />
-        <param name="global_costmap/global_frame" value="map" />
-        <param name="global_costmap/robot_base_frame" value="$(arg robot_namespace)/base_footprint" if="$(arg start_ns)" />
+    <!-- set coordinate transformation namespace -->
+    <param name="global_costmap/scan/sensor_frame" value="$(arg robot_namespace)/base_scan" if="$(arg start_ns)" />
+    <param name="global_costmap/scan/topic" value="/$(arg robot_namespace)/scan" if="$(arg start_ns)" />
+    <param name="global_costmap/obstacle_layer/scan/sensor_frame" value="$(arg robot_namespace)/base_footprint" if="$(arg start_ns)" />
+    <param name="global_costmap/obstacle_layer/scan/topic" value="/$(arg robot_namespace)/scan" if="$(arg start_ns)" />
+    <param name="global_costmap/global_frame" value="map" />
+    <param name="global_costmap/robot_base_frame" value="$(arg robot_namespace)/base_footprint" if="$(arg start_ns)" />
 
-        <param name="local_costmap/scan/sensor_frame" value="$(arg robot_namespace)/base_scan" if="$(arg start_ns)" />
-        <param name="local_costmap/scan/topic" value="/$(arg robot_namespace)/scan" if="$(arg start_ns)" />
-        <param name="local_costmap/global_frame" value="$(arg robot_namespace)/odom" if="$(arg start_ns)" />
-        <param name="local_costmap/robot_base_frame" value="$(arg robot_namespace)/base_footprint" if="$(arg start_ns)" />
+    <param name="local_costmap/scan/sensor_frame" value="$(arg robot_namespace)/base_scan" if="$(arg start_ns)" />
+    <param name="local_costmap/scan/topic" value="/$(arg robot_namespace)/scan" if="$(arg start_ns)" />
+    <param name="local_costmap/global_frame" value="$(arg robot_namespace)/odom" if="$(arg start_ns)" />
+    <param name="local_costmap/robot_base_frame" value="$(arg robot_namespace)/base_footprint" if="$(arg start_ns)" />
 
-        <!-- centralize map -->
-        <remap from="map" to="/map" />
-    </node>
+    <!-- centralize map -->
+    <remap from="map" to="/map" />
+  </node>
 </launch>

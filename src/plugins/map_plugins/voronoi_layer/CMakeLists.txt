@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(voronoi_layer)
-
-## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++14)
 
 set(CMAKE_BUILD_TYPE Release)
