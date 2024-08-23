@@ -17,13 +17,7 @@
 #ifndef D_STAR_H
 #define D_STAR_H
 
-#include <map>
-
-#include <ros/ros.h>
-
 #include "global_planner.h"
-
-#define WINDOW_SIZE 70  // local costmap window size (in grid, 3.5m / 0.05 = 70)
 
 namespace global_planner
 {
@@ -37,7 +31,7 @@ class DStar : public GlobalPlanner
 public:
   /**
    * @brief Construct a new DStar object
-   * @param costmap   the environment for path planning
+   * @param costmap the environment for path planning
    */
   DStar(costmap_2d::Costmap2D* costmap);
 

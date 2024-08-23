@@ -35,7 +35,7 @@ class GlobalPlanner
 public:
   /**
    * @brief Construct a new Global Planner object
-   * @param costmap   the environment for path planning
+   * @param costmap the environment for path planning
    */
   GlobalPlanner(costmap_2d::Costmap2D* costmap);
 
@@ -46,10 +46,10 @@ public:
 
   /**
    * @brief Pure virtual function that is overloadde by planner implementations
-   * @param start          start node
-   * @param goal           goal node
-   * @param path           optimal path consists of Node
-   * @param expand         containing the node been search during the process
+   * @param start  start node
+   * @param goal   goal node
+   * @param path   optimal path consists of Node
+   * @param expand containing the node been search during the process
    * @return true if path found, else false
    */
   virtual bool plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand) = 0;

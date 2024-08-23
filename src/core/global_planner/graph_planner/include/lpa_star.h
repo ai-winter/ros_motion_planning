@@ -17,14 +17,7 @@
 #ifndef LPA_STAR_H
 #define LPA_STAR_H
 
-#include <ros/ros.h>
-
-#include <map>
-#include <algorithm>
-
 #include "global_planner.h"
-
-#define WINDOW_SIZE 70  // local costmap window size (in grid, 3.5m / 0.05 = 70)
 
 namespace global_planner
 {
@@ -32,14 +25,13 @@ typedef LNode* LNodePtr;
 
 /**
  * @brief Class for objects that plan using the LPA* algorithm
- * @param costmap   the environment for path planning
  */
 class LPAStar : public GlobalPlanner
 {
 public:
   /**
    * @brief Construct a new LPAStar object
-   * @param costmap   the environment for path planning
+   * @param costmap the environment for path planning
    */
   LPAStar(costmap_2d::Costmap2D* costmap);
 
@@ -70,15 +62,15 @@ public:
 
   /**
    * @brief Check if there is collision between n1 and n2
-   * @param n1  DNode pointer of one DNode
-   * @param n2  DNode pointer of the other DNode
+   * @param n1 LNode pointer of one LNode
+   * @param n2 LNode pointer of the other LNode
    * @return true if collision, else false
    */
   bool isCollision(LNodePtr n1, LNodePtr n2);
 
   /**
    * @brief Get neighbour LNodePtrs of nodePtr
-   * @param node_ptr   DNode to expand
+   * @param node_ptr   LNode to expand
    * @param neighbours neigbour LNodePtrs in vector
    */
   void getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours);

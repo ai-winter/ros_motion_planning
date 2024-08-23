@@ -16,11 +16,13 @@
  */
 #include "d_star.h"
 
+#define WINDOW_SIZE 70  // local costmap window size (in grid, 3.5m / 0.05 = 70)
+
 namespace global_planner
 {
 /**
  * @brief Construct a new DStar object
- * @param costmap   the environment for path planning
+ * @param costmap the environment for path planning
  */
 DStar::DStar(costmap_2d::Costmap2D* costmap) : GlobalPlanner(costmap)
 {
@@ -36,14 +38,15 @@ DStar::DStar(costmap_2d::Costmap2D* costmap) : GlobalPlanner(costmap)
  */
 void DStar::initMap()
 {
-  map_ = new DNodePtr*[costmap_->getSizeInCellsX()];
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+
+  map_ = new DNodePtr*[nx];
+  for (int i = 0; i < nx; i++)
   {
-    map_[i] = new DNodePtr[costmap_->getSizeInCellsY()];
-    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
-    {
+    map_[i] = new DNodePtr[ny];
+    for (int j = 0; j < ny; j++)
       map_[i][j] = new DNode(i, j, INF, INF, grid2Index(i, j), -1, DNode::NEW, INF);
-    }
   }
 }
 
@@ -52,13 +55,16 @@ void DStar::initMap()
  */
 void DStar::reset()
 {
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+
   open_list_.clear();
 
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
-    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
+  for (int i = 0; i < nx; i++)
+    for (int j = 0; j < ny; j++)
       delete map_[i][j];
 
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
+  for (int i = 0; i < nx; i++)
     delete[] map_[i];
 
   delete[] map_;
@@ -104,16 +110,19 @@ bool DStar::isCollision(DNodePtr n1, DNodePtr n2)
  */
 void DStar::getNeighbours(DNodePtr node_ptr, std::vector<DNodePtr>& neighbours)
 {
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+
   int x = node_ptr->x(), y = node_ptr->y();
-  for (int i = -1; i <= 1; ++i)
+  for (int i = -1; i <= 1; i++)
   {
-    for (int j = -1; j <= 1; ++j)
+    for (int j = -1; j <= 1; j++)
     {
       if (i == 0 && j == 0)
         continue;
 
       int x_n = x + i, y_n = y + j;
-      if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
+      if (x_n < 0 || x_n >= nx || y_n < 0 || y_n >= ny)
         continue;
 
       DNodePtr neigbour_ptr = map_[x_n][y_n];
@@ -209,9 +218,12 @@ double DStar::processState()
  */
 void DStar::extractExpand(std::vector<Node>& expand)
 {
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+
+  for (int i = 0; i < nx; i++)
   {
-    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
+    for (int j = 0; j < ny; j++)
     {
       DNodePtr node_ptr = map_[i][j];
       if (node_ptr->t_ == DNode::CLOSED)
@@ -276,9 +288,9 @@ void DStar::modify(DNodePtr x)
 
 /**
  * @brief D* implementation
- * @param start          start node
- * @param goal           goal node
- * @param expand         containing the node been search during the process
+ * @param start  start node
+ * @param goal   goal node
+ * @param expand containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
 bool DStar::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
@@ -320,13 +332,16 @@ bool DStar::plan(const Node& start, const Node& goal, std::vector<Node>& path, s
     // get current state from path, argmin Euler distance
     Node state = getState(start);
 
+    auto nx = costmap_->getSizeInCellsX();
+    auto ny = costmap_->getSizeInCellsY();
+
     // prepare-repair
-    for (int i = -WINDOW_SIZE / 2; i < WINDOW_SIZE / 2; ++i)
+    for (int i = -WINDOW_SIZE / 2; i < WINDOW_SIZE / 2; i++)
     {
-      for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; ++j)
+      for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; j++)
       {
         int x_n = state.x() + i, y_n = state.y() + j;
-        if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
+        if (x_n < 0 || x_n >= nx || y_n < 0 || y_n >= ny)
           continue;
 
         DNodePtr x = map_[x_n][y_n];
@@ -338,16 +353,14 @@ bool DStar::plan(const Node& start, const Node& goal, std::vector<Node>& path, s
         {
           modify(x);
           for (DNodePtr y : neigbours)
-          {
             modify(y);
-          }
         }
       }
     }
 
     // repair-replan
     DNodePtr x = map_[state.x()][state.y()];
-    while (1)
+    while (true)
     {
       double k_min = processState();
       if (k_min >= x->g() || k_min == -1)

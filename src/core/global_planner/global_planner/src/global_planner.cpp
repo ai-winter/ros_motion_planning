@@ -20,7 +20,7 @@ namespace global_planner
 {
 /**
  * @brief Construct a new Global Planner object
- * @param costmap   the environment for path planning
+ * @param costmap the environment for path planning
  */
 GlobalPlanner::GlobalPlanner(costmap_2d::Costmap2D* costmap) : factor_(0.5f), map_size_{ 0 }
 {

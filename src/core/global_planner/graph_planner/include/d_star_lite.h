@@ -17,14 +17,7 @@
 #ifndef D_STAR_LITE_H
 #define D_STAR_LITE_H
 
-#include <ros/ros.h>
-
-#include <map>
-#include <algorithm>
-
 #include "global_planner.h"
-
-#define WINDOW_SIZE 70  // local costmap window size (in grid, 3.5m / 0.05 = 70)
 
 namespace global_planner
 {
@@ -38,7 +31,7 @@ class DStarLite : public GlobalPlanner
 public:
   /**
    * @brief Construct a new DStarLite object
-   * @param costmap   the environment for path planning
+   * @param costmap the environment for path planning
    */
   DStarLite(costmap_2d::Costmap2D* costmap);
 
@@ -54,16 +47,14 @@ public:
 
   /**
    * @brief Get heuristics between n1 and n2
-   *
-   * @param n1  LNode pointer of on LNode
-   * @param n2  LNode pointer of the other LNode
+   * @param n1 LNode pointer of on LNode
+   * @param n2 LNode pointer of the other LNode
    * @return heuristics between n1 and n2
    */
   double getH(LNodePtr n1, LNodePtr n2);
 
   /**
    * @brief Calculate the key of s
-   *
    * @param s LNode pointer
    * @return the key value
    */
@@ -71,24 +62,21 @@ public:
 
   /**
    * @brief Check if there is collision between n1 and n2
-   *
-   * @param n1  DNode pointer of one DNode
-   * @param n2  DNode pointer of the other DNode
+   * @param n1 LNode pointer of one LNode
+   * @param n2 LNode pointer of the other LNode
    * @return true if collision, else false
    */
   bool isCollision(LNodePtr n1, LNodePtr n2);
 
   /**
    * @brief Get neighbour LNodePtrs of nodePtr
-   *
-   * @param node_ptr    DNode to expand
-   * @param neighbours  neigbour LNodePtrs in vector
+   * @param node_ptr   LNode to expand
+   * @param neighbours neigbour LNodePtrs in vector
    */
   void getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours);
 
   /**
    * @brief Get the cost between n1 and n2, return INF if collision
-   *
    * @param n1 LNode pointer of one LNode
    * @param n2 LNode pointer of the other LNode
    * @return cost between n1 and n2
@@ -97,7 +85,6 @@ public:
 
   /**
    * @brief Update vertex u
-   *
    * @param u LNode pointer to update
    */
   void updateVertex(LNodePtr u);
@@ -109,7 +96,6 @@ public:
 
   /**
    * @brief Extract path for map
-   *
    * @param start start node
    * @param goal  goal node
    * @return flag true if extract successfully else do not
@@ -117,18 +103,10 @@ public:
   bool extractPath(const Node& start, const Node& goal);
 
   /**
-   * @brief Get the closest Node of the path to current state
-   *
-   * @param current current state
-   * @return the closest Node
-   */
-  Node getState(const Node& current);
-
-  /**
    * @brief D* lite implementation
-   * @param start   start node
-   * @param goal    goal node
-   * @param expand  containing the node been search during the process
+   * @param start  start node
+   * @param goal   goal node
+   * @param expand containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
   bool plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand);
