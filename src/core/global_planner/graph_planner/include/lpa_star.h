@@ -7,9 +7,9 @@
  * @date: 2023-03-19
  * @version: 1.0
  *
- * Copyright (c) 2024, Zhanyu Guo. 
+ * Copyright (c) 2024, Zhanyu Guo.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -17,14 +17,7 @@
 #ifndef LPA_STAR_H
 #define LPA_STAR_H
 
-#include <ros/ros.h>
-
-#include <map>
-#include <algorithm>
-
 #include "global_planner.h"
-
-#define WINDOW_SIZE 70  // local costmap window size (in grid, 3.5m / 0.05 = 70)
 
 namespace global_planner
 {
@@ -38,11 +31,9 @@ class LPAStar : public GlobalPlanner
 public:
   /**
    * @brief Construct a new LPAStar object
-   * @param nx         pixel number in costmap x direction
-   * @param ny         pixel number in costmap y direction
-   * @param resolution costmap resolution
+   * @param costmap the environment for path planning
    */
-  LPAStar(int nx, int ny, double resolution);
+  LPAStar(costmap_2d::Costmap2D* costmap);
 
   /**
    * @brief Init map
@@ -71,15 +62,15 @@ public:
 
   /**
    * @brief Check if there is collision between n1 and n2
-   * @param n1  DNode pointer of one DNode
-   * @param n2  DNode pointer of the other DNode
+   * @param n1 LNode pointer of one LNode
+   * @param n2 LNode pointer of the other LNode
    * @return true if collision, else false
    */
   bool isCollision(LNodePtr n1, LNodePtr n2);
 
   /**
    * @brief Get neighbour LNodePtrs of nodePtr
-   * @param node_ptr   DNode to expand
+   * @param node_ptr   LNode to expand
    * @param neighbours neigbour LNodePtrs in vector
    */
   void getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours);
@@ -121,14 +112,12 @@ public:
 
   /**
    * @brief LPA* implementation
-   * @param costs  costmap
    * @param start  start node
    * @param goal   goal node
    * @param expand containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
-  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-            std::vector<Node>& expand);
+  bool plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand);
 
 public:
   // start and goal ptr

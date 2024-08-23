@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>dynamic_xml_config</name>
+  <version>0.2.0</version>
+  <description>Package for xml dynamic config</description>
+  <maintainer email="913982779@qq.com">Winter</maintainer>
+  <maintainer email="guo.zhanyu@qq.com">ZhanyuGuo</maintainer>
+  <license>BSD</license>
+  <author email="913982779@qq.com">Winter</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <!-- <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>urdf</run_depend>
+  <run_depend>xacro</run_depend> -->
+
+</package>

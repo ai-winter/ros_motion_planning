@@ -7,9 +7,9 @@
  * @date: 2023-12-20
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -237,7 +237,7 @@ Points2d BSpline::approximation(const Points2d points, const std::vector<double>
  */
 Points2d BSpline::generation(int k, const std::vector<double> knot, Points2d control_pts)
 {
-  size_t n = (int)(1.0 / step_);
+  size_t n = static_cast<int>(1.0 / step_);
   std::vector<double> t(n);
   for (size_t i = 0; i < n; i++)
     t[i] = (double)(i) / (double)(n - 1);

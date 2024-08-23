@@ -7,30 +7,31 @@
  * @date: 2023-03-19
  * @version: 1.0
  *
- * Copyright (c) 2024, Zhanyu Guo. 
+ * Copyright (c) 2024, Zhanyu Guo.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
  */
 #include "d_star_lite.h"
 
+#define WINDOW_SIZE 70  // local costmap window size (in grid, 3.5m / 0.05 = 70)
+
 namespace global_planner
 {
 /**
  * @brief Construct a new DStarLite object
- *
- * @param nx          pixel number in costmap x direction
- * @param ny          pixel number in costmap y direction
- * @param resolution  costmap resolution
+ * @param costmap   the environment for path planning
  */
-DStarLite::DStarLite(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, resolution)
+DStarLite::DStarLite(costmap_2d::Costmap2D* costmap) : GlobalPlanner(costmap)
 {
-  curr_global_costmap_ = new unsigned char[ns_];
-  last_global_costmap_ = new unsigned char[ns_];
-  start_.x_ = start_.y_ = goal_.x_ = goal_.y_ = INF;
-  factor_ = 0.4;
+  curr_global_costmap_ = new unsigned char[map_size_];
+  last_global_costmap_ = new unsigned char[map_size_];
+  start_.set_x(INF);
+  start_.set_y(INF);
+  goal_.set_x(INF);
+  goal_.set_y(INF);
   initMap();
 }
 
@@ -39,11 +40,14 @@ DStarLite::DStarLite(int nx, int ny, double resolution) : GlobalPlanner(nx, ny, 
  */
 void DStarLite::initMap()
 {
-  map_ = new LNodePtr*[nx_];
-  for (int i = 0; i < nx_; i++)
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+
+  map_ = new LNodePtr*[nx];
+  for (int i = 0; i < nx; i++)
   {
-    map_[i] = new LNodePtr[ny_];
-    for (int j = 0; j < ny_; j++)
+    map_[i] = new LNodePtr[ny];
+    for (int j = 0; j < ny; j++)
     {
       map_[i][j] = new LNode(i, j, INF, INF, grid2Index(i, j), -1, INF, INF);
       map_[i][j]->open_it = open_list_.end();  // allocate empty memory
@@ -56,14 +60,17 @@ void DStarLite::initMap()
  */
 void DStarLite::reset()
 {
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+
   open_list_.clear();
   km_ = 0.0;
 
-  for (int i = 0; i < nx_; i++)
-    for (int j = 0; j < ny_; j++)
+  for (int i = 0; i < nx; i++)
+    for (int j = 0; j < ny; j++)
       delete map_[i][j];
 
-  for (int i = 0; i < nx_; i++)
+  for (int i = 0; i < nx; i++)
     delete[] map_[i];
 
   delete[] map_;
@@ -73,49 +80,48 @@ void DStarLite::reset()
 
 /**
  * @brief Get heuristics between n1 and n2
- *
  * @param n1  LNode pointer of on LNode
  * @param n2  LNode pointer of the other LNode
  * @return heuristics between n1 and n2
  */
 double DStarLite::getH(LNodePtr n1, LNodePtr n2)
 {
-  return std::hypot(n1->x_ - n2->x_, n1->y_ - n2->y_);
+  return std::hypot(n1->x() - n2->x(), n1->y() - n2->y());
 }
 
 /**
  * @brief Calculate the key of s
- *
  * @param s LNode pointer
  * @return the key value
  */
 double DStarLite::calculateKey(LNodePtr s)
 {
-  return std::min(s->g_, s->rhs) + 0.9 * (getH(s, start_ptr_) + km_);
+  return std::min(s->g(), s->rhs) + 0.9 * (getH(s, start_ptr_) + km_);
 }
 
 /**
  * @brief Check if there is collision between n1 and n2
- *
- * @param n1  DNode pointer of one DNode
- * @param n2  DNode pointer of the other DNode
+ * @param n1  LNode pointer of one LNode
+ * @param n2  LNode pointer of the other LNode
  * @return true if collision, else false
  */
 bool DStarLite::isCollision(LNodePtr n1, LNodePtr n2)
 {
-  return (curr_global_costmap_[n1->id_] > lethal_cost_ * factor_) ||
-         (curr_global_costmap_[n2->id_] > lethal_cost_ * factor_);
+  return (curr_global_costmap_[n1->id()] > costmap_2d::LETHAL_OBSTACLE * factor_) ||
+         (curr_global_costmap_[n2->id()] > costmap_2d::LETHAL_OBSTACLE * factor_);
 }
 
 /**
  * @brief Get neighbour LNodePtrs of nodePtr
- *
- * @param node_ptr    DNode to expand
+ * @param node_ptr    LNode to expand
  * @param neighbours  neigbour LNodePtrs in vector
  */
-void DStarLite::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
+void DStarLite::getNeighbours(LNodePtr node_ptr, std::vector<LNodePtr>& neighbours)
 {
-  int x = u->x_, y = u->y_;
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+
+  int x = node_ptr->x(), y = node_ptr->y();
   for (int i = -1; i <= 1; i++)
   {
     for (int j = -1; j <= 1; j++)
@@ -124,11 +130,11 @@ void DStarLite::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
         continue;
 
       int x_n = x + i, y_n = y + j;
-      if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
+      if (x_n < 0 || x_n >= nx || y_n < 0 || y_n >= ny)
         continue;
-      LNodePtr neigbour_ptr = map_[x_n][y_n];
 
-      if (isCollision(u, neigbour_ptr))
+      LNodePtr neigbour_ptr = map_[x_n][y_n];
+      if (isCollision(node_ptr, neigbour_ptr))
         continue;
 
       neighbours.push_back(neigbour_ptr);
@@ -138,7 +144,6 @@ void DStarLite::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
 
 /**
  * @brief Get the cost between n1 and n2, return INF if collision
- *
  * @param n1 LNode pointer of one LNode
  * @param n2 LNode pointer of the other LNode
  * @return cost between n1 and n2
@@ -147,18 +152,18 @@ double DStarLite::getCost(LNodePtr n1, LNodePtr n2)
 {
   if (isCollision(n1, n2))
     return INF;
-  return std::hypot(n1->x_ - n2->x_, n1->y_ - n2->y_);
+
+  return std::hypot(n1->x() - n2->x(), n1->y() - n2->y());
 }
 
 /**
  * @brief Update vertex u
- *
  * @param u LNode pointer to update
  */
 void DStarLite::updateVertex(LNodePtr u)
 {
   // u != goal
-  if (u->x_ != goal_.x_ || u->y_ != goal_.y_)
+  if (u->x() != goal_.x() || u->y() != goal_.y())
   {
     std::vector<LNodePtr> neigbours;
     getNeighbours(u, neigbours);
@@ -166,12 +171,8 @@ void DStarLite::updateVertex(LNodePtr u)
     // min_{s\in pred(u)}(g(s) + c(s, u))
     u->rhs = INF;
     for (LNodePtr s : neigbours)
-    {
-      if (s->g_ + getCost(s, u) < u->rhs)
-      {
-        u->rhs = s->g_ + getCost(s, u);
-      }
-    }
+      if (s->g() + getCost(s, u) < u->rhs)
+        u->rhs = s->g() + getCost(s, u);
   }
 
   // u in openlist, remove u
@@ -182,7 +183,7 @@ void DStarLite::updateVertex(LNodePtr u)
   }
 
   // g(u) != rhs(u)
-  if (u->g_ != u->rhs)
+  if (u->g() != u->rhs)
   {
     u->key = calculateKey(u);
     u->open_it = open_list_.insert(std::make_pair(u->key, u));
@@ -194,7 +195,7 @@ void DStarLite::updateVertex(LNodePtr u)
  */
 void DStarLite::computeShortestPath()
 {
-  while (1)
+  while (true)
   {
     if (open_list_.empty())
       break;
@@ -206,7 +207,7 @@ void DStarLite::computeShortestPath()
     expand_.push_back(*u);
 
     // start reached
-    if (u->key >= calculateKey(start_ptr_) && start_ptr_->rhs == start_ptr_->g_)
+    if (u->key >= calculateKey(start_ptr_) && start_ptr_->rhs == start_ptr_->g())
       break;
 
     // affected by obstacles
@@ -216,14 +217,14 @@ void DStarLite::computeShortestPath()
       u->open_it = open_list_.insert(std::make_pair(u->key, u));
     }
     // Locally over-consistent -> Locally consistent
-    else if (u->g_ > u->rhs)
+    else if (u->g() > u->rhs)
     {
-      u->g_ = u->rhs;
+      u->set_g(u->rhs);
     }
     // Locally under-consistent -> Locally over-consistent
     else
     {
-      u->g_ = INF;
+      u->set_g(INF);
       updateVertex(u);
     }
 
@@ -236,7 +237,6 @@ void DStarLite::computeShortestPath()
 
 /**
  * @brief Extract path for map
- *
  * @param start start node
  * @param goal  goal node
  * @return flag true if extract successfully else do not
@@ -244,9 +244,9 @@ void DStarLite::computeShortestPath()
 bool DStarLite::extractPath(const Node& start, const Node& goal)
 {
   std::vector<Node> path_temp;
-  LNodePtr node_ptr = map_[start.x_][start.y_];
+  LNodePtr node_ptr = map_[start.x()][start.y()];
   int count = 0;
-  while (node_ptr->x_ != goal.x_ || node_ptr->y_ != goal.y_)
+  while (node_ptr->x() != goal.x() || node_ptr->y() != goal.y())
   {
     path_temp.push_back(*node_ptr);
 
@@ -257,9 +257,9 @@ bool DStarLite::extractPath(const Node& start, const Node& goal)
     LNodePtr next_node_ptr;
     for (LNodePtr node_n_ptr : neigbours)
     {
-      if (node_n_ptr->g_ < min_cost)
+      if (node_n_ptr->g() < min_cost)
       {
-        min_cost = node_n_ptr->g_;
+        min_cost = node_n_ptr->g();
         next_node_ptr = node_n_ptr;
       }
     }
@@ -276,57 +276,29 @@ bool DStarLite::extractPath(const Node& start, const Node& goal)
 }
 
 /**
- * @brief Get the closest Node of the path to current state
- *
- * @param current current state
- * @return the closest Node
- */
-Node DStarLite::getState(const Node& current)
-{
-  Node state(path_[0].x_, path_[0].y_);
-  double dis_min = std::hypot(state.x_ - current.x_, state.y_ - current.y_);
-  int idx_min = 0;
-  for (int i = 1; i < path_.size(); i++)
-  {
-    double dis = std::hypot(path_[i].x_ - current.x_, path_[i].y_ - current.y_);
-    if (dis < dis_min)
-    {
-      dis_min = dis;
-      idx_min = i;
-    }
-  }
-  state.x_ = path_[idx_min].x_;
-  state.y_ = path_[idx_min].y_;
-
-  return state;
-}
-
-/**
  * @brief D* lite implementation
- * @param global_costmap   costmap
  * @param start   start node
  * @param goal    goal node
  * @param expand  containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool DStarLite::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-                     std::vector<Node>& expand)
+bool DStarLite::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   // update costmap
-  memcpy(last_global_costmap_, curr_global_costmap_, ns_);
-  memcpy(curr_global_costmap_, global_costmap, ns_);
+  memcpy(last_global_costmap_, curr_global_costmap_, map_size_);
+  memcpy(curr_global_costmap_, costmap_->getCharMap(), map_size_);
 
   expand_.clear();
 
   // new goal set
-  if (goal_.x_ != goal.x_ || goal_.y_ != goal.y_)
+  if (goal_.x() != goal.x() || goal_.y() != goal.y())
   {
     reset();
     goal_ = goal;
     start_ = start;
 
-    start_ptr_ = map_[start.x_][start.y_];
-    goal_ptr_ = map_[goal.x_][goal.y_];
+    start_ptr_ = map_[start.x()][start.y()];
+    goal_ptr_ = map_[goal.x()][goal.y()];
     last_ptr_ = start_ptr_;
 
     goal_ptr_->rhs = 0.0;
@@ -339,7 +311,6 @@ bool DStarLite::plan(const unsigned char* global_costmap, const Node& start, con
     extractPath(start, goal);
 
     expand = expand_;
-
     path = path_;
 
     return true;
@@ -347,14 +318,17 @@ bool DStarLite::plan(const unsigned char* global_costmap, const Node& start, con
   else
   {
     start_ = start;
-    start_ptr_ = map_[start.x_][start.y_];
+    start_ptr_ = map_[start.x()][start.y()];
+
+    auto nx = costmap_->getSizeInCellsX();
+    auto ny = costmap_->getSizeInCellsY();
 
     for (int i = -WINDOW_SIZE / 2; i < WINDOW_SIZE / 2; i++)
     {
       for (int j = -WINDOW_SIZE / 2; j < WINDOW_SIZE / 2; j++)
       {
-        int x_n = start.x_ + i, y_n = start.y_ + j;
-        if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
+        int x_n = start.x() + i, y_n = start.y() + j;
+        if (x_n < 0 || x_n >= nx || y_n < 0 || y_n >= ny)
           continue;
 
         int idx = grid2Index(x_n, y_n);
@@ -368,9 +342,7 @@ bool DStarLite::plan(const unsigned char* global_costmap, const Node& start, con
           getNeighbours(u, neigbours);
           updateVertex(u);
           for (LNodePtr s : neigbours)
-          {
             updateVertex(s);
-          }
         }
       }
     }
@@ -380,11 +352,9 @@ bool DStarLite::plan(const unsigned char* global_costmap, const Node& start, con
     extractPath(start, goal);
 
     expand = expand_;
-
     path = path_;
 
     return true;
   }
 }
-
 }  // namespace global_planner

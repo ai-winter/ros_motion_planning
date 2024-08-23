@@ -7,7 +7,7 @@ namespace orca_planner
 {
 
 OrcaPlanner::OrcaPlanner()
-  : initialized_(false), costmap_ros_(nullptr), tf_(nullptr), odom_flag_(false), goal_reached_(false)
+  : initialized_(false), costmap_ros_(nullptr), tf_(nullptr), odom_flag_(false), goal_reached_(false), first_plan_(true)
 {
 }
 
@@ -90,6 +90,32 @@ void OrcaPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::
   }
 }
 
+void OrcaPlanner::initState()
+{
+  if (!odom_flag_)
+  {
+    ROS_ERROR("Odom not received!");
+    return;
+  }
+
+  sim_->setTimeStep(d_t_);
+  sim_->setAgentDefaults(neighbor_dist_, max_neighbors_, time_horizon_, time_horizon_obst_, radius_, max_v_);
+
+  for (int i = 0; i < agent_number_; ++i)
+  {
+    sim_->addAgent(RVO::Vector2(other_odoms_[i].pose.pose.position.x, other_odoms_[i].pose.pose.position.y));
+    sim_->setAgentVelocity(i, RVO::Vector2(other_odoms_[i].twist.twist.linear.x, other_odoms_[i].twist.twist.linear.y));
+  }
+}
+
+void OrcaPlanner::odometryCallback(const nav_msgs::OdometryConstPtr& msg, int agent_id)
+{
+  if (!odom_flag_)
+    odom_flag_ = true;
+
+  other_odoms_[agent_id - 1] = *msg;
+}
+
 bool OrcaPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
 {
   if (!initialized_)
@@ -100,8 +126,10 @@ bool OrcaPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_gl
 
   ROS_INFO("Got new plan");
 
-  if (goal_.x() != orig_global_plan.back().pose.position.x || goal_.y() != orig_global_plan.back().pose.position.y)
+  if (first_plan_ || goal_.x() != orig_global_plan.back().pose.position.x ||
+      goal_.y() != orig_global_plan.back().pose.position.y)
   {
+    first_plan_ = false;
     goal_ = RVO::Vector2(orig_global_plan.back().pose.position.x, orig_global_plan.back().pose.position.y);
     goal_reached_ = false;
   }
@@ -145,6 +173,17 @@ bool OrcaPlanner::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   return true;
 }
 
+void OrcaPlanner::updateState()
+{
+  for (int i = 0; i < agent_number_; ++i)
+  {
+    sim_->setAgentPosition(i, RVO::Vector2(other_odoms_[i].pose.pose.position.x, other_odoms_[i].pose.pose.position.y));
+    sim_->setAgentVelocity(i, RVO::Vector2(other_odoms_[i].twist.twist.linear.x, other_odoms_[i].twist.twist.linear.y));
+  }
+
+  sim_->setAgentPrefVelocity(agent_id_ - 1, RVO::normalize(goal_ - sim_->getAgentPosition(agent_id_ - 1)) * max_v_);
+}
+
 bool OrcaPlanner::isGoalReached()
 {
   if (!initialized_)
@@ -159,43 +198,6 @@ bool OrcaPlanner::isGoalReached()
     return true;
   }
   return false;
-}
-
-void OrcaPlanner::initState()
-{
-  if (!odom_flag_)
-  {
-    ROS_ERROR("Odom not received!");
-    return;
-  }
-
-  sim_->setTimeStep(d_t_);
-  sim_->setAgentDefaults(neighbor_dist_, max_neighbors_, time_horizon_, time_horizon_obst_, radius_, max_v_);
-
-  for (int i = 0; i < agent_number_; ++i)
-  {
-    sim_->addAgent(RVO::Vector2(other_odoms_[i].pose.pose.position.x, other_odoms_[i].pose.pose.position.y));
-    sim_->setAgentVelocity(i, RVO::Vector2(other_odoms_[i].twist.twist.linear.x, other_odoms_[i].twist.twist.linear.y));
-  }
-}
-
-void OrcaPlanner::odometryCallback(const nav_msgs::OdometryConstPtr& msg, int agent_id)
-{
-  if (!odom_flag_)
-    odom_flag_ = true;
-
-  other_odoms_[agent_id - 1] = *msg;
-}
-
-void OrcaPlanner::updateState()
-{
-  for (int i = 0; i < agent_number_; ++i)
-  {
-    sim_->setAgentPosition(i, RVO::Vector2(other_odoms_[i].pose.pose.position.x, other_odoms_[i].pose.pose.position.y));
-    sim_->setAgentVelocity(i, RVO::Vector2(other_odoms_[i].twist.twist.linear.x, other_odoms_[i].twist.twist.linear.y));
-  }
-
-  sim_->setAgentPrefVelocity(agent_id_ - 1, RVO::normalize(goal_ - sim_->getAgentPosition(agent_id_ - 1)) * max_v_);
 }
 
 }  // namespace orca_planner

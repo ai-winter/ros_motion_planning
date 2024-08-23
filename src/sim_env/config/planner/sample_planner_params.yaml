@@ -1,8 +1,8 @@
 SamplePlanner:
   # random sample points
-  sample_points: 2000 #1000 for informed RRT*, 3000 for others
+  sample_points: 1500 #1000 for informed RRT*, 3000 for others
   # max distance between sample points
-  sample_max_d: 10.0
+  sample_max_d: 30.0
   # optimization radius
   optimization_r: 20.0
   # offset of transform from world(x,y) to grid map(x,y)
@@ -15,3 +15,12 @@ SamplePlanner:
   obstacle_factor: 0.5
   # whether publish expand zone or not
   expand_zone: true
+  # qi-rrt*:
+  # radius of priority circles set
+  prior_circle_set_r: 15.0
+  # increased distance of adaptive extend step size
+  step_extend_d: 30.0 # suggest between half and one times sample_max_d
+  # parallel rewire process
+  rewire_threads_num: 4
+  # aggressive or gradual optimizing strategy
+  t_distr_freedom: 1.0 # suggest from 0.2 to 3

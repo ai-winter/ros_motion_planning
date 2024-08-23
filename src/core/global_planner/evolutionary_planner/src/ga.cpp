@@ -23,9 +23,7 @@ namespace global_planner
 {
 /**
  * @brief Construct a new GA object
- * @param nx            pixel number in costmap x direction
- * @param ny            pixel number in costmap y direction
- * @param resolution    costmap resolution
+ * @param costmap   the environment for path planning
  * @param n_genets	    number of genets
  * @param n_inherited   number of inherited genets
  * @param point_num   number of position points contained in each genets
@@ -36,9 +34,9 @@ namespace global_planner
  * @param init_mode	  Set the generation mode for the initial position points of the genets swarm
  * @param max_iter		  maximum iterations
  */
-GA::GA(int nx, int ny, double resolution, int n_genets, int n_inherited, int point_num, double p_select, double p_crs,
+GA::GA(costmap_2d::Costmap2D* costmap, int n_genets, int n_inherited, int point_num, double p_select, double p_crs,
        double p_mut, int max_speed, int init_mode, int max_iter)
-  : GlobalPlanner(nx, ny, resolution)
+  : GlobalPlanner(costmap)
   , n_genets_(n_genets)
   , n_inherited_(n_inherited)
   , point_num_(point_num)
@@ -58,19 +56,16 @@ GA::~GA()
 
 /**
  * @brief GA implementation
- * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
  * @param path          optimal path consists of Node
  * @param expand        containing the node been search during the process(unused)
  * @return  true if path found, else false
  */
-bool GA::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-              std::vector<Node>& expand)
+bool GA::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
-  start_ = std::pair<double, double>(static_cast<double>(start.x_), static_cast<double>(start.y_));
-  goal_ = std::pair<double, double>(static_cast<double>(goal.x_), static_cast<double>(goal.y_));
-  costmap_ = global_costmap;
+  start_ = std::pair<double, double>(static_cast<double>(start.x()), static_cast<double>(start.y()));
+  goal_ = std::pair<double, double>(static_cast<double>(goal.x()), static_cast<double>(goal.y()));
   expand.clear();
 
   if ((n_genets_ <= 0) || (n_genets_ % 2 != 0))
@@ -139,10 +134,10 @@ bool GA::plan(const unsigned char* global_costmap, const Node& start, const Node
 
   // Generating Paths from Optimal Genets
   std::vector<std::pair<double, double>> points, b_path;
-  points.emplace_back(static_cast<double>(start.x_), static_cast<double>(start.y_));
+  points.emplace_back(static_cast<double>(start.x()), static_cast<double>(start.y()));
   for (const auto& pos : best_genet.position)
     points.emplace_back(static_cast<double>(pos.first), static_cast<double>(pos.second));
-  points.emplace_back(static_cast<double>(goal.x_), static_cast<double>(goal.y_));
+  points.emplace_back(static_cast<double>(goal.x()), static_cast<double>(goal.y()));
   points.erase(std::unique(std::begin(points), std::end(points)), std::end(points));
 
   bspline_gen_.run(points, b_path);
@@ -162,7 +157,7 @@ bool GA::plan(const unsigned char* global_costmap, const Node& start, const Node
       int x = static_cast<int>(b_path[p].first);
       int y = static_cast<int>(b_path[p].second);
       // Check if the current point is different from the last point
-      if (x != path.back().x_ || y != path.back().y_)
+      if (x != path.back().x() || y != path.back().y())
       {
         path.emplace_back(x, y, 0.0, 0.0, p, 0);
       }
@@ -196,8 +191,8 @@ void GA::initializePositions(PositionSequence& initial_positions, const Node& st
   int point_id, pos_id;
 
   // Calculate sequence direction
-  bool x_order = (goal.x_ > start.x_);
-  bool y_order = (goal.y_ > start.y_);
+  bool x_order = (goal.x() > start.x());
+  bool y_order = (goal.y() > start.y());
 
   // circle generation
   int center_x, center_y;
@@ -205,8 +200,8 @@ void GA::initializePositions(PositionSequence& initial_positions, const Node& st
   if (gen_mode == GEN_MODE_CIRCLE)
   {
     // Calculate the center and the radius of the circle (midpoint between start and goal)
-    center_x = (start.x_ + goal.x_) / 2;
-    center_y = (start.y_ + goal.y_) / 2;
+    center_x = (start.x() + goal.x()) / 2;
+    center_y = (start.y() + goal.y()) / 2;
     radius = helper::dist(start, goal) / 2.0 < 5 ? 5 : helper::dist(start, goal) / 2.0;
   }
 
@@ -222,8 +217,8 @@ void GA::initializePositions(PositionSequence& initial_positions, const Node& st
     {
       if (gen_mode == GEN_MODE_RANDOM)
       {
-        x[point_id] = std::uniform_int_distribution<int>(0, nx_ - 1)(gen);
-        y[point_id] = std::uniform_int_distribution<int>(0, ny_ - 1)(gen);
+        x[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsX() - 1)(gen);
+        y[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsY() - 1)(gen);
         pos_id = grid2Index(x[point_id], y[point_id]);
       }
       else
@@ -236,7 +231,8 @@ void GA::initializePositions(PositionSequence& initial_positions, const Node& st
         x[point_id] = static_cast<int>(std::round(center_x + r * std::cos(angle)));
         y[point_id] = static_cast<int>(std::round(center_y + r * std::sin(angle)));
         // Check if the coordinates are within the map range
-        if (x[point_id] >= 0 && x[point_id] < nx_ && y[point_id] >= 0 && y[point_id] < ny_)
+        if (x[point_id] >= 0 && x[point_id] < costmap_->getSizeInCellsX() && y[point_id] >= 0 &&
+            y[point_id] < costmap_->getSizeInCellsY())
           pos_id = grid2Index(x[point_id], y[point_id]);
         else
           continue;
@@ -291,7 +287,8 @@ double GA::calFitnessValue(std::vector<std::pair<int, int>> position)
   {
     point_index = grid2Index(static_cast<int>(b_path[i].first), static_cast<int>(b_path[i].second));
     // next node hit the boundary or obstacle
-    if ((point_index < 0) || (point_index >= ns_) || (costmap_[point_index] >= lethal_cost_ * factor_))
+    if ((point_index < 0) || (point_index >= map_size_) ||
+        (costmap_->getCharMap()[point_index] >= costmap_2d::LETHAL_OBSTACLE * factor_))
       obs_cost++;
   }
   // Calculate particle fitness
@@ -418,7 +415,8 @@ void GA::optimizeGenets(const Genets& genets_p, Genets& genets_c, Genets& best_g
       int y = genets_c.position[random_id].second + static_cast<int>(random4 * max_speed_);
 
       int point_index = grid2Index(x, y);
-      if ((point_index >= 0) && (point_index < ns_) && (costmap_[point_index] < lethal_cost_ * factor_))
+      if ((point_index >= 0) && (point_index < map_size_) &&
+          (costmap_->getCharMap()[point_index] < costmap_2d::LETHAL_OBSTACLE * factor_))
       {
         genets_c.position[random_id].first = x;
         genets_c.position[random_id].second = y;

@@ -7,9 +7,9 @@
  * @date: 2022-10-26
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -22,6 +22,7 @@
 #include "rrt_star.h"
 #include "rrt_connect.h"
 #include "informed_rrt.h"
+#include "quick_informed_rrt.h"
 
 PLUGINLIB_EXPORT_CLASS(sample_planner::SamplePlanner, nav_core::BaseGlobalPlanner)
 
@@ -30,7 +31,7 @@ namespace sample_planner
 /**
  * @brief  Constructor(default)
  */
-SamplePlanner::SamplePlanner() : costmap_(NULL), initialized_(false), g_planner_(NULL)
+SamplePlanner::SamplePlanner() : initialized_(false), g_planner_(NULL)
 {
 }
 /**
@@ -42,16 +43,6 @@ SamplePlanner::SamplePlanner() : costmap_(NULL), initialized_(false), g_planner_
 SamplePlanner::SamplePlanner(std::string name, costmap_2d::Costmap2D* costmap, std::string frame_id) : SamplePlanner()
 {
   initialize(name, costmap, frame_id);
-}
-/**
- * @brief Destructor
- * @return No return value
- * @details default
- */
-SamplePlanner::~SamplePlanner()
-{
-  if (g_planner_)
-    delete g_planner_;
 }
 
 /**
@@ -75,39 +66,60 @@ void SamplePlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
   {
     // initialize ROS node
     ros::NodeHandle private_nh("~/" + name);
-    // initialize costmap
-    costmap_ = costmap;
     // costmap frame ID
     frame_id_ = frame_id;
-    // get costmap properties
-    nx_ = costmap->getSizeInCellsX(), ny_ = costmap->getSizeInCellsY();
-    resolution_ = costmap->getResolution();
 
     /*======================= static parameters loading ==========================*/
-    private_nh.param("convert_offset", convert_offset_, 0.0);  // offset of transform from world(x,y) to grid map(x,y)
-    private_nh.param("default_tolerance", tolerance_, 0.0);    // error tolerance
-    private_nh.param("outline_map", is_outline_, false);       // whether outline the map or not
-    private_nh.param("obstacle_factor", factor_, 0.5);         // obstacle inflation factor
-    private_nh.param("expand_zone", is_expand_, false);        // whether publish expand zone or not
-    private_nh.param("sample_points", sample_points_, 500);    // random sample points
-    private_nh.param("sample_max_d", sample_max_d_, 5.0);      // max distance between sample points
-    private_nh.param("optimization_r", opt_r_, 10.0);          // optimization radius
+    private_nh.param("default_tolerance", tolerance_, 0.0);  // error tolerance
+    private_nh.param("outline_map", is_outline_, false);     // whether outline the map or not
+    private_nh.param("obstacle_factor", factor_, 0.5);       // obstacle inflation factor
+    private_nh.param("expand_zone", is_expand_, false);      // whether publish expand zone or not
+
+    // planner parameters
+    int sample_points;
+    double sample_max_d;
+    private_nh.param("sample_points", sample_points, 500);  // random sample points
+    private_nh.param("sample_max_d", sample_max_d, 5.0);    // max distance between sample points
 
     // planner name
     std::string planner_name;
     private_nh.param("planner_name", planner_name, (std::string) "rrt");
     if (planner_name == "rrt")
-      g_planner_ = new global_planner::RRT(nx_, ny_, resolution_, sample_points_, sample_max_d_);
+    {
+      g_planner_ = std::make_shared<global_planner::RRT>(costmap, sample_points, sample_max_d);
+    }
     else if (planner_name == "rrt_star")
-      g_planner_ = new global_planner::RRTStar(nx_, ny_, resolution_, sample_points_, sample_max_d_, opt_r_);
+    {
+      double optimization_r;
+      private_nh.param("optimization_r", optimization_r, 10.0);  // optimization radius
+      g_planner_ = std::make_shared<global_planner::RRTStar>(costmap, sample_points, sample_max_d, optimization_r);
+    }
     else if (planner_name == "rrt_connect")
-      g_planner_ = new global_planner::RRTConnect(nx_, ny_, resolution_, sample_points_, sample_max_d_);
+    {
+      g_planner_ = std::make_shared<global_planner::RRTConnect>(costmap, sample_points, sample_max_d);
+    }
     else if (planner_name == "informed_rrt")
-      g_planner_ = new global_planner::InformedRRT(nx_, ny_, resolution_, sample_points_, sample_max_d_, opt_r_);
+    {
+      double optimization_r;
+      private_nh.param("optimization_r", optimization_r, 10.0);  // optimization radius
+      g_planner_ = std::make_shared<global_planner::InformedRRT>(costmap, sample_points, sample_max_d, optimization_r);
+    }
+    else if (planner_name == "quick_informed_rrt")
+    {
+      int rewire_threads_n;
+      double optimization_r, prior_set_r, step_ext_d, t_freedom;
+      private_nh.param("optimization_r", optimization_r, 10.0);     // optimization radius
+      private_nh.param("prior_sample_set_r", prior_set_r, 10.0);    // radius of priority circles set
+      private_nh.param("rewire_threads_num", rewire_threads_n, 2);  // threads number of rewire process
+      private_nh.param("step_extend_d", step_ext_d, 5.0);          // threads number of rewire process
+      private_nh.param("t_distr_freedom", t_freedom, 1.0);         // freedom of t distribution
+      g_planner_ = std::make_shared<global_planner::QuickInformedRRT>(
+          costmap, sample_points, sample_max_d, optimization_r, prior_set_r, rewire_threads_n, step_ext_d, t_freedom);
+    }
 
     // pass costmap information to planner (required)
-    g_planner_->setOrigin(costmap_->getOriginX(), costmap_->getOriginY());
-    g_planner_->setConvertOffset(convert_offset_);
+    g_planner_->setFactor(factor_);
+
     ROS_INFO("Using global sample planner: %s", planner_name.c_str());
 
     /*====================== register topics and services =======================*/
@@ -142,7 +154,8 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
                              double tolerance, std::vector<geometry_msgs::PoseStamped>& plan)
 {
   // start thread mutex
-  boost::mutex::scoped_lock lock(mutex_);
+  std::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*g_planner_->getCostMap()->getMutex());
+
   if (!initialized_)
   {
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
@@ -164,11 +177,11 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
               frame_id_.c_str(), start.header.frame_id.c_str());
     return false;
   }
-  // get goal and strat node coordinate
-  // tranform from world to costmap
+
+  // get goal and start node coordinate tranform from world to costmap
   double wx = start.pose.position.x, wy = start.pose.position.y;
-  double m_start_x, m_start_y, m_goal_x, m_goal_y;
-  if (!g_planner_->world2Map(wx, wy, m_start_x, m_start_y))
+  unsigned int g_start_x, g_start_y, g_goal_x, g_goal_y;
+  if (!g_planner_->world2Map(wx, wy, g_start_x, g_start_y))
   {
     ROS_WARN(
         "The robot's start position is off the global costmap. Planning will always fail, are you sure the robot has "
@@ -176,31 +189,28 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
     return false;
   }
   wx = goal.pose.position.x, wy = goal.pose.position.y;
-  if (!g_planner_->world2Map(wx, wy, m_goal_x, m_goal_y))
+  if (!g_planner_->world2Map(wx, wy, g_goal_x, g_goal_y))
   {
     ROS_WARN_THROTTLE(1.0,
                       "The goal sent to the global planner is off the global costmap. Planning will always fail to "
                       "this goal.");
     return false;
   }
-  // tranform from costmap to grid map
-  int g_start_x, g_start_y, g_goal_x, g_goal_y;
-  g_planner_->map2Grid(m_start_x, m_start_y, g_start_x, g_start_y);
-  g_planner_->map2Grid(m_goal_x, m_goal_y, g_goal_x, g_goal_y);
+
   Node n_start(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
   Node n_goal(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
 
   // clear the cost of robot location
-  costmap_->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
+  g_planner_->getCostMap()->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
 
   // outline the map
   if (is_outline_)
-    g_planner_->outlineMap(costmap_->getCharMap());
+    g_planner_->outlineMap();
 
   // calculate path
   std::vector<Node> path;
   std::vector<Node> expand;
-  bool path_found = g_planner_->plan(costmap_->getCharMap(), n_start, n_goal, path, expand);
+  bool path_found = g_planner_->plan(n_start, n_goal, path, expand);
 
   if (path_found)
   {
@@ -209,12 +219,19 @@ bool SamplePlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
       geometry_msgs::PoseStamped goalCopy = goal;
       goalCopy.header.stamp = ros::Time::now();
       plan.push_back(goalCopy);
+      history_plan_ = plan;
     }
     else
       ROS_ERROR("Failed to get a plan from path when a legal path was found. This shouldn't happen.");
   }
+  else if (history_plan_.size() > 0)
+  {
+    plan = history_plan_;
+    ROS_WARN("Using history path.");
+  }
   else
     ROS_ERROR("Failed to get a path.");
+
   // publish expand zone
   if (is_expand_)
     _publishExpand(expand);
@@ -279,8 +296,8 @@ void SamplePlanner::_publishExpand(std::vector<Node>& expand)
 
   // Publish all edges
   for (auto node : expand)
-    if (node.pid_ != 0)
-      _pubLine(&tree_msg, &expand_pub_, node.id_, node.pid_);
+    if (node.pid() != 0)
+      _pubLine(&tree_msg, &expand_pub_, node.id(), node.pid());
 }
 
 /**
@@ -303,7 +320,7 @@ bool SamplePlanner::_getPlanFromPath(std::vector<Node> path, std::vector<geometr
   for (int i = path.size() - 1; i >= 0; i--)
   {
     double wx, wy;
-    g_planner_->map2World((double)path[i].x_, (double)path[i].y_, wx, wy);
+    g_planner_->map2World((double)path[i].x(), (double)path[i].y(), wx, wy);
 
     // coding as message type
     geometry_msgs::PoseStamped pose;
@@ -340,15 +357,11 @@ void SamplePlanner::_pubLine(visualization_msgs::Marker* line_msg, ros::Publishe
   int p1x, p1y, p2x, p2y;
 
   g_planner_->index2Grid(id, p1x, p1y);
-  g_planner_->grid2Map(p1x, p1y, p1.x, p1.y);
-  p1.x = (p1.x + convert_offset_) + costmap_->getOriginX();
-  p1.y = (p1.y + convert_offset_) + costmap_->getOriginY();
+  g_planner_->map2World(p1x, p1y, p1.x, p1.y);
   p1.z = 1.0;
 
   g_planner_->index2Grid(pid, p2x, p2y);
-  g_planner_->grid2Map(p2x, p2y, p2.x, p2.y);
-  p2.x = (p2.x + convert_offset_) + costmap_->getOriginX();
-  p2.y = (p2.y + convert_offset_) + costmap_->getOriginY();
+  g_planner_->map2World(p2x, p2y, p2.x, p2.y);
   p2.z = 1.0;
 
   c1.r = 0.43;

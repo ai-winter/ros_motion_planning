@@ -7,9 +7,9 @@
  * @date: 2023-10-24
  * @version: 2.1
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -20,80 +20,39 @@ namespace global_planner
 {
 /**
  * @brief Construct a new Global Planner object
- * @param nx         pixel number in costmap x direction
- * @param ny         pixel number in costmap y direction
- * @param resolution costmap resolution
+ * @param costmap the environment for path planning
  */
-GlobalPlanner::GlobalPlanner(int nx, int ny, double resolution)
-  : lethal_cost_(LETHAL_COST), neutral_cost_(NEUTRAL_COST), factor_(OBSTACLE_FACTOR)
+GlobalPlanner::GlobalPlanner(costmap_2d::Costmap2D* costmap) : factor_(0.5f), map_size_{ 0 }
 {
-  setSize(nx, ny);
-  setResolution(resolution);
-}
-
-/**
- * @brief Set or reset costmap size
- * @param nx pixel number in costmap x direction
- * @param ny pixel number in costmap y direction
- */
-void GlobalPlanner::setSize(int nx, int ny)
-{
-  nx_ = nx;
-  ny_ = ny;
-  ns_ = nx * ny;
-}
-
-/**
- * @brief Set or reset costmap resolution
- * @param resolution costmap resolution
- */
-void GlobalPlanner::setResolution(double resolution)
-{
-  resolution_ = resolution;
-}
-
-void GlobalPlanner::setLethalCost(unsigned char lethal_cost)
-{
-  lethal_cost_ = lethal_cost;
-}
-
-/**
- * @brief Set or reset neutral cost
- * @param neutral_cost neutral cost
- */
-void GlobalPlanner::setNeutralCost(unsigned char neutral_cost)
-{
-  neutral_cost_ = neutral_cost;
+  costmap_ = costmap;
+  map_size_ = static_cast<int>(costmap->getSizeInCellsX() * costmap->getSizeInCellsY());
 }
 
 /**
  * @brief Set or reset obstacle factor
  * @param factor obstacle factor
  */
-void GlobalPlanner::setFactor(double factor)
+void GlobalPlanner::setFactor(float factor)
 {
   factor_ = factor;
 }
 
 /**
- * @brief Set or reset costmap origin
- * @param origin_x  origin in costmap x direction
- * @param origin_y  origin in costmap y direction
+ * @brief get the costmap
+ * @return costmap costmap2d pointer
  */
-void GlobalPlanner::setOrigin(double origin_x, double origin_y)
+costmap_2d::Costmap2D* GlobalPlanner::getCostMap() const
 {
-  origin_x_ = origin_x;
-  origin_y_ = origin_y;
+  return costmap_;
 }
 
 /**
- * @brief Set convert offset
- * @param origin_x  origin in costmap x direction
- * @param origin_y  origin in costmap y direction
+ * @brief get the size of costmap
+ * @return map_size the size of costmap
  */
-void GlobalPlanner::setConvertOffset(double convert_offset)
+int GlobalPlanner::getMapSize() const
 {
-  convert_offset_ = convert_offset;
+  return map_size_;
 }
 
 /**
@@ -104,7 +63,7 @@ void GlobalPlanner::setConvertOffset(double convert_offset)
  */
 int GlobalPlanner::grid2Index(int x, int y)
 {
-  return x + nx_ * y;
+  return x + static_cast<int>(costmap_->getSizeInCellsX() * y);
 }
 
 /**
@@ -115,34 +74,8 @@ int GlobalPlanner::grid2Index(int x, int y)
  */
 void GlobalPlanner::index2Grid(int i, int& x, int& y)
 {
-  x = i % nx_;
-  y = i / nx_;
-}
-
-/**
- * @brief Transform from grid map(x, y) to costmap(x, y)
- * @param gx grid map x
- * @param gy grid map y
- * @param mx costmap x
- * @param my costmap y
- */
-void GlobalPlanner::map2Grid(double mx, double my, int& gx, int& gy)
-{
-  gx = (int)mx;
-  gy = (int)my;
-}
-
-/**
- * @brief Transform from costmap(x, y) to grid map(x, y)
- * @param gx grid map x
- * @param gy grid map y
- * @param mx costmap x
- * @param my costmap y
- */
-void GlobalPlanner::grid2Map(int gx, int gy, double& mx, double& my)
-{
-  mx = resolution_ * (gx + 0.5);
-  my = resolution_ * (gy + 0.5);
+  x = static_cast<int>(i % costmap_->getSizeInCellsX());
+  y = static_cast<int>(i / costmap_->getSizeInCellsX());
 }
 
 /**
@@ -153,17 +86,9 @@ void GlobalPlanner::grid2Map(int gx, int gy, double& mx, double& my)
  * @param wy world map y
  * @return true if successfull, else false
  */
-bool GlobalPlanner::world2Map(double wx, double wy, double& mx, double& my)
+bool GlobalPlanner::world2Map(double wx, double wy, unsigned int& mx, unsigned int& my)
 {
-  if (wx < origin_x_ || wy < origin_y_)
-    return false;
-
-  mx = (wx - origin_x_) / resolution_ - convert_offset_;
-  my = (wy - origin_y_) / resolution_ - convert_offset_;
-  if (mx < nx_ && my < ny_)
-    return true;
-
-  return false;
+  return costmap_->worldToMap(wx, wy, mx, my);
 }
 
 /**
@@ -173,29 +98,33 @@ bool GlobalPlanner::world2Map(double wx, double wy, double& mx, double& my)
  * @param wx world map x
  * @param wy world map y
  */
-void GlobalPlanner::map2World(double mx, double my, double& wx, double& wy)
+void GlobalPlanner::map2World(unsigned int mx, unsigned int my, double& wx, double& wy)
 {
-  wx = origin_x_ + (mx + convert_offset_) * resolution_;
-  wy = origin_y_ + (my + convert_offset_) * resolution_;
+  costmap_->mapToWorld(mx, my, wx, wy);
 }
 
 /**
  * @brief Inflate the boundary of costmap into obstacles to prevent cross planning
- * @param costarr costmap pointer
  */
-void GlobalPlanner::outlineMap(unsigned char* costarr)
+void GlobalPlanner::outlineMap()
 {
-  unsigned char* pc = costarr;
-  for (int i = 0; i < nx_; i++)
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+  auto pc = costmap_->getCharMap();
+
+  for (int i = 0; i < nx; i++)
     *pc++ = costmap_2d::LETHAL_OBSTACLE;
-  pc = costarr + (ny_ - 1) * nx_;
-  for (int i = 0; i < nx_; i++)
+
+  pc = costmap_->getCharMap() + (ny - 1) * nx;
+  for (int i = 0; i < nx; i++)
     *pc++ = costmap_2d::LETHAL_OBSTACLE;
-  pc = costarr;
-  for (int i = 0; i < ny_; i++, pc += nx_)
+
+  pc = costmap_->getCharMap();
+  for (int i = 0; i < ny; i++, pc += nx)
     *pc = costmap_2d::LETHAL_OBSTACLE;
-  pc = costarr + nx_ - 1;
-  for (int i = 0; i < ny_; i++, pc += nx_)
+
+  pc = costmap_->getCharMap() + nx - 1;
+  for (int i = 0; i < ny; i++, pc += nx)
     *pc = costmap_2d::LETHAL_OBSTACLE;
 }
 
@@ -210,17 +139,21 @@ std::vector<Node> GlobalPlanner::_convertClosedListToPath(std::unordered_map<int
                                                           const Node& goal)
 {
   std::vector<Node> path;
-  auto current = closed_list.find(goal.id_);
+
+  auto current = closed_list.find(goal.id());
   while (current->second != start)
   {
-    path.emplace_back(current->second.x_, current->second.y_);
-    auto it = closed_list.find(current->second.pid_);
+    path.emplace_back(current->second.x(), current->second.y());
+
+    auto it = closed_list.find(current->second.pid());
     if (it != closed_list.end())
       current = it;
     else
       return {};
   }
+
   path.push_back(start);
+
   return path;
 }
 

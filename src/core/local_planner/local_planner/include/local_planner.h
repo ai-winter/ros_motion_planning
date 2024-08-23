@@ -17,11 +17,6 @@
 #ifndef LOCAL_PLANNER_H
 #define LOCAL_PLANNER_H
 
-#define INFINITE_COST 1e10   // infinite cost
-#define LETHAL_COST 253      // lethal cost
-#define NEUTRAL_COST 50      // neutral cost
-#define OBSTACLE_FACTOR 0.5  // obstacle factor
-
 #include <ros/ros.h>
 #include <nav_core/base_local_planner.h>
 #include <base_local_planner/odometry_helper_ros.h>
@@ -48,38 +43,6 @@ public:
    * @brief Destroy the Local Planner object
    */
   ~LocalPlanner();
-
-  /**
-   * @brief Set or reset costmap size
-   * @param nx  pixel number in costmap x direction
-   * @param ny  pixel number in costmap y direction
-   */
-  void setSize(int nx, int ny);
-
-  /**
-   * @brief Set or reset costmap resolution
-   * @param resolution  costmap resolution
-   */
-  void setResolution(double resolution);
-
-  /**
-   * @brief Set or reset costmap origin
-   * @param origin_x  origin in costmap x direction
-   * @param origin_y  origin in costmap y direction
-   */
-  void setOrigin(double origin_x, double origin_y);
-
-  /**
-   * @brief Set or reset lethal cost
-   * @param lethal_cost lethal cost
-   */
-  void setLethalCost(unsigned char lethal_cost);
-
-  /**
-   * @brief Set or reset neutral cost
-   * @param neutral_cost  neutral cost
-   */
-  void setNeutralCost(unsigned char neutral_cost);
 
   /**
    * @brief Set or reset obstacle factor
@@ -183,14 +146,7 @@ public:
                          double& theta, double& kappa);
 
 protected:
-  // lethal cost and neutral cost
-  unsigned char lethal_cost_, neutral_cost_;
-
-  int nx_, ny_, ns_;            // pixel number in local costmap x, y and total
-  double origin_x_, origin_y_;  // local costmap origin
-  double resolution_;           // local ostmap resolution
-  double convert_offset_;       // offset of transform from world(x,y) to grid map(x,y)
-  double factor_;               // obstacle factor(greater means obstacles)
+  double factor_;  // obstacle factor(greater means obstacles)
 
   double max_v_, min_v_, max_v_inc_;  // linear velocity
   double max_w_, min_w_, max_w_inc_;  // angular velocity
@@ -204,10 +160,8 @@ protected:
   // frame name of base link, map and odometry
   std::string base_frame_, map_frame_, odom_frame_;
 
-  // odometry helper
-  base_local_planner::OdometryHelperRos* odom_helper_;
-
-  costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
+  std::shared_ptr<base_local_planner::OdometryHelperRos> odom_helper_;  // odometry helper
+  costmap_2d::Costmap2DROS* costmap_ros_;                               // costmap(ROS wrapper)
   std::vector<geometry_msgs::PoseStamped> global_plan_;
 
   double lookahead_time_;      // lookahead time gain

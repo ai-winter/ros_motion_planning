@@ -7,9 +7,9 @@
  * @date: 2023-12-20
  * @version: 1.1
  *
- * Copyright (c) 2024, Jing Zongxin, Yang Haodong. 
+ * Copyright (c) 2024, Jing Zongxin, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -22,9 +22,7 @@ namespace global_planner
 {
 /**
  * @brief Construct a new PSO object
- * @param nx            pixel number in costmap x direction
- * @param ny            pixel number in costmap y direction
- * @param resolution    costmap resolution
+ * @param costmap   the environment for path planning
  * @param n_particles	  number of particles
  * @param n_inherited   number of inherited particles
  * @param point_num      number of position points contained in each particle
@@ -35,9 +33,9 @@ namespace global_planner
  * @param init_mode	  Set the generation mode for the initial position points of the particle swarm
  * @param max_iter		  maximum iterations
  */
-PSO::PSO(int nx, int ny, double resolution, int n_particles, int n_inherited, int point_num, double w_inertial,
+PSO::PSO(costmap_2d::Costmap2D* costmap, int n_particles, int n_inherited, int point_num, double w_inertial,
          double w_social, double w_cognitive, int max_speed, int init_mode, int max_iter)
-  : GlobalPlanner(nx, ny, resolution)
+  : GlobalPlanner(costmap)
   , n_particles_(n_particles)
   , n_inherited_(n_inherited)
   , point_num_(point_num)
@@ -58,19 +56,16 @@ PSO::~PSO()
 
 /**
  * @brief PSO implementation
- * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
  * @param path          optimal path consists of Node
  * @param expand        containing the node been search during the process(unused)
  * @return  true if path found, else false
  */
-bool PSO::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-               std::vector<Node>& expand)
+bool PSO::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
-  start_ = std::pair<double, double>(static_cast<double>(start.x_), static_cast<double>(start.y_));
-  goal_ = std::pair<double, double>(static_cast<double>(goal.x_), static_cast<double>(goal.y_));
-  costmap_ = global_costmap;
+  start_ = std::pair<double, double>(static_cast<double>(start.x()), static_cast<double>(start.y()));
+  goal_ = std::pair<double, double>(static_cast<double>(goal.x()), static_cast<double>(goal.y()));
   expand.clear();
 
   // variable initialization
@@ -122,10 +117,10 @@ bool PSO::plan(const unsigned char* global_costmap, const Node& start, const Nod
 
   // Generating Paths from Optimal Particles
   std::vector<std::pair<double, double>> points, b_path;
-  points.emplace_back(static_cast<double>(start.x_), static_cast<double>(start.y_));
+  points.emplace_back(static_cast<double>(start.x()), static_cast<double>(start.y()));
   for (const auto& pos : best_particle.position)
     points.emplace_back(static_cast<double>(pos.first), static_cast<double>(pos.second));
-  points.emplace_back(static_cast<double>(goal.x_), static_cast<double>(goal.y_));
+  points.emplace_back(static_cast<double>(goal.x()), static_cast<double>(goal.y()));
   points.erase(std::unique(std::begin(points), std::end(points)), std::end(points));
 
   bspline_gen_.run(points, b_path);
@@ -146,7 +141,7 @@ bool PSO::plan(const unsigned char* global_costmap, const Node& start, const Nod
       int y = static_cast<int>(b_path[p].second);
 
       // Check if the current point is different from the last point
-      if (x != path.back().x_ || y != path.back().y_)
+      if (x != path.back().x() || y != path.back().y())
         path.emplace_back(x, y, 0.0, 0.0, p, 0);
     }
   }
@@ -178,8 +173,8 @@ void PSO::initializePositions(PositionSequence& initial_positions, const Node& s
   int point_id, pos_id;
 
   // Calculate sequence direction
-  bool x_order = (goal.x_ > start.x_);
-  bool y_order = (goal.y_ > start.y_);
+  bool x_order = (goal.x() > start.x());
+  bool y_order = (goal.y() > start.y());
 
   // circle generation
   int center_x, center_y;
@@ -187,8 +182,8 @@ void PSO::initializePositions(PositionSequence& initial_positions, const Node& s
   if (gen_mode == GEN_MODE_CIRCLE)
   {
     // Calculate the center and the radius of the circle (midpoint between start and goal)
-    center_x = (start.x_ + goal.x_) / 2;
-    center_y = (start.y_ + goal.y_) / 2;
+    center_x = (start.x() + goal.x()) / 2;
+    center_y = (start.y() + goal.y()) / 2;
     radius = helper::dist(start, goal) / 2.0 < 5 ? 5 : helper::dist(start, goal) / 2.0;
   }
 
@@ -204,8 +199,8 @@ void PSO::initializePositions(PositionSequence& initial_positions, const Node& s
     {
       if (gen_mode == GEN_MODE_RANDOM)
       {
-        x[point_id] = std::uniform_int_distribution<int>(0, nx_ - 1)(gen);
-        y[point_id] = std::uniform_int_distribution<int>(0, ny_ - 1)(gen);
+        x[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsX() - 1)(gen);
+        y[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsY() - 1)(gen);
         pos_id = grid2Index(x[point_id], y[point_id]);
       }
       else
@@ -218,7 +213,8 @@ void PSO::initializePositions(PositionSequence& initial_positions, const Node& s
         x[point_id] = static_cast<int>(std::round(center_x + r * std::cos(angle)));
         y[point_id] = static_cast<int>(std::round(center_y + r * std::sin(angle)));
         // Check if the coordinates are within the map range
-        if (x[point_id] >= 0 && x[point_id] < nx_ && y[point_id] >= 0 && y[point_id] < ny_)
+        if (x[point_id] >= 0 && x[point_id] < costmap_->getSizeInCellsX() && y[point_id] >= 0 &&
+            y[point_id] < costmap_->getSizeInCellsY())
           pos_id = grid2Index(x[point_id], y[point_id]);
         else
           continue;
@@ -273,7 +269,8 @@ double PSO::calFitnessValue(std::vector<std::pair<int, int>> position)
   {
     point_index = grid2Index(static_cast<int>(b_path[i].first), static_cast<int>(b_path[i].second));
     // next node hit the boundary or obstacle
-    if ((point_index < 0) || (point_index >= ns_) || (costmap_[point_index] >= lethal_cost_ * factor_))
+    if ((point_index < 0) || (point_index >= map_size_) ||
+        (costmap_->getCharMap()[point_index] >= costmap_2d::LETHAL_OBSTACLE * factor_))
       obs_cost++;
   }
   // Calculate particle fitness
@@ -326,8 +323,10 @@ void PSO::updateParticlePosition(Particle& particle)
     particle.position[i].second += particle.velocity[i].second;
 
     // Position limit
-    particle.position[i].first = helper::clamp(particle.position[i].first, 1, nx_ - 1);
-    particle.position[i].second = helper::clamp(particle.position[i].second, 1, ny_ - 1);
+    particle.position[i].first =
+        helper::clamp(particle.position[i].first, 1, static_cast<int>(costmap_->getSizeInCellsX()) - 1);
+    particle.position[i].second =
+        helper::clamp(particle.position[i].second, 1, static_cast<int>(costmap_->getSizeInCellsY()) - 1);
   }
 }
 

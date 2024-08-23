@@ -7,9 +7,9 @@
  * @date: 2023-07-21
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -25,48 +25,44 @@ namespace global_planner
 {
 /**
  * @brief Construct a new Voronoi-based planning object
- * @param nx                    pixel number in costmap x direction
- * @param ny                    pixel number in costmap y direction
- * @param resolution            costmap resolution
+ * @param costmap   the environment for path planning
  * @param circumscribed_radius  the circumscribed radius of robot
  */
-VoronoiPlanner::VoronoiPlanner(int nx, int ny, double resolution, double circumscribed_radius)
-  : GlobalPlanner(nx, ny, resolution), circumscribed_radius_(circumscribed_radius)
+VoronoiPlanner::VoronoiPlanner(costmap_2d::Costmap2D* costmap, double circumscribed_radius)
+  : GlobalPlanner(costmap), circumscribed_radius_(circumscribed_radius)
 {
-  voronoi_diagram_ = new VoronoiData*[nx_];
-  for (unsigned int i = 0; i < nx_; i++)
-    voronoi_diagram_[i] = new VoronoiData[ny_];
+  voronoi_diagram_ = new VoronoiData*[costmap_->getSizeInCellsX()];
+  for (unsigned int i = 0; i < costmap_->getSizeInCellsX(); i++)
+    voronoi_diagram_[i] = new VoronoiData[costmap_->getSizeInCellsY()];
 }
 
 VoronoiPlanner::~VoronoiPlanner()
 {
-  for (unsigned int i = 0; i < nx_; i++)
+  for (unsigned int i = 0; i < costmap_->getSizeInCellsX(); i++)
     delete[] voronoi_diagram_[i];
   delete[] voronoi_diagram_;
 }
 
 /**
  * @brief Voronoi-based planning implementation
- * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
  * @param path          optimal path consists of Node
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool VoronoiPlanner::plan(const unsigned char* global_costmap, const Node& start, const Node& goal,
-                          std::vector<Node>& path, std::vector<Node>& expand)
+bool VoronoiPlanner::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
   return true;
 }
 bool VoronoiPlanner::plan(const DynamicVoronoi& voronoi, const Node& start, const Node& goal, std::vector<Node>& path)
 {
   // update voronoi diagram
-  for (unsigned int j = 0; j < ny_; j++)
+  for (unsigned int j = 0; j < costmap_->getSizeInCellsY(); j++)
   {
-    for (unsigned int i = 0; i < nx_; i++)
+    for (unsigned int i = 0; i < costmap_->getSizeInCellsX(); i++)
     {
-      voronoi_diagram_[i][j].dist = voronoi.getDistance(i, j) * resolution_;
+      voronoi_diagram_[i][j].dist = voronoi.getDistance(i, j) * costmap_->getResolution();
       voronoi_diagram_[i][j].is_voronoi = voronoi.isVoronoi(i, j);
     }
   }
@@ -125,20 +121,20 @@ bool VoronoiPlanner::searchPathWithVoronoi(const Node& start, const Node& goal, 
     open_list.pop();
 
     // current node does not exist in closed list
-    if (closed_list.find(current.id_) != closed_list.end())
+    if (closed_list.find(current.id()) != closed_list.end())
       continue;
 
-    closed_list.insert(std::make_pair(current.id_, current));
+    closed_list.insert(std::make_pair(current.id(), current));
 
     // goal found
-    if ((current == goal) || (v_goal == nullptr ? false : voronoi_diagram_[current.x_][current.y_].is_voronoi))
+    if ((current == goal) || (v_goal == nullptr ? false : voronoi_diagram_[current.x()][current.y()].is_voronoi))
     {
       path = _convertClosedListToPath(closed_list, start, current);
       if (v_goal != nullptr)
       {
-        v_goal->x_ = current.x_;
-        v_goal->y_ = current.y_;
-        v_goal->id_ = current.id_;
+        v_goal->set_x(current.x());
+        v_goal->set_y(current.y());
+        v_goal->set_id(current.id());
       }
       return true;
     }
@@ -149,23 +145,23 @@ bool VoronoiPlanner::searchPathWithVoronoi(const Node& start, const Node& goal, 
       Node node_new = current + m;
 
       // current node do not exist in closed list
-      if (closed_list.find(node_new.id_) != closed_list.end())
+      if (closed_list.find(node_new.id()) != closed_list.end())
         continue;
 
       // explore a new node
-      node_new.id_ = grid2Index(node_new.x_, node_new.y_);
-      node_new.pid_ = current.id_;
+      node_new.set_id(grid2Index(node_new.x(), node_new.y()));
+      node_new.set_pid(current.id());
 
       // next node hit the boundary or obstacle
-      if ((node_new.id_ < 0) || (node_new.id_ >= ns_) ||
-          (voronoi_diagram_[node_new.x_][node_new.y_].dist < circumscribed_radius_))
+      if ((node_new.id() < 0) || (node_new.id() >= map_size_) ||
+          (voronoi_diagram_[node_new.x()][node_new.y()].dist < circumscribed_radius_))
         continue;
 
       // search in VD
-      if ((v_goal == nullptr) && (!voronoi_diagram_[node_new.x_][node_new.y_].is_voronoi))
+      if ((v_goal == nullptr) && (!voronoi_diagram_[node_new.x()][node_new.y()].is_voronoi))
         continue;
 
-      node_new.h_ = std::hypot(node_new.x_ - goal.x_, node_new.y_ - goal.y_);
+      node_new.set_h(helper::dist(node_new, goal));
 
       open_list.push(node_new);
     }

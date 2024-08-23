@@ -7,9 +7,9 @@
  * @date: 2023-12-27
  * @version: 2.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -55,24 +55,27 @@ class ACO : public GlobalPlanner
 public:
   /**
    * @brief Construct a new ACO object
-   * @param nx          pixel number in costmap x directionparticle_list
+   * @param costmap   the environment for path planning
+   * @param n_ants			number of ants
+   * @param alpha				pheromone weight coefficient
+   * @param beta				heuristic factor weight coefficient
+   * @param rho					evaporation coefficient
+   * @param Q						pheromone gain
    * @param max_iter		maximum iterations
    */
-  ACO(int nx, int ny, double resolution, int n_ants, int n_inherited, int point_num, double alpha, double beta,
-      double rho, double Q, int init_mode, int max_iter);
+  ACO(costmap_2d::Costmap2D* costmap, int n_ants, int n_inherited, int point_num, double alpha, double beta, double rho,
+      double Q, int init_mode, int max_iter);
   ~ACO();
 
   /**
    * @brief ACO implementation
-   * @param global_costmap global costmap
    * @param start         start node
    * @param goal          goal node
    * @param path          optimal path consists of Node
    * @param expand        containing the node been search during the process
    * @return  true if path found, else false
    */
-  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-            std::vector<Node>& expand);
+  bool plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand);
 
   /**
    * @brief Generate n ants with pointNum_ positions each within the map range
@@ -112,8 +115,7 @@ protected:
   int max_iter_;         // maximum iterations
   int init_mode_;        // Set the generation mode for the initial position points of the genets swarm
   std::pair<double, double> start_, goal_;  // paired start and goal point for path smoothing
-  const unsigned char* costmap_;
-  double* pheromone_mat_;  // pheromone matrix
+  double* pheromone_mat_;                   // pheromone matrix
 
 private:
   std::mutex lock_;                             // thread lock

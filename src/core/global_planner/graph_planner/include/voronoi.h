@@ -7,9 +7,9 @@
  * @date: 2023-07-21
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -38,25 +38,21 @@ class VoronoiPlanner : public GlobalPlanner
 public:
   /**
    * @brief Construct a new Voronoi-based planning object
-   * @param nx                    pixel number in costmap x direction
-   * @param ny                    pixel number in costmap y direction
-   * @param resolution            costmap resolution
+   * @param costmap   the environment for path planning
    * @param circumscribed_radius  the circumscribed radius of robot
    */
-  VoronoiPlanner(int nx, int ny, double resolution, double circumscribed_radius);
+  VoronoiPlanner(costmap_2d::Costmap2D* costmap, double circumscribed_radius);
   ~VoronoiPlanner();
 
   /**
    * @brief Voronoi-based planning implementation
-   * @param global_costmap global costmap
    * @param start         start node
    * @param goal          goal node
    * @param path          optimal path consists of Node
    * @param expand        containing the node been search during the process
    * @return  true if path found, else false
    */
-  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-            std::vector<Node>& expand);
+  bool plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand);
   bool plan(const DynamicVoronoi& voronoi, const Node& start, const Node& goal, std::vector<Node>& path);
 
 protected:

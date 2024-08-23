@@ -28,7 +28,7 @@ namespace evolutionary_planner
 /**
  * @brief Construct a new Graph Planner object
  */
-EvolutionaryPlanner::EvolutionaryPlanner() : initialized_(false), costmap_(nullptr), g_planner_(nullptr)
+EvolutionaryPlanner::EvolutionaryPlanner() : initialized_(false), g_planner_(nullptr)
 {
 }
 
@@ -41,18 +41,6 @@ EvolutionaryPlanner::EvolutionaryPlanner(std::string name, costmap_2d::Costmap2D
   : EvolutionaryPlanner()
 {
   initialize(name, costmap_ros);
-}
-
-/**
- * @brief Destroy the Graph Planner object
- */
-EvolutionaryPlanner::~EvolutionaryPlanner()
-{
-  if (g_planner_)
-  {
-    delete g_planner_;
-    g_planner_ = NULL;
-  }
 }
 
 /**
@@ -80,22 +68,13 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
     // initialize ROS node
     ros::NodeHandle private_nh("~/" + name);
 
-    // initialize costmap
-    costmap_ = costmap;
-
     // costmap frame ID
     frame_id_ = frame_id;
 
-    // get costmap properties
-    nx_ = costmap->getSizeInCellsX(), ny_ = costmap->getSizeInCellsY();
-    origin_x_ = costmap_->getOriginX(), origin_y_ = costmap_->getOriginY();
-    resolution_ = costmap->getResolution();
-
-    private_nh.param("convert_offset", convert_offset_, 0.0);  // offset of transform from world(x,y) to grid map(x,y)
-    private_nh.param("default_tolerance", tolerance_, 0.0);    // error tolerance
-    private_nh.param("outline_map", is_outline_, false);       // whether outline the map or not
-    private_nh.param("obstacle_factor", factor_, 0.5);         // obstacle factor, NOTE: no use...
-    private_nh.param("expand_zone", is_expand_, false);        // whether publish expand zone or not
+    private_nh.param("default_tolerance", tolerance_, 0.0);  // error tolerance
+    private_nh.param("outline_map", is_outline_, false);     // whether outline the map or not
+    private_nh.param("obstacle_factor", factor_, 0.5);       // obstacle factor, NOTE: no use...
+    private_nh.param("expand_zone", is_expand_, false);      // whether publish expand zone or not
 
     // planner name
     std::string planner_name;
@@ -115,8 +94,8 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
                                                                       // position points of the ants
       private_nh.param("max_iter_ant", max_iter, 100);                // maximum iterations
 
-      g_planner_ = new global_planner::ACO(nx_, ny_, resolution_, n_ants, n_inherited, point_num, alpha, beta, rho, Q,
-                                           init_mode, max_iter);
+      g_planner_ = std::make_shared<global_planner::ACO>(costmap, n_ants, n_inherited, point_num, alpha, beta, rho, Q,
+                                                         init_mode, max_iter);
     }
     else if (planner_name == "pso")
     {
@@ -135,8 +114,8 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
                                                                       // position points of the particle swarm
       private_nh.param("max_iter_pso", max_iter, 30);                 // maximum iterations
 
-      g_planner_ = new global_planner::PSO(nx_, ny_, resolution_, n_particles, n_inherited, point_num, w_inertial,
-                                           w_social, w_cognitive, max_speed, init_mode, max_iter);
+      g_planner_ = std::make_shared<global_planner::PSO>(costmap, n_particles, n_inherited, point_num, w_inertial,
+                                                         w_social, w_cognitive, max_speed, init_mode, max_iter);
     }
     else if (planner_name == "ga")
     {
@@ -154,13 +133,13 @@ void EvolutionaryPlanner::initialize(std::string name, costmap_2d::Costmap2D* co
                                                                      // position points of the particle swarm
       private_nh.param("max_iter_ga", max_iter, 30);                 // maximum iterations
 
-      g_planner_ = new global_planner::GA(nx_, ny_, resolution_, n_genets, ga_inherited, point_num, p_select, p_crs,
-                                          p_mut, max_speed, init_mode, max_iter);
+      g_planner_ = std::make_shared<global_planner::GA>(costmap, n_genets, ga_inherited, point_num, p_select, p_crs,
+                                                        p_mut, max_speed, init_mode, max_iter);
     }
 
     // pass costmap information to planner (required)
-    g_planner_->setOrigin(origin_x_, origin_y_);
-    g_planner_->setConvertOffset(convert_offset_);
+    g_planner_->setFactor(factor_);
+
     ROS_INFO("Using global evolutionary planner: %s", planner_name.c_str());
 
     // register planning publisher
@@ -202,7 +181,7 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
                                    double tolerance, std::vector<geometry_msgs::PoseStamped>& plan)
 {
   // start thread mutex
-  boost::mutex::scoped_lock lock(mutex_);
+  std::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*g_planner_->getCostMap()->getMutex());
   if (!initialized_)
   {
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
@@ -226,10 +205,10 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
     return false;
   }
 
-  // get goal and strat node coordinate tranform from world to costmap
+  // get goal and start node coordinate tranform from world to costmap
   double wx = start.pose.position.x, wy = start.pose.position.y;
-  double m_start_x, m_start_y, m_goal_x, m_goal_y;
-  if (!g_planner_->world2Map(wx, wy, m_start_x, m_start_y))
+  unsigned int g_start_x, g_start_y, g_goal_x, g_goal_y;
+  if (!g_planner_->world2Map(wx, wy, g_start_x, g_start_y))
   {
     ROS_WARN(
         "The robot's start position is off the global costmap. Planning will always fail, are you sure the robot has "
@@ -237,7 +216,7 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
     return false;
   }
   wx = goal.pose.position.x, wy = goal.pose.position.y;
-  if (!g_planner_->world2Map(wx, wy, m_goal_x, m_goal_y))
+  if (!g_planner_->world2Map(wx, wy, g_goal_x, g_goal_y))
   {
     ROS_WARN_THROTTLE(1.0,
                       "The goal sent to the global planner is off the global costmap. Planning will always fail to "
@@ -245,26 +224,21 @@ bool EvolutionaryPlanner::makePlan(const geometry_msgs::PoseStamped& start, cons
     return false;
   }
 
-  // tranform from costmap to grid map
-  int g_start_x, g_start_y, g_goal_x, g_goal_y;
-  g_planner_->map2Grid(m_start_x, m_start_y, g_start_x, g_start_y);
-  g_planner_->map2Grid(m_goal_x, m_goal_y, g_goal_x, g_goal_y);
-
   // NOTE: how to init start and goal?
   Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
   Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
 
   // clear the cost of robot location
-  costmap_->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
+  g_planner_->getCostMap()->setCost(g_start_x, g_start_y, costmap_2d::FREE_SPACE);
 
   // outline the map
   if (is_outline_)
-    g_planner_->outlineMap(costmap_->getCharMap());
+    g_planner_->outlineMap();
 
   // calculate path
   std::vector<Node> path;
   std::vector<Node> expand;
-  bool path_found = g_planner_->plan(costmap_->getCharMap(), start_node, goal_node, path, expand);
+  bool path_found = g_planner_->plan(start_node, goal_node, path, expand);
 
   if (path_found)
   {
@@ -351,7 +325,7 @@ bool EvolutionaryPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<
   for (int i = path.size() - 1; i >= 0; i--)
   {
     double wx, wy;
-    g_planner_->map2World((double)path[i].x_, (double)path[i].y_, wx, wy);
+    g_planner_->map2World((double)path[i].x(), (double)path[i].y(), wx, wy);
 
     // coding as message type
     geometry_msgs::PoseStamped pose;
@@ -394,11 +368,15 @@ void EvolutionaryPlanner::_publishExpand(std::vector<Node>& expand)
   marker.color.a = 0.5;
 
   // Convert particle positions to geometry_msgs::Point
+  float origin_x = g_planner_->getCostMap()->getOriginX();
+  float origin_y = g_planner_->getCostMap()->getOriginY();
+  float resolution = g_planner_->getCostMap()->getResolution();
+
   for (const auto& node : expand)
   {
     geometry_msgs::Point p;
-    p.x = origin_x_ + node.x_ * resolution_;
-    p.y = origin_y_ + node.y_ * resolution_;
+    p.x = origin_x + node.x() * resolution;
+    p.y = origin_y + node.y() * resolution;
     p.z = 0.0;
     marker.points.push_back(p);
   }

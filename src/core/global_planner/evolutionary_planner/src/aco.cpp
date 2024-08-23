@@ -7,9 +7,9 @@
  * @date: 2023-12-27
  * @version: 2.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -21,9 +21,7 @@ namespace global_planner
 {
 /**
  * @brief Construct a new ACO object
- * @param nx          pixel number in costmap x direction
- * @param ny          pixel number in costmap y direction
- * @param resolution  costmap resolution
+ * @param costmap   the environment for path planning
  * @param n_ants			number of ants
  * @param alpha				pheromone weight coefficient
  * @param beta				heuristic factor weight coefficient
@@ -31,9 +29,9 @@ namespace global_planner
  * @param Q						pheromone gain
  * @param max_iter		maximum iterations
  */
-ACO::ACO(int nx, int ny, double resolution, int n_ants, int n_inherited, int point_num, double alpha, double beta,
+ACO::ACO(costmap_2d::Costmap2D* costmap, int n_ants, int n_inherited, int point_num, double alpha, double beta,
          double rho, double Q, int init_mode, int max_iter)
-  : GlobalPlanner(nx, ny, resolution)
+  : GlobalPlanner(costmap)
   , n_ants_(n_ants)
   , n_inherited_(n_inherited)
   , point_num_(point_num)
@@ -45,7 +43,7 @@ ACO::ACO(int nx, int ny, double resolution, int n_ants, int n_inherited, int poi
   , max_iter_(max_iter)
 {
   inherited_ants_.emplace_back(std::vector<std::pair<int, int>>(point_num, std::make_pair(1, 1)), 0.0);
-  pheromone_mat_ = new double[static_cast<int>(nx_ * ny_)];
+  pheromone_mat_ = new double[map_size_];
 }
 
 ACO::~ACO()
@@ -55,21 +53,18 @@ ACO::~ACO()
 
 /**
  * @brief ACO implementation
- * @param global_costmap global costmap
  * @param start         start node
  * @param goal          goal node
  * @param path          optimal path consists of Node
  * @param expand        containing the node been search during the process(unused)
  * @return  true if path found, else false
  */
-bool ACO::plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-               std::vector<Node>& expand)
+bool ACO::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
-  start_ = std::pair<double, double>(static_cast<double>(start.x_), static_cast<double>(start.y_));
-  goal_ = std::pair<double, double>(static_cast<double>(goal.x_), static_cast<double>(goal.y_));
-  costmap_ = global_costmap;
+  start_ = std::pair<double, double>(static_cast<double>(start.x()), static_cast<double>(start.y()));
+  goal_ = std::pair<double, double>(static_cast<double>(goal.x()), static_cast<double>(goal.y()));
   expand.clear();
-  for (size_t i = 0; i < nx_ * ny_; i++)
+  for (size_t i = 0; i < map_size_; i++)
     pheromone_mat_[i] = 1.0;
 
   // variable initialization
@@ -97,16 +92,16 @@ bool ACO::plan(const unsigned char* global_costmap, const Node& start, const Nod
     // best_ant.position = ants[best_ant_idx_].best_pos;
 
     // pheromone deterioration
-    for (size_t i = 0; i < nx_ * ny_; i++)
+    for (size_t i = 0; i < map_size_; i++)
       pheromone_mat_[i] *= (1 - rho_);
   }
 
   // Generating Paths from Optimal Particles
   std::vector<std::pair<double, double>> points, b_path;
-  points.emplace_back(static_cast<double>(start.x_), static_cast<double>(start.y_));
+  points.emplace_back(static_cast<double>(start.x()), static_cast<double>(start.y()));
   for (const auto& pos : best_ant.position)
     points.emplace_back(static_cast<double>(pos.first), static_cast<double>(pos.second));
-  points.emplace_back(static_cast<double>(goal.x_), static_cast<double>(goal.y_));
+  points.emplace_back(static_cast<double>(goal.x()), static_cast<double>(goal.y()));
   points.erase(std::unique(std::begin(points), std::end(points)), std::end(points));
 
   bspline_gen_.run(points, b_path);
@@ -127,7 +122,7 @@ bool ACO::plan(const unsigned char* global_costmap, const Node& start, const Nod
       int y = static_cast<int>(b_path[p].second);
 
       // Check if the current point is different from the last point
-      if (x != path.back().x_ || y != path.back().y_)
+      if (x != path.back().x() || y != path.back().y())
         path.emplace_back(x, y, 0.0, 0.0, p, 0);
     }
   }
@@ -158,8 +153,8 @@ void ACO::initializePositions(PositionSequence& initial_positions, const Node& s
   int point_id, pos_id;
 
   // Calculate sequence direction
-  bool x_order = (goal.x_ > start.x_);
-  bool y_order = (goal.y_ > start.y_);
+  bool x_order = (goal.x() > start.x());
+  bool y_order = (goal.y() > start.y());
 
   // circle generation
   int center_x, center_y;
@@ -167,8 +162,8 @@ void ACO::initializePositions(PositionSequence& initial_positions, const Node& s
   if (gen_mode == GEN_MODE_CIRCLE)
   {
     // Calculate the center and the radius of the circle (midpoint between start and goal)
-    center_x = (start.x_ + goal.x_) / 2;
-    center_y = (start.y_ + goal.y_) / 2;
+    center_x = (start.x() + goal.x()) / 2;
+    center_y = (start.y() + goal.y()) / 2;
     radius = helper::dist(start, goal) / 2.0 < 5 ? 5 : helper::dist(start, goal) / 2.0;
   }
 
@@ -188,8 +183,8 @@ void ACO::initializePositions(PositionSequence& initial_positions, const Node& s
     {
       if (gen_mode == GEN_MODE_RANDOM)
       {
-        temp_x[point_id] = std::uniform_int_distribution<int>(0, nx_ - 1)(gen);
-        temp_y[point_id] = std::uniform_int_distribution<int>(0, ny_ - 1)(gen);
+        temp_x[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsX() - 1)(gen);
+        temp_y[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsY() - 1)(gen);
         pos_id = grid2Index(temp_x[point_id], temp_y[point_id]);
       }
       else
@@ -202,7 +197,8 @@ void ACO::initializePositions(PositionSequence& initial_positions, const Node& s
         temp_x[point_id] = static_cast<int>(std::round(center_x + r * std::cos(angle)));
         temp_y[point_id] = static_cast<int>(std::round(center_y + r * std::sin(angle)));
         // Check if the coordinates are within the map range
-        if (temp_x[point_id] >= 0 && temp_x[point_id] < nx_ && temp_y[point_id] >= 0 && temp_y[point_id] < ny_)
+        if (temp_x[point_id] >= 0 && temp_x[point_id] < costmap_->getSizeInCellsX() && temp_y[point_id] >= 0 &&
+            temp_y[point_id] < costmap_->getSizeInCellsY())
           pos_id = grid2Index(temp_x[point_id], temp_y[point_id]);
         else
           continue;
@@ -214,7 +210,7 @@ void ACO::initializePositions(PositionSequence& initial_positions, const Node& s
         point_id++;
         visited.insert(pos_id);
         double prob_new = std::pow(pheromone_mat_[pos_id], alpha_) *
-                          std::pow(1.0 / hypot(temp_x[point_id] - goal.x_, temp_y[point_id] - goal.y_), beta_);
+                          std::pow(1.0 / hypot(temp_x[point_id] - goal.x(), temp_y[point_id] - goal.y()), beta_);
         probabilities.push_back(prob_new);
         prob_sum += prob_new;
       }
@@ -273,7 +269,8 @@ double ACO::calFitnessValue(std::vector<std::pair<int, int>> position)
   {
     point_index = grid2Index(static_cast<int>(b_path[i].first), static_cast<int>(b_path[i].second));
     // next node hit the boundary or obstacle
-    if ((point_index < 0) || (point_index >= ns_) || (costmap_[point_index] >= lethal_cost_ * factor_))
+    if ((point_index < 0) || (point_index >= map_size_) ||
+        (costmap_->getCharMap()[point_index] >= costmap_2d::LETHAL_OBSTACLE * factor_))
       obs_cost++;
   }
   // Calculate particle fitness

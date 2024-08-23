@@ -7,9 +7,9 @@
  * @date: 2023-12-22
  * @version: 1.0
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -93,7 +93,7 @@ Points2d Bezier::generation(Pose2d start, Pose2d goal)
   std::tie(sx, sy, syaw) = start;
   std::tie(gx, gy, gyaw) = goal;
 
-  int n_points = (int)(helper::dist(Point2d(sx, sy), Point2d(gx, gy)) / step_);
+  int n_points = static_cast<int>(helper::dist(Point2d(sx, sy), Point2d(gx, gy)) / step_);
   Points2d control_pts = getControlPoints(start, goal);
 
   Points2d points;

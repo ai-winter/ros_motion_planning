@@ -7,9 +7,9 @@
  * @date: 2023-12-21
  * @version: 1.1
  *
- * Copyright (c) 2024, Jing Zongxin, Yang Haodong. 
+ * Copyright (c) 2024, Jing Zongxin, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -55,9 +55,7 @@ class GA : public GlobalPlanner
 public:
   /**
    * @brief Construct a new GA object
-   * @param nx            pixel number in costmap x direction
-   * @param ny            pixel number in costmap y direction
-   * @param resolution    costmap resolution
+   * @param costmap   the environment for path planning
    * @param n_genets	    number of genets
    * @param n_inherited   number of inherited genets
    * @param point_num     number of position points contained in each genets
@@ -68,21 +66,19 @@ public:
    * @param init_mode	  Set the generation mode for the initial position points of the genets swarm
    * @param max_iter		  maximum iterations
    */
-  GA(int nx, int ny, double resolution, int n_genets, int n_inherited, int point_num, double p_select, double p_crs,
+  GA(costmap_2d::Costmap2D* costmap, int n_genets, int n_inherited, int point_num, double p_select, double p_crs,
      double p_mut, int max_speed, int init_mode, int max_iter);
   ~GA();
 
   /**
    * @brief GA implementation
-   * @param global_costmap global costmap
    * @param start         start node
    * @param goal          goal node
    * @param path          optimal path consists of Node
    * @param expand        containing the node been search during the process
    * @return  true if path found, else false
    */
-  bool plan(const unsigned char* global_costmap, const Node& start, const Node& goal, std::vector<Node>& path,
-            std::vector<Node>& expand);
+  bool plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand);
 
   /**
    * @brief Generate n genets with pointNum_ positions each within the map range
@@ -129,7 +125,6 @@ protected:
   int max_speed_;                    // The maximum velocity of genets motion
   int init_mode_;                    // Set the generation mode for the initial position points of the genets swarm
   std::pair<double, double> start_, goal_;  // paired start and goal point for path smoothing
-  const unsigned char* costmap_;
 
 private:
   std::mutex genets_lock_;                      // thread lock

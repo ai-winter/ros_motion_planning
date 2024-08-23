@@ -11,91 +11,84 @@
 -->
 
 <launch>
-    <arg name="agent_number" default="1" />
-    <arg name="agent_id" default="1" />
-    <!-- robot's type -->
-    <arg name="robot" default="turtlebot3_waffle" />
-    <!-- robot's namespace -->
-    <arg name="robot_namespace" />
-    <!-- whether use namespace or not -->
-    <arg name="start_ns" default="false" />
-    <!-- global path planner name -->
-    <arg name="global_planner" default="a_star" />
-    <!-- local planner name -->
-    <arg name="local_planner" default="dwa" />
+  <arg name="agent_number" default="1" />
+  <arg name="agent_id" default="1" />
 
-    <!-- initial pose -->
-    <arg name="robot_x" />
-    <arg name="robot_y" />
-    <arg name="robot_z" />
-    <arg name="robot_yaw" />
+  <arg name="robot" default="turtlebot3_waffle" />
+  <arg name="robot_namespace" />
+  <arg name="start_ns" default="false" />
+  <arg name="global_planner" default="a_star" />
+  <arg name="local_planner" default="dwa" />
 
-    <!-- multi -->
-    <group ns="$(arg robot_namespace)" if="$(arg start_ns)">
-        <param name="tf_prefix" value="$(arg robot_namespace)" />
-        <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" />
-        <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen" />
-        <param name="robot_description" command="$(find xacro)/xacro --inorder $(find sim_env)/urdf/$(arg robot)/$(arg robot).xacro" />
+  <!-- initial pose -->
+  <arg name="robot_x" />
+  <arg name="robot_y" />
+  <arg name="robot_z" />
+  <arg name="robot_yaw" />
 
-        <!-- Gazebo -->
-        <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-            args="-urdf -x $(arg robot_x) -y $(arg robot_y) -z $(arg robot_z) -Y $(arg robot_yaw) -model $(arg robot_namespace) -param robot_description" />
+  <!-- multi -->
+  <group ns="$(arg robot_namespace)" if="$(arg start_ns)">
+    <param name="tf_prefix" value="$(arg robot_namespace)" />
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" />
+    <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find sim_env)/urdf/$(arg robot)/$(arg robot).xacro" />
 
-        <!-- Transform from map to odom -->
-        <node pkg="sim_env" name="tf_map2odom_node" type="tf_map2odom.py" output="screen">
-            <param name="~odom_frame_id" value="$(arg robot_namespace)/odom" />
-        </node>
+    <!-- Gazebo -->
+    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+      args="-urdf -x $(arg robot_x) -y $(arg robot_y) -z $(arg robot_z) -Y $(arg robot_yaw) -model $(arg robot_namespace) -param robot_description" />
 
-        <!-- AMCL -->
-        <!-- <include file="$(find sim_env)/launch/include/location/amcl.launch.xml">
-            <arg name="robot_namespace" value="$(arg robot_namespace)" />
-            <arg name="start_ns" value="$(arg start_ns)" />
-            <arg name="robot_x" value="$(arg robot_x)" />
-            <arg name="robot_y" value="$(arg robot_y)" />
-            <arg name="robot_z" value="$(arg robot_z)" />
-        </include> -->
+    <!-- Transform from map to odom -->
+    <node pkg="sim_env" name="tf_map2odom_node" type="tf_map2odom.py" output="screen">
+      <param name="~odom_frame_id" value="$(arg robot_namespace)/odom" />
+    </node>
 
-        <!-- MoveBase -->
-        <include file="$(find sim_env)/launch/include/navigation/move_base.launch.xml">
-            <arg name="agent_number" value="$(arg agent_number)" />
-            <arg name="agent_id" value="$(arg agent_id)" />
-            <arg name="robot_namespace" value="$(arg robot_namespace)" />
-            <arg name="start_ns" value="$(arg start_ns)" />
-            <arg name="robot" value="$(arg robot)" />
-            <arg name="global_planner" value="$(arg global_planner)" />
-            <arg name="local_planner" value="$(arg local_planner)" />
-        </include>
+    <!-- AMCL -->
+    <!-- <include file="$(find sim_env)/launch/include/location/amcl.launch.xml">
+      <arg name="robot_namespace" value="$(arg robot_namespace)" />
+      <arg name="start_ns" value="$(arg start_ns)" />
+      <arg name="robot_x" value="$(arg robot_x)" />
+      <arg name="robot_y" value="$(arg robot_y)" />
+      <arg name="robot_z" value="$(arg robot_z)" />
+    </include> -->
 
-    </group>
+    <!-- MoveBase -->
+    <include file="$(find sim_env)/launch/include/navigation/move_base.launch.xml">
+      <arg name="agent_number" value="$(arg agent_number)" />
+      <arg name="agent_id" value="$(arg agent_id)" />
+      <arg name="robot_namespace" value="$(arg robot_namespace)" />
+      <arg name="start_ns" value="$(arg start_ns)" />
+      <arg name="robot" value="$(arg robot)" />
+      <arg name="global_planner" value="$(arg global_planner)" />
+      <arg name="local_planner" value="$(arg local_planner)" />
+    </include>
+  </group>
 
-    <!-- single  -->
-    <group unless="$(arg start_ns)">
-        <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" />
-        <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen" />
-        <param name="robot_description" command="$(find xacro)/xacro --inorder $(find sim_env)/urdf/$(arg robot)/$(arg robot).xacro" />
+  <!-- single  -->
+  <group unless="$(arg start_ns)">
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" />
+    <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find sim_env)/urdf/$(arg robot)/$(arg robot).xacro" />
 
-        <!-- Gazebo -->
-        <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-            args="-urdf -x $(arg robot_x) -y $(arg robot_y) -z $(arg robot_z) -Y $(arg robot_yaw) -model $(arg robot) -param robot_description" />
+    <!-- Gazebo -->
+    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+      args="-urdf -x $(arg robot_x) -y $(arg robot_y) -z $(arg robot_z) -Y $(arg robot_yaw) -model $(arg robot) -param robot_description" />
 
-        <!-- AMCL -->
-        <include file="$(find sim_env)/launch/include/location/amcl.launch.xml">
-            <arg name="robot_namespace" value="$(arg robot_namespace)" />
-            <arg name="start_ns" value="$(arg start_ns)" />
-            <arg name="robot_x" value="$(arg robot_x)" />
-            <arg name="robot_y" value="$(arg robot_y)" />
-            <arg name="robot_z" value="$(arg robot_z)" />
-        </include>
+    <!-- AMCL -->
+    <include file="$(find sim_env)/launch/include/location/amcl.launch.xml">
+      <arg name="robot_namespace" value="$(arg robot_namespace)" />
+      <arg name="start_ns" value="$(arg start_ns)" />
+      <arg name="robot_x" value="$(arg robot_x)" />
+      <arg name="robot_y" value="$(arg robot_y)" />
+      <arg name="robot_z" value="$(arg robot_z)" />
+    </include>
 
-        <!-- MoveBase-->
-        <include file="$(find sim_env)/launch/include/navigation/move_base.launch.xml">
-            <arg name="robot_namespace" value="$(arg robot_namespace)" />
-            <arg name="start_ns" value="$(arg start_ns)" />
-            <arg name="robot" value="$(arg robot)" />
-            <arg name="global_planner" value="$(arg global_planner)" />
-            <arg name="local_planner" value="$(arg local_planner)" />
-        </include>
-
-    </group>
-
+    <!-- MoveBase-->
+    <include file="$(find sim_env)/launch/include/navigation/move_base.launch.xml">
+      <arg name="robot_namespace" value="$(arg robot_namespace)" />
+      <arg name="start_ns" value="$(arg start_ns)" />
+      <arg name="robot" value="$(arg robot)" />
+      <arg name="global_planner" value="$(arg global_planner)" />
+      <arg name="local_planner" value="$(arg local_planner)" />
+    </include>
+  </group>
 </launch>

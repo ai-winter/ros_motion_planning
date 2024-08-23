@@ -14,9 +14,9 @@
  *
  * ********************************************************
  */
+#include <osqp/osqp.h>
 #include <unsupported/Eigen/KroneckerProduct>
 #include <unsupported/Eigen/MatrixFunctions>
-#include <OsqpEigen/OsqpEigen.h>
 #include <pluginlib/class_list_macros.h>
 
 #include "mpc_planner.h"
@@ -60,19 +60,12 @@ void MPCPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     initialized_ = true;
     tf_ = tf;
     costmap_ros_ = costmap_ros;
-    costmap_2d::Costmap2D* costmap = costmap_ros_->getCostmap();
-
-    // set costmap properties
-    setSize(costmap->getSizeInCellsX(), costmap->getSizeInCellsY());
-    setOrigin(costmap->getOriginX(), costmap->getOriginY());
-    setResolution(costmap->getResolution());
 
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
 
     // base
     nh.param("goal_dist_tolerance", goal_dist_tol_, 0.2);
     nh.param("rotate_tolerance", rotate_tol_, 0.5);
-    nh.param("convert_offset", convert_offset_, 0.0);
     nh.param("base_frame", base_frame_, base_frame_);
     nh.param("map_frame", map_frame_, map_frame_);
 
@@ -97,12 +90,14 @@ void MPCPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
 
     // weight matrix for penalizing state error while tracking [x,y,theta]
     std::vector<double> diag_vec;
+    Q_ = Eigen::Matrix3d::Zero();
     nh.getParam("Q_matrix_diag", diag_vec);
     for (size_t i = 0; i < diag_vec.size(); ++i)
       Q_(i, i) = diag_vec[i];
 
     // weight matrix for penalizing input error while tracking[v, w]
     nh.getParam("R_matrix_diag", diag_vec);
+    R_ = Eigen::Matrix2d::Zero();
     for (size_t i = 0; i < diag_vec.size(); ++i)
       R_(i, i) = diag_vec[i];
 
@@ -318,13 +313,13 @@ Eigen::Vector2d MPCPlanner::_mpcControl(Eigen::Vector3d s, Eigen::Vector3d s_d, 
   }
 
   // optimization
-  // min 1/2 * x.T * H * x + g.T * x
-  // s.t. l <= Px <= u
+  // min 1/2 * x.T * P * x + q.T * x
+  // s.t. l <= Ax <= u
   Eigen::VectorXd Yr = Eigen::VectorXd::Zero(dim_x * p_);                              // (3p x 1)
   Eigen::MatrixXd Q = Eigen::kroneckerProduct(Eigen::MatrixXd::Identity(p_, p_), Q_);  // (3p x 3p)
   Eigen::MatrixXd R = Eigen::kroneckerProduct(Eigen::MatrixXd::Identity(m_, m_), R_);  // (2m x 2m)
-  Eigen::MatrixXd H = S_u.transpose() * Q * S_u + R;                                   // (2m x 2m)
-  Eigen::VectorXd g = S_u.transpose() * Q * (S_x * x - Yr);                            // (2m x 1)
+  Eigen::MatrixXd P = S_u.transpose() * Q * S_u + R;                                   // (2m x 2m)
+  Eigen::VectorXd q = S_u.transpose() * Q * (S_x * x - Yr);                            // (2m x 1)
 
   // boundary
   Eigen::Vector2d u_min(min_v_, -max_w_);
@@ -340,13 +335,6 @@ Eigen::Vector2d MPCPlanner::_mpcControl(Eigen::Vector3d s, Eigen::Vector3d s_d, 
   Eigen::VectorXd dU_max = Eigen::kroneckerProduct(Eigen::VectorXd::Ones(m_), du_max);  // (2m x 1)
 
   // constriants
-  Eigen::MatrixXd temp = Eigen::MatrixXd::Ones(m_, m_).triangularView<Eigen::Lower>();
-  Eigen::MatrixXd A_I = Eigen::kroneckerProduct(temp, Eigen::MatrixXd::Identity(dim_u, dim_u));  // (2m x 2m)
-
-  Eigen::MatrixXd P = Eigen::MatrixXd::Zero(2 * dim_u * m_, dim_u * m_);  // (4m x 2m)
-  P.topRows(dim_u * m_) = A_I;
-  P.bottomRows(dim_u * m_) = Eigen::MatrixXd::Identity(dim_u * m_, dim_u * m_);
-
   Eigen::VectorXd lower = Eigen::VectorXd::Zero(2 * dim_u * m_);  // (4m x 1)
   Eigen::VectorXd upper = Eigen::VectorXd::Zero(2 * dim_u * m_);  // (4m x 1)
   lower.topRows(dim_u * m_) = U_min - U_k_1 - U_r;
@@ -354,45 +342,105 @@ Eigen::Vector2d MPCPlanner::_mpcControl(Eigen::Vector3d s, Eigen::Vector3d s_d, 
   upper.topRows(dim_u * m_) = U_max - U_k_1 - U_r;
   upper.bottomRows(dim_u * m_) = dU_max;
 
+  // Calculate kernel
+  std::vector<c_float> P_data;
+  std::vector<c_int> P_indices;
+  std::vector<c_int> P_indptr;
+  int ind_P = 0;
+  for (int col = 0; col < dim_u * m_; ++col)
+  {
+    P_indptr.push_back(ind_P);
+    for (int row = 0; row <= col; ++row)
+    {
+      P_data.push_back(P(row, col));
+      // P_data.push_back(P(row, col) * 2.0);
+      P_indices.push_back(row);
+      ind_P++;
+    }
+  }
+  P_indptr.push_back(ind_P);
+
+  // Calculate affine constraints (4m x 2m)
+  std::vector<c_float> A_data;
+  std::vector<c_int> A_indices;
+  std::vector<c_int> A_indptr;
+  int ind_A = 0;
+  A_indptr.push_back(ind_A);
+  for (int j = 0; j < m_; ++j)
+  {
+    for (int n = 0; n < dim_u; ++n)
+    {
+      for (int row = dim_u * j + n; row < dim_u * m_; row += dim_u)
+      {
+        A_data.push_back(1.0);
+        A_indices.push_back(row);
+        ++ind_A;
+      }
+      A_data.push_back(1.0);
+      A_indices.push_back(dim_u * m_ + dim_u * j + n);
+      ++ind_A;
+      A_indptr.push_back(ind_A);
+    }
+  }
+
+  // Calculate offset
+  std::vector<c_float> q_data;
+  for (int row = 0; row < dim_u * m_; ++row)
+  {
+    q_data.push_back(q(row, 0));
+  }
+
+  // Calculate constraints
+  std::vector<c_float> lower_bounds;
+  std::vector<c_float> upper_bounds;
+  for (int row = 0; row < 2 * dim_u * m_; row++)
+  {
+    lower_bounds.push_back(lower(row, 0));
+    upper_bounds.push_back(upper(row, 0));
+  }
+
   // solve
-  OsqpEigen::Solver solver;
-  solver.settings()->setVerbosity(false);
-  solver.settings()->setWarmStart(true);
-  solver.data()->setNumberOfVariables(dim_u * m_);
-  solver.data()->setNumberOfConstraints(2 * dim_u * m_);
-  solver.data()->setHessianMatrix(_convertToSparseMatrix(H));
-  solver.data()->setGradient(g);
-  solver.data()->setLinearConstraintsMatrix(_convertToSparseMatrix(P));
-  solver.data()->setLowerBound(lower);
-  solver.data()->setUpperBound(upper);
+  OSQPWorkspace* work = nullptr;
+  OSQPData* data = reinterpret_cast<OSQPData*>(c_malloc(sizeof(OSQPData)));
+  OSQPSettings* settings = reinterpret_cast<OSQPSettings*>(c_malloc(sizeof(OSQPSettings)));
+  osqp_set_default_settings(settings);
+  settings->verbose = false;
+  settings->warm_start = true;
 
-  solver.initSolver();
-  solver.solveProblem();
+  data->n = dim_u * m_;
+  data->m = 2 * dim_u * m_;
+  data->P = csc_matrix(data->n, data->n, P_data.size(), P_data.data(), P_indices.data(), P_indptr.data());
+  data->q = q.data();
+  data->A = csc_matrix(data->m, data->n, A_data.size(), A_data.data(), A_indices.data(), A_indptr.data());
+  data->l = lower_bounds.data();
+  data->u = upper_bounds.data();
 
-  Eigen::VectorXd solution = solver.getSolution();
+  osqp_setup(&work, data, settings);
+  osqp_solve(work);
+  auto status = work->info->status_val;
 
-  // real control
-  Eigen::Vector2d u(solution[0] + du_p[0] + u_r[0], regularizeAngle(solution[1] + du_p[1] + u_r[1]));
+  if (status < 0)
+  {
+    std::cout << "failed optimization status:\t" << work->info->status;
+    return Eigen::Vector2d::Zero();
+  }
+
+  if (status != 1 && status != 2)
+  {
+    std::cout << "failed optimization status:\t" << work->info->status;
+    return Eigen::Vector2d::Zero();
+  }
+
+  Eigen::Vector2d u(work->solution->x[0] + du_p[0] + u_r[0], regularizeAngle(work->solution->x[1] + du_p[1] + u_r[1]));
+
+  // Cleanup
+  osqp_cleanup(work);
+  c_free(data->A);
+  c_free(data->P);
+  c_free(data);
+  c_free(settings);
 
   return u;
-}
-
-/**
- * @brief convert matrix A to its sparse view
- * @param A     dense matrix
- * @return A_s  sparse matrix
- */
-Eigen::SparseMatrix<double> MPCPlanner::_convertToSparseMatrix(Eigen::MatrixXd A)
-{
-  int row = A.rows();
-  int col = A.cols();
-  Eigen::SparseMatrix<double> A_s(row, col);
-
-  for (int i = 0; i < row; i++)
-    for (int j = 0; j < col; j++)
-      A_s.insert(i, j) = A(i, j);
-
-  return A_s;
 }
 
 }  // namespace mpc_planner

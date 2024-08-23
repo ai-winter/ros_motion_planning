@@ -1,7 +1,0 @@
-<class_libraries>
-  <library path="lib/libvoronoi_layer">
-    <class type="costmap_2d::VoronoiLayer" base_class_type="costmap_2d::Layer">
-      <description>A costmap plugin for dynamic Voronoi.</description>
-    </class>
-  </library>
-</class_libraries>

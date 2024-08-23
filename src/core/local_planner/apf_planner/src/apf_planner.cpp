@@ -58,17 +58,8 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     initialized_ = true;
     tf_ = tf;
     costmap_ros_ = costmap_ros;
-    costmap_2d::Costmap2D* costmap = costmap_ros_->getCostmap();
-    local_costmap_ = costmap->getCharMap();
-
-    // set costmap properties
-    setSize(costmap->getSizeInCellsX(), costmap->getSizeInCellsY());
-    setOrigin(costmap->getOriginX(), costmap->getOriginY());
-    setResolution(costmap->getResolution());
 
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
-
-    nh.param("convert_offset", convert_offset_, 0.0);
 
     nh.param("p_window", p_window_, 0.5);
 
@@ -88,7 +79,7 @@ void APFPlanner::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::C
     nh.param("zeta", zeta_, 1.0);
     nh.param("eta", eta_, 1.0);
 
-    nh.param("cost_ub", cost_ub_, (int)lethal_cost_);
+    nh.param("cost_ub", cost_ub_, static_cast<int>(costmap_2d::LETHAL_OBSTACLE));
     nh.param("cost_lb", cost_lb_, 0);
 
     nh.param("inflation_radius", inflation_radius_, 1.0);
@@ -297,16 +288,19 @@ Eigen::Vector2d APFPlanner::getAttractiveForce(const geometry_msgs::PoseStamped&
  */
 Eigen::Vector2d APFPlanner::getRepulsiveForce()
 {
-  Eigen::Vector2d rep_force(0.0, 0.0);
+  double x = current_ps_.pose.position.x;
+  double y = current_ps_.pose.position.y;
+  Eigen::Vector2d rep_force(x, y);
   int mx, my;
-  if (!worldToMap(0.0, 0.0, mx, my))
+  if (!worldToMap(x, y, mx, my))
   {
     ROS_WARN("Failed to convert the robot's coordinates from world map to costmap.");
     return rep_force;
   }
 
-  double current_cost = local_costmap_[mx + nx_ * my];
-
+  int nx = costmap_ros_->getCostmap()->getSizeInCellsX();
+  int ny = costmap_ros_->getCostmap()->getSizeInCellsY();
+  double current_cost = costmap_ros_->getCostmap()->getCharMap()[mx + nx * my];
   if (current_cost >= cost_ub_ || current_cost < cost_lb_)
   {
     ROS_WARN(
@@ -322,10 +316,10 @@ Eigen::Vector2d APFPlanner::getRepulsiveForce()
   double bound_diff = cost_ub_ - cost_lb_;
   double dist = (cost_ub_ - current_cost) / bound_diff;
   double k = (1.0 - 1.0 / dist) / (dist * dist);
-  double next_x = local_costmap_[std::min(mx + 1, (int)nx_ - 1) + nx_ * my];
-  double prev_x = local_costmap_[std::max(mx - 1, 0) + nx_ * my];
-  double next_y = local_costmap_[mx + nx_ * std::min(my + 1, (int)ny_ - 1)];
-  double prev_y = local_costmap_[mx + nx_ * std::max(my - 1, 0)];
+  double next_x = costmap_ros_->getCostmap()->getCharMap()[std::min(mx + 1, nx - 1) + nx * my];
+  double prev_x = costmap_ros_->getCostmap()->getCharMap()[std::max(mx - 1, 0) + nx * my];
+  double next_y = costmap_ros_->getCostmap()->getCharMap()[mx + nx * std::min(my + 1, ny - 1)];
+  double prev_y = costmap_ros_->getCostmap()->getCharMap()[mx + nx * std::max(my - 1, 0)];
   Eigen::Vector2d grad_dist((next_x - prev_x) / (2.0 * bound_diff), (next_y - prev_y) / (2.0 * bound_diff));
 
   rep_force = k * grad_dist;
@@ -346,23 +340,27 @@ void APFPlanner::publishPotentialMap(const nav_msgs::OccupancyGrid::ConstPtr& ms
   int tx, ty;  // costmap coordinates of target point
 
   // calculate costmap coordinates from world coordinates (maybe out of bound)
-  tx = (int)((target_ps_.pose.position.x - current_ps_.pose.position.x - origin_x_) / resolution_ - convert_offset_);
-  ty = (int)((target_ps_.pose.position.y - current_ps_.pose.position.y - origin_y_) / resolution_ - convert_offset_);
+  int nx = costmap_ros_->getCostmap()->getSizeInCellsX();
+  int ny = costmap_ros_->getCostmap()->getSizeInCellsY();
+  double origin_x = costmap_ros_->getCostmap()->getOriginX();
+  double origin_y = costmap_ros_->getCostmap()->getOriginY();
+  double resolution = costmap_ros_->getCostmap()->getResolution();
+  tx = (int)((target_ps_.pose.position.x - current_ps_.pose.position.x - origin_x) / resolution);
+  ty = (int)((target_ps_.pose.position.y - current_ps_.pose.position.y - origin_y) / resolution);
 
   // calculate distance from the robot to target (on the scale of costmap)
-  dist_to_target = std::hypot(tx - (int)((-origin_x_) / resolution_ - convert_offset_),
-                              ty - (int)((-origin_y_) / resolution_ - convert_offset_));
+  dist_to_target = std::hypot(tx - (int)((-origin_x) / resolution), ty - (int)((-origin_y) / resolution));
 
   // the costmap inflation radius of obstacles (on the scale of costmap)
-  inflation_radius = inflation_radius_ / resolution_;
+  inflation_radius = inflation_radius_ / resolution;
 
   potential_map_ = *msg;
-  for (int y = 0; y < ny_; ++y)
+  for (int y = 0; y < ny; ++y)
   {
-    for (int x = 0; x < nx_; ++x)
+    for (int x = 0; x < nx; ++x)
     {
       // temp variables
-      current_cost = local_costmap_[x + nx_ * y];  // cost of the cell
+      current_cost = costmap_ros_->getCostmap()->getCharMap()[x + nx * y];  // cost of the cell
       dist_to_obstacles =
           (cost_ub_ - current_cost) / bound_diff;  // distance from cell to obstacles
                                                    // (normalized scale, i.e., within the range of [0,1])
@@ -372,7 +370,7 @@ void APFPlanner::publishPotentialMap(const nav_msgs::OccupancyGrid::ConstPtr& ms
       scaled_rep = rep_scale * std::pow(1.0 / dist_to_obstacles - 1.0, 2);
 
       // sum two potential fields to calculate the net potential field
-      potential_map_.data[x + nx_ * y] =
+      potential_map_.data[x + nx * y] =
           std::max(0, std::min(100, (int)((scaled_attr + scaled_rep) * 100)));  // [0, 100] is the range of rviz costmap
     }
   }

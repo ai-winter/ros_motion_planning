@@ -19,17 +19,17 @@ APFPlanner:
   min_w: 0.0
   max_w_inc: 1.57
 
-  s_window: 5  # trajectory smoothing window time
+  s_window: 5 # trajectory smoothing window time
 
-  zeta: 1.0     # scale factor of attractive force
-  eta: 1.0   # scale factor of repulsive force
+  zeta: 1.0 # scale factor of attractive force
+  eta: 3.0 # scale factor of repulsive force
 
-  cost_ub: 254  # the upper bound of costmap used to calculate potential field
-  cost_lb: 0    # the lower bound of costmap used to calculate potential field
+  cost_ub: 254 # the upper bound of costmap used to calculate potential field
+  cost_lb: 0 # the lower bound of costmap used to calculate potential field
 
   # the costmap inflation radius of obstacles
   # this parameter should be consistent with that in sim_env/config/costmap/xxx_costmap_params.yaml
-  inflation_radius: 1.0
+  inflation_radius: 3.0
 
   base_frame: base_link
   map_frame: map

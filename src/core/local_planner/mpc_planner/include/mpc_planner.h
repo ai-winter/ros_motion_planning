@@ -83,12 +83,6 @@ private:
    * @return u  control vector
    */
   Eigen::Vector2d _mpcControl(Eigen::Vector3d s, Eigen::Vector3d s_d, Eigen::Vector2d u_r, Eigen::Vector2d du_p);
-  /**
-   * @brief convert matrix A to its sparse view
-   * @param A     dense matrix
-   * @return A_s  sparse matrix
-   */
-  Eigen::SparseMatrix<double> _convertToSparseMatrix(Eigen::MatrixXd A);
 
 private:
   bool initialized_;     // initialized flag
