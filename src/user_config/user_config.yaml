@@ -35,6 +35,7 @@ robots_config:
 #     * aco
 #     * pso
 #     * ga
+#   * lazy_planner
 #
 # * local planner
 #   * dwa
