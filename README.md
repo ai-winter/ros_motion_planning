@@ -78,8 +78,7 @@ This repository provides the implementation of common **Motion Planning** algori
 
     ```bash
     cd scripts/
-    ./build.sh
-    # you may need to install it by: sudo apt install python-catkin-tools
+    ./build.sh  # you may need to install catkin-tools using: sudo apt install python-catkin-tools
     ```
 
 6. Execute the code.
