@@ -42,7 +42,6 @@
   <include file="$(find sim_env)/launch/include/robots/start_robots.launch.xml" />
 
   <!-- open rviz for visualization -->
-  <node pkg="dynamic_rviz_config" type="rviz_generate.py" name="rosapp_rviz" args="$(arg robot_number)" output="screen"
-    if="$(eval arg('rviz_file') == '')" />
+  <node pkg="dynamic_rviz_config" type="rviz_generate.py" name="rosapp_rviz" args="$(arg robot_number)" output="screen" if="$(eval arg('rviz_file') == '')" />
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sim_env)/rviz/$(arg rviz_file)" unless="$(eval arg('rviz_file') == '')" />
 </launch>

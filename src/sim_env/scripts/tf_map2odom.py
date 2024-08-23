@@ -12,7 +12,7 @@ class TFMap2Odom:
         self.odom_frame_id = rospy.get_param("~odom_frame_id", "odom")
 
         self.tf_pub = tf2_ros.TransformBroadcaster()
-        rospy.Timer(rospy.Duration(0.05), self.timer_callback)
+        rospy.Timer(rospy.Duration(0.1), self.timer_callback)
 
         odom = Odometry()
         odom.header.stamp = rospy.Time.now()

@@ -79,15 +79,17 @@ void GraphPlanner::initialize(std::string name)
     // costmap frame ID
     frame_id_ = costmap_ros_->getGlobalFrameID();
 
+    private_nh.param("obstacle_factor", factor_, 0.5);        // obstacle factor
     private_nh.param("default_tolerance", tolerance_, 0.0);   // error tolerance
     private_nh.param("outline_map", is_outline_, false);      // whether outline the map or not
-    private_nh.param("obstacle_factor", factor_, 0.5);        // obstacle factor, NOTE: no use...
     private_nh.param("expand_zone", is_expand_, false);       // whether publish expand zone or not
     private_nh.param("voronoi_map", is_voronoi_map_, false);  // whether to store Voronoi map or not
 
     // planner name
-    private_nh.param("planner_name", planner_name_, (std::string) "a_star");
+    private_nh.param("planner_name", planner_name_, std::string("a_star"));
+
     auto costmap = costmap_ros_->getCostmap();
+
     if (planner_name_ == "a_star")
       g_planner_ = std::make_shared<global_planner::AStar>(costmap);
     else if (planner_name_ == "dijkstra")
@@ -122,7 +124,6 @@ void GraphPlanner::initialize(std::string name)
     else
       ROS_ERROR("Unknown planner name: %s", planner_name_.c_str());
 
-    // pass costmap information to planner (required)
     g_planner_->setFactor(factor_);
 
     ROS_INFO("Using global graph planner: %s", planner_name_.c_str());
@@ -173,27 +174,23 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
     return false;
   }
+
   // clear existing plan
   plan.clear();
 
-  // judege whether goal and start node in costmap frame or not
-  if (goal.header.frame_id != frame_id_)
+  // judege whether start and goal node in costmap frame or not
+  if (start.header.frame_id != frame_id_ || goal.header.frame_id != frame_id_)
   {
-    ROS_ERROR("The goal pose passed to this planner must be in the %s frame. It is instead in the %s frame.",
-              frame_id_.c_str(), goal.header.frame_id.c_str());
-    return false;
-  }
-
-  if (start.header.frame_id != frame_id_)
-  {
-    ROS_ERROR("The start pose passed to this planner must be in the %s frame. It is instead in the %s frame.",
-              frame_id_.c_str(), start.header.frame_id.c_str());
+    ROS_ERROR("The start or goal pose passed to this planner must be in %s frame. It is instead in %s and %s frame.",
+              frame_id_.c_str(), start.header.frame_id.c_str(), goal.header.frame_id.c_str());
     return false;
   }
 
   // get goal and start node coordinate tranform from world to costmap
-  double wx = start.pose.position.x, wy = start.pose.position.y;
   unsigned int g_start_x, g_start_y, g_goal_x, g_goal_y;
+  double wx, wy;
+
+  wx = start.pose.position.x, wy = start.pose.position.y;
   if (!g_planner_->world2Map(wx, wy, g_start_x, g_start_y))
   {
     ROS_WARN(
@@ -201,6 +198,7 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
         "been properly localized?");
     return false;
   }
+
   wx = goal.pose.position.x, wy = goal.pose.position.y;
   if (!g_planner_->world2Map(wx, wy, g_goal_x, g_goal_y))
   {
@@ -209,10 +207,6 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
                       "this goal.");
     return false;
   }
-
-  // NOTE: how to init start and goal?
-  Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), 0);
-  Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), 0);
 
   // outline the map
   if (is_outline_)
@@ -243,6 +237,10 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
   std::vector<Node> path;
   std::vector<Node> expand;
   bool path_found = false;
+
+  // init start and goal
+  Node start_node(g_start_x, g_start_y, 0, 0, g_planner_->grid2Index(g_start_x, g_start_y), -1);
+  Node goal_node(g_goal_x, g_goal_y, 0, 0, g_planner_->grid2Index(g_goal_x, g_goal_y), -1);
 
   // planning
   if (planner_name_ == "voronoi")
@@ -307,7 +305,7 @@ void GraphPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& pl
   gui_plan.poses.resize(plan.size());
   gui_plan.header.frame_id = frame_id_;
   gui_plan.header.stamp = ros::Time::now();
-  for (unsigned int i = 0; i < plan.size(); i++)
+  for (int i = 0; i < plan.size(); i++)
     gui_plan.poses[i] = plan[i];
 
   // publish plan to rviz
@@ -376,6 +374,7 @@ bool GraphPlanner::_getPlanFromPath(std::vector<Node>& path, std::vector<geometr
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
     return false;
   }
+
   ros::Time planTime = ros::Time::now();
   plan.clear();
 

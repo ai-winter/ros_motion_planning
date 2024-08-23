@@ -37,11 +37,7 @@ public:
    * @brief Construct a new Global Planner object
    * @param costmap   the environment for path planning
    */
-  GlobalPlanner(costmap_2d::Costmap2D* costmap) : factor_(0.5f), map_size_{ 0 }
-  {
-    costmap_ = costmap;
-    map_size_ = static_cast<int>(costmap->getSizeInCellsX() * costmap->getSizeInCellsY());
-  }
+  GlobalPlanner(costmap_2d::Costmap2D* costmap);
 
   /**
    * @brief Destroy the Global Planner object
