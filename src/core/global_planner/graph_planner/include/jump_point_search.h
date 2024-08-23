@@ -17,23 +17,19 @@
 #ifndef JUMP_POINT_SEARCH_H
 #define JUMP_POINT_SEARCH_H
 
-#include <queue>
-#include <unordered_set>
-#include <ros/ros.h>
-
 #include "global_planner.h"
 
 namespace global_planner
 {
 /**
- * @brief lass for objects that plan using the Jump Point Search(JPS) algorithm
+ * @brief Class for objects that plan using the Jump Point Search(JPS) algorithm
  */
 class JumpPointSearch : public GlobalPlanner
 {
 public:
   /**
    * @brief Constructor
-   * @param costmap   the environment for path planning
+   * @param costmap the environment for path planning
    */
   JumpPointSearch(costmap_2d::Costmap2D* costmap);
 
@@ -66,4 +62,4 @@ private:
   Node start_, goal_;  // start and goal node
 };
 }  // namespace global_planner
-#endif  // JUMP_POINT_SEARCH_H
+#endif

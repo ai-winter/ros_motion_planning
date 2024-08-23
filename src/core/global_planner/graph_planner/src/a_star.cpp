@@ -16,10 +16,6 @@
  */
 #include "a_star.h"
 
-#include <queue>
-#include <unordered_set>
-#include <vector>
-
 namespace global_planner
 {
 /**

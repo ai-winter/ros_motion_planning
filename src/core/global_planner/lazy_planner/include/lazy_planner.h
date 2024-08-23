@@ -1,3 +1,19 @@
+/**
+ * *********************************************************
+ *
+ * @file: lazy_planner.h
+ * @brief: Contains the lazy planner ROS wrapper class
+ * @author: Zhanyu guo
+ * @date: 2024-01-01
+ * @version: 1.0
+ *
+ * Copyright (c) 2024, Zhanyu guo.
+ * All rights reserved.
+ *
+ * --------------------------------------------------------
+ *
+ * ********************************************************
+ */
 #ifndef LAZY_PLANNER_H
 #define LAZY_PLANNER_H
 
@@ -6,11 +22,8 @@
 #include <costmap_2d/costmap_2d_ros.h>
 #include <costmap_2d/costmap_2d.h>
 
-using std::string;
-
 namespace lazy_planner
 {
-
 class LazyPlanner : public nav_core::BaseGlobalPlanner
 {
 public:

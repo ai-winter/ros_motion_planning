@@ -20,7 +20,7 @@ namespace global_planner
 {
 /**
  * @brief Constructor
- * @param costmap   the environment for path planning
+ * @param costmap the environment for path planning
  */
 JumpPointSearch::JumpPointSearch(costmap_2d::Costmap2D* costmap) : GlobalPlanner(costmap)
 {
@@ -28,14 +28,13 @@ JumpPointSearch::JumpPointSearch(costmap_2d::Costmap2D* costmap) : GlobalPlanner
 
 /**
  * @brief Jump Point Search(JPS) implementation
- * @param start          start node
- * @param goal           goal node
- * @param expand         containing the node been search during the process
- * @return tuple contatining a bool as to whether a path was found, and the path
+ * @param start  start node
+ * @param goal   goal node
+ * @param expand containing the node been search during the process
+ * @return true if path found, else false
  */
 bool JumpPointSearch::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
-  // copy
   start_ = start, goal_ = goal;
 
   // clear vector
@@ -55,11 +54,11 @@ bool JumpPointSearch::plan(const Node& start, const Node& goal, std::vector<Node
   while (!open_list.empty())
   {
     // pop current node from open list
-    Node current = open_list.top();
+    auto current = open_list.top();
     open_list.pop();
 
-    // current node do not exist in closed list
-    if (closed_list.find(current.id()) != closed_list.end())
+    // current node exist in closed list, continue
+    if (closed_list.count(current.id()))
       continue;
 
     closed_list.insert(std::make_pair(current.id(), current));
@@ -75,10 +74,10 @@ bool JumpPointSearch::plan(const Node& start, const Node& goal, std::vector<Node
     // explore neighbor of current node
     for (const auto& motion : motions)
     {
-      Node node_new = jump(current, motion);
+      auto node_new = jump(current, motion);
 
-      // node_new not exits or in closed list
-      if (node_new.id() == -1 || closed_list.find(node_new.id()) != closed_list.end())
+      // node_new not exits or in closed list, continue
+      if (node_new.id() == -1 || closed_list.count(node_new.id()))
         continue;
 
       node_new.set_pid(current.id());
