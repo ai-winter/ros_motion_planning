@@ -14,16 +14,18 @@
  *
  * ********************************************************
  */
-#include <cmath>
 #include <random>
+
 #include "informed_rrt.h"
 
 namespace global_planner
 {
 /**
- * @brief  Constructor
- * @param   costmap   the environment for path planning
- * @param   max_dist    max distance between sample points
+ * @brief Construct a informed new RRTStar object
+ * @param costmap    the environment for path planning
+ * @param sample_num andom sample points
+ * @param max_dist   max distance between sample points
+ * @param r          optimization radius
  */
 InformedRRT::InformedRRT(costmap_2d::Costmap2D* costmap, int sample_num, double max_dist, double r)
   : RRTStar(costmap, sample_num, max_dist, r)
@@ -31,19 +33,24 @@ InformedRRT::InformedRRT(costmap_2d::Costmap2D* costmap, int sample_num, double 
 }
 
 /**
- * @brief Informed RRT* implementation
- * @param start     start node
- * @param goal      goal node
- * @param expand    containing the node been search during the process
- * @return tuple contatining a bool as to whether a path was found, and the path
+ * @brief Informed RRT star implementation
+ * @param start  start node
+ * @param goal   goal node
+ * @param expand containing the node been search during the process
+ * @return true if path found, else false
  */
 bool InformedRRT::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
+  // clear vector
+  path.clear();
+  expand.clear();
+  sample_list_.clear();
+
   // initialization
   c_best_ = std::numeric_limits<double>::max();
   c_min_ = helper::dist(start, goal);
   int best_parent = -1;
-  sample_list_.clear();
+
   // copy
   start_ = start, goal_ = goal;
   sample_list_.insert(std::make_pair(start.id(), start));
@@ -53,18 +60,8 @@ bool InformedRRT::plan(const Node& start, const Node& goal, std::vector<Node>& p
   int iteration = 0;
   while (iteration < sample_num_)
   {
-    iteration++;
-
     // generate a random node in the map
     Node sample_node = _generateRandomNode();
-
-    // obstacle
-    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
-      continue;
-
-    // visited
-    if (sample_list_.find(sample_node.id()) != sample_list_.end())
-      continue;
 
     // regular the sample node
     Node new_node = _findNearestPoint(sample_list_, sample_node);
@@ -87,6 +84,8 @@ bool InformedRRT::plan(const Node& start, const Node& goal, std::vector<Node>& p
         c_best_ = cost;
       }
     }
+
+    iteration++;
   }
 
   if (best_parent != -1)
@@ -103,7 +102,7 @@ bool InformedRRT::plan(const Node& start, const Node& goal, std::vector<Node>& p
 
 /**
  * @brief Generates a random node
- * @return Generated node
+ * @return generated node
  */
 Node InformedRRT::_generateRandomNode()
 {
@@ -136,8 +135,8 @@ Node InformedRRT::_generateRandomNode()
 
 /**
  * @brief Sample in ellipse
- * @param   x   random sampling x
- * @param   y   random sampling y
+ * @param x random sampling x
+ * @param y random sampling y
  * @return ellipse node
  */
 Node InformedRRT::_transform(double x, double y)
@@ -158,6 +157,6 @@ Node InformedRRT::_transform(double x, double y)
   int tx = static_cast<int>(a * cos(theta) * x + b * sin(theta) * y + center_x);
   int ty = static_cast<int>(-a * sin(theta) * x + b * cos(theta) * y + center_y);
   int id = grid2Index(tx, ty);
-  return Node(tx, ty, 0, 0, id, 0);
+  return Node(tx, ty, 0, 0, id, -1);
 }
 }  // namespace global_planner

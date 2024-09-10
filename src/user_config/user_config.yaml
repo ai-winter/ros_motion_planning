@@ -28,8 +28,9 @@ robots_config:
 #   * sample_planner
 #     * rrt
 #     * rrt_star
-#     * informed_rrt
 #     * rrt_connect
+#     * informed_rrt
+#     * quick_informed_rrt
 #
 #   * evolutionary_planner
 #     * aco
