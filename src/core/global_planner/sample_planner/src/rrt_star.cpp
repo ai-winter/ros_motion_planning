@@ -14,34 +14,36 @@
  *
  * ********************************************************
  */
-#include <cmath>
-#include <random>
-
 #include "rrt_star.h"
 
 namespace global_planner
 {
 /**
- * @brief  Constructor
- * @param   costmap   the environment for path planning
- * @param   sample_num  andom sample points
- * @param   max_dist    max distance between sample points
- * @param   r           optimization radius
+ * @brief Construct a new RRTStar object
+ * @param costmap    the environment for path planning
+ * @param sample_num andom sample points
+ * @param max_dist   max distance between sample points
+ * @param r          optimization radius
  */
 RRTStar::RRTStar(costmap_2d::Costmap2D* costmap, int sample_num, double max_dist, double r)
   : RRT(costmap, sample_num, max_dist), r_(r)
 {
 }
+
 /**
- * @brief RRT implementation
- * @param start     start node
- * @param goal      goal node
- * @param expand    containing the node been search during the process
- * @return tuple contatining a bool as to whether a path was found, and the path
+ * @brief RRT star implementation
+ * @param start  start node
+ * @param goal   goal node
+ * @param expand containing the node been search during the process
+ * @return  true if path found, else false
  */
 bool RRTStar::plan(const Node& start, const Node& goal, std::vector<Node>& path, std::vector<Node>& expand)
 {
+  // clear vector
+  path.clear();
+  expand.clear();
   sample_list_.clear();
+
   // copy
   start_ = start, goal_ = goal;
   sample_list_.insert(std::make_pair(start.id(), start));
@@ -54,14 +56,6 @@ bool RRTStar::plan(const Node& start, const Node& goal, std::vector<Node>& path,
   {
     // generate a random node in the map
     Node sample_node = _generateRandomNode();
-
-    // obstacle
-    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
-      continue;
-
-    // visited
-    if (sample_list_.find(sample_node.id()) != sample_list_.end())
-      continue;
 
     // regular the sample node
     Node new_node = _findNearestPoint(sample_list_, sample_node);
@@ -79,6 +73,7 @@ bool RRTStar::plan(const Node& start, const Node& goal, std::vector<Node>& path,
       path = _convertClosedListToPath(sample_list_, start, goal);
       optimized = true;
     }
+
     iteration++;
   }
 
@@ -87,14 +82,15 @@ bool RRTStar::plan(const Node& start, const Node& goal, std::vector<Node>& path,
 
 /**
  * @brief Regular the new node by the nearest node in the sample list
- * @param list     sample list
- * @param node     sample node
+ * @param list sample list
+ * @param node sample node
  * @return nearest node
  */
 Node RRTStar::_findNearestPoint(std::unordered_map<int, Node>& list, Node& node)
 {
   Node nearest_node, new_node(node);
   double min_dist = std::numeric_limits<double>::max();
+
   for (const auto& p : list)
   {
     // calculate distance
@@ -122,46 +118,40 @@ Node RRTStar::_findNearestPoint(std::unordered_map<int, Node>& list, Node& node)
     new_node.set_g(max_dist_ + nearest_node.g());
   }
 
-  // obstacle check
-  if (!_isAnyObstacleInPath(new_node, nearest_node))
+  // already in tree or collide
+  if (list.count(new_node.id()) || _isAnyObstacleInPath(new_node, nearest_node))
+    new_node.set_id(-1);
+  else
   {
     // rewire optimization
     for (auto& p : sample_list_)
     {
-      // inside the optimization circle
       double new_dist = helper::dist(p.second, new_node);
-      if (new_dist < r_)
-      {
-        double cost = p.second.g() + new_dist;
-        // update new sample node's cost and parent
-        if (new_node.g() > cost)
-        {
-          if (!_isAnyObstacleInPath(new_node, p.second))
-          {
-            new_node.set_pid(p.second.id());
-            new_node.set_g(cost);
-          }
-        }
-        else
-        {
-          // update nodes' cost inside the radius
-          cost = new_node.g() + new_dist;
-          if (cost < p.second.g())
-          {
-            if (!_isAnyObstacleInPath(new_node, p.second))
-            {
-              p.second.set_pid(new_node.id());
-              p.second.set_g(cost);
-            }
-          }
-        }
-      }
-      else
+
+      // outside the optimization circle or collide
+      if (new_dist >= r_ || _isAnyObstacleInPath(new_node, p.second))
         continue;
+
+      double cost;
+
+      // update new sample node's cost and parent
+      cost = p.second.g() + new_dist;
+      if (cost < new_node.g())
+      {
+        new_node.set_pid(p.second.id());
+        new_node.set_g(cost);
+      }
+
+      // update nodes' cost inside the radius
+      cost = new_node.g() + new_dist;
+      if (cost < p.second.g())
+      {
+        p.second.set_pid(new_node.id());
+        p.second.set_g(cost);
+      }
     }
   }
-  else
-    new_node.set_id(-1);
+
   return new_node;
 }
 }  // namespace global_planner

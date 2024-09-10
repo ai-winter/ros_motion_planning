@@ -57,28 +57,13 @@ GraphPlanner::GraphPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_r
  */
 void GraphPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmapRos)
 {
-  costmap_ros_ = costmapRos;
-  initialize(name);
-}
-
-/**
- * @brief Planner initialization
- * @param name     planner name
- * @param costmap  costmap pointer
- * @param frame_id costmap frame ID
- */
-void GraphPlanner::initialize(std::string name)
-{
   if (!initialized_)
   {
-    initialized_ = true;
+    costmap_ros_ = costmapRos;
+    frame_id_ = costmap_ros_->getGlobalFrameID();
 
     // initialize ROS node
     ros::NodeHandle private_nh("~/" + name);
-
-    // costmap frame ID
-    frame_id_ = costmap_ros_->getGlobalFrameID();
-
     private_nh.param("obstacle_factor", factor_, 0.5);        // obstacle factor
     private_nh.param("default_tolerance", tolerance_, 0.0);   // error tolerance
     private_nh.param("outline_map", is_outline_, false);      // whether outline the map or not
@@ -136,15 +121,15 @@ void GraphPlanner::initialize(std::string name)
 
     // register planning service
     make_plan_srv_ = private_nh.advertiseService("make_plan", &GraphPlanner::makePlanService, this);
+
+    initialized_ = true;
   }
   else
-  {
     ROS_WARN("This planner has already been initialized, you can't call it twice, doing nothing");
-  }
 }
 
 /**
- * @brief plan a path given start and goal in world map
+ * @brief Plan a path given start and goal in world map
  * @param start start in world map
  * @param goal  goal in world map
  * @param plan  plan
@@ -153,22 +138,9 @@ void GraphPlanner::initialize(std::string name)
 bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
                             std::vector<geometry_msgs::PoseStamped>& plan)
 {
-  return makePlan(start, goal, tolerance_, plan);
-}
-
-/**
- * @brief Plan a path given start and goal in world map
- * @param start     start in world map
- * @param goal      goal in world map
- * @param plan      plan
- * @param tolerance error tolerance
- * @return true if find a path successfully, else false
- */
-bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
-                            double tolerance, std::vector<geometry_msgs::PoseStamped>& plan)
-{
   // start thread mutex
   std::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*g_planner_->getCostMap()->getMutex());
+
   if (!initialized_)
   {
     ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
@@ -271,9 +243,15 @@ bool GraphPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geome
       geometry_msgs::PoseStamped goalCopy = goal;
       goalCopy.header.stamp = ros::Time::now();
       plan.push_back(goalCopy);
+      history_plan_ = plan;
     }
     else
       ROS_ERROR("Failed to get a plan from path when a legal path was found. This shouldn't happen.");
+  }
+  else if (history_plan_.size() > 0)
+  {
+    plan = history_plan_;
+    ROS_WARN("Using history path.");
   }
   else
     ROS_ERROR("Failed to get a path.");
@@ -316,14 +294,12 @@ void GraphPlanner::publishPlan(const std::vector<geometry_msgs::PoseStamped>& pl
  * @brief Regeister planning service
  * @param req  request from client
  * @param resp response from server
- * @return true
  */
 bool GraphPlanner::makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::GetPlan::Response& resp)
 {
   makePlan(req.start, req.goal, resp.plan.poses);
   resp.plan.header.stamp = ros::Time::now();
   resp.plan.header.frame_id = frame_id_;
-
   return true;
 }
 

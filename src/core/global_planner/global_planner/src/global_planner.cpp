@@ -143,7 +143,7 @@ std::vector<Node> GlobalPlanner::_convertClosedListToPath(std::unordered_map<int
   auto current = closed_list.find(goal.id());
   while (current->second != start)
   {
-    path.emplace_back(current->second.x(), current->second.y());
+    path.push_back(current->second);
 
     auto it = closed_list.find(current->second.pid());
     if (it != closed_list.end())

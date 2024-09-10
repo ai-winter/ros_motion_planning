@@ -55,12 +55,6 @@ public:
   void initialize(std::string name, costmap_2d::Costmap2DROS* costmapRos);
 
   /**
-   * @brief Planner initialization
-   * @param name planner name
-   */
-  void initialize(std::string name);
-
-  /**
    * @brief Plan a path given start and goal in world map
    * @param start start in world map
    * @param goal  goal in world map
@@ -68,17 +62,6 @@ public:
    * @return true if find a path successfully, else false
    */
   bool makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
-                std::vector<geometry_msgs::PoseStamped>& plan);
-
-  /**
-   * @brief Plan a path given start and goal in world map
-   * @param start     start in world map
-   * @param goal      goal in world map
-   * @param plan      plan
-   * @param tolerance error tolerance
-   * @return true if find a path successfully, else false
-   */
-  bool makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal, double tolerance,
                 std::vector<geometry_msgs::PoseStamped>& plan);
 
   /**
@@ -120,12 +103,13 @@ protected:
   ros::ServiceServer make_plan_srv_;                          // planning service
 
 private:
-  bool is_outline_;         // whether outline the boudary of map
-  bool is_expand_;          // whether publish expand map or not
-  bool is_voronoi_map_;     // whether to store Voronoi map or not
-  double tolerance_;        // tolerance
-  double factor_;           // obstacle inflation factor
-  DynamicVoronoi voronoi_;  // dynamic voronoi map
+  bool is_outline_;                                       // whether outline the boudary of map
+  bool is_expand_;                                        // whether publish expand map or not
+  bool is_voronoi_map_;                                   // whether to store Voronoi map or not
+  double tolerance_;                                      // tolerance
+  double factor_;                                         // obstacle inflation factor
+  DynamicVoronoi voronoi_;                                // dynamic voronoi map
+  std::vector<geometry_msgs::PoseStamped> history_plan_;  // history plan
 };
 }  // namespace graph_planner
 #endif
