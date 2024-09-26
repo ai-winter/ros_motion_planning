@@ -24,30 +24,28 @@ namespace rmp
 namespace path_planner
 {
 /**
- * @brief Construct a new RRTStar object
- * @param costmap    the environment for path planning
- * @param sample_num andom sample points
- * @param max_dist   max distance between sample points
- * @param r          optimization radius
+ * @brief  Constructor
+ * @param   costmap   the environment for path planning
+ * @param   sample_num  andom sample points
+ * @param   max_dist    max distance between sample points
+ * @param   r           optimization radius
  */
 RRTStarPathPlanner::RRTStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num, double max_dist, double r)
   : RRTPathPlanner(costmap_ros, sample_num, max_dist), r_(r)
 {
 }
-
 /**
- * @brief RRT star implementation
- * @param start  start node
- * @param goal   goal node
- * @param expand containing the node been search during the process
- * @return  true if path found, else false
+ * @brief RRT implementation
+ * @param start     start node
+ * @param goal      goal node
+ * @param expand    containing the node been search during the process
+ * @return tuple contatining a bool as to whether a path was found, and the path
  */
 bool RRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
   path.clear();
   expand.clear();
   sample_list_.clear();
-
   // copy
   start_.set_x(start.x());
   start_.set_y(start.y());
@@ -65,6 +63,14 @@ bool RRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3
   {
     // generate a random node in the map
     Node sample_node = _generateRandomNode();
+
+    // obstacle
+    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
+      continue;
+
+    // visited
+    if (sample_list_.find(sample_node.id()) != sample_list_.end())
+      continue;
 
     // regular the sample node
     Node new_node = _findNearestPoint(sample_list_, sample_node);
@@ -87,7 +93,6 @@ bool RRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3
       }
       optimized = true;
     }
-
     iteration++;
   }
 
@@ -96,15 +101,14 @@ bool RRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3
 
 /**
  * @brief Regular the new node by the nearest node in the sample list
- * @param list sample list
- * @param node sample node
+ * @param list     sample list
+ * @param node     sample node
  * @return nearest node
  */
 RRTStarPathPlanner::Node RRTStarPathPlanner::_findNearestPoint(std::unordered_map<int, Node>& list, Node& node)
 {
   Node nearest_node, new_node(node);
   double min_dist = std::numeric_limits<double>::max();
-
   for (const auto& p : list)
   {
     // calculate distance
@@ -132,10 +136,8 @@ RRTStarPathPlanner::Node RRTStarPathPlanner::_findNearestPoint(std::unordered_ma
     new_node.set_g(max_dist_ + nearest_node.g());
   }
 
-  // already in tree or collide
-  if (list.count(new_node.id()) || _isAnyObstacleInPath(new_node, nearest_node))
-    new_node.set_id(-1);
-  else
+  // obstacle check
+  if (!_isAnyObstacleInPath(new_node, nearest_node))
   {
     // rewire optimization
     for (auto& p : sample_list_)
@@ -144,20 +146,36 @@ RRTStarPathPlanner::Node RRTStarPathPlanner::_findNearestPoint(std::unordered_ma
       double new_dist = std::hypot(p.second.x() - new_node.x(), p.second.y() - new_node.y());
       if (new_dist < r_)
       {
-        new_node.set_pid(p.second.id());
-        new_node.set_g(cost);
+        double cost = p.second.g() + new_dist;
+        // update new sample node's cost and parent
+        if (new_node.g() > cost)
+        {
+          if (!_isAnyObstacleInPath(new_node, p.second))
+          {
+            new_node.set_pid(p.second.id());
+            new_node.set_g(cost);
+          }
+        }
+        else
+        {
+          // update nodes' cost inside the radius
+          cost = new_node.g() + new_dist;
+          if (cost < p.second.g())
+          {
+            if (!_isAnyObstacleInPath(new_node, p.second))
+            {
+              p.second.set_pid(new_node.id());
+              p.second.set_g(cost);
+            }
+          }
+        }
       }
-
-      // update nodes' cost inside the radius
-      cost = new_node.g() + new_dist;
-      if (cost < p.second.g())
-      {
-        p.second.set_pid(new_node.id());
-        p.second.set_g(cost);
-      }
+      else
+        continue;
     }
   }
-
+  else
+    new_node.set_id(-1);
   return new_node;
 }
 }  // namespace path_planner

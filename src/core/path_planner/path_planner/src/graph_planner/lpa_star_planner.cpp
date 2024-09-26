@@ -28,7 +28,7 @@ constexpr int win_size = 70;
 
 /**
  * @brief Construct a new LPAStar object
- * @param costmap the environment for path planning
+ * @param costmap   the environment for path planning
  */
 LPAStarPathPlanner::LPAStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros) : PathPlanner(costmap_ros)
 {
@@ -52,14 +52,11 @@ LPAStarPathPlanner::~LPAStarPathPlanner()
  */
 void LPAStarPathPlanner::initMap()
 {
-  auto nx = costmap_->getSizeInCellsX();
-  auto ny = costmap_->getSizeInCellsY();
-
-  map_ = new LNodePtr*[nx];
-  for (int i = 0; i < nx; i++)
+  map_ = new LNodePtr*[costmap_->getSizeInCellsX()];
+  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
   {
-    map_[i] = new LNodePtr[ny];
-    for (int j = 0; j < ny; j++)
+    map_[i] = new LNodePtr[costmap_->getSizeInCellsY()];
+    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
     {
       map_[i][j] =
           new LNode(i, j, std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), grid2Index(i, j), -1,
@@ -74,16 +71,13 @@ void LPAStarPathPlanner::initMap()
  */
 void LPAStarPathPlanner::reset()
 {
-  auto nx = costmap_->getSizeInCellsX();
-  auto ny = costmap_->getSizeInCellsY();
-
   open_list_.clear();
 
-  for (int i = 0; i < nx; i++)
-    for (int j = 0; j < ny; j++)
+  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
+    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
       delete map_[i][j];
 
-  for (int i = 0; i < nx; i++)
+  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
     delete[] map_[i];
 
   delete[] map_;
@@ -114,8 +108,8 @@ double LPAStarPathPlanner::calculateKey(LNodePtr s)
 
 /**
  * @brief Check if there is collision between n1 and n2
- * @param n1 LNode pointer of one LNode
- * @param n2 LNode pointer of the other LNode
+ * @param n1 DNode pointer of one DNode
+ * @param n2 DNode pointer of the other DNode
  * @return true if collision, else false
  */
 bool LPAStarPathPlanner::isCollision(LNodePtr n1, LNodePtr n2)
@@ -126,28 +120,25 @@ bool LPAStarPathPlanner::isCollision(LNodePtr n1, LNodePtr n2)
 
 /**
  * @brief Get neighbour LNodePtrs of nodePtr
- * @param node_ptr   LNode to expand
+ * @param node_ptr   DNode to expand
  * @param neighbours neigbour LNodePtrs in vector
  */
 void LPAStarPathPlanner::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
 {
-  auto nx = costmap_->getSizeInCellsX();
-  auto ny = costmap_->getSizeInCellsY();
-
-  int x = node_ptr->x(), y = node_ptr->y();
-  for (int i = -1; i <= 1; i++)
+  int x = u->x(), y = u->y();
+  for (int i = -1; i <= 1; ++i)
   {
-    for (int j = -1; j <= 1; j++)
+    for (int j = -1; j <= 1; ++j)
     {
       if (i == 0 && j == 0)
         continue;
 
       int x_n = x + i, y_n = y + j;
-      if (x_n < 0 || x_n >= nx || y_n < 0 || y_n >= ny)
+      if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
         continue;
-
       LNodePtr neigbour_ptr = map_[x_n][y_n];
-      if (isCollision(node_ptr, neigbour_ptr))
+
+      if (isCollision(u, neigbour_ptr))
         continue;
 
       neighbours.push_back(neigbour_ptr);
@@ -212,7 +203,7 @@ void LPAStarPathPlanner::updateVertex(LNodePtr u)
  */
 void LPAStarPathPlanner::computeShortestPath()
 {
-  while (true)
+  while (1)
   {
     if (open_list_.empty())
       break;
@@ -247,6 +238,7 @@ void LPAStarPathPlanner::computeShortestPath()
 
 /**
  * @brief Extract path for map
+ *
  * @param start start node
  * @param goal  goal node
  * @return flag true if extract successfully else do not
@@ -374,7 +366,9 @@ bool LPAStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3
           getNeighbours(u, neigbours);
           updateVertex(u);
           for (LNodePtr s : neigbours)
+          {
             updateVertex(s);
+          }
         }
       }
     }

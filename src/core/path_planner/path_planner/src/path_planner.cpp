@@ -23,16 +23,6 @@ namespace rmp
 namespace path_planner
 {
 /**
- * @brief Construct a new Global Planner object
- * @param costmap the environment for path planning
- */
-GlobalPlanner::GlobalPlanner(costmap_2d::Costmap2D* costmap) : factor_(0.5f), map_size_{ 0 }
-{
-  costmap_ = costmap;
-  map_size_ = static_cast<int>(costmap->getSizeInCellsX() * costmap->getSizeInCellsY());
-}
-
-/**
  * @brief Set or reset obstacle factor
  * @param factor obstacle factor
  */
@@ -125,18 +115,14 @@ void PathPlanner::outlineMap()
   auto nx = costmap_->getSizeInCellsX();
   auto ny = costmap_->getSizeInCellsY();
   auto pc = costmap_->getCharMap();
-
   for (int i = 0; i < nx; i++)
     *pc++ = costmap_2d::LETHAL_OBSTACLE;
-
   pc = costmap_->getCharMap() + (ny - 1) * nx;
   for (int i = 0; i < nx; i++)
     *pc++ = costmap_2d::LETHAL_OBSTACLE;
-
   pc = costmap_->getCharMap();
   for (int i = 0; i < ny; i++, pc += nx)
     *pc = costmap_2d::LETHAL_OBSTACLE;
-
   pc = costmap_->getCharMap() + nx - 1;
   for (int i = 0; i < ny; i++, pc += nx)
     *pc = costmap_2d::LETHAL_OBSTACLE;

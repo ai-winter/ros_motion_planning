@@ -24,7 +24,7 @@ namespace path_planner
 {
 /**
  * @brief Constructor
- * @param costmap the environment for path planning
+ * @param costmap   the environment for path planning
  */
 JPSPathPlanner::JPSPathPlanner(costmap_2d::Costmap2DROS* costmap_ros) : PathPlanner(costmap_ros)
 {
@@ -32,10 +32,10 @@ JPSPathPlanner::JPSPathPlanner(costmap_2d::Costmap2DROS* costmap_ros) : PathPlan
 
 /**
  * @brief Jump Point Search(JPS) implementation
- * @param start  start node
- * @param goal   goal node
- * @param expand containing the node been search during the process
- * @return true if path found, else false
+ * @param start          start node
+ * @param goal           goal node
+ * @param expand         containing the node been search during the process
+ * @return tuple contatining a bool as to whether a path was found, and the path
  */
 bool JPSPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
@@ -63,8 +63,8 @@ bool JPSPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
     auto current = open_list.top();
     open_list.pop();
 
-    // current node exist in closed list, continue
-    if (closed_list.count(current.id()))
+    // current node do not exist in closed list
+    if (closed_list.find(current.id()) != closed_list.end())
       continue;
 
     closed_list.insert(std::make_pair(current.id(), current));
@@ -86,8 +86,8 @@ bool JPSPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
     {
       auto node_new = jump(current, motion);
 
-      // node_new not exits or in closed list, continue
-      if (node_new.id() == -1 || closed_list.count(node_new.id()))
+      // node_new not exits or in closed list
+      if (node_new.id() == -1 || closed_list.find(node_new.id()) != closed_list.end())
         continue;
 
       node_new.set_pid(current.id());

@@ -33,27 +33,27 @@ private:
 
 public:
   /**
-   * @brief Construct a new RRTStar object
-   * @param costmap    the environment for path planning
-   * @param sample_num andom sample points
-   * @param max_dist   max distance between sample points
-   * @param r          optimization radius
+   * @brief  Constructor
+   * @param   costmap   the environment for path planning
+   * @param   sample_num  andom sample points
+   * @param   max_dist    max distance between sample points
+   * @param   r           optimization radius
    */
   RRTStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num, double max_dist, double r);
   /**
-   * @brief RRT star implementation
-   * @param start  start node
-   * @param goal   goal node
-   * @param expand containing the node been search during the process
-   * @return  true if path found, else false
+   * @brief RRT implementation
+   * @param start     start node
+   * @param goal      goal node
+   * @param expand    containing the node been search during the process
+   * @return tuple contatining a bool as to whether a path was found, and the path
    */
   bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);
 
 protected:
   /**
    * @brief Regular the new node by the nearest node in the sample list
-   * @param list sample list
-   * @param node sample node
+   * @param list     sample list
+   * @param node     sample node
    * @return nearest node
    */
   Node _findNearestPoint(std::unordered_map<int, Node>& list, Node& node);

@@ -86,7 +86,7 @@ private:
 public:
   /**
    * @brief Construct a new DStar object
-   * @param costmap the environment for path planning
+   * @param costmap   the environment for path planning
    */
   DStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
 

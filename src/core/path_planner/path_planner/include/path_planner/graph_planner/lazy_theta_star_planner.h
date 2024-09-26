@@ -34,21 +34,28 @@ private:
 public:
   /**
    * @brief Construct a new LaztThetaStar object
-   * @param costmap the environment for path planning
+   * @param costmap   the environment for path planning
    */
   LazyThetaStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Lazy Theta* implementation
-   * @param start  start node
-   * @param goal   goal node
-   * @param path   optimal path consists of Node
-   * @param expand containing the node been search during the process
+   * @param start         start node
+   * @param goal          goal node
+   * @param path          optimal path consists of Node
+   * @param expand        containing the node been search during the process
    * @return  true if path found, else false
    */
   bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);
 
 protected:
+  /**
+   * @brief update the g value of child node
+   * @param parent
+   * @param child
+   */
+  void _updateVertex(const Node& parent, Node& child);
+
   /**
    * @brief check if the parent of vertex need to be updated. if so, update it
    * @param node

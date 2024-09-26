@@ -23,10 +23,10 @@ namespace rmp
 namespace path_planner
 {
 /**
- * @brief Construct a new RRTConnect object
- * @param costmap    the environment for path planning
- * @param sample_num andom sample points
- * @param max_dist   max distance between sample points
+ * @brief  Constructor
+ * @param   costmap   the environment for path planning
+ * @param   sample_num  andom sample points
+ * @param   max_dist    max distance between sample points
  */
 RRTConnectPathPlanner::RRTConnectPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num, double max_dist)
   : RRTPathPlanner(costmap_ros, sample_num, max_dist)
@@ -34,11 +34,11 @@ RRTConnectPathPlanner::RRTConnectPathPlanner(costmap_2d::Costmap2DROS* costmap_r
 }
 
 /**
- * @brief RRT connect implementation
- * @param start  start node
- * @param goal   goal node
- * @param expand containing the node been search during the process
- * @return  true if path found, else false
+ * @brief RRT-Connect implementation
+ * @param start     start node
+ * @param goal      goal node
+ * @param expand    containing the node been search during the process
+ * @return tuple contatining a bool as to whether a path was found, and the path
  */
 bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
@@ -46,7 +46,6 @@ bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
   expand.clear();
   sample_list_f_.clear();
   sample_list_b_.clear();
-
   // copy
   start_.set_x(start.x());
   start_.set_y(start.y());
@@ -66,6 +65,14 @@ bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
     // generate a random node in the map
     Node sample_node = _generateRandomNode();
 
+    // obstacle
+    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
+      continue;
+
+    // visited
+    if (sample_list_.find(sample_node.id()) != sample_list_.end())
+      continue;
+
     // regular the sample node
     Node new_node = _findNearestPoint(sample_list_f_, sample_node);
     if (new_node.id() == -1)
@@ -77,15 +84,8 @@ bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
       sample_list_f_.insert(std::make_pair(new_node.id(), new_node));
       expand.emplace_back(new_node.x(), new_node.y(), new_node.pid());
       // backward exploring
-      Node new_node_b = _findNearestPoint(sample_list_b_, new_node_f);
-      if (new_node_b.id() == -1)
-        continue;
-
-      sample_list_b_.insert(std::make_pair(new_node_b.id(), new_node_b));
-      expand.push_back(new_node_b);
-
-      // greedy extending
-      while (true)
+      Node new_node_b = _findNearestPoint(sample_list_b_, new_node);
+      if (new_node_b.id() != -1)
       {
         sample_list_b_.insert(std::make_pair(new_node_b.id(), new_node_b));
         expand.emplace_back(new_node_b.x(), new_node_b.y(), new_node_b.pid());
@@ -130,53 +130,53 @@ bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
 
     iteration++;
   }
-
   return false;
 }
 
 /**
- * @brief Convert closed list to path
- * @param boundary connected node that the boudary of forward and backward
- * @return vector containing path nodes
+ * @brief convert closed list to path
+ * @param boundary  connected node that the boudary of forward and backward
+ * @return ector containing path nodes
  */
 std::vector<RRTConnectPathPlanner::Node> RRTConnectPathPlanner::_convertClosedListToPath(const Node& boundary)
 {
-  if (!sample_list_f_.count(start_.id()))
+  if (sample_list_f_.find(start_.id()) == sample_list_.end())
     std::swap(sample_list_f_, sample_list_b_);
 
   std::vector<Node> path;
 
+  // backward
+  std::vector<Node> path_b;
   auto current = sample_list_b_.find(boundary.id());
   while (current->second != goal_)
   {
-    path.push_back(current->second);
-
+    path_b.push_back(current->second);
     auto it = sample_list_b_.find(current->second.pid());
     if (it != sample_list_b_.end())
       current = it;
     else
       return {};
   }
-  path.push_back(goal_);
+  path_b.push_back(goal_);
 
-  std::reverse(path.begin(), path.end());
+  // forward
+  for (auto rit = path_b.rbegin(); rit != path_b.rend(); rit++)
+    path.push_back(*rit);
 
   current = sample_list_f_.find(boundary.id());
   while (current->second != start_)
   {
-    path.push_back(current->second);
-
     auto it = sample_list_f_.find(current->second.pid());
     if (it != sample_list_f_.end())
+    {
       current = it;
+    }
     else
     {
       return {};
     }
     path.push_back(current->second);
   }
-
-  path.push_back(start_);
 
   return path;
 }

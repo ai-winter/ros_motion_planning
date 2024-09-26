@@ -14,6 +14,7 @@
  *
  * ********************************************************
  */
+#include <cmath>
 #include <random>
 #include <omp.h>
 
@@ -24,15 +25,9 @@ namespace rmp
 namespace path_planner
 {
 /**
- * @brief Construct a quick informed new RRTStar object
- * @param costmap    the environment for path planning
- * @param sample_num andom sample points
- * @param max_dist   max distance between sample points
- * @param r          optimization radius
- * @param r_set      radius of priority circles set
- * @param n_threads  parallel rewire process
- * @param d_extend   increased distance of adaptive extend step size
- * @param t_freedom  freedom of t distribution
+ * @brief  Constructor
+ * @param   costmap   the environment for path planning
+ * @param   max_dist    max distance between sample points
  */
 QuickInformedRRTStarPathPlanner::QuickInformedRRTStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num,
                                                                  double max_dist, double r, double r_set, int n_threads,
@@ -47,11 +42,11 @@ QuickInformedRRTStarPathPlanner::QuickInformedRRTStarPathPlanner(costmap_2d::Cos
 }
 
 /**
- * @brief Quick informed RRT star implementation
- * @param start  start node
- * @param goal   goal node
- * @param expand containing the node been search during the process
- * @return true if path found, else false
+ * @brief Informed RRT* implementation
+ * @param start     start node
+ * @param goal      goal node
+ * @param expand    containing the node been search during the process
+ * @return tuple contatining a bool as to whether a path was found, and the path
  */
 bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
@@ -61,7 +56,7 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
   c_best_ = std::numeric_limits<double>::max();
   c_min_ = std::hypot(start.x() - goal.x(), start.y() - goal.y());
   int best_parent = -1;
-
+  sample_list_.clear();
   // copy
   start_.set_x(start.x());
   start_.set_y(start.y());
@@ -75,7 +70,6 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
   // adaptive sampling bias
   double dist_s2g = c_min_;
   double dist_m2g = dist_s2g * 0.95;
-
   // priority circles set
   double mu = 0.0;
   int mu_cnt = 0;
@@ -85,11 +79,21 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
   std::vector<Node> nodes;
   while (iteration < sample_num_)
   {
+    iteration++;
+
     // update probability of sampling bias
     opti_sample_p_ = std::min(0.75, 1 - dist_m2g / dist_s2g);
 
     // generate a random node in the map
     Node sample_node = _generateRandomNode(mu, nodes);
+
+    // obstacle
+    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
+      continue;
+
+    // visited
+    if (sample_list_.find(sample_node.id()) != sample_list_.end())
+      continue;
 
     // regular the sample node
     Node new_node = _findNearestPoint(sample_list_, sample_node);
@@ -103,18 +107,16 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
 
     auto dist_ = std::hypot(new_node.x() - goal_.x(), new_node.y() - goal_.y());
     // update min dist from tree to goal
-    if (dist < dist_m2g)
-      dist_m2g = dist;
-
+    if (dist_ < dist_m2g)
+      dist_m2g = dist_;
     // goal found
-    if (dist <= max_dist_ && !_isAnyObstacleInPath(new_node, goal_))
+    if (dist_ <= max_dist_ && !_isAnyObstacleInPath(new_node, goal_))
     {
-      double cost = dist + new_node.g();
+      double cost = dist_ + new_node.g();
       if (cost < c_best_)
       {
         best_parent = new_node.id();
         c_best_ = cost;
-
         // update path
         Node goal_star(goal_.x(), goal_.y(), c_best_, 0, grid2Index(goal_.x(), goal_.y()), best_parent);
         sample_list_.insert(std::make_pair(goal_star.id(), goal_star));
@@ -129,8 +131,6 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
       if (mu_cnt % 100 == 0)
         mu = std::fmax(0, mu - 0.5);
     }
-
-    iteration++;
   }
 
   if (best_parent != -1)
@@ -151,21 +151,19 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
 
 /**
  * @brief Generates a random node
- * @return generated node
- * @param mu
- * @param path
+ * @return Generated node
  */
 QuickInformedRRTStarPathPlanner::Node QuickInformedRRTStarPathPlanner::_generateRandomNode(int mu,
                                                                                            std::vector<Node> path)
 {
   std::random_device rd;
   std::mt19937 eng(rd());
-  std::student_t_distribution<> t_distr(t_freedom_);
+  std::student_t_distribution<> t_distr(t_distr_freedom_);
 
   if (std::abs(t_distr(eng)) < mu && path.size() != 0)  // sample in priority circles
   {
     int wc = rand() % path.size();
-    std::uniform_real_distribution<float> p(-r_set_, r_set_);
+    std::uniform_real_distribution<float> p(-set_r_, set_r_);
     int cx = path[wc].x() + p(eng);
     int cy = path[wc].y() + p(eng);
     return Node(cx, cy, 0, 0, grid2Index(cx, cy), 0);
@@ -199,8 +197,8 @@ QuickInformedRRTStarPathPlanner::Node QuickInformedRRTStarPathPlanner::_generate
 
 /**
  * @brief Regular the new node by the nearest node in the sample list
- * @param list sample list
- * @param node sample node
+ * @param list     sample list
+ * @param node     sample node
  * @return nearest node
  */
 QuickInformedRRTStarPathPlanner::Node
@@ -236,53 +234,60 @@ QuickInformedRRTStarPathPlanner::_findNearestPoint(std::unordered_map<int, Node>
     new_node.set_g(max_dist_ + nearest_node.g());
   }
 
-  // already in tree or collide
-  if (list.count(new_node.id()) || _isAnyObstacleInPath(new_node, nearest_node))
-    new_node.set_id(-1);
-  else
+  // obstacle check
+  if (!_isAnyObstacleInPath(new_node, nearest_node))
   {
-    max_dist_ += d_extend_;
+    max_dist_ += step_extend_d_;
 
     // parallel rewire optimization
     std::vector<int> v_iters;
-    for (auto& p : sample_list_)
+    for (auto p : sample_list_)
     {
       v_iters.push_back(p.first);
     }
 
-#pragma omp parallel for num_threads(n_threads_)
+#pragma omp parallel for num_threads(rewire_threads_)
     for (int i = 0; i < v_iters.size(); i++)
     {
       auto& p = sample_list_[v_iters[i]];
-
       // inside the optimization circle
       double new_dist = std::hypot(p.x() - new_node.x(), p.y() - new_node.y());
       if (new_dist > r_)
         continue;
 
-#pragma omp critical
-      // other thread may update new_node.g() or p.g()
+      double cost = p.g() + new_dist;
+      // update new sample node's cost and parent
+      if (new_node.g() > cost)
       {
-        double cost;
-        // update new sample node's cost and parent
-        cost = p.g() + new_dist;
-        if (new_node.g() > cost)
+        if (!_isAnyObstacleInPath(new_node, p))
         {
-          new_node.set_pid(p.id());
-          new_node.set_g(cost);
+          // other thread may update new_node.g()
+#pragma omp critical
+          if (new_node.g() > cost)
+          {
+            new_node.set_pid(p.id());
+            new_node.set_g(cost);
+          }
         }
-
+      }
+      else
+      {
         // update nodes' cost inside the radius
         cost = new_node.g() + new_dist;
         if (cost < p.g())
-        {
-          p.set_pid(new_node.id());
-          p.set_g(cost);
-        }
+          if (!_isAnyObstacleInPath(new_node, p))
+          {
+            p.set_pid(new_node.id());
+            p.set_g(cost);
+          }
       }
     }
   }
-
+  else
+  {
+    max_dist_ = recover_max_dist_;
+    new_node.set_id(-1);
+  }
   return new_node;
 }
 }  // namespace path_planner

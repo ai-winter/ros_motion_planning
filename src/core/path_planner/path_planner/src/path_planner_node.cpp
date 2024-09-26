@@ -411,7 +411,7 @@ bool PathPlannerNode::makePlan(const geometry_msgs::PoseStamped& start, const ge
       {
         origin_plan.emplace_back(pt.pose.position.x, pt.pose.position.y);
       }
-
+    
       // visualization
       const auto& visualizer = rmp::common::util::VisualizerPtr::Instance();
       // publish visulization plan

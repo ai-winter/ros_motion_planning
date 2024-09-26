@@ -14,6 +14,7 @@
  *
  * ********************************************************
  */
+#include <cmath>
 #include <random>
 
 #include "path_planner/sample_planner/rrt_planner.h"
@@ -23,10 +24,10 @@ namespace rmp
 namespace path_planner
 {
 /**
- * @brief Construct a new RRT object
- * @param costmap    the environment for path planning
- * @param sample_num andom sample points
- * @param max_dist   max distance between sample points
+ * @brief  Constructor
+ * @param   costmap   the environment for path planning
+ * @param   sample_num  andom sample points
+ * @param   max_dist    max distance between sample points
  */
 RRTPathPlanner::RRTPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num, double max_dist)
   : PathPlanner(costmap_ros), sample_num_(sample_num), max_dist_(max_dist)
@@ -35,15 +36,14 @@ RRTPathPlanner::RRTPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample
 
 /**
  * @brief RRT implementation
- * @param start  start node
- * @param goal   goal node
- * @param path   optimal path consists of Node
- * @param expand containing the node been search during the process
+ * @param start         start node
+ * @param goal          goal node
+ * @param path          optimal path consists of Node
+ * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
 bool RRTPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
-  // clear vector
   path.clear();
   expand.clear();
   sample_list_.clear();
@@ -64,6 +64,14 @@ bool RRTPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
   {
     // generate a random node in the map
     Node sample_node = _generateRandomNode();
+
+    // obstacle
+    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
+      continue;
+
+    // visited
+    if (sample_list_.find(sample_node.id()) != sample_list_.end())
+      continue;
 
     // regular the sample node
     Node new_node = _findNearestPoint(sample_list_, sample_node);
@@ -87,25 +95,21 @@ bool RRTPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
     }
     iteration++;
   }
-
   return false;
 }
 
 /**
  * @brief Generates a random node
- * @return generated node
+ * @return Generated node
  */
 RRTPathPlanner::Node RRTPathPlanner::_generateRandomNode()
 {
   // obtain a random number from hardware
   std::random_device rd;
-
   // seed the generator
   std::mt19937 eng(rd());
-
   // define the range
   std::uniform_real_distribution<float> p(0, 1);
-
   // heuristic
   if (p(eng) > opti_sample_p_)
   {
@@ -114,16 +118,16 @@ RRTPathPlanner::Node RRTPathPlanner::_generateRandomNode()
     const int id = distr(eng);
     int x, y;
     index2Grid(id, x, y);
-    return Node(x, y, 0, 0, id, -1);
+    return Node(x, y, 0, 0, id, 0);
   }
   else
-    return Node(goal_.x(), goal_.y(), 0, 0, goal_.id(), -1);
+    return Node(goal_.x(), goal_.y(), 0, 0, goal_.id(), 0);
 }
 
 /**
- * @brief Regular the new node by the nearest node in the sample list
- * @param list sample list
- * @param node sample node
+ * @brief Regular the sample node by the nearest node in the sample list
+ * @param list  samplee list
+ * @param node  sample node
  * @return nearest node
  */
 RRTPathPlanner::Node RRTPathPlanner::_findNearestPoint(std::unordered_map<int, Node>& list, const Node& node)
@@ -158,8 +162,8 @@ RRTPathPlanner::Node RRTPathPlanner::_findNearestPoint(std::unordered_map<int, N
     new_node.set_g(max_dist_ + nearest_node.g());
   }
 
-  // already in tree or collide
-  if (list.count(new_node.id()) || _isAnyObstacleInPath(new_node, nearest_node))
+  // obstacle check
+  if (_isAnyObstacleInPath(new_node, nearest_node))
     new_node.set_id(-1);
 
   return new_node;
@@ -167,8 +171,8 @@ RRTPathPlanner::Node RRTPathPlanner::_findNearestPoint(std::unordered_map<int, N
 
 /**
  * @brief Check if there is any obstacle between the 2 nodes.
- * @param n1 Node 1
- * @param n2 Node 2
+ * @param n1        Node 1
+ * @param n2        Node 2
  * @return bool value of whether obstacle exists between nodes
  */
 bool RRTPathPlanner::_isAnyObstacleInPath(const Node& n1, const Node& n2)
@@ -177,12 +181,12 @@ bool RRTPathPlanner::_isAnyObstacleInPath(const Node& n1, const Node& n2)
   double dist_ = std::hypot(n1.x() - n2.x(), n1.y() - n2.y());
 
   // distance longer than the threshold
-  if (dist > max_dist_)
+  if (dist_ > max_dist_)
     return true;
 
   // sample the line between two nodes and check obstacle
   float resolution = costmap_->getResolution();
-  int n_step = static_cast<int>(dist / resolution);
+  int n_step = static_cast<int>(dist_ / resolution);
   for (int i = 0; i < n_step; i++)
   {
     float line_x = static_cast<float>(n1.x() + i * resolution * cos(theta));
@@ -191,13 +195,12 @@ bool RRTPathPlanner::_isAnyObstacleInPath(const Node& n1, const Node& n2)
         costmap_2d::LETHAL_OBSTACLE * factor_)
       return true;
   }
-
   return false;
 }
 
 /**
  * @brief Check if goal is reachable from current node
- * @param new_node current node
+ * @param new_node Current node
  * @return bool value of whether goal is reachable from current node
  */
 bool RRTPathPlanner::_checkGoal(const Node& new_node)
@@ -208,11 +211,10 @@ bool RRTPathPlanner::_checkGoal(const Node& new_node)
 
   if (!_isAnyObstacleInPath(new_node, goal_))
   {
-    Node goal(goal_.x(), goal_.y(), dist + new_node.g(), 0, grid2Index(goal_.x(), goal_.y()), new_node.id());
+    Node goal(goal_.x(), goal_.y(), dist_ + new_node.g(), 0, grid2Index(goal_.x(), goal_.y()), new_node.id());
     sample_list_.insert(std::make_pair(goal.id(), goal));
     return true;
   }
-
   return false;
 }
 }  // namespace path_planner

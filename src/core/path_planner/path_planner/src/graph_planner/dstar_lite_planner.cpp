@@ -52,14 +52,11 @@ DStarLitePathPlanner::~DStarLitePathPlanner()
  */
 void DStarLitePathPlanner::initMap()
 {
-  auto nx = costmap_->getSizeInCellsX();
-  auto ny = costmap_->getSizeInCellsY();
-
-  map_ = new LNodePtr*[nx];
-  for (int i = 0; i < nx; i++)
+  map_ = new LNodePtr*[costmap_->getSizeInCellsX()];
+  for (int i = 0; i < costmap_->getSizeInCellsX(); i++)
   {
-    map_[i] = new LNodePtr[ny];
-    for (int j = 0; j < ny; j++)
+    map_[i] = new LNodePtr[costmap_->getSizeInCellsY()];
+    for (int j = 0; j < costmap_->getSizeInCellsY(); j++)
     {
       map_[i][j] =
           new LNode(i, j, std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), grid2Index(i, j), -1,
@@ -74,17 +71,14 @@ void DStarLitePathPlanner::initMap()
  */
 void DStarLitePathPlanner::reset()
 {
-  auto nx = costmap_->getSizeInCellsX();
-  auto ny = costmap_->getSizeInCellsY();
-
   open_list_.clear();
   km_ = 0.0;
 
-  for (int i = 0; i < nx; i++)
-    for (int j = 0; j < ny; j++)
+  for (int i = 0; i < costmap_->getSizeInCellsX(); i++)
+    for (int j = 0; j < costmap_->getSizeInCellsY(); j++)
       delete map_[i][j];
 
-  for (int i = 0; i < nx; i++)
+  for (int i = 0; i < costmap_->getSizeInCellsX(); i++)
     delete[] map_[i];
 
   delete[] map_;
@@ -94,6 +88,7 @@ void DStarLitePathPlanner::reset()
 
 /**
  * @brief Get heuristics between n1 and n2
+ *
  * @param n1  LNode pointer of on LNode
  * @param n2  LNode pointer of the other LNode
  * @return heuristics between n1 and n2
@@ -105,6 +100,7 @@ double DStarLitePathPlanner::getH(LNodePtr n1, LNodePtr n2)
 
 /**
  * @brief Calculate the key of s
+ *
  * @param s LNode pointer
  * @return the key value
  */
@@ -115,8 +111,9 @@ double DStarLitePathPlanner::calculateKey(LNodePtr s)
 
 /**
  * @brief Check if there is collision between n1 and n2
- * @param n1  LNode pointer of one LNode
- * @param n2  LNode pointer of the other LNode
+ *
+ * @param n1  DNode pointer of one DNode
+ * @param n2  DNode pointer of the other DNode
  * @return true if collision, else false
  */
 bool DStarLitePathPlanner::isCollision(LNodePtr n1, LNodePtr n2)
@@ -127,15 +124,13 @@ bool DStarLitePathPlanner::isCollision(LNodePtr n1, LNodePtr n2)
 
 /**
  * @brief Get neighbour LNodePtrs of nodePtr
- * @param node_ptr    LNode to expand
+ *
+ * @param node_ptr    DNode to expand
  * @param neighbours  neigbour LNodePtrs in vector
  */
 void DStarLitePathPlanner::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
 {
-  auto nx = costmap_->getSizeInCellsX();
-  auto ny = costmap_->getSizeInCellsY();
-
-  int x = node_ptr->x(), y = node_ptr->y();
+  int x = u->x(), y = u->y();
   for (int i = -1; i <= 1; i++)
   {
     for (int j = -1; j <= 1; j++)
@@ -144,11 +139,11 @@ void DStarLitePathPlanner::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neig
         continue;
 
       int x_n = x + i, y_n = y + j;
-      if (x_n < 0 || x_n >= nx || y_n < 0 || y_n >= ny)
+      if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
         continue;
-
       LNodePtr neigbour_ptr = map_[x_n][y_n];
-      if (isCollision(node_ptr, neigbour_ptr))
+
+      if (isCollision(u, neigbour_ptr))
         continue;
 
       neighbours.push_back(neigbour_ptr);
@@ -158,6 +153,7 @@ void DStarLitePathPlanner::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neig
 
 /**
  * @brief Get the cost between n1 and n2, return INF if collision
+ *
  * @param n1 LNode pointer of one LNode
  * @param n2 LNode pointer of the other LNode
  * @return cost between n1 and n2
@@ -171,6 +167,7 @@ double DStarLitePathPlanner::getCost(LNodePtr n1, LNodePtr n2)
 
 /**
  * @brief Update vertex u
+ *
  * @param u LNode pointer to update
  */
 void DStarLitePathPlanner::updateVertex(LNodePtr u)
@@ -212,7 +209,7 @@ void DStarLitePathPlanner::updateVertex(LNodePtr u)
  */
 void DStarLitePathPlanner::computeShortestPath()
 {
-  while (true)
+  while (1)
   {
     if (open_list_.empty())
       break;
@@ -254,6 +251,7 @@ void DStarLitePathPlanner::computeShortestPath()
 
 /**
  * @brief Extract path for map
+ *
  * @param start start node
  * @param goal  goal node
  * @return flag true if extract successfully else do not
@@ -372,7 +370,7 @@ bool DStarLitePathPlanner::plan(const Point3d& start, const Point3d& goal, Point
       for (int j = -win_size / 2; j < win_size / 2; j++)
       {
         int x_n = start.x() + i, y_n = start.y() + j;
-        if (x_n < 0 || x_n >= nx || y_n < 0 || y_n >= ny)
+        if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
           continue;
 
         int idx = grid2Index(x_n, y_n);
@@ -386,7 +384,9 @@ bool DStarLitePathPlanner::plan(const Point3d& start, const Point3d& goal, Point
           getNeighbours(u, neigbours);
           updateVertex(u);
           for (LNodePtr s : neigbours)
+          {
             updateVertex(s);
+          }
         }
       }
     }

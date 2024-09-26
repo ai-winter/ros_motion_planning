@@ -1,8 +1,0 @@
-<library path="lib/libsfm_planner">
-    <class name="sfm_planner/SfmPlanner" type="sfm_planner::SfmPlanner"
-        base_class_type="nav_core::BaseLocalPlanner">
-        <description>
-            A implementation of a SFM planner.
-        </description>
-    </class>
-</library>

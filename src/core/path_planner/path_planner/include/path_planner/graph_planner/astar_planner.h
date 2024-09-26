@@ -31,18 +31,18 @@ class AStarPathPlanner : public PathPlanner
 public:
   /**
    * @brief Construct a new AStar object
-   * @param costmap  the environment for path planning
-   * @param dijkstra using diksktra implementation
-   * @param gbfs     using gbfs implementation
+   * @param costmap   the environment for path planning
+   * @param dijkstra   using diksktra implementation
+   * @param gbfs       using gbfs implementation
    */
   AStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, bool dijkstra = false, bool gbfs = false);
 
   /**
    * @brief A* implementation
-   * @param start  start node
-   * @param goal   goal node
-   * @param path   optimal path consists of Node
-   * @param expand containing the node been search during the process
+   * @param start          start node
+   * @param goal           goal node
+   * @param path           optimal path consists of Node
+   * @param expand         containing the node been search during the process
    * @return true if path found, else false
    */
   bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);

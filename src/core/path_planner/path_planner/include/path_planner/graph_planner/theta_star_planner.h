@@ -37,25 +37,32 @@ private:
 public:
   /**
    * @brief Construct a new ThetaStar object
-   * @param costmap the environment for path planning
+   * @param costmap   the environment for path planning
    */
   ThetaStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Theta* implementation
-   * @param start  start node
-   * @param goal   goal node
-   * @param path   optimal path consists of Node
-   * @param expand containing the node been search during the process
-   * @return true if path found, else false
+   * @param start         start node
+   * @param goal          goal node
+   * @param path          optimal path consists of Node
+   * @param expand        containing the node been search during the process
+   * @return  true if path found, else false
    */
   bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);
 
 protected:
   /**
-   * @brief Bresenham algorithm to check if there is any obstacle between node1 and node2
-   * @param node1 node1
-   * @param node2 node2
+   * @brief update the g value of child node
+   * @param parent
+   * @param child
+   */
+  void _updateVertex(const Node& parent, Node& child);
+
+  /**
+   * @brief Bresenham algorithm to check if there is any obstacle between parent and child
+   * @param parent
+   * @param child
    * @return true if no obstacle, else false
    */
   bool _lineOfSight(const Node& parent, const Node& child);

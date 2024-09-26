@@ -24,7 +24,7 @@ namespace rmp
 namespace path_planner
 {
 /**
- * @brief Class for objects that plan using the informed RRT* algorithm
+ * @brief Class for objects that plan using the RRT* algorithm
  */
 class InformedRRTStarPathPlanner : public RRTStarPathPlanner
 {
@@ -33,35 +33,35 @@ private:
 
 public:
   /**
-   * @brief Construct a informed new RRTStar object
-   * @param costmap    the environment for path planning
-   * @param sample_num andom sample points
-   * @param max_dist   max distance between sample points
-   * @param r          optimization radius
+   * @brief  Constructor
+   * @param   costmap   the environment for path planning
+   * @param   sample_num  andom sample points
+   * @param   max_dist    max distance between sample points
+   * @param   r           optimization radius
    */
   InformedRRTStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num, double max_dist, double r);
 
   /**
-   * @brief Informed RRT star implementation
-   * @param start  start node
-   * @param goal   goal node
-   * @param expand containing the node been search during the process
-   * @return true if path found, else false
+   * @brief RRT implementation
+   * @param start     start node
+   * @param goal      goal node
+   * @param expand    containing the node been search during the process
+   * @return tuple contatining a bool as to whether a path was found, and the path
    */
   bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);
 
 protected:
   /**
    * @brief Sample in ellipse
-   * @param x random sampling x
-   * @param y random sampling y
+   * @param   x   random sampling x
+   * @param   y   random sampling y
    * @return ellipse node
    */
   Node _transform(double x, double y);
 
   /**
    * @brief Generates a random node
-   * @return generated node
+   * @return Generated node
    */
   Node _generateRandomNode();
 

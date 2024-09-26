@@ -47,6 +47,6 @@ robots_config:
 #   * static
 
 plugins:
-  pedestrians: "pedestrian_config.yaml"
-  obstacles: "obstacles_config.yaml"
+  # pedestrians: "pedestrian_config.yaml"
+  # obstacles: "obstacles_config.yaml"
   map_layers: "map_layers_config.yaml"
