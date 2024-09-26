@@ -7,9 +7,9 @@
  * @date: 2023-03-15
  * @version: 1.1
  *
- * Copyright (c) 2024, Yang Haodong. 
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
- * 
+ *
  * --------------------------------------------------------
  *
  * ********************************************************
@@ -109,7 +109,6 @@ private:
   double last_pose_x_, last_pose_y_;
   // current state
   double px_, py_, pz_, vx_, vy_, theta_;
-
 
   // Pointer to the parent actor.
   physics::ActorPtr actor_;

@@ -14,7 +14,6 @@
  *
  * ********************************************************
  */
-#include <cmath>
 #include <random>
 
 #include "path_planner/sample_planner/informed_rrt_star_planner.h"
@@ -24,9 +23,11 @@ namespace rmp
 namespace path_planner
 {
 /**
- * @brief  Constructor
- * @param   costmap   the environment for path planning
- * @param   max_dist    max distance between sample points
+ * @brief Construct a informed new RRTStar object
+ * @param costmap    the environment for path planning
+ * @param sample_num andom sample points
+ * @param max_dist   max distance between sample points
+ * @param r          optimization radius
  */
 InformedRRTStarPathPlanner::InformedRRTStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num,
                                                        double max_dist, double r)
@@ -35,14 +36,19 @@ InformedRRTStarPathPlanner::InformedRRTStarPathPlanner(costmap_2d::Costmap2DROS*
 }
 
 /**
- * @brief Informed RRT* implementation
- * @param start     start node
- * @param goal      goal node
- * @param expand    containing the node been search during the process
- * @return tuple contatining a bool as to whether a path was found, and the path
+ * @brief Informed RRT star implementation
+ * @param start  start node
+ * @param goal   goal node
+ * @param expand containing the node been search during the process
+ * @return true if path found, else false
  */
 bool InformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
+  // clear vector
+  path.clear();
+  expand.clear();
+  sample_list_.clear();
+
   // initialization
   c_best_ = std::numeric_limits<double>::max();
   c_min_ = std::hypot(start.x() - goal.x(), start.y() - goal.y());
@@ -64,8 +70,6 @@ bool InformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal,
   int iteration = 0;
   while (iteration < sample_num_)
   {
-    iteration++;
-
     // generate a random node in the map
     Node sample_node = _generateRandomNode();
     // obstacle
@@ -99,6 +103,8 @@ bool InformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal,
         c_best_ = cost;
       }
     }
+
+    iteration++;
   }
 
   if (best_parent != -1)
@@ -119,7 +125,7 @@ bool InformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal,
 
 /**
  * @brief Generates a random node
- * @return Generated node
+ * @return generated node
  */
 InformedRRTStarPathPlanner::Node InformedRRTStarPathPlanner::_generateRandomNode()
 {
@@ -156,8 +162,8 @@ InformedRRTStarPathPlanner::Node InformedRRTStarPathPlanner::_generateRandomNode
 
 /**
  * @brief Sample in ellipse
- * @param   x   random sampling x
- * @param   y   random sampling y
+ * @param x random sampling x
+ * @param y random sampling y
  * @return ellipse node
  */
 InformedRRTStarPathPlanner::Node InformedRRTStarPathPlanner::_transform(double x, double y)
@@ -178,7 +184,7 @@ InformedRRTStarPathPlanner::Node InformedRRTStarPathPlanner::_transform(double x
   int tx = static_cast<int>(a * cos(theta) * x + b * sin(theta) * y + center_x);
   int ty = static_cast<int>(-a * sin(theta) * x + b * cos(theta) * y + center_y);
   int id = grid2Index(tx, ty);
-  return Node(tx, ty, 0, 0, id, 0);
+  return Node(tx, ty, 0, 0, id, -1);
 }
 }  // namespace path_planner
 }  // namespace rmp

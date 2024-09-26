@@ -3,7 +3,6 @@
   <name>gazebo_sfm_plugin</name>
   <version>1.0.0</version>
   <description>The gazebo_sfm_plugin package</description>
-
   <maintainer email="913982779@qq.com">winter</maintainer>
   <license>GPL3</license>
 

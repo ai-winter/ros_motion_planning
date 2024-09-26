@@ -29,7 +29,6 @@ namespace path_planner
 {
 /**
  * @brief Class for objects that plan using the LPA* algorithm
- * @param costmap   the environment for path planning
  */
 class LPAStarPathPlanner : public PathPlanner
 {
@@ -98,7 +97,7 @@ private:
 public:
   /**
    * @brief Construct a new LPAStar object
-   * @param costmap   the environment for path planning
+   * @param costmap the environment for path planning
    */
   LPAStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
   ~LPAStarPathPlanner();
@@ -130,15 +129,15 @@ public:
 
   /**
    * @brief Check if there is collision between n1 and n2
-   * @param n1  DNode pointer of one DNode
-   * @param n2  DNode pointer of the other DNode
+   * @param n1 LNode pointer of one LNode
+   * @param n2 LNode pointer of the other LNode
    * @return true if collision, else false
    */
   bool isCollision(LNodePtr n1, LNodePtr n2);
 
   /**
    * @brief Get neighbour LNodePtrs of nodePtr
-   * @param node_ptr   DNode to expand
+   * @param node_ptr   LNode to expand
    * @param neighbours neigbour LNodePtrs in vector
    */
   void getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours);

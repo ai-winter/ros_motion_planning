@@ -33,46 +33,49 @@ private:
 
 public:
   /**
-   * @brief  Constructor
-   * @param   costmap   the environment for path planning
-   * @param   sample_num  andom sample points
-   * @param   max_dist    max distance between sample points
+   * @brief Construct a new RRT object
+   * @param costmap    the environment for path planning
+   * @param sample_num andom sample points
+   * @param max_dist   max distance between sample points
    */
   RRTPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num, double max_dist);
 
   /**
    * @brief RRT implementation
-   * @param start         start node
-   * @param goal          goal node
-   * @param path          optimal path consists of Node
-   * @param expand        containing the node been search during the process
+   * @param start  start node
+   * @param goal   goal node
+   * @param path   optimal path consists of Node
+   * @param expand containing the node been search during the process
    * @return  true if path found, else false
    */
   bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);
 
 protected:
   /**
-   * @brief Regular the sample node by the nearest node in the sample list
-   * @param list  samplee list
-   * @param node  sample node
+   * @brief Regular the new node by the nearest node in the sample list
+   * @param list sample list
+   * @param node sample node
    * @return nearest node
    */
   Node _findNearestPoint(std::unordered_map<int, Node>& list, const Node& node);
+
   /**
    * @brief Check if there is any obstacle between the 2 nodes.
-   * @param n1        Node 1
-   * @param n2        Node 2
+   * @param n1 Node 1
+   * @param n2 Node 2
    * @return bool value of whether obstacle exists between nodes
    */
   bool _isAnyObstacleInPath(const Node& n1, const Node& n2);
+
   /**
    * @brief Generates a random node
-   * @return Generated node
+   * @return generated node
    */
   Node _generateRandomNode();
+
   /**
    * @brief Check if goal is reachable from current node
-   * @param new_node Current node
+   * @param new_node current node
    * @return bool value of whether goal is reachable from current node
    */
   bool _checkGoal(const Node& new_node);

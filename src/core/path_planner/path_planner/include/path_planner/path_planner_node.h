@@ -57,12 +57,6 @@ public:
   void initialize(std::string name, costmap_2d::Costmap2DROS* costmapRos);
 
   /**
-   * @brief Planner initialization
-   * @param name planner name
-   */
-  void initialize(std::string name);
-
-  /**
    * @brief Plan a path given start and goal in world map
    * @param start start in world map
    * @param goal  goal in world map

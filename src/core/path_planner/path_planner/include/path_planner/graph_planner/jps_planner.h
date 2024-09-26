@@ -34,7 +34,7 @@ private:
 public:
   /**
    * @brief Constructor
-   * @param costmap   the environment for path planning
+   * @param costmap the environment for path planning
    */
   JPSPathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
 

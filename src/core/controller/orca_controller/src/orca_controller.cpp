@@ -120,8 +120,10 @@ bool ORCAController::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig
 
   ROS_INFO("Got new plan");
 
-  if (goal_.x() != orig_global_plan.back().pose.position.x || goal_.y() != orig_global_plan.back().pose.position.y)
+  if (first_plan_ || goal_.x() != orig_global_plan.back().pose.position.x ||
+      goal_.y() != orig_global_plan.back().pose.position.y)
   {
+    first_plan_ = false;
     goal_ = RVO::Vector2(orig_global_plan.back().pose.position.x, orig_global_plan.back().pose.position.y);
     goal_reached_ = false;
   }

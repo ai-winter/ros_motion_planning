@@ -60,10 +60,10 @@ public:
 
   /**
    * @brief Pure virtual function that is overloadde by planner implementations
-   * @param start          start node
-   * @param goal           goal node
-   * @param path           optimal path consists of Node
-   * @param expand         containing the node been search during the process
+   * @param start  start node
+   * @param goal   goal node
+   * @param path   optimal path consists of Node
+   * @param expand containing the node been search during the process
    * @return true if path found, else false
    */
   virtual bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand) = 0;

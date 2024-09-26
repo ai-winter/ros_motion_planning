@@ -28,13 +28,15 @@ robots_config:
 #   * sample_planner
 #     * rrt
 #     * rrt_star
-#     * informed_rrt
 #     * rrt_connect
+#     * informed_rrt
+#     * quick_informed_rrt
 #
 #   * evolutionary_planner
 #     * aco
 #     * pso
 #     * ga
+#   * lazy_planner
 #
 # * local planner
 #   * dwa
@@ -45,6 +47,6 @@ robots_config:
 #   * static
 
 plugins:
-  # pedestrians: "pedestrian_config.yaml"
-  # obstacles: "obstacles_config.yaml"
+  pedestrians: "pedestrian_config.yaml"
+  obstacles: "obstacles_config.yaml"
   map_layers: "map_layers_config.yaml"

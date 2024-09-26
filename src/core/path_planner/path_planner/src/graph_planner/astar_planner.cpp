@@ -29,14 +29,14 @@ namespace path_planner
 {
 /**
  * @brief Construct a new AStar object
- * @param costmap   the environment for path planning
- * @param dijkstra   using diksktra implementation
- * @param gbfs       using gbfs implementation
+ * @param costmap  the environment for path planning
+ * @param dijkstra using diksktra implementation
+ * @param gbfs     using gbfs implementation
  */
 AStarPathPlanner::AStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, bool dijkstra, bool gbfs)
   : PathPlanner(costmap_ros)
 {
-  // can not using both dijkstra and GBFS at the same time
+  // can not use both dijkstra and GBFS at the same time
   if (!(dijkstra && gbfs))
   {
     is_dijkstra_ = dijkstra;
@@ -51,10 +51,10 @@ AStarPathPlanner::AStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, bool d
 
 /**
  * @brief A* implementation
- * @param start          start node
- * @param goal           goal node
- * @param path           optimal path consists of Node
- * @param expand         containing the node been search during the process
+ * @param start  start node
+ * @param goal   goal node
+ * @param path   optimal path consists of Node
+ * @param expand containing the node been search during the process
  * @return true if path found, else false
  */
 bool AStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
@@ -81,8 +81,8 @@ bool AStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d&
     auto current = open_list.top();
     open_list.pop();
 
-    // current node does not exist in closed list
-    if (closed_list.find(current.id()) != closed_list.end())
+    // current node exist in closed list, continue
+    if (closed_list.count(current.id()))
       continue;
 
     closed_list.insert(std::make_pair(current.id(), current));
@@ -106,12 +106,11 @@ bool AStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d&
       auto node_new = current + motion;
       node_new.set_g(current.g() + motion.g());
       node_new.set_id(grid2Index(node_new.x(), node_new.y()));
-
-      // node_new in closed list
-      if (closed_list.find(node_new.id()) != closed_list.end())
-        continue;
-
       node_new.set_pid(current.id());
+
+      // node_new in closed list, continue
+      if (closed_list.count(node_new.id()))
+        continue;
 
       // next node hit the boundary or obstacle
       // prevent planning failed when the current within inflation

@@ -10,7 +10,7 @@ PathPlanner:
   # whether publish expand zone or not
   expand_zone: true
 
-  ## Ant Colony Optimization(ACO) planner 
+  ## Ant Colony Optimization(ACO) planner
   # number of ants
   n_ants: 50
   # number of inherited ants (Note: Need to be less than parameter ants)
@@ -32,7 +32,7 @@ PathPlanner:
   # maximum iterations
   max_iter_ant: 5
 
-  ## Particle Swarm Optimization(PSO) planner 
+  ## Particle Swarm Optimization(PSO) planner
   # number of particles
   n_particles: 50
   # number of inherited particles (Note: Need to be less than parameter n_particles)
@@ -54,8 +54,7 @@ PathPlanner:
   # maximum iterations
   max_iter_pso: 5
 
-
-  ## Genetic Algorithm(GA) planner 
+  ## Genetic Algorithm(GA) planner
   # number of genets (Note: The parameter must be set to an even number greater than 0)
   n_genets: 50
   # number of inherited genets (Note: Need to be less than parameter n_genets)

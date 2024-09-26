@@ -54,7 +54,7 @@ public:
 private:
   costmap_2d::Costmap2DROS* costmap_ros_;
   tf2_ros::Buffer* tf_;
-  bool initialized_, odom_flag_, goal_reached_;
+  bool initialized_, odom_flag_, goal_reached_, first_plan_;
 
   int agent_number_, agent_id_;                                       // id begin from 1
   double d_t_;                                                        // control time step

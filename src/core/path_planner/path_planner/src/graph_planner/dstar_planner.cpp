@@ -30,7 +30,7 @@ constexpr int win_size = 70;
 
 /**
  * @brief Construct a new DStar object
- * @param costmap   the environment for path planning
+ * @param costmap the environment for path planning
  */
 DStarPathPlanner::DStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros) : PathPlanner(costmap_ros)
 {
@@ -46,8 +46,11 @@ DStarPathPlanner::DStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros) : Path
  */
 void DStarPathPlanner::initMap()
 {
-  map_ = new DNodePtr*[costmap_->getSizeInCellsX()];
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+
+  map_ = new DNodePtr*[nx];
+  for (int i = 0; i < nx; i++)
   {
     map_[i] = new DNodePtr[costmap_->getSizeInCellsY()];
     for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
@@ -63,13 +66,16 @@ void DStarPathPlanner::initMap()
  */
 void DStarPathPlanner::reset()
 {
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+
   open_list_.clear();
 
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
-    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
+  for (int i = 0; i < nx; i++)
+    for (int j = 0; j < ny; j++)
       delete map_[i][j];
 
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
+  for (int i = 0; i < nx; i++)
     delete[] map_[i];
 
   delete[] map_;
@@ -115,16 +121,19 @@ bool DStarPathPlanner::isCollision(DNodePtr n1, DNodePtr n2)
  */
 void DStarPathPlanner::getNeighbours(DNodePtr node_ptr, std::vector<DNodePtr>& neighbours)
 {
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+
   int x = node_ptr->x(), y = node_ptr->y();
-  for (int i = -1; i <= 1; ++i)
+  for (int i = -1; i <= 1; i++)
   {
-    for (int j = -1; j <= 1; ++j)
+    for (int j = -1; j <= 1; j++)
     {
       if (i == 0 && j == 0)
         continue;
 
       int x_n = x + i, y_n = y + j;
-      if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
+      if (x_n < 0 || x_n >= nx || y_n < 0 || y_n >= ny)
         continue;
 
       DNodePtr neigbour_ptr = map_[x_n][y_n];
@@ -220,9 +229,12 @@ double DStarPathPlanner::processState()
  */
 void DStarPathPlanner::extractExpand(std::vector<DNode>& expand)
 {
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
+  auto nx = costmap_->getSizeInCellsX();
+  auto ny = costmap_->getSizeInCellsY();
+
+  for (int i = 0; i < nx; i++)
   {
-    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
+    for (int j = 0; j < ny; j++)
     {
       DNodePtr node_ptr = map_[i][j];
       if (node_ptr->t() == DNode::CLOSED)
@@ -286,9 +298,9 @@ void DStarPathPlanner::modify(DNodePtr x)
 
 /**
  * @brief D* implementation
- * @param start          start node
- * @param goal           goal node
- * @param expand         containing the node been search during the process
+ * @param start  start node
+ * @param goal   goal node
+ * @param expand containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
 bool DStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
@@ -332,13 +344,16 @@ bool DStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d&
     // get current state from path, argmin Euler distance
     DNode state = getState({ static_cast<int>(start.x()), static_cast<int>(start.y()) });
 
+    auto nx = costmap_->getSizeInCellsX();
+    auto ny = costmap_->getSizeInCellsY();
+
     // prepare-repair
     for (int i = -win_size / 2; i < win_size / 2; ++i)
     {
       for (int j = -win_size / 2; j < win_size / 2; ++j)
       {
         int x_n = state.x() + i, y_n = state.y() + j;
-        if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
+        if (x_n < 0 || x_n >= nx || y_n < 0 || y_n >= ny)
           continue;
 
         DNodePtr x = map_[x_n][y_n];
@@ -350,9 +365,7 @@ bool DStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d&
         {
           modify(x);
           for (DNodePtr y : neigbours)
-          {
             modify(y);
-          }
         }
       }
     }
