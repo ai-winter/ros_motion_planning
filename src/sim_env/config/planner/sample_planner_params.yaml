@@ -1,4 +1,4 @@
-SamplePlanner:
+PathPlanner:
   # random sample points
   sample_points: 1500 #1000 for informed RRT*, 3000 for others
   # max distance between sample points

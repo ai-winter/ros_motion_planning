@@ -1,4 +1,4 @@
-GraphPlanner:
+PathPlanner:
   # offset of transform from world(x,y) to grid map(x,y)
   convert_offset: 0.0
   # error tolerance
@@ -9,5 +9,3 @@ GraphPlanner:
   obstacle_factor: 0.5
   # whether publish expand zone or not
   expand_zone: true
-  # whether to store Voronoi map or not
-  voronoi_map: false

@@ -1,7 +1,0 @@
-<library path="lib/liblazy_planner">
-  <class name="lazy_planner/LazyPlanner" type="lazy_planner::LazyPlanner" base_class_type="nav_core::BaseGlobalPlanner">
-    <description>
-      A implementation of lazy planner.
-    </description>
-  </class>
-</library>

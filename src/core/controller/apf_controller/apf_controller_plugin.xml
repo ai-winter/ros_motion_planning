@@ -1,0 +1,8 @@
+<library path="lib/libapf_controller">
+    <class name="apf_controller/APFController" type="rmp::controller::APFController"
+        base_class_type="nav_core::BaseLocalPlanner">
+        <description>
+            A implementation of a local APF controller.
+        </description>
+    </class>
+</library>

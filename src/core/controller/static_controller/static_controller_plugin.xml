@@ -1,0 +1,8 @@
+<library path="lib/libstatic_controller">
+    <class name="static_controller/StaticController" type="static_controller::StaticController"
+        base_class_type="nav_core::BaseLocalPlanner">
+        <description>
+            A implementation of a local Static controller.
+        </description>
+    </class>
+</library>

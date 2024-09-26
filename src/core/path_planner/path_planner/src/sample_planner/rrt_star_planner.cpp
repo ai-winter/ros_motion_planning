@@ -1,0 +1,182 @@
+/**
+ * *********************************************************
+ *
+ * @file: rrt_star_planner.cpp
+ * @brief: Contains the Rapidly-Exploring Random Tree Star(RRT*) planner class
+ * @author: Yang Haodong
+ * @date: 2024-9-24
+ * @version: 2.0
+ *
+ * Copyright (c) 2024, Yang Haodong.
+ * All rights reserved.
+ *
+ * --------------------------------------------------------
+ *
+ * ********************************************************
+ */
+#include <cmath>
+#include <random>
+
+#include "path_planner/sample_planner/rrt_star_planner.h"
+
+namespace rmp
+{
+namespace path_planner
+{
+/**
+ * @brief  Constructor
+ * @param   costmap   the environment for path planning
+ * @param   sample_num  andom sample points
+ * @param   max_dist    max distance between sample points
+ * @param   r           optimization radius
+ */
+RRTStarPathPlanner::RRTStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num, double max_dist, double r)
+  : RRTPathPlanner(costmap_ros, sample_num, max_dist), r_(r)
+{
+}
+/**
+ * @brief RRT implementation
+ * @param start     start node
+ * @param goal      goal node
+ * @param expand    containing the node been search during the process
+ * @return tuple contatining a bool as to whether a path was found, and the path
+ */
+bool RRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
+{
+  path.clear();
+  expand.clear();
+  sample_list_.clear();
+  // copy
+  start_.set_x(start.x());
+  start_.set_y(start.y());
+  start_.set_id(grid2Index(start_.x(), start_.y()));
+  goal_.set_x(goal.x());
+  goal_.set_y(goal.y());
+  goal_.set_id(grid2Index(goal_.x(), goal_.y()));
+  sample_list_.insert(std::make_pair(start_.id(), start_));
+  expand.emplace_back(start.x(), start.y(), 0);
+
+  // main loop
+  int iteration = 0;
+  bool optimized = false;
+  while (iteration < sample_num_)
+  {
+    // generate a random node in the map
+    Node sample_node = _generateRandomNode();
+
+    // obstacle
+    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
+      continue;
+
+    // visited
+    if (sample_list_.find(sample_node.id()) != sample_list_.end())
+      continue;
+
+    // regular the sample node
+    Node new_node = _findNearestPoint(sample_list_, sample_node);
+    if (new_node.id() == -1)
+      continue;
+    else
+    {
+      sample_list_.insert(std::make_pair(new_node.id(), new_node));
+      expand.emplace_back(new_node.x(), new_node.y(), new_node.pid());
+    }
+
+    // goal found
+    if (_checkGoal(new_node))
+    {
+      path.clear();
+      const auto& backtrace = _convertClosedListToPath<int>(sample_list_, start_, goal_);
+      for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
+      {
+        path.emplace_back(iter->x(), iter->y());
+      }
+      optimized = true;
+    }
+    iteration++;
+  }
+
+  return optimized;
+}
+
+/**
+ * @brief Regular the new node by the nearest node in the sample list
+ * @param list     sample list
+ * @param node     sample node
+ * @return nearest node
+ */
+RRTStarPathPlanner::Node RRTStarPathPlanner::_findNearestPoint(std::unordered_map<int, Node>& list, Node& node)
+{
+  Node nearest_node, new_node(node);
+  double min_dist = std::numeric_limits<double>::max();
+  for (const auto& p : list)
+  {
+    // calculate distance
+    double new_dist = std::hypot(p.second.x() - new_node.x(), p.second.y() - new_node.y());
+
+    // update nearest node
+    if (new_dist < min_dist)
+    {
+      nearest_node = p.second;
+      new_node.set_pid(nearest_node.id());
+      new_node.set_g(new_dist + p.second.g());
+      min_dist = new_dist;
+    }
+  }
+
+  // distance longer than the threshold
+  if (min_dist > max_dist_)
+  {
+    // connect sample node and nearest node, then move the nearest node
+    // forward to sample node with `max_distance` as result
+    double theta = std::atan2(new_node.y() - nearest_node.y(), new_node.x() - nearest_node.x());
+    new_node.set_x(nearest_node.x() + static_cast<int>(max_dist_ * cos(theta)));
+    new_node.set_y(nearest_node.y() + static_cast<int>(max_dist_ * sin(theta)));
+    new_node.set_id(grid2Index(new_node.x(), new_node.y()));
+    new_node.set_g(max_dist_ + nearest_node.g());
+  }
+
+  // obstacle check
+  if (!_isAnyObstacleInPath(new_node, nearest_node))
+  {
+    // rewire optimization
+    for (auto& p : sample_list_)
+    {
+      // inside the optimization circle
+      double new_dist = std::hypot(p.second.x() - new_node.x(), p.second.y() - new_node.y());
+      if (new_dist < r_)
+      {
+        double cost = p.second.g() + new_dist;
+        // update new sample node's cost and parent
+        if (new_node.g() > cost)
+        {
+          if (!_isAnyObstacleInPath(new_node, p.second))
+          {
+            new_node.set_pid(p.second.id());
+            new_node.set_g(cost);
+          }
+        }
+        else
+        {
+          // update nodes' cost inside the radius
+          cost = new_node.g() + new_dist;
+          if (cost < p.second.g())
+          {
+            if (!_isAnyObstacleInPath(new_node, p.second))
+            {
+              p.second.set_pid(new_node.id());
+              p.second.set_g(cost);
+            }
+          }
+        }
+      }
+      else
+        continue;
+    }
+  }
+  else
+    new_node.set_id(-1);
+  return new_node;
+}
+}  // namespace path_planner
+}  // namespace rmp

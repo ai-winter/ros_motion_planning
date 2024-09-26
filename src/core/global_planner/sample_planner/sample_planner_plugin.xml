@@ -1,7 +1,0 @@
-<library path="lib/libsample_planner">
-  <class name="sample_planner/SamplePlanner" type="sample_planner::SamplePlanner" base_class_type="nav_core::BaseGlobalPlanner">
-    <description>
-      A implementation of global path planning algorithm: sample planner
-    </description>
-  </class>
-</library>

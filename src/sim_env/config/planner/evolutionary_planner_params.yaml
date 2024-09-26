@@ -1,4 +1,4 @@
-EvolutionaryPlanner:
+PathPlanner:
   # offset of transform from world(x,y) to grid map(x,y)
   convert_offset: 0.0
   # error tolerance

@@ -1,0 +1,165 @@
+/**
+ * *********************************************************
+ *
+ * @file: path_planner.h
+ * @brief: Contains the abstract global planner class
+ * @author: Yang Haodong
+ * @date: 2023-10-24
+ * @version: 2.1
+ *
+ * Copyright (c) 2024, Yang Haodong.
+ * All rights reserved.
+ *
+ * --------------------------------------------------------
+ *
+ * ********************************************************
+ */
+#ifndef RMP_PATH_PLANNER_PATH_PLANNER_H_
+#define RMP_PATH_PLANNER_PATH_PLANNER_H_
+
+#include <unordered_map>
+
+#include <ros/ros.h>
+#include <costmap_2d/costmap_2d.h>
+#include <costmap_2d/costmap_2d_ros.h>
+
+#include "common/geometry/point.h"
+#include "common/structure/node.h"
+
+namespace rmp
+{
+namespace path_planner
+{
+/**
+ * @brief Abstract class that is inherited by concerete implementaions of global planner classes.
+ *        The Plan function is a pure virtual funciton that is overloaded
+ */
+class PathPlanner
+{
+public:
+  using Point2d = rmp::common::geometry::Point2d;
+  using Point3d = rmp::common::geometry::Point3d;
+  using Points2d = rmp::common::geometry::Points2d;
+  using Points3d = rmp::common::geometry::Points3d;
+
+public:
+  /**
+   * @brief Construct a new Global PathPlanner object
+   * @param costmap   the environment for path planning
+   */
+  PathPlanner(costmap_2d::Costmap2DROS* costmap_ros)
+    : factor_(0.5f), map_size_(0), costmap_ros_(costmap_ros), costmap_(costmap_ros->getCostmap())
+  {
+    map_size_ = static_cast<int>(costmap_->getSizeInCellsX() * costmap_->getSizeInCellsY());
+  }
+
+  /**
+   * @brief Destroy the Global PathPlanner object
+   */
+  virtual ~PathPlanner() = default;
+
+  /**
+   * @brief Pure virtual function that is overloadde by planner implementations
+   * @param start          start node
+   * @param goal           goal node
+   * @param path           optimal path consists of Node
+   * @param expand         containing the node been search during the process
+   * @return true if path found, else false
+   */
+  virtual bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand) = 0;
+
+  /**
+   * @brief Set or reset obstacle factor
+   * @param factor obstacle factor
+   */
+  void setFactor(float factor);
+
+  /**
+   * @brief get the costmap
+   * @return costmap costmap2d pointer
+   */
+  costmap_2d::Costmap2D* getCostMap() const;
+
+  /**
+   * @brief get the size of costmap
+   * @return map_size the size of costmap
+   */
+  int getMapSize() const;
+
+  /**
+   * @brief Transform from grid map(x, y) to grid index(i)
+   * @param x grid map x
+   * @param y grid map y
+   * @return index
+   */
+  int grid2Index(int x, int y);
+
+  /**
+   * @brief Transform from grid index(i) to grid map(x, y)
+   * @param i grid index i
+   * @param x grid map x
+   * @param y grid map y
+   */
+  void index2Grid(int i, int& x, int& y);
+
+  /**
+   * @brief Tranform from world map(x, y) to costmap(x, y)
+   * @param mx costmap x
+   * @param my costmap y
+   * @param wx world map x
+   * @param wy world map y
+   * @return true if successfull, else false
+   */
+  bool world2Map(double wx, double wy, double& mx, double& my);
+
+  /**
+   * @brief Tranform from costmap(x, y) to world map(x, y)
+   * @param mx costmap x
+   * @param my costmap y
+   * @param wx world map x
+   * @param wy world map y
+   */
+  void map2World(double mx, double my, double& wx, double& wy);
+
+  /**
+   * @brief Inflate the boundary of costmap into obstacles to prevent cross planning
+   */
+  void outlineMap();
+
+protected:
+  /**
+   * @brief Convert closed list to path
+   * @param closed_list closed list
+   * @param start       start node
+   * @param goal        goal node
+   * @return vector containing path nodes
+   */
+  template <typename T>
+  std::vector<rmp::common::structure::Node<T>>
+  _convertClosedListToPath(std::unordered_map<int, rmp::common::structure::Node<T>>& closed_list,
+                           const rmp::common::structure::Node<T>& start, const rmp::common::structure::Node<T>& goal)
+  {
+    std::vector<rmp::common::structure::Node<T>> path;
+    auto current = closed_list.find(goal.id());
+    while (current->second != start)
+    {
+      path.emplace_back(current->second.x(), current->second.y());
+      auto it = closed_list.find(current->second.pid());
+      if (it != closed_list.end())
+        current = it;
+      else
+        return {};
+    }
+    path.push_back(start);
+    return path;
+  }
+
+protected:
+  int map_size_;                           // pixel number in costmap
+  float factor_;                           // obstacle factor(greater means obstacles)
+  costmap_2d::Costmap2DROS* costmap_ros_;  // costmap ROS wrapper
+  costmap_2d::Costmap2D* costmap_;         // costmap buffer
+};
+}  // namespace path_planner
+}  // namespace rmp
+#endif  // PLANNER_HPP

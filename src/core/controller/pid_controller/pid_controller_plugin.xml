@@ -1,0 +1,8 @@
+<library path="lib/libpid_controller">
+    <class name="pid_controller/PIDController" type="rmp::controller::PIDController"
+        base_class_type="nav_core::BaseLocalPlanner">
+        <description>
+            A implementation of a local PID controller.
+        </description>
+    </class>
+</library>

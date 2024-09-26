@@ -1,7 +1,0 @@
-<library path="lib/libdwa_planner">
-  <class name="dwa_planner/DWAPlanner" type="dwa_planner::DWAPlanner" base_class_type="nav_core::BaseLocalPlanner">
-    <description>
-      A implementation of a local planner using either a DWA approach based on configuration parameters.
-    </description>
-  </class>
-</library>

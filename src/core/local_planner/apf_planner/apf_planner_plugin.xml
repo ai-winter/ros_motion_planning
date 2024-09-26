@@ -1,8 +1,0 @@
-<library path="lib/libapf_planner">
-    <class name="apf_planner/APFPlanner" type="apf_planner::APFPlanner"
-        base_class_type="nav_core::BaseLocalPlanner">
-        <description>
-            A implementation of a local APF planner.
-        </description>
-    </class>
-</library>

@@ -1,8 +1,0 @@
-<library path="lib/librpp_planner">
-    <class name="rpp_planner/RPPPlanner" type="rpp_planner::RPPPlanner"
-        base_class_type="nav_core::BaseLocalPlanner">
-        <description>
-            A implementation of a local Regulated pure pursuit (RPP) planner.
-        </description>
-    </class>
-</library>

@@ -1,0 +1,7 @@
+<library path="lib/libpath_planner">
+  <class name="path_planner/PathPlanner" type="rmp::path_planner::PathPlannerNode" base_class_type="nav_core::BaseGlobalPlanner">
+    <description>
+      A implementation of global path planning algorithm: path planner
+    </description>
+  </class>
+</library>

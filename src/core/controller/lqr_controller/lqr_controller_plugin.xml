@@ -1,0 +1,8 @@
+<library path="lib/liblqr_controller">
+    <class name="lqr_controller/LQRController" type="rmp::controller::LQRController"
+        base_class_type="nav_core::BaseLocalPlanner">
+        <description>
+            A implementation of a local linear quadratic regulator (LQR) controller.
+        </description>
+    </class>
+</library>

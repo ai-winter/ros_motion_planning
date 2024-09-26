@@ -1,0 +1,8 @@
+<library path="lib/librpp_controller">
+    <class name="rpp_controller/RPPController" type="rmp::controller::RPPController"
+        base_class_type="nav_core::BaseLocalPlanner">
+        <description>
+            A implementation of a local Regulated pure pursuit (RPP) controller.
+        </description>
+    </class>
+</library>

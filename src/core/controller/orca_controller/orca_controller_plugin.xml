@@ -1,0 +1,8 @@
+<library path="lib/liborca_controller">
+    <class name="orca_controller/ORCAController" type="rmp::controller::ORCAController"
+        base_class_type="nav_core::BaseLocalPlanner">
+        <description>
+            A implementation of a ORCA controller.
+        </description>
+    </class>
+</library>

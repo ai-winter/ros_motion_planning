@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>controller</name>
+  <version>0.0.0</version>
+  <description>The controller package</description>
+
+  <maintainer email="913982779@qq.com">winter</maintainer>
+
+  <license>GPL3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>angles</depend>
+  <depend>costmap_2d</depend>
+  <depend>geometry_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>common</depend>
+
+</package>

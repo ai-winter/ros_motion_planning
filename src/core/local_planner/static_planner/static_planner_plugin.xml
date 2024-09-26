@@ -1,8 +1,0 @@
-<library path="lib/libstatic_planner">
-    <class name="static_planner/StaticPlanner" type="static_planner::StaticPlanner"
-        base_class_type="nav_core::BaseLocalPlanner">
-        <description>
-            A implementation of a local Static planner.
-        </description>
-    </class>
-</library>

@@ -1,0 +1,7 @@
+<library path="lib/libdwa_controller">
+  <class name="dwa_controller/DWAController" type="rmp::controller::DWAController" base_class_type="nav_core::BaseLocalPlanner">
+    <description>
+      A implementation of a local planner using either a DWA approach based on configuration parameters.
+    </description>
+  </class>
+</library>
