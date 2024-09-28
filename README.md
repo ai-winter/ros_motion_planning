@@ -63,7 +63,8 @@ This repository provides the implementation of common **Motion Planning** algori
         ros-noetic-base-local-planner \
         ros-noetic-map-server \
         ros-noetic-move-base \
-        ros-noetic-navfn
+        ros-noetic-navfn \
+        libgoogle-glog-dev
         ```
 
 4. Clone the reposity.
@@ -114,10 +115,9 @@ ros_motion_planner
 ├── scripts
 └── src
     ├── core
-    │   ├── global_planner
-    │   ├── local_planner
-    │   ├── curve_generation
-    │   └── utils
+    │   ├── common
+    │   ├── path_planner
+    │   └── controller
     ├── sim_env             # simulation environment
     │   ├── config
     │   ├── launch
@@ -131,6 +131,7 @@ ros_motion_planner
     │   ├── dynamic_rviz_config
     │   ├── dynamic_xml_config
     │   ├── gazebo_plugins
+    │   ├── map_plugins
     │   └── rviz_plugins
     └── user_config         # user configure file
 ```
