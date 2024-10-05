@@ -12,7 +12,7 @@
 
 **Robot Motion planning** is a computational problem that involves finding a sequence of valid configurations to move the robot from the source to the destination. Generally, it includes **Path Searching** and **Trajectory Optimization**.
 
-* **Path Searching**: Based on path constraints (e.g., avoiding obstacles), to find the optimal sequence for the robot to travel from the source to the destination without any collision.
+* **Path Searching**: Based on path constraints (e.g., avoiding obstacles), to find the optimal sequence for the robot to travel from the source to the destination without collision.
 
 * **Trajectory Optimization**: Based on kinematics, dynamics and obstacles, to optimize the trajectory of the motion state from the source to the destination according to the path.
 
@@ -100,6 +100,15 @@ This repository provides the implementation of common **Motion Planning** algori
     ```bash
     cd scripts/
     ./killpro.sh
+    ```
+
+10. Multi agents
+
+    ```bash
+    # 1. Replace with user_config_multi.yaml in main.sh
+    # 2. Wait for initialization
+    # 3. Publish goals
+    rosrun sim_env goal_publisher.py
     ```
 
 ## 1. <span id="1">Document

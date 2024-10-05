@@ -30,6 +30,7 @@
 #include "path_planner/graph_planner/lazy_theta_star_planner.h"
 #include "path_planner/graph_planner/hybrid_astar_planner.h"
 #include "path_planner/graph_planner/voronoi_planner.h"
+#include "path_planner/graph_planner/lazy_planner.h"
 
 // sample-based planner
 #include "path_planner/sample_planner/rrt_planner.h"
@@ -169,6 +170,11 @@ void PathPlannerNode::initialize(std::string name)
       private_nh.param("is_reverse", is_reverse, false);
       private_nh.param("max_curv", max_curv, 1.0);
       g_planner_ = std::make_shared<HybridAStarPathPlanner>(costmap_ros_, is_reverse, max_curv);
+      planner_type_ = GRAPH_PLANNER;
+    }
+    else if (planner_name_ == "lazy")
+    {
+      g_planner_ = std::make_shared<LazyPathPlanner>(costmap_ros_);
       planner_type_ = GRAPH_PLANNER;
     }
     else if (planner_name_ == "rrt")
@@ -411,7 +417,7 @@ bool PathPlannerNode::makePlan(const geometry_msgs::PoseStamped& start, const ge
       {
         origin_plan.emplace_back(pt.pose.position.x, pt.pose.position.y);
       }
-    
+
       // visualization
       const auto& visualizer = rmp::common::util::VisualizerPtr::Instance();
       // publish visulization plan

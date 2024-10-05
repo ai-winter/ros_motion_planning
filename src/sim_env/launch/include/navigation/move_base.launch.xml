@@ -28,7 +28,7 @@
     <!-- move base module -->
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
         <!-- global planner plugin -->
-                <!-- global planner plugin -->
+        <!-- global planner plugin -->
         <param name="base_global_planner" value="path_planner/PathPlanner"
             if="$(eval arg('global_planner')=='a_star'
                     or arg('global_planner')=='jps' 
@@ -41,6 +41,7 @@
                     or arg('global_planner')=='theta_star'
                     or arg('global_planner')=='lazy_theta_star'
                     or arg('global_planner')=='s_theta_star'
+                    or arg('global_planner')=='lazy'
                     or arg('global_planner')=='hybrid_a_star'
                     or arg('global_planner')=='rrt'
                     or arg('global_planner')=='rrt_star'
@@ -63,6 +64,7 @@
                     or arg('global_planner')=='theta_star'
                     or arg('global_planner')=='lazy_theta_star'
                     or arg('global_planner')=='s_theta_star'
+                    or arg('global_planner')=='lazy'
                     or arg('global_planner')=='hybrid_a_star'
                     or arg('global_planner')=='rrt'
                     or arg('global_planner')=='rrt_star'
@@ -88,6 +90,7 @@
                     or arg('global_planner')=='lazy_theta_star'
                     or arg('global_planner')=='s_theta_star'
                     or arg('global_planner')=='hybrid_a_star'
+                    or arg('global_planner')=='lazy'
                 )" />
 
         <!-- sample search -->
@@ -97,7 +100,7 @@
                     or arg('global_planner')=='informed_rrt'
                     or arg('global_planner')=='quick_informed_rrt'
                     or arg('global_planner')=='rrt_connect'
-                )" /> 
+                )" />
 
         <!-- evolutionary search -->
         <rosparam file="$(find sim_env)/config/planner/evolutionary_planner_params.yaml" command="load"
@@ -105,9 +108,6 @@
                     or arg('global_planner')=='pso'
                     or arg('global_planner')=='ga'
                 )" />
-
-        <!-- lazy -->
-        <param name="base_global_planner" value="lazy_planner/LazyPlanner" if="$(eval arg('global_planner')=='lazy')" />
 
         <!-- local planner plugin -->
         <param name="base_local_planner" value="dwa_controller/DWAController" if="$(eval arg('local_planner')=='dwa')" />
