@@ -16,12 +16,18 @@
  */
 #include <costmap_2d/cost_values.h>
 
+#include "common/geometry/collision_checker.h"
 #include "path_planner/graph_planner/s_theta_star_planner.h"
 
 namespace rmp
 {
 namespace path_planner
 {
+namespace
+{
+using CollisionChecker = rmp::common::geometry::CollisionChecker;
+}
+
 /**
  * @brief Construct a new SThetaStar object
  * @param costmap   the environment for path planning
@@ -72,7 +78,7 @@ bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
     // goal found
     if (current == goal_node)
     {
-      const auto& backtrace = _convertClosedListToPath<int>(closed_list, start_node, goal_node);
+      const auto& backtrace = _convertClosedListToPath<Node>(closed_list, start_node, goal_node);
       for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
       {
         path.emplace_back(iter->x(), iter->y());
@@ -142,8 +148,14 @@ bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
  */
 void SThetaStarPathPlanner::_updateVertex(const Node& parent, Node& child, const double alpha)
 {
-  // if (alpha == 0 || _lineOfSight(parent, child)){  // "alpha == 0" will cause penetration of obstacles
-  if (_lineOfSight(parent, child))
+  auto isCollision = [&](const Node& node1, const Node& node2) {
+    return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
+      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+    });
+  };
+
+  // if (alpha == 0 || !isCollision(parent, child)){  // "alpha == 0" will cause penetration of obstacles
+  if (!isCollision(parent, child))
   {
     // path 2
     double new_g = parent.g() + std::hypot(parent.x() - child.x(), parent.y() - child.y()) + alpha;

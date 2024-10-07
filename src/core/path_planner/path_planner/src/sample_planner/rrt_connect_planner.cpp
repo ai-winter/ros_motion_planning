@@ -14,14 +14,17 @@
  *
  * ********************************************************
  */
-#include <cmath>
-
+#include "common/geometry/collision_checker.h"
 #include "path_planner/sample_planner/rrt_connect_planner.h"
 
 namespace rmp
 {
 namespace path_planner
 {
+namespace
+{
+using CollisionChecker = rmp::common::geometry::CollisionChecker;
+}
 /**
  * @brief  Constructor
  * @param   costmap   the environment for path planning
@@ -101,7 +104,13 @@ bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
           new_node_b2.set_pid(new_node_b.id());
           new_node_b2.set_g(dist_ + new_node_b.g());
 
-          if (!_isAnyObstacleInPath(new_node_b, new_node_b2))
+          auto isCollision = [&](const Node& node1, const Node& node2) {
+            return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
+              return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+            });
+          };
+
+          if (!isCollision(new_node_b, new_node_b2))
           {
             sample_list_b_.insert(std::make_pair(new_node_b2.id(), new_node_b2));
             expand.emplace_back(new_node_b2.x(), new_node_b2.y(), new_node_b2.pid());
@@ -113,7 +122,8 @@ bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
           // connected -> goal found
           if (new_node_b == new_node)
           {
-            const auto& backtrace = _convertClosedListToPath(new_node_b);
+            const auto& backtrace =
+                _convertBiClosedListToPath<Node>(sample_list_f_, sample_list_b_, start_, goal_, new_node_b);
             for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
             {
               path.emplace_back(iter->x(), iter->y());
@@ -131,54 +141,6 @@ bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
     iteration++;
   }
   return false;
-}
-
-/**
- * @brief convert closed list to path
- * @param boundary  connected node that the boudary of forward and backward
- * @return ector containing path nodes
- */
-std::vector<RRTConnectPathPlanner::Node> RRTConnectPathPlanner::_convertClosedListToPath(const Node& boundary)
-{
-  if (sample_list_f_.find(start_.id()) == sample_list_.end())
-    std::swap(sample_list_f_, sample_list_b_);
-
-  std::vector<Node> path;
-
-  // backward
-  std::vector<Node> path_b;
-  auto current = sample_list_b_.find(boundary.id());
-  while (current->second != goal_)
-  {
-    path_b.push_back(current->second);
-    auto it = sample_list_b_.find(current->second.pid());
-    if (it != sample_list_b_.end())
-      current = it;
-    else
-      return {};
-  }
-  path_b.push_back(goal_);
-
-  // forward
-  for (auto rit = path_b.rbegin(); rit != path_b.rend(); rit++)
-    path.push_back(*rit);
-
-  current = sample_list_f_.find(boundary.id());
-  while (current->second != start_)
-  {
-    auto it = sample_list_f_.find(current->second.pid());
-    if (it != sample_list_f_.end())
-    {
-      current = it;
-    }
-    else
-    {
-      return {};
-    }
-    path.push_back(current->second);
-  }
-
-  return path;
 }
 }  // namespace path_planner
 }  // namespace rmp

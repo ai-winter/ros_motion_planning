@@ -134,12 +134,11 @@ protected:
    * @param goal        goal node
    * @return vector containing path nodes
    */
-  template <typename T>
-  std::vector<rmp::common::structure::Node<T>>
-  _convertClosedListToPath(std::unordered_map<int, rmp::common::structure::Node<T>>& closed_list,
-                           const rmp::common::structure::Node<T>& start, const rmp::common::structure::Node<T>& goal)
+  template <typename Node>
+  std::vector<Node> _convertClosedListToPath(std::unordered_map<int, Node>& closed_list, const Node& start,
+                                             const Node& goal)
   {
-    std::vector<rmp::common::structure::Node<T>> path;
+    std::vector<Node> path;
     auto current = closed_list.find(goal.id());
     while (current->second != start)
     {
@@ -151,6 +150,47 @@ protected:
         return {};
     }
     path.push_back(start);
+    return path;
+  }
+
+  template <typename Node>
+  std::vector<Node> _convertBiClosedListToPath(std::unordered_map<int, Node>& f_closed_list,
+                                               std::unordered_map<int, Node>& b_closed_list, const Node& start,
+                                               const Node& goal, const Node& boundary)
+  {
+    if (f_closed_list.find(start.id()) == f_closed_list.end())
+      std::swap(f_closed_list, b_closed_list);
+
+    std::vector<Node> path, path_b;
+
+    // backward
+    auto current = b_closed_list.find(boundary.id());
+    while (current->second != goal)
+    {
+      path_b.push_back(current->second);
+      auto it = b_closed_list.find(current->second.pid());
+      if (it != b_closed_list.end())
+        current = it;
+      else
+        return {};
+    }
+    path_b.push_back(goal);
+
+    // forward
+    for (auto rit = path_b.rbegin(); rit != path_b.rend(); rit++)
+      path.push_back(*rit);
+
+    current = f_closed_list.find(boundary.id());
+    while (current->second != start)
+    {
+      auto it = f_closed_list.find(current->second.pid());
+      if (it != f_closed_list.end())
+        current = it;
+      else
+        return {};
+      path.push_back(current->second);
+    }
+
     return path;
   }
 

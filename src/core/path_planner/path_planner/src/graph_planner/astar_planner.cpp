@@ -91,7 +91,7 @@ bool AStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d&
     // goal found
     if (current == goal_node)
     {
-      const auto& backtrace = _convertClosedListToPath<int>(closed_list, start_node, goal_node);
+      const auto& backtrace = _convertClosedListToPath<Node>(closed_list, start_node, goal_node);
       for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
       {
         path.emplace_back(iter->x(), iter->y());

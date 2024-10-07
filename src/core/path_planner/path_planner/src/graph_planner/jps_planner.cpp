@@ -73,7 +73,7 @@ bool JPSPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
     // goal found
     if (current == goal_)
     {
-      const auto& backtrace = _convertClosedListToPath<int>(closed_list, start_, goal_);
+      const auto& backtrace = _convertClosedListToPath<Node>(closed_list, start_, goal_);
       for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
       {
         path.emplace_back(iter->x(), iter->y());

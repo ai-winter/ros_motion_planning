@@ -14,15 +14,20 @@
  *
  * ********************************************************
  */
-#include <cmath>
 #include <random>
 
+#include "common/geometry/collision_checker.h"
 #include "path_planner/sample_planner/rrt_star_planner.h"
 
 namespace rmp
 {
 namespace path_planner
 {
+namespace
+{
+using CollisionChecker = rmp::common::geometry::CollisionChecker;
+}
+
 /**
  * @brief  Constructor
  * @param   costmap   the environment for path planning
@@ -86,7 +91,7 @@ bool RRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3
     if (_checkGoal(new_node))
     {
       path.clear();
-      const auto& backtrace = _convertClosedListToPath<int>(sample_list_, start_, goal_);
+      const auto& backtrace = _convertClosedListToPath<Node>(sample_list_, start_, goal_);
       for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
       {
         path.emplace_back(iter->x(), iter->y());
@@ -137,7 +142,13 @@ RRTStarPathPlanner::Node RRTStarPathPlanner::_findNearestPoint(std::unordered_ma
   }
 
   // obstacle check
-  if (!_isAnyObstacleInPath(new_node, nearest_node))
+  auto isCollision = [&](const Node& node1, const Node& node2) {
+    return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
+      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+    });
+  };
+
+  if (!isCollision(new_node, nearest_node))
   {
     // rewire optimization
     for (auto& p : sample_list_)
@@ -150,7 +161,7 @@ RRTStarPathPlanner::Node RRTStarPathPlanner::_findNearestPoint(std::unordered_ma
         // update new sample node's cost and parent
         if (new_node.g() > cost)
         {
-          if (!_isAnyObstacleInPath(new_node, p.second))
+          if (!isCollision(new_node, p.second))
           {
             new_node.set_pid(p.second.id());
             new_node.set_g(cost);
@@ -162,7 +173,7 @@ RRTStarPathPlanner::Node RRTStarPathPlanner::_findNearestPoint(std::unordered_ma
           cost = new_node.g() + new_dist;
           if (cost < p.second.g())
           {
-            if (!_isAnyObstacleInPath(new_node, p.second))
+            if (!isCollision(new_node, p.second))
             {
               p.second.set_pid(new_node.id());
               p.second.set_g(cost);

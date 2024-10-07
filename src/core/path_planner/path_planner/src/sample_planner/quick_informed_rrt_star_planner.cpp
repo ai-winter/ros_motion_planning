@@ -14,16 +14,21 @@
  *
  * ********************************************************
  */
-#include <cmath>
-#include <random>
 #include <omp.h>
+#include <random>
 
+#include "common/geometry/collision_checker.h"
 #include "path_planner/sample_planner/quick_informed_rrt_star_planner.h"
 
 namespace rmp
 {
 namespace path_planner
 {
+namespace
+{
+using CollisionChecker = rmp::common::geometry::CollisionChecker;
+}
+
 /**
  * @brief  Constructor
  * @param   costmap   the environment for path planning
@@ -109,8 +114,14 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
     // update min dist from tree to goal
     if (dist_ < dist_m2g)
       dist_m2g = dist_;
+
     // goal found
-    if (dist_ <= max_dist_ && !_isAnyObstacleInPath(new_node, goal_))
+    auto isCollision = [&](const Node& node1, const Node& node2) {
+      return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
+        return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+      });
+    };
+    if (dist_ <= max_dist_ && !isCollision(new_node, goal_))
     {
       double cost = dist_ + new_node.g();
       if (cost < c_best_)
@@ -120,7 +131,7 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
         // update path
         Node goal_star(goal_.x(), goal_.y(), c_best_, 0, grid2Index(goal_.x(), goal_.y()), best_parent);
         sample_list_.insert(std::make_pair(goal_star.id(), goal_star));
-        nodes = _convertClosedListToPath(sample_list_, start_, goal_);
+        nodes = _convertClosedListToPath<Node>(sample_list_, start_, goal_);
         sample_list_.erase(goal_star.id());
         mu = std::fmin(5, mu + 0.5);
       }
@@ -138,7 +149,7 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
     Node goal_star(goal_.x(), goal_.y(), c_best_, 0, grid2Index(goal_.x(), goal_.y()), best_parent);
     sample_list_.insert(std::make_pair(goal_star.id(), goal_star));
 
-    const auto& backtrace = _convertClosedListToPath<int>(sample_list_, start_, goal_);
+    const auto& backtrace = _convertClosedListToPath<Node>(sample_list_, start_, goal_);
     for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
     {
       path.emplace_back(iter->x(), iter->y());
@@ -235,7 +246,12 @@ QuickInformedRRTStarPathPlanner::_findNearestPoint(std::unordered_map<int, Node>
   }
 
   // obstacle check
-  if (!_isAnyObstacleInPath(new_node, nearest_node))
+  auto isCollision = [&](const Node& node1, const Node& node2) {
+    return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
+      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+    });
+  };
+  if (!isCollision(new_node, nearest_node))
   {
     max_dist_ += step_extend_d_;
 
@@ -247,7 +263,7 @@ QuickInformedRRTStarPathPlanner::_findNearestPoint(std::unordered_map<int, Node>
     }
 
 #pragma omp parallel for num_threads(rewire_threads_)
-    for (int i = 0; i < v_iters.size(); i++)
+    for (size_t i = 0; i < v_iters.size(); i++)
     {
       auto& p = sample_list_[v_iters[i]];
       // inside the optimization circle
@@ -259,7 +275,7 @@ QuickInformedRRTStarPathPlanner::_findNearestPoint(std::unordered_map<int, Node>
       // update new sample node's cost and parent
       if (new_node.g() > cost)
       {
-        if (!_isAnyObstacleInPath(new_node, p))
+        if (!isCollision(new_node, p))
         {
           // other thread may update new_node.g()
 #pragma omp critical
@@ -275,7 +291,7 @@ QuickInformedRRTStarPathPlanner::_findNearestPoint(std::unordered_map<int, Node>
         // update nodes' cost inside the radius
         cost = new_node.g() + new_dist;
         if (cost < p.g())
-          if (!_isAnyObstacleInPath(new_node, p))
+          if (!isCollision(new_node, p))
           {
             p.set_pid(new_node.id());
             p.set_g(cost);

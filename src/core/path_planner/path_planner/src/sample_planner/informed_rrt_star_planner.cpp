@@ -14,15 +14,20 @@
  *
  * ********************************************************
  */
-#include <cmath>
 #include <random>
 
+#include "common/geometry/collision_checker.h"
 #include "path_planner/sample_planner/informed_rrt_star_planner.h"
 
 namespace rmp
 {
 namespace path_planner
 {
+namespace
+{
+using CollisionChecker = rmp::common::geometry::CollisionChecker;
+}
+
 /**
  * @brief  Constructor
  * @param   costmap   the environment for path planning
@@ -89,8 +94,14 @@ bool InformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal,
     }
 
     // goal found
+    auto isCollision = [&](const Node& node1, const Node& node2) {
+      return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
+        return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+      });
+    };
+
     auto dist_ = std::hypot(new_node.x() - goal_.x(), new_node.y() - goal_.y());
-    if (dist_ <= max_dist_ && !_isAnyObstacleInPath(new_node, goal_))
+    if (dist_ <= max_dist_ && !isCollision(new_node, goal_))
     {
       double cost = dist_ + new_node.g();
       if (cost < c_best_)
@@ -106,7 +117,7 @@ bool InformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal,
     Node goal_star(goal_.x(), goal_.y(), c_best_, 0, grid2Index(goal_.x(), goal_.y()), best_parent);
     sample_list_.insert(std::make_pair(goal_star.id(), goal_star));
 
-    const auto& backtrace = _convertClosedListToPath<int>(sample_list_, start_, goal_);
+    const auto& backtrace = _convertClosedListToPath<Node>(sample_list_, start_, goal_);
     for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
     {
       path.emplace_back(iter->x(), iter->y());

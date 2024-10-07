@@ -14,15 +14,20 @@
  *
  * ********************************************************
  */
-#include <cmath>
 #include <random>
 
+#include "common/geometry/collision_checker.h"
 #include "path_planner/sample_planner/rrt_planner.h"
 
 namespace rmp
 {
 namespace path_planner
 {
+namespace
+{
+using CollisionChecker = rmp::common::geometry::CollisionChecker;
+}
+
 /**
  * @brief  Constructor
  * @param   costmap   the environment for path planning
@@ -75,8 +80,11 @@ bool RRTPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
 
     // regular the sample node
     Node new_node = _findNearestPoint(sample_list_, sample_node);
+
     if (new_node.id() == -1)
+    {
       continue;
+    }
     else
     {
       sample_list_.insert(std::make_pair(new_node.id(), new_node));
@@ -86,7 +94,7 @@ bool RRTPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
     // goal found
     if (_checkGoal(new_node))
     {
-      const auto& backtrace = _convertClosedListToPath<int>(sample_list_, start_, goal_);
+      const auto& backtrace = _convertClosedListToPath<Node>(sample_list_, start_, goal_);
       for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
       {
         path.emplace_back(iter->x(), iter->y());
@@ -163,39 +171,18 @@ RRTPathPlanner::Node RRTPathPlanner::_findNearestPoint(std::unordered_map<int, N
   }
 
   // obstacle check
-  if (_isAnyObstacleInPath(new_node, nearest_node))
+  auto isCollision = [&](const Node& node1, const Node& node2) {
+    return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
+      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+    });
+  };
+
+  if (isCollision(new_node, nearest_node))
+  {
     new_node.set_id(-1);
+  }
 
   return new_node;
-}
-
-/**
- * @brief Check if there is any obstacle between the 2 nodes.
- * @param n1        Node 1
- * @param n2        Node 2
- * @return bool value of whether obstacle exists between nodes
- */
-bool RRTPathPlanner::_isAnyObstacleInPath(const Node& n1, const Node& n2)
-{
-  double theta = std::atan2(n2.y() - n1.y(), n2.x() - n1.x());
-  double dist_ = std::hypot(n1.x() - n2.x(), n1.y() - n2.y());
-
-  // distance longer than the threshold
-  if (dist_ > max_dist_)
-    return true;
-
-  // sample the line between two nodes and check obstacle
-  float resolution = costmap_->getResolution();
-  int n_step = static_cast<int>(dist_ / resolution);
-  for (int i = 0; i < n_step; i++)
-  {
-    float line_x = static_cast<float>(n1.x() + i * resolution * cos(theta));
-    float line_y = static_cast<float>(n1.y() + i * resolution * sin(theta));
-    if (costmap_->getCharMap()[grid2Index(static_cast<int>(line_x), static_cast<int>(line_y))] >=
-        costmap_2d::LETHAL_OBSTACLE * factor_)
-      return true;
-  }
-  return false;
 }
 
 /**
@@ -209,7 +196,13 @@ bool RRTPathPlanner::_checkGoal(const Node& new_node)
   if (dist_ > max_dist_)
     return false;
 
-  if (!_isAnyObstacleInPath(new_node, goal_))
+  auto isCollision = [&](const Node& node1, const Node& node2) {
+    return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
+      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+    });
+  };
+
+  if (!isCollision(new_node, goal_))
   {
     Node goal(goal_.x(), goal_.y(), dist_ + new_node.g(), 0, grid2Index(goal_.x(), goal_.y()), new_node.id());
     sample_list_.insert(std::make_pair(goal.id(), goal));

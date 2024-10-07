@@ -19,12 +19,18 @@
 
 #include <costmap_2d/cost_values.h>
 
+#include "common/geometry/collision_checker.h"
 #include "path_planner/graph_planner/theta_star_planner.h"
 
 namespace rmp
 {
 namespace path_planner
 {
+namespace
+{
+using CollisionChecker = rmp::common::geometry::CollisionChecker;
+}
+
 /**
  * @brief Construct a new ThetaStar object
  * @param costmap   the environment for path planning
@@ -72,7 +78,7 @@ bool ThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Point
     // goal found
     if (current == goal_node)
     {
-      const auto& backtrace = _convertClosedListToPath<int>(closed_list, start_node, goal_node);
+      const auto& backtrace = _convertClosedListToPath<Node>(closed_list, start_node, goal_node);
       for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
       {
         path.emplace_back(iter->x(), iter->y());
@@ -131,7 +137,13 @@ bool ThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Point
  */
 void ThetaStarPathPlanner::_updateVertex(const Node& parent, Node& child)
 {
-  if (_lineOfSight(parent, child))
+  auto isCollision = [&](const Node& node1, const Node& node2) {
+    return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
+      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+    });
+  };
+
+  if (!isCollision(parent, child))
   {
     // path 2
     const double dist = std::hypot(parent.x() - child.x(), parent.y() - child.y());
@@ -141,82 +153,6 @@ void ThetaStarPathPlanner::_updateVertex(const Node& parent, Node& child)
       child.set_pid(parent.id());
     }
   }
-}
-
-/**
- * @brief Bresenham algorithm to check if there is any obstacle between parent and child
- * @param parent
- * @param child
- * @return true if no obstacle, else false
- */
-bool ThetaStarPathPlanner::_lineOfSight(const Node& parent, const Node& child)
-{
-  int s_x = (parent.x() - child.x() == 0) ? 0 : (parent.x() - child.x()) / std::abs(parent.x() - child.x());
-  int s_y = (parent.y() - child.y() == 0) ? 0 : (parent.y() - child.y()) / std::abs(parent.y() - child.y());
-  int d_x = std::abs(parent.x() - child.x());
-  int d_y = std::abs(parent.y() - child.y());
-
-  // check if any obstacle exists between parent and child
-  if (d_x > d_y)
-  {
-    int tau = d_y - d_x;
-    int x = child.x(), y = child.y();
-    int e = 0;
-    while (x != parent.x())
-    {
-      if (e * 2 > tau)
-      {
-        x += s_x;
-        e -= d_y;
-      }
-      else if (e * 2 < tau)
-      {
-        y += s_y;
-        e += d_x;
-      }
-      else
-      {
-        x += s_x;
-        y += s_y;
-        e += d_x - d_y;
-      }
-      if (costmap_->getCharMap()[grid2Index(x, y)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
-          costmap_->getCharMap()[grid2Index(x, y)] >= costmap_->getCharMap()[parent.id()])
-        // obstacle detected
-        return false;
-    }
-  }
-  else
-  {
-    // similar. swap x and y
-    int tau = d_x - d_y;
-    int x = child.x(), y = child.y();
-    int e = 0;
-    while (y != parent.y())
-    {
-      if (e * 2 > tau)
-      {
-        y += s_y;
-        e -= d_x;
-      }
-      else if (e * 2 < tau)
-      {
-        x += s_x;
-        e += d_y;
-      }
-      else
-      {
-        x += s_x;
-        y += s_y;
-        e += d_y - d_x;
-      }
-      if (costmap_->getCharMap()[grid2Index(x, y)] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
-          costmap_->getCharMap()[grid2Index(x, y)] >= costmap_->getCharMap()[parent.id()])
-        // obstacle detected
-        return false;
-    }
-  }
-  return true;
 }
 }  // namespace path_planner
 }  // namespace rmp

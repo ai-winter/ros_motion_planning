@@ -59,13 +59,6 @@ protected:
    */
   Node _findNearestPoint(std::unordered_map<int, Node>& list, const Node& node);
   /**
-   * @brief Check if there is any obstacle between the 2 nodes.
-   * @param n1        Node 1
-   * @param n2        Node 2
-   * @return bool value of whether obstacle exists between nodes
-   */
-  bool _isAnyObstacleInPath(const Node& n1, const Node& n2);
-  /**
    * @brief Generates a random node
    * @return Generated node
    */

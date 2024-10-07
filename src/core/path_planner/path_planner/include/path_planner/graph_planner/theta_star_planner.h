@@ -59,14 +59,6 @@ protected:
    */
   void _updateVertex(const Node& parent, Node& child);
 
-  /**
-   * @brief Bresenham algorithm to check if there is any obstacle between parent and child
-   * @param parent
-   * @param child
-   * @return true if no obstacle, else false
-   */
-  bool _lineOfSight(const Node& parent, const Node& child);
-
 private:
   const std::vector<Node> motions = {
     { 0, 1, 1.0 },          { 1, 0, 1.0 },           { 0, -1, 1.0 },          { -1, 0, 1.0 },
