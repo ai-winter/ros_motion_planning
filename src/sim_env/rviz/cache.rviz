@@ -15,23 +15,84 @@ Visualization Manager:
   - Class: rviz/TF
     Enabled: false
     Name: TF
-  - Class: rviz/RobotModel
+  - Class: rviz/Group
+    Displays:
+    - Class: rviz/RobotModel
+      Enabled: true
+      Name: RobotModel
+      Robot Description: robot1/robot_description
+      TF Prefix: robot1
+    - Class: rviz/Image
+      Enabled: false
+      Name: Image1
+      Topic: /robot1/camera/rgb/image_raw
+    - Alpha: 1
+      Class: rviz/LaserScan
+      Color: 255; 0; 0
+      Color Transformer: FlatColor
+      Enabled: true
+      Name: LaserScan1
+      Size (m): 0.03
+      Style: Spheres
+      Topic: /robot1/scan
+    - Class: rviz/Path
+      Color: 32; 74; 135
+      Enabled: true
+      Name: Path
     Enabled: true
-    Name: RobotModel
-    Robot Description: robot_description
-  - Class: rviz/Image
-    Enabled: false
-    Name: Image
-    Topic: /camera/rgb/image_raw
-  - Alpha: 1
-    Class: rviz/LaserScan
-    Color: 255; 0; 0
-    Color Transformer: FlatColor
+    Name: Robot1
+  - Class: rviz/Group
+    Displays:
+    - Class: rviz/RobotModel
+      Enabled: true
+      Name: RobotModel
+      Robot Description: robot2/robot_description
+      TF Prefix: robot2
+    - Class: rviz/Image
+      Enabled: false
+      Name: Image2
+      Topic: /robot2/camera/rgb/image_raw
+    - Alpha: 1
+      Class: rviz/LaserScan
+      Color: 255; 0; 0
+      Color Transformer: FlatColor
+      Enabled: true
+      Name: LaserScan2
+      Size (m): 0.03
+      Style: Spheres
+      Topic: /robot2/scan
+    - Class: rviz/Path
+      Color: 32; 74; 135
+      Enabled: true
+      Name: Path
     Enabled: true
-    Name: LaserScan
-    Size (m): 0.03
-    Style: Spheres
-    Topic: /scan
+    Name: Robot2
+  - Class: rviz/Group
+    Displays:
+    - Class: rviz/RobotModel
+      Enabled: true
+      Name: RobotModel
+      Robot Description: robot3/robot_description
+      TF Prefix: robot3
+    - Class: rviz/Image
+      Enabled: false
+      Name: Image3
+      Topic: /robot3/camera/rgb/image_raw
+    - Alpha: 1
+      Class: rviz/LaserScan
+      Color: 255; 0; 0
+      Color Transformer: FlatColor
+      Enabled: true
+      Name: LaserScan3
+      Size (m): 0.03
+      Style: Spheres
+      Topic: /robot3/scan
+    - Class: rviz/Path
+      Color: 32; 74; 135
+      Enabled: true
+      Name: Path
+    Enabled: true
+    Name: Robot3
   Global Options:
     Fixed Frame: map
   Tools:
@@ -42,6 +103,14 @@ Visualization Manager:
   - Class: rviz/Measure
   - Class: rviz/PublishPoint
   - Class: rviz/SetInitialPose
-    Topic: /initialpose
+    Topic: /robot1/initialpose
   - Class: rviz/SetGoal
-    Topic: /move_base_simple/goal
+    Topic: /robot1/move_base_simple/goal
+  - Class: rviz/SetInitialPose
+    Topic: /robot2/initialpose
+  - Class: rviz/SetGoal
+    Topic: /robot2/move_base_simple/goal
+  - Class: rviz/SetInitialPose
+    Topic: /robot3/initialpose
+  - Class: rviz/SetGoal
+    Topic: /robot3/move_base_simple/goal

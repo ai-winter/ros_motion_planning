@@ -9,12 +9,9 @@
   <author email="913982779@qq.com">Winter</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <!-- <build_depend>roscpp</build_depend>
-  <build_depend>rospy</build_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>urdf</run_depend>
-  <run_depend>xacro</run_depend> -->
+  <depend>rospy</depend>
+  <depend>urdf</depend>
+  <depend>xacro</depend>
 
 </package>
