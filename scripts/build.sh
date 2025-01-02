@@ -39,6 +39,6 @@ process_3rd_library() {
 
 cd ../3rd
 conan install . --output-folder=build --build=missing -s compiler.libcxx=libstdc++11
-process_3rd_library "gflags" "glog" "ceres-solver"
+process_3rd_library "gflags" "glog" "ceres-solver" "osqp" "libunwind"
 cd ../
 catkin_make

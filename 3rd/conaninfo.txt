@@ -26,8 +26,8 @@
     eigen/3.4.0:5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9
     gflags/2.2.2:88539f002769027b252fd7a108dc2f1fa9529154
     glog/0.6.0:a9d362b17f05cef8580ca68487c6299654e427f6
-    libunwind/1.8.0:33c616363345eda1477f22cf41ff3cd6c49db049
-    osqp/0.6.3:6af9cc7cb931c5ad942174fd7838eb655717c709
+    libunwind/1.8.0:c8c888b1fc83f5e0145e8890c2af3bd4e0005c98
+    osqp/0.6.3:2af715f34a7c8c2aeae57b25be0a52c4110dc502
     xz_utils/5.4.5:6af9cc7cb931c5ad942174fd7838eb655717c709
     zlib/1.3.1:6af9cc7cb931c5ad942174fd7838eb655717c709
 
@@ -50,14 +50,12 @@
     glog:with_threads=True
     glog:with_unwind=True
     libunwind:coredump=True
-    libunwind:fPIC=True
     libunwind:minidebuginfo=True
     libunwind:ptrace=True
     libunwind:setjmp=True
-    libunwind:shared=False
+    libunwind:shared=True
     libunwind:zlibdebuginfo=True
-    osqp:fPIC=True
-    osqp:shared=False
+    osqp:shared=True
     xz_utils:fPIC=True
     xz_utils:shared=False
     zlib:fPIC=True

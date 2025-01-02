@@ -7,6 +7,8 @@ class ExampleRecipe(ConanFile):
     generators = "CMakeDeps", "CMakeToolchain", "cmake_find_package", "cmake"
 
     def configure(self):
+        self.options["osqp"].shared = True
+        self.options["libunwind"].shared = True
         self.options["ceres-solver"].shared = True
         self.options["ceres-solver"].use_glog = True
         self.options["glog"].shared = True
