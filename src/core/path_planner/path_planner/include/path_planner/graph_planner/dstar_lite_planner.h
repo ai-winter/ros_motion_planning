@@ -97,8 +97,9 @@ public:
   /**
    * @brief Construct a new DStarLite object
    * @param costmap   the environment for path planning
+   * @param obstacle_factor obstacle factor(greater means obstacles)
    */
-  DStarLitePathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
+  DStarLitePathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor = 1.0);
   ~DStarLitePathPlanner();
 
   /**

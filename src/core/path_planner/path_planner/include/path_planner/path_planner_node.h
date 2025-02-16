@@ -24,6 +24,7 @@
 
 #include "common/geometry/point.h"
 #include "path_planner/path_planner.h"
+#include "path_planner/utils/path_planner_factory.h"
 
 namespace rmp
 {
@@ -99,32 +100,24 @@ protected:
   bool _getPlanFromPath(PathPlanner::Points3d& path, std::vector<geometry_msgs::PoseStamped>& plan);
 
 protected:
-  enum PLANNER_TYPE
-  {
-    GRAPH_PLANNER = 0,
-    SAMPLE_PLANNER = 1,
-    EVOLUTION_PLANNER = 2,
-  };
-
-protected:
   bool initialized_;                        // initialization flag
   costmap_2d::Costmap2DROS* costmap_ros_;   // costmap(ROS wrapper)
   std::string frame_id_;                    // costmap frame ID
-  std::string planner_name_;                // planner name
   PLANNER_TYPE planner_type_;               // planner type
-  std::string smoother_name_;               // smoother name
-  std::shared_ptr<PathPlanner> g_planner_;  // global graph planner
+  std::shared_ptr<PathPlanner> g_planner_;  // global path planner
   ros::Publisher plan_pub_;                 // path planning publisher
   ros::Publisher expand_pub_;               // nodes explorer publisher
+  ros::Publisher points_pub_;               // key-points publisher
+  ros::Publisher lines_pub_;                // polygons publisher
   ros::Publisher tree_pub_;                 // random search tree publisher
   ros::Publisher particles_pub_;            // evolutionary particles publisher
   ros::ServiceServer make_plan_srv_;        // planning service
 
 private:
-  bool is_outline_;   // whether outline the boudary of map
-  bool is_expand_;    // whether publish expand map or not
-  double tolerance_;  // tolerance
-  double factor_;     // obstacle inflation factor
+  bool is_outline_;            // whether outline the boudary of map
+  bool is_expand_;             // whether publish expand map or not
+  bool show_safety_corridor_;  // whether visualize safety corridor
+  double tolerance_;           // tolerance
 };
 }  // namespace path_planner
 }  // namespace rmp

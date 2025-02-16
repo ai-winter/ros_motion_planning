@@ -32,10 +32,12 @@ public:
   /**
    * @brief Construct a new AStar object
    * @param costmap   the environment for path planning
+   * @param obstacle_factor obstacle factor(greater means obstacles)
    * @param dijkstra   using diksktra implementation
    * @param gbfs       using gbfs implementation
    */
-  AStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, bool dijkstra = false, bool gbfs = false);
+  AStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor = 1.0, bool dijkstra = false,
+                   bool gbfs = false);
 
   /**
    * @brief A* implementation

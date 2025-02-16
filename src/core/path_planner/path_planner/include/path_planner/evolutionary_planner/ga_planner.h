@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "path_planner/path_planner.h"
-#include "common/geometry/bspline_curve.h"
+#include "common/geometry/curve/bspline_curve.h"
 
 namespace rmp
 {
@@ -57,6 +57,7 @@ public:
   /**
    * @brief Construct a new GA object
    * @param costmap   the environment for path planning
+   * @param obstacle_factor obstacle factor(greater means obstacles)
    * @param n_genets	    number of genets
    * @param n_inherited   number of inherited genets
    * @param point_num     number of position points contained in each genets
@@ -67,8 +68,9 @@ public:
    * @param init_mode	  Set the generation mode for the initial position points of the genets swarm
    * @param max_iter		  maximum iterations
    */
-  GAPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int n_genets, int n_inherited, int point_num, double p_select,
-                double p_crs, double p_mut, double max_speed, int init_mode, int max_iter);
+  GAPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor, int n_genets, int n_inherited,
+                int point_num, double p_select, double p_crs, double p_mut, double max_speed, int init_mode,
+                int max_iter);
   ~GAPathPlanner();
 
   /**
@@ -88,7 +90,7 @@ public:
    * @param goal      goal node
    * @param gen_mode  generation mode
    */
-  void initializePositions(PositionSequence& initial_positions, const Point2d& start, const Point2d& goal,
+  void initializePositions(PositionSequence& initial_positions, const Point3d& start, const Point3d& goal,
                            int gen_mode = GEN_MODE::CIRCLE);
 
   /**
@@ -132,7 +134,7 @@ protected:
   double p_select_, p_crs_, p_mut_;  // selection probability  crossover probability  mutation probability
   double max_speed_;                 // The maximum velocity of genets motion
   int init_mode_;                    // Set the generation mode for the initial position points of the genets swarm
-  Point2d start_, goal_;             // paired start and goal point for path smoothing
+  Point3d start_, goal_;             // paired start and goal point for path smoothing
 
 private:
   std::mutex mutex_;                                                  // thread lock

@@ -35,10 +35,11 @@ public:
   /**
    * @brief  Constructor
    * @param   costmap   the environment for path planning
+   * @param   obstacle_factor obstacle factor(greater means obstacles)
    * @param   sample_num  andom sample points
    * @param   max_dist    max distance between sample points
    */
-  RRTConnectPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num, double max_dist);
+  RRTConnectPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor, int sample_num, double max_dist);
 
   /**
    * @brief RRT implementation
@@ -48,14 +49,6 @@ public:
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
   bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);
-
-protected:
-  /**
-   * @brief convert closed list to path
-   * @param boundary  connected node that the boudary of forward and backward
-   * @return ector containing path nodes
-   */
-  std::vector<Node> _convertClosedListToPath(const Node& boundary);
 
 protected:
   // Sampled list forward

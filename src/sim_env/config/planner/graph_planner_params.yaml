@@ -1,11 +1,39 @@
 PathPlanner:
-  # offset of transform from world(x,y) to grid map(x,y)
-  convert_offset: 0.0
-  # error tolerance
-  default_tolerance: 0.0
-  # whether outline the map or not
-  outline_map: true
-  # obstacle inflation factor
-  obstacle_factor: 0.5
-  # whether publish expand zone or not
-  expand_zone: true
+  hybrid_astar:
+    # motion model
+    # 2 ---- DUBIN
+    # 3 ---- REEDS_SHEPP
+    motion_model: 2
+    # tolerance distance to goal [m]
+    goal_tolerance: 0.125
+    # Auxiliary dimensions for search
+    dim_3_size: 64
+    # Maximum number of iterations to use while expanding search
+    max_iterations: 1000000
+    # Maximum number of iterations during search near the goal
+    max_approach_iterations: 1000
+    # Allow search in unknown space, good for navigation while mapping
+    traverse_unknown: false
+    # penalty to apply to higher cost areas
+    cost_penalty: 2.0
+    # whether allow pre-computed obstacle heuristics
+    cache_obstacle_heuristic: false
+    # sample ratio for curve generation
+    curve_sample_ratio: 0.15
+    # Minimum turning radius
+    minimum_turning_radius: 0.4
+    # penalty to apply if motion is non-straight, must be => 1
+    non_straight_penalty: 1.20
+    # penalty to apply if motion is changing directions, must be >= 0
+    change_penalty: 0.0
+    # penalty to apply if motion is reversing, must be => 1
+    reverse_penalty: 2.1
+    # penalty to prefer later maneuvers before earlier along the path
+    retrospective_penalty: 0.025
+    # size of the dubin/reeds-sheep distance window to cache [meters]
+    lookup_table_dim: 20.0
+    # The ratio to attempt analytic expansions during search for final approach
+    analytic_expansion_ratio: 3.5
+    # The maximum length of the analytic expansion to be considered valid
+    analytic_expansion_max_length: 3.0
+    downsample_obstacle_heuristic: true

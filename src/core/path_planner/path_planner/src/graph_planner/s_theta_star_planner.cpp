@@ -31,9 +31,10 @@ using CollisionChecker = rmp::common::geometry::CollisionChecker;
 /**
  * @brief Construct a new SThetaStar object
  * @param costmap   the environment for path planning
+ * @param obstacle_factor obstacle factor(greater means obstacles)
  */
-SThetaStarPathPlanner::SThetaStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros)
-  : ThetaStarPathPlanner(costmap_ros){};
+SThetaStarPathPlanner::SThetaStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor)
+  : ThetaStarPathPlanner(costmap_ros, obstacle_factor){};
 
 /**
  * @brief S-Theta* implementation
@@ -45,15 +46,21 @@ SThetaStarPathPlanner::SThetaStarPathPlanner(costmap_2d::Costmap2DROS* costmap_r
  */
 bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
-  Node start_node(start.x(), start.y());
-  Node goal_node(goal.x(), goal.y());
+  double m_start_x, m_start_y, m_goal_x, m_goal_y;
+  if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
+  {
+    return false;
+  }
+
+  Node start_node(m_start_x, m_start_y);
+  Node goal_node(m_goal_x, m_goal_y);
   start_node.set_id(grid2Index(start_node.x(), start_node.y()));
   goal_node.set_id(grid2Index(goal_node.x(), goal_node.y()));
+
   // initialize
   path.clear();
   expand.clear();
-
-  // closed list
 
   // open list and closed list
   std::priority_queue<Node, std::vector<Node>, Node::compare_cost> open_list;
@@ -81,7 +88,10 @@ bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
       const auto& backtrace = _convertClosedListToPath<Node>(closed_list, start_node, goal_node);
       for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
       {
-        path.emplace_back(iter->x(), iter->y());
+        // convert to world frame
+        double wx, wy;
+        costmap_->mapToWorld(iter->x(), iter->y(), wx, wy);
+        path.emplace_back(wx, wy);
       }
       return true;
     }
@@ -123,7 +133,7 @@ bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
 
       // next node hit the boundary or obstacle
       if ((node_new.id() < 0) || (node_new.id() >= map_size_) ||
-          (costmap_->getCharMap()[node_new.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_ &&
+          (costmap_->getCharMap()[node_new.id()] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_ &&
            costmap_->getCharMap()[node_new.id()] >= costmap_->getCharMap()[current.id()]))
         continue;
 
@@ -150,7 +160,7 @@ void SThetaStarPathPlanner::_updateVertex(const Node& parent, Node& child, const
 {
   auto isCollision = [&](const Node& node1, const Node& node2) {
     return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
-      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_;
     });
   };
 

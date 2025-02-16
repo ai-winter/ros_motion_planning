@@ -29,8 +29,10 @@ constexpr int win_size = 70;
 /**
  * @brief Construct a new DStarLite object
  * @param costmap   the environment for path planning
+ * @param obstacle_factor obstacle factor(greater means obstacles)
  */
-DStarLitePathPlanner::DStarLitePathPlanner(costmap_2d::Costmap2DROS* costmap_ros) : PathPlanner(costmap_ros)
+DStarLitePathPlanner::DStarLitePathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor)
+  : PathPlanner(costmap_ros, obstacle_factor)
 {
   curr_global_costmap_ = new unsigned char[map_size_];
   last_global_costmap_ = new unsigned char[map_size_];
@@ -52,11 +54,11 @@ DStarLitePathPlanner::~DStarLitePathPlanner()
  */
 void DStarLitePathPlanner::initMap()
 {
-  map_ = new LNodePtr*[costmap_->getSizeInCellsX()];
-  for (int i = 0; i < costmap_->getSizeInCellsX(); i++)
+  map_ = new LNodePtr*[nx_];
+  for (int i = 0; i < nx_; i++)
   {
-    map_[i] = new LNodePtr[costmap_->getSizeInCellsY()];
-    for (int j = 0; j < costmap_->getSizeInCellsY(); j++)
+    map_[i] = new LNodePtr[ny_];
+    for (int j = 0; j < ny_; j++)
     {
       map_[i][j] =
           new LNode(i, j, std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), grid2Index(i, j), -1,
@@ -74,11 +76,11 @@ void DStarLitePathPlanner::reset()
   open_list_.clear();
   km_ = 0.0;
 
-  for (int i = 0; i < costmap_->getSizeInCellsX(); i++)
-    for (int j = 0; j < costmap_->getSizeInCellsY(); j++)
+  for (int i = 0; i < nx_; i++)
+    for (int j = 0; j < ny_; j++)
       delete map_[i][j];
 
-  for (int i = 0; i < costmap_->getSizeInCellsX(); i++)
+  for (int i = 0; i < nx_; i++)
     delete[] map_[i];
 
   delete[] map_;
@@ -118,8 +120,8 @@ double DStarLitePathPlanner::calculateKey(LNodePtr s)
  */
 bool DStarLitePathPlanner::isCollision(LNodePtr n1, LNodePtr n2)
 {
-  return (curr_global_costmap_[n1->id()] > costmap_2d::LETHAL_OBSTACLE * factor_) ||
-         (curr_global_costmap_[n2->id()] > costmap_2d::LETHAL_OBSTACLE * factor_);
+  return (curr_global_costmap_[n1->id()] > costmap_2d::LETHAL_OBSTACLE * obstacle_factor_) ||
+         (curr_global_costmap_[n2->id()] > costmap_2d::LETHAL_OBSTACLE * obstacle_factor_);
 }
 
 /**
@@ -139,7 +141,7 @@ void DStarLitePathPlanner::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neig
         continue;
 
       int x_n = x + i, y_n = y + j;
-      if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
+      if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
         continue;
       LNodePtr neigbour_ptr = map_[x_n][y_n];
 
@@ -263,7 +265,10 @@ bool DStarLitePathPlanner::extractPath(const LNode& start, const LNode& goal)
   int count = 0;
   while (node_ptr->x() != goal.x() || node_ptr->y() != goal.y())
   {
-    path_temp.emplace_back((*node_ptr).x(), (*node_ptr).y());
+    // convert to world frame
+    double wx, wy;
+    costmap_->mapToWorld((*node_ptr).x(), (*node_ptr).y(), wx, wy);
+    path_temp.emplace_back(wx, wy);
 
     // argmin_{s\in pred(u)}
     std::vector<LNodePtr> neigbours;
@@ -301,13 +306,13 @@ DStarLitePathPlanner::LNode DStarLitePathPlanner::getState(const LNode& current)
   LNode state(path_[0].x(), path_[0].y());
   double dis_min = std::hypot(state.x() - current.x(), state.y() - current.y());
   int idx_min = 0;
-  for (int i = 1; i < path_.size(); i++)
+  for (size_t i = 1; i < path_.size(); i++)
   {
     double dis = std::hypot(path_[i].x() - current.x(), path_[i].y() - current.y());
     if (dis < dis_min)
     {
       dis_min = dis;
-      idx_min = i;
+      idx_min = static_cast<int>(i);
     }
   }
   state.set_x(path_[idx_min].x());
@@ -325,6 +330,13 @@ DStarLitePathPlanner::LNode DStarLitePathPlanner::getState(const LNode& current)
  */
 bool DStarLitePathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
+  double m_start_x, m_start_y, m_goal_x, m_goal_y;
+  if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
+  {
+    return false;
+  }
+
   // update costmap
   memcpy(last_global_costmap_, curr_global_costmap_, map_size_);
   memcpy(curr_global_costmap_, costmap_->getCharMap(), map_size_);
@@ -335,15 +347,14 @@ bool DStarLitePathPlanner::plan(const Point3d& start, const Point3d& goal, Point
   if (goal_.x() != goal.x() || goal_.y() != goal.y())
   {
     reset();
-    start_.set_x(start.x());
-    start_.set_y(start.y());
-    start_.set_id(grid2Index(start.x(), start.y()));
-    goal_.set_x(goal.x());
-    goal_.set_y(goal.y());
-    goal_.set_id(grid2Index(goal_.x(), goal_.y()));
-
-    start_ptr_ = map_[static_cast<unsigned int>(start.x())][static_cast<unsigned int>(start.y())];
-    goal_ptr_ = map_[static_cast<unsigned int>(goal.x())][static_cast<unsigned int>(goal.y())];
+    start_.set_x(m_start_x);
+    start_.set_y(m_start_y);
+    start_.set_id(grid2Index(m_start_x, m_start_y));
+    goal_.set_x(m_goal_x);
+    goal_.set_y(m_goal_y);
+    goal_.set_id(grid2Index(m_goal_x, m_goal_y));
+    start_ptr_ = map_[static_cast<unsigned int>(m_start_x)][static_cast<unsigned int>(m_start_y)];
+    goal_ptr_ = map_[static_cast<unsigned int>(m_goal_x)][static_cast<unsigned int>(m_goal_y)];
     last_ptr_ = start_ptr_;
 
     goal_ptr_->setRhs(0.0);
@@ -361,16 +372,16 @@ bool DStarLitePathPlanner::plan(const Point3d& start, const Point3d& goal, Point
   }
   else
   {
-    start_.set_x(start.x());
-    start_.set_y(start.y());
-    start_.set_id(grid2Index(start.x(), start.y()));
-    start_ptr_ = map_[static_cast<unsigned int>(start.x())][static_cast<unsigned int>(start.y())];
+    start_.set_x(m_start_x);
+    start_.set_y(m_start_y);
+    start_.set_id(grid2Index(m_start_x, m_start_y));
+    start_ptr_ = map_[static_cast<unsigned int>(m_start_x)][static_cast<unsigned int>(m_start_y)];
     for (int i = -win_size / 2; i < win_size / 2; i++)
     {
       for (int j = -win_size / 2; j < win_size / 2; j++)
       {
-        int x_n = start.x() + i, y_n = start.y() + j;
-        if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
+        int x_n = m_start_x + i, y_n = m_start_y + j;
+        if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
           continue;
 
         int idx = grid2Index(x_n, y_n);

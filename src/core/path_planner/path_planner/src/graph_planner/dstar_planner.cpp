@@ -31,8 +31,10 @@ constexpr int win_size = 70;
 /**
  * @brief Construct a new DStar object
  * @param costmap   the environment for path planning
+ * @param obstacle_factor obstacle factor(greater means obstacles)
  */
-DStarPathPlanner::DStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros) : PathPlanner(costmap_ros)
+DStarPathPlanner::DStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor)
+  : PathPlanner(costmap_ros, obstacle_factor)
 {
   curr_global_costmap_ = new unsigned char[map_size_];
   last_global_costmap_ = new unsigned char[map_size_];
@@ -46,11 +48,11 @@ DStarPathPlanner::DStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros) : Path
  */
 void DStarPathPlanner::initMap()
 {
-  map_ = new DNodePtr*[costmap_->getSizeInCellsX()];
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
+  map_ = new DNodePtr*[nx_];
+  for (int i = 0; i < nx_; ++i)
   {
-    map_[i] = new DNodePtr[costmap_->getSizeInCellsY()];
-    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
+    map_[i] = new DNodePtr[ny_];
+    for (int j = 0; j < ny_; ++j)
     {
       map_[i][j] = new DNode(i, j, std::numeric_limits<double>::max(), std::numeric_limits<double>::max(),
                              grid2Index(i, j), -1, DNode::NEW, std::numeric_limits<double>::max());
@@ -65,11 +67,11 @@ void DStarPathPlanner::reset()
 {
   open_list_.clear();
 
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
-    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
+  for (int i = 0; i < nx_; ++i)
+    for (int j = 0; j < ny_; ++j)
       delete map_[i][j];
 
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
+  for (int i = 0; i < nx_; ++i)
     delete[] map_[i];
 
   delete[] map_;
@@ -104,8 +106,8 @@ void DStarPathPlanner::insert(DNodePtr node_ptr, double h_new)
  */
 bool DStarPathPlanner::isCollision(DNodePtr n1, DNodePtr n2)
 {
-  return curr_global_costmap_[n1->id()] > costmap_2d::LETHAL_OBSTACLE * factor_ ||
-         curr_global_costmap_[n2->id()] > costmap_2d::LETHAL_OBSTACLE * factor_;
+  return curr_global_costmap_[n1->id()] > costmap_2d::LETHAL_OBSTACLE * obstacle_factor_ ||
+         curr_global_costmap_[n2->id()] > costmap_2d::LETHAL_OBSTACLE * obstacle_factor_;
 }
 
 /**
@@ -124,7 +126,7 @@ void DStarPathPlanner::getNeighbours(DNodePtr node_ptr, std::vector<DNodePtr>& n
         continue;
 
       int x_n = x + i, y_n = y + j;
-      if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
+      if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
         continue;
 
       DNodePtr neigbour_ptr = map_[x_n][y_n];
@@ -220,9 +222,9 @@ double DStarPathPlanner::processState()
  */
 void DStarPathPlanner::extractExpand(std::vector<DNode>& expand)
 {
-  for (int i = 0; i < costmap_->getSizeInCellsX(); ++i)
+  for (int i = 0; i < nx_; ++i)
   {
-    for (int j = 0; j < costmap_->getSizeInCellsY(); ++j)
+    for (int j = 0; j < ny_; ++j)
     {
       DNodePtr node_ptr = map_[i][j];
       if (node_ptr->t() == DNode::CLOSED)
@@ -241,7 +243,10 @@ void DStarPathPlanner::extractPath(const DNode& start, const DNode& goal)
   DNodePtr node_ptr = map_[static_cast<unsigned int>(start.x())][static_cast<unsigned int>(start.y())];
   while (node_ptr->x() != goal.x() || node_ptr->y() != goal.y())
   {
-    path_.emplace_back((*node_ptr).x(), (*node_ptr).y());
+    // convert to world frame
+    double wx, wy;
+    costmap_->mapToWorld((*node_ptr).x(), (*node_ptr).y(), wx, wy);
+    path_.emplace_back(wx, wy);
 
     int x, y;
     index2Grid(node_ptr->pid(), x, y);
@@ -259,13 +264,13 @@ DStarPathPlanner::DNode DStarPathPlanner::getState(const DNode& current)
   DNode state(path_[0].x(), path_[0].y());
   double dis_min = std::hypot(state.x() - current.x(), state.y() - current.y());
   int idx_min = 0;
-  for (int i = 1; i < path_.size(); i++)
+  for (size_t i = 1; i < path_.size(); i++)
   {
     double dis = std::hypot(path_[i].x() - current.x(), path_[i].y() - current.y());
     if (dis < dis_min)
     {
       dis_min = dis;
-      idx_min = i;
+      idx_min = static_cast<int>(i);
     }
   }
   state.set_x(path_[idx_min].x());
@@ -293,6 +298,13 @@ void DStarPathPlanner::modify(DNodePtr x)
  */
 bool DStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
+  double m_start_x, m_start_y, m_goal_x, m_goal_y;
+  if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
+  {
+    return false;
+  }
+
   // update costmap
   memcpy(last_global_costmap_, curr_global_costmap_, map_size_);
   memcpy(curr_global_costmap_, costmap_->getCharMap(), map_size_);
@@ -300,15 +312,15 @@ bool DStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d&
   expand_.clear();
 
   // new goal set
-  if (goal_.x() != goal.x() || goal_.y() != goal.y())
+  if (goal_.x() != m_goal_x || goal_.y() != m_goal_y)
   {
     reset();
-    goal_.set_x(goal.x());
-    goal_.set_y(goal.y());
+    goal_.set_x(m_goal_x);
+    goal_.set_y(m_goal_y);
     goal_.set_id(grid2Index(goal_.x(), goal_.y()));
 
-    DNodePtr start_ptr = map_[static_cast<unsigned int>(start.x())][static_cast<unsigned int>(start.y())];
-    DNodePtr goal_ptr = map_[static_cast<unsigned int>(goal.x())][static_cast<unsigned int>(goal.y())];
+    DNodePtr start_ptr = map_[static_cast<unsigned int>(m_start_x)][static_cast<unsigned int>(m_start_y)];
+    DNodePtr goal_ptr = map_[static_cast<unsigned int>(m_goal_x)][static_cast<unsigned int>(m_goal_y)];
 
     goal_ptr->set_g(0.0);
     insert(goal_ptr, 0);
@@ -320,7 +332,7 @@ bool DStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d&
     }
 
     path_.clear();
-    extractPath({ static_cast<int>(start.x()), static_cast<int>(start.y()) }, goal_);
+    extractPath({ static_cast<int>(m_start_x), static_cast<int>(m_start_y) }, goal_);
 
     expand = expand_;
     path = path_;
@@ -330,7 +342,7 @@ bool DStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d&
   else
   {
     // get current state from path, argmin Euler distance
-    DNode state = getState({ static_cast<int>(start.x()), static_cast<int>(start.y()) });
+    DNode state = getState({ static_cast<int>(m_start_x), static_cast<int>(m_start_y) });
 
     // prepare-repair
     for (int i = -win_size / 2; i < win_size / 2; ++i)
@@ -338,7 +350,7 @@ bool DStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d&
       for (int j = -win_size / 2; j < win_size / 2; ++j)
       {
         int x_n = state.x() + i, y_n = state.y() + j;
-        if (x_n < 0 || x_n > costmap_->getSizeInCellsX() - 1 || y_n < 0 || y_n > costmap_->getSizeInCellsY() - 1)
+        if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
           continue;
 
         DNodePtr x = map_[x_n][y_n];

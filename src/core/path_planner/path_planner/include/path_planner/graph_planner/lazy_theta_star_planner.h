@@ -35,8 +35,9 @@ public:
   /**
    * @brief Construct a new LaztThetaStar object
    * @param costmap   the environment for path planning
+   * @param obstacle_factor obstacle factor(greater means obstacles)
    */
-  LazyThetaStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
+  LazyThetaStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor = 1.0);
 
   /**
    * @brief Lazy Theta* implementation

@@ -14,16 +14,8 @@
  *
  * ********************************************************
  */
-
-/**
- * @file
- * @brief Defines the Vec2d class.
- */
-
-#pragma once
-
-#include <cmath>
-#include <string>
+#ifndef RMP_COMMON_GEOMETRY_VECTOR2D_H_
+#define RMP_COMMON_GEOMETRY_VECTOR2D_H_
 
 namespace rmp
 {
@@ -31,8 +23,6 @@ namespace common
 {
 namespace geometry
 {
-constexpr double kMathEpsilon = 1e-10;
-
 /**
  * @class Vec2d
  *
@@ -112,6 +102,7 @@ public:
   Vec2d operator+(const Vec2d& other) const;
 
   //! Subtracts two Vec2d
+  Vec2d operator-() const;
   Vec2d operator-(const Vec2d& other) const;
 
   //! Multiplies Vec2d by a scalar
@@ -143,6 +134,7 @@ protected:
 //! Multiplies the given Vec2d by a given scalar
 Vec2d operator*(const double ratio, const Vec2d& vec);
 
-}  // namespace structure
+}  // namespace geometry
 }  // namespace common
-}  // namespace apollo
+}  // namespace rmp
+#endif

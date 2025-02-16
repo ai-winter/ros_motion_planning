@@ -28,6 +28,7 @@ namespace path_planner
 /**
  * @brief Construct a new PSO object
  * @param costmap   the environment for path planning
+ * @param obstacle_factor obstacle factor(greater means obstacles)
  * @param n_particles	  number of particles
  * @param n_inherited   number of inherited particles
  * @param point_num      number of position points contained in each particle
@@ -38,10 +39,10 @@ namespace path_planner
  * @param init_mode	  Set the generation mode for the initial position points of the particle swarm
  * @param max_iter		  maximum iterations
  */
-PSOPathPlanner::PSOPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int n_particles, int n_inherited, int point_num,
-                               double w_inertial, double w_social, double w_cognitive, double max_speed, int init_mode,
-                               int max_iter)
-  : PathPlanner(costmap_ros)
+PSOPathPlanner::PSOPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor, int n_particles,
+                               int n_inherited, int point_num, double w_inertial, double w_social, double w_cognitive,
+                               double max_speed, int init_mode, int max_iter)
+  : PathPlanner(costmap_ros, obstacle_factor)
   , n_particles_(n_particles)
   , n_inherited_(n_inherited)
   , point_num_(point_num)
@@ -70,10 +71,19 @@ PSOPathPlanner::~PSOPathPlanner()
  */
 bool PSOPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
-  start_.setX(start.x());
-  start_.setY(start.y());
-  goal_.setX(goal.x());
-  goal_.setY(goal.y());
+  double m_start_x, m_start_y, m_goal_x, m_goal_y;
+  if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
+  {
+    return false;
+  }
+
+  start_.setX(m_start_x);
+  start_.setY(m_start_y);
+  start_.setTheta(start.theta());
+  goal_.setX(m_goal_x);
+  goal_.setY(m_goal_y);
+  goal_.setTheta(goal.theta());
   expand.clear();
 
   // variable initialization
@@ -124,11 +134,13 @@ bool PSOPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
   }
 
   // Generating Paths from Optimal Particles
-  Points2d points, b_path;
-  points.emplace_back(start.x(), start.y());
+  Points3d points, b_path;
+  points.emplace_back(m_start_x, m_start_y, start.theta());
   for (const auto& pos : best_particle.position)
+  {
     points.emplace_back(pos.x(), pos.y());
-  points.emplace_back(goal.x(), goal.y());
+  }
+  points.emplace_back(m_goal_x, m_goal_y, goal.theta());
   points.erase(std::unique(std::begin(points), std::end(points)), std::end(points));
 
   bspline_gen_->run(points, b_path);
@@ -137,7 +149,10 @@ bool PSOPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
   path.clear();
   for (const auto& pt : b_path)
   {
-    path.emplace_back(pt.x(), pt.y());
+    // convert to world frame
+    double wx, wy;
+    costmap_->mapToWorld(pt.x(), pt.y(), wx, wy);
+    path.emplace_back(wx, wy, pt.theta());
   }
 
   // Update inheritance particles based on optimal fitness
@@ -158,7 +173,7 @@ bool PSOPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
  * @param goal      goal node
  * @param gen_mode  generation mode
  */
-void PSOPathPlanner::initializePositions(PositionSequence& initial_positions, const Point2d& start, const Point2d& goal,
+void PSOPathPlanner::initializePositions(PositionSequence& initial_positions, const Point3d& start, const Point3d& goal,
                                          int gen_mode)
 {
   // Use a random device and engine to generate random numbers
@@ -195,8 +210,8 @@ void PSOPathPlanner::initializePositions(PositionSequence& initial_positions, co
     {
       if (gen_mode == GEN_MODE::RANDOM)
       {
-        x[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsX() - 1)(gen);
-        y[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsY() - 1)(gen);
+        x[point_id] = std::uniform_int_distribution<int>(0, nx_ - 1)(gen);
+        y[point_id] = std::uniform_int_distribution<int>(0, ny_ - 1)(gen);
         pos_id = grid2Index(x[point_id], y[point_id]);
       }
       else
@@ -209,8 +224,7 @@ void PSOPathPlanner::initializePositions(PositionSequence& initial_positions, co
         x[point_id] = static_cast<int>(std::round(center_x + r * std::cos(angle)));
         y[point_id] = static_cast<int>(std::round(center_y + r * std::sin(angle)));
         // Check if the coordinates are within the map range
-        if (x[point_id] >= 0 && x[point_id] < costmap_->getSizeInCellsX() && y[point_id] >= 0 &&
-            y[point_id] < costmap_->getSizeInCellsY())
+        if (x[point_id] >= 0 && x[point_id] < nx_ && y[point_id] >= 0 && y[point_id] < ny_)
           pos_id = grid2Index(x[point_id], y[point_id]);
         else
           continue;
@@ -249,11 +263,13 @@ void PSOPathPlanner::initializePositions(PositionSequence& initial_positions, co
  */
 double PSOPathPlanner::calFitnessValue(const Points2d& position)
 {
-  Points2d points, b_path;
-  points.push_back(start_);
+  Points3d points, b_path;
+  points.emplace_back(start_.x(), start_.y(), start_.theta());
   for (const auto& pos : position)
+  {
     points.emplace_back(pos.x(), pos.y());
-  points.push_back(goal_);
+  }
+  points.emplace_back(goal_.x(), goal_.y(), goal_.theta());
   points.erase(std::unique(std::begin(points), std::end(points)), std::end(points));
   bspline_gen_->run(points, b_path);
 
@@ -265,11 +281,11 @@ double PSOPathPlanner::calFitnessValue(const Points2d& position)
     point_index = grid2Index(static_cast<int>(b_path[i].x()), static_cast<int>(b_path[i].y()));
     // next node hit the boundary or obstacle
     if ((point_index < 0) || (point_index >= map_size_) ||
-        (costmap_->getCharMap()[point_index] >= costmap_2d::LETHAL_OBSTACLE * factor_))
+        (costmap_->getCharMap()[point_index] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_))
       obs_cost++;
   }
   // Calculate particle fitness
-  return 100000.0 / (bspline_gen_->len(b_path) + 1000 * obs_cost);
+  return 100000.0 / (bspline_gen_->distance(b_path) + 1000 * obs_cost);
 }
 
 /**
@@ -316,10 +332,8 @@ void PSOPathPlanner::updateParticlePosition(Particle& particle)
     particle.position[i].setY(particle.position[i].y() + particle.velocity[i].y());
 
     // Position limit
-    particle.position[i].setX(
-        rmp::common::math::clamp(particle.position[i].x(), 1.0, static_cast<double>(costmap_->getSizeInCellsX()) - 1));
-    particle.position[i].setY(
-        rmp::common::math::clamp(particle.position[i].y(), 1.0, static_cast<double>(costmap_->getSizeInCellsY()) - 1));
+    particle.position[i].setX(rmp::common::math::clamp(particle.position[i].x(), 1.0, static_cast<double>(nx_) - 1));
+    particle.position[i].setY(rmp::common::math::clamp(particle.position[i].y(), 1.0, static_cast<double>(ny_) - 1));
   }
 }
 

@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "path_planner/path_planner.h"
-#include "common/geometry/bspline_curve.h"
+#include "common/geometry/curve/bspline_curve.h"
 
 namespace rmp
 {
@@ -61,6 +61,7 @@ public:
   /**
    * @brief Construct a new PSO object
    * @param costmap   the environment for path planning
+   * @param obstacle_factor obstacle factor(greater means obstacles)
    * @param n_particles	  number of particles
    * @param n_inherited   number of inherited particles
    * @param point_num      number of position points contained in each particle
@@ -71,8 +72,9 @@ public:
    * @param init_mode	  Set the generation mode for the initial position points of the particle swarm
    * @param max_iter		  maximum iterations
    */
-  PSOPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int n_particles, int n_inherited, int point_num,
-                 double w_inertial, double w_social, double w_cognitive, double max_speed, int init_mode, int max_iter);
+  PSOPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor, int n_particles, int n_inherited,
+                 int point_num, double w_inertial, double w_social, double w_cognitive, double max_speed, int init_mode,
+                 int max_iter);
   ~PSOPathPlanner();
 
   /**
@@ -92,7 +94,7 @@ public:
    * @param goal      goal node
    * @param gen_mode  generation mode
    */
-  void initializePositions(PositionSequence& initial_positions, const Point2d& start, const Point2d& goal,
+  void initializePositions(PositionSequence& initial_positions, const Point3d& start, const Point3d& goal,
                            int gen_mode = GEN_MODE::CIRCLE);
 
   /**
@@ -141,7 +143,7 @@ protected:
       w_cognitive_;   // Weight coefficients for fitness calculation: inertia weight, social weight, cognitive weight
   double max_speed_;  // The maximum velocity of particle motion
   int init_mode_;     // Set the generation mode for the initial position points of the particle swarm
-  Point2d start_, goal_;  // paired start and goal point for path smoothing
+  Point3d start_, goal_;  // paired start and goal point for path smoothing
 
 private:
   std::mutex mutex_;                                                  // thread lock

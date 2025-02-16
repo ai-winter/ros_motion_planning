@@ -87,8 +87,9 @@ public:
   /**
    * @brief Construct a new DStar object
    * @param costmap   the environment for path planning
+   * @param obstacle_factor obstacle factor(greater means obstacles)
    */
-  DStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
+  DStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor = 1.0);
 
   /**
    * @brief Init map

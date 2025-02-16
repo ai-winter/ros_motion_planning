@@ -15,6 +15,7 @@
 #define RMP_COMMON_GEOMETRY_COLLISION_CHECKER_H_
 
 #include <cmath>
+#include <costmap_2d/costmap_2d_ros.h>
 
 namespace rmp
 {
@@ -25,10 +26,37 @@ namespace geometry
 class CollisionChecker
 {
 public:
-  CollisionChecker() = default;
+  CollisionChecker(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor = 1.0)
+    : costmap_ros_(costmap_ros), obstacle_factor_(obstacle_factor){};
   ~CollisionChecker() = default;
 
-public:
+  /**
+   * @brief Get the current costmap ROS wrapper object
+   */
+  costmap_2d::Costmap2DROS* getCostmapROS() const;
+
+  /**
+   * @brief grid map collision detection
+   * @param i grid index
+   * @param traverse_unknown Whether or not to traverse in unknown space
+   * @return true if collision occurs, else false
+   */
+  bool inCollision(const unsigned int& i, const bool& traverse_unknown = true);
+
+  /**
+   * @brief get cost value in costmap
+   * @param i grid index
+   * @return cost value
+   */
+  float getCost(const unsigned int& i);
+
+  /**
+   * @brief Judge whether the grid is inside the map
+   * @param i grid index
+   * @return true if inside the map else false
+   */
+  bool isInsideMap(const unsigned int& i);
+
   /**
    * @brief 1d-collision checker Bresenham: to check if there is any obstacle between pt1 and pt2
    * @param pt1 point1
@@ -104,6 +132,10 @@ public:
     }
     return false;
   }
+
+private:
+  costmap_2d::Costmap2DROS* costmap_ros_;  // costmap ROS wrapper
+  double obstacle_factor_;                 // obstacle factor(greater means obstacles)
 };
 }  // namespace geometry
 }  // namespace common

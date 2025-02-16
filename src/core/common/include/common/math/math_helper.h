@@ -14,12 +14,11 @@
  *
  * ********************************************************
  */
-
 #ifndef RMP_COMMON_MATH_MATH_HELPER_H_
 #define RMP_COMMON_MATH_MATH_HELPER_H_
-#pragma once
 
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <vector>
 
@@ -33,24 +32,57 @@ namespace math
 {
 constexpr double kMathEpsilon = 1e-10;
 
+/**
+ * @brief factorial calculation
+ * @param n number
+ * @return n!
+ */
+constexpr uint64_t factorial(uint64_t n) noexcept
+{
+  return (n <= 1) ? 1 : (n * factorial(n - 1));
+}
+
+/**
+ * @brief absolute value calculation
+ * @param val value
+ * @return |val|
+ */
 template <typename T>
 T abs(T val)
 {
   return val < 0 ? -val : val;
 }
 
+/**
+ * @brief Determine whether the query is less than the target within the epsilon
+ * @param query value
+ * @param target value
+ * @return query < target
+ */
 template <typename T>
 bool less(T query, T target)
 {
   return query < target && abs(query - target) > kMathEpsilon ? true : false;
 }
 
+/**
+ * @brief Determine whether the query is higher than the target within the epsilon
+ * @param query value
+ * @param target value
+ * @return query > target
+ */
 template <typename T>
 bool large(T query, T target)
 {
   return query > target && abs(query - target) > kMathEpsilon ? true : false;
 }
 
+/**
+ * @brief Determine whether the query is euqal to the target within the epsilon
+ * @param query value
+ * @param target value
+ * @return query = target
+ */
 template <typename T>
 bool equal(T query, T target)
 {
@@ -167,8 +199,42 @@ double innerProd(const double x0, const double y0, const double x1, const double
  * @param r         the radius of circle centered at the origin
  * @return points   the intersection points of a line and the circle
  */
-std::vector<std::pair<double, double>> circleSegmentIntersection(const std::pair<double, double>& p1,
-                                                                 const std::pair<double, double>& p2, double r);
+std::vector<rmp::common::geometry::Vec2d> circleSegmentIntersection(const rmp::common::geometry::Vec2d& p1,
+                                                                    const rmp::common::geometry::Vec2d& p2, double r);
+
+/**
+ * @brief Center of an arc between three points
+ * @note http://paulbourke.net/geometry/circlesphere/
+ * @note https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Intersection%20of%20two%20lines
+ * @param pt_prev Starting point of the arc
+ * @param pt Mid point of the arc
+ * @param pt_next Last point of the arc
+ * @param is_cusp True if pt is a cusp point
+ * @result position of the center or Vector2(inf, inf) for straight lines and 180 deg turns
+ */
+double arcCenter(const rmp::common::geometry::Vec2d& pt_prev, const rmp::common::geometry::Vec2d& pt,
+                 const rmp::common::geometry::Vec2d& pt_next, bool is_cusp,
+                 rmp::common::geometry::Vec2d* center = nullptr);
+
+/**
+ * @brief Direction of a line which contains pt and is tangential to arc
+ * @param pt_prev Starting point of the arc
+ * @param pt Mid point of the arc
+ * @param pt_next Last point of the arc
+ * @param is_cusp True if pt is a cusp point
+ * @result Tangential line direction.
+ * @note the sign of tangentDir is undefined here, should be assigned in post-process depending
+ *       on movement direction. Also, for speed reasons, direction vector is not normalized.
+ */
+rmp::common::geometry::Vec2d tangentDir(const rmp::common::geometry::Vec2d& pt_prev,
+                                        const rmp::common::geometry::Vec2d& pt,
+                                        const rmp::common::geometry::Vec2d& pt_next, bool is_cusp);
+
+/**
+ * @brief Sort a set of points in counterclockwise order
+ * @param points a set of points to sort
+ */
+void sortPoints(std::vector<rmp::common::geometry::Vec2d>& points);
 
 }  // namespace math
 }  // namespace common

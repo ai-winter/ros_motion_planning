@@ -14,10 +14,11 @@
  *
  * ********************************************************
  */
-
 #include <cmath>
-#include "common/geometry/vec2d.h"
+
 #include "common/util/log.h"
+#include "common/geometry/vec2d.h"
+#include "common/math/math_helper.h"
 
 namespace rmp
 {
@@ -48,7 +49,7 @@ double Vec2d::angle() const
 void Vec2d::normalize()
 {
   const double l = length();
-  if (l > kMathEpsilon)
+  if (l > rmp::common::math::kMathEpsilon)
   {
     x_ /= l;
     y_ /= l;
@@ -94,6 +95,11 @@ Vec2d Vec2d::operator+(const Vec2d& other) const
   return Vec2d(x_ + other.x(), y_ + other.y());
 }
 
+Vec2d Vec2d::operator-() const
+{
+  return Vec2d(-x_, -y_);
+}
+
 Vec2d Vec2d::operator-(const Vec2d& other) const
 {
   return Vec2d(x_ - other.x(), y_ - other.y());
@@ -106,7 +112,7 @@ Vec2d Vec2d::operator*(const double ratio) const
 
 Vec2d Vec2d::operator/(const double ratio) const
 {
-  CHECK_GT(std::abs(ratio), kMathEpsilon);
+  CHECK_GT(std::abs(ratio), rmp::common::math::kMathEpsilon);
   return Vec2d(x_ / ratio, y_ / ratio);
 }
 
@@ -133,7 +139,7 @@ Vec2d& Vec2d::operator*=(const double ratio)
 
 Vec2d& Vec2d::operator/=(const double ratio)
 {
-  CHECK_GT(std::abs(ratio), kMathEpsilon);
+  CHECK_GT(std::abs(ratio), rmp::common::math::kMathEpsilon);
   x_ /= ratio;
   y_ /= ratio;
   return *this;
@@ -141,7 +147,8 @@ Vec2d& Vec2d::operator/=(const double ratio)
 
 bool Vec2d::operator==(const Vec2d& other) const
 {
-  return (std::abs(x_ - other.x()) < kMathEpsilon && std::abs(y_ - other.y()) < kMathEpsilon);
+  return (std::abs(x_ - other.x()) < rmp::common::math::kMathEpsilon &&
+          std::abs(y_ - other.y()) < rmp::common::math::kMathEpsilon);
 }
 
 Vec2d operator*(const double ratio, const Vec2d& vec)

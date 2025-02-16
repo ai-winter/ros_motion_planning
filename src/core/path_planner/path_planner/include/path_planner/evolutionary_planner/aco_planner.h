@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "path_planner/path_planner.h"
-#include "common/geometry/bspline_curve.h"
+#include "common/geometry/curve/bspline_curve.h"
 
 namespace rmp
 {
@@ -57,6 +57,7 @@ public:
   /**
    * @brief Construct a new ACO object
    * @param costmap   the environment for path planning
+   * @param obstacle_factor obstacle factor(greater means obstacles)
    * @param n_ants			number of ants
    * @param alpha				pheromone weight coefficient
    * @param beta				heuristic factor weight coefficient
@@ -64,8 +65,8 @@ public:
    * @param Q						pheromone gain
    * @param max_iter		maximum iterations
    */
-  ACOPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int n_ants, int n_inherited, int point_num, double alpha,
-                 double beta, double rho, double Q, int init_mode, int max_iter);
+  ACOPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor, int n_ants, int n_inherited,
+                 int point_num, double alpha, double beta, double rho, double Q, int init_mode, int max_iter);
   ~ACOPathPlanner();
 
   /**
@@ -85,7 +86,7 @@ public:
    * @param goal      goal node
    * @param gen_mode  generation mode
    */
-  void initializePositions(PositionSequence& initial_positions, const Point2d& start, const Point2d& goal,
+  void initializePositions(PositionSequence& initial_positions, const Point3d& start, const Point3d& goal,
                            int gen_mode = GEN_MODE::CIRCLE);
 
   /**
@@ -104,7 +105,7 @@ public:
    */
   void optimizeAnt(Ant& ant, Ant& best_ant, std::mt19937& gen, Points3d& expand);
 
-  void updateAnts(std::vector<Ant>& ants, const Point2d& start, const Point2d& goal, Ant& best_ant);
+  void updateAnts(std::vector<Ant>& ants, const Point3d& start, const Point3d& goal, Ant& best_ant);
 
 public:
   enum GEN_MODE
@@ -114,15 +115,15 @@ public:
   };
 
 protected:
-  int point_num_;          // number of position points contained in each ant
   int n_ants_;             // number of ants
   int n_inherited_;        // number of inherited ants
+  int point_num_;          // number of position points contained in each ant
   double alpha_, beta_;    // pheromone and heuristic factor weight coefficient
   double rho_;             // evaporation coefficient
   double Q_;               // pheromone gain
-  int max_iter_;           // maximum iterations
   int init_mode_;          // Set the generation mode for the initial position points of the genets swarm
-  Point2d start_, goal_;   // paired start and goal point for path smoothing
+  int max_iter_;           // maximum iterations
+  Point3d start_, goal_;   // paired start and goal point for path smoothing
   double* pheromone_mat_;  // pheromone matrix
 
 private:

@@ -27,6 +27,7 @@ namespace path_planner
 /**
  * @brief Construct a new GA object
  * @param costmap   the environment for path planning
+ * @param obstacle_factor obstacle factor(greater means obstacles)
  * @param n_genets	    number of genets
  * @param n_inherited   number of inherited genets
  * @param point_num   number of position points contained in each genets
@@ -37,9 +38,10 @@ namespace path_planner
  * @param init_mode	  Set the generation mode for the initial position points of the genets swarm
  * @param max_iter		  maximum iterations
  */
-GAPathPlanner::GAPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int n_genets, int n_inherited, int point_num,
-                             double p_select, double p_crs, double p_mut, double max_speed, int init_mode, int max_iter)
-  : PathPlanner(costmap_ros)
+GAPathPlanner::GAPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor, int n_genets,
+                             int n_inherited, int point_num, double p_select, double p_crs, double p_mut,
+                             double max_speed, int init_mode, int max_iter)
+  : PathPlanner(costmap_ros, obstacle_factor)
   , n_genets_(n_genets)
   , n_inherited_(n_inherited)
   , point_num_(point_num)
@@ -68,16 +70,24 @@ GAPathPlanner::~GAPathPlanner()
  */
 bool GAPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
-  start_.setX(start.x());
-  start_.setY(start.y());
-  goal_.setX(goal.x());
-  goal_.setY(goal.y());
+  double m_start_x, m_start_y, m_goal_x, m_goal_y;
+  if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
+  {
+    return false;
+  }
+
+  start_.setX(m_start_x);
+  start_.setY(m_start_y);
+  start_.setTheta(start.theta());
+  goal_.setX(m_goal_x);
+  goal_.setY(m_goal_y);
+  goal_.setTheta(goal.theta());
   expand.clear();
 
   if ((n_genets_ <= 0) || (n_genets_ % 2 != 0))
   {
-    std::cout << " GA : The parameter n_genets is set improperly. Please ensure that it is a positive even number."
-              << std::endl;
+    R_ERROR << " GA : The parameter n_genets is set improperly. Please ensure that it is a positive even number.";
     return false;
   }
 
@@ -140,11 +150,13 @@ bool GAPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& pa
   }
 
   // Generating Paths from Optimal Genets
-  Points2d points, b_path;
-  points.emplace_back(start.x(), start.y());
+  Points3d points, b_path;
+  points.emplace_back(m_start_x, m_start_y, start.theta());
   for (const auto& pos : best_genet.position)
+  {
     points.emplace_back(pos.x(), pos.y());
-  points.emplace_back(goal.x(), goal.y());
+  }
+  points.emplace_back(m_goal_x, m_goal_y, goal.theta());
   points.erase(std::unique(std::begin(points), std::end(points)), std::end(points));
 
   bspline_gen_->run(points, b_path);
@@ -153,7 +165,10 @@ bool GAPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& pa
   path.clear();
   for (const auto& pt : b_path)
   {
-    path.emplace_back(pt.x(), pt.y());
+    // convert to world frame
+    double wx, wy;
+    costmap_->mapToWorld(pt.x(), pt.y(), wx, wy);
+    path.emplace_back(wx, wy, pt.theta());
   }
 
   // Update inheritance genets based on optimal fitness
@@ -174,7 +189,7 @@ bool GAPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& pa
  * @param goal      goal node
  * @param gen_mode  generation mode
  */
-void GAPathPlanner::initializePositions(PositionSequence& initial_positions, const Point2d& start, const Point2d& goal,
+void GAPathPlanner::initializePositions(PositionSequence& initial_positions, const Point3d& start, const Point3d& goal,
                                         int gen_mode)
 {
   // Use a random device and engine to generate random numbers
@@ -211,8 +226,8 @@ void GAPathPlanner::initializePositions(PositionSequence& initial_positions, con
     {
       if (gen_mode == GEN_MODE::RANDOM)
       {
-        x[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsX() - 1)(gen);
-        y[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsY() - 1)(gen);
+        x[point_id] = std::uniform_int_distribution<int>(0, nx_ - 1)(gen);
+        y[point_id] = std::uniform_int_distribution<int>(0, ny_ - 1)(gen);
         pos_id = grid2Index(x[point_id], y[point_id]);
       }
       else
@@ -225,8 +240,7 @@ void GAPathPlanner::initializePositions(PositionSequence& initial_positions, con
         x[point_id] = static_cast<int>(std::round(center_x + r * std::cos(angle)));
         y[point_id] = static_cast<int>(std::round(center_y + r * std::sin(angle)));
         // Check if the coordinates are within the map range
-        if (x[point_id] >= 0 && x[point_id] < costmap_->getSizeInCellsX() && y[point_id] >= 0 &&
-            y[point_id] < costmap_->getSizeInCellsY())
+        if (x[point_id] >= 0 && x[point_id] < nx_ && y[point_id] >= 0 && y[point_id] < ny_)
           pos_id = grid2Index(x[point_id], y[point_id]);
         else
           continue;
@@ -265,11 +279,13 @@ void GAPathPlanner::initializePositions(PositionSequence& initial_positions, con
  */
 double GAPathPlanner::calFitnessValue(const Points2d& position)
 {
-  Points2d points, b_path;
-  points.push_back(start_);
+  Points3d points, b_path;
+  points.emplace_back(start_.x(), start_.y(), start_.theta());
   for (const auto& pos : position)
+  {
     points.emplace_back(pos.x(), pos.y());
-  points.push_back(goal_);
+  }
+  points.emplace_back(goal_.x(), goal_.y(), goal_.theta());
   points.erase(std::unique(std::begin(points), std::end(points)), std::end(points));
 
   bspline_gen_->run(points, b_path);
@@ -282,11 +298,11 @@ double GAPathPlanner::calFitnessValue(const Points2d& position)
     point_index = grid2Index(static_cast<int>(b_path[i].x()), static_cast<int>(b_path[i].y()));
     // next node hit the boundary or obstacle
     if ((point_index < 0) || (point_index >= map_size_) ||
-        (costmap_->getCharMap()[point_index] >= costmap_2d::LETHAL_OBSTACLE * factor_))
+        (costmap_->getCharMap()[point_index] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_))
       obs_cost++;
   }
   // Calculate particle fitness
-  return 100000.0 / (bspline_gen_->len(b_path) + 1000 * obs_cost);
+  return 100000.0 / (bspline_gen_->distance(b_path) + 1000 * obs_cost);
 }
 
 /**
@@ -410,7 +426,7 @@ void GAPathPlanner::optimizeGenets(const Genets& genets_p, Genets& genets_c, Gen
 
       int point_index = grid2Index(static_cast<int>(x), static_cast<int>(y));
       if ((point_index >= 0) && (point_index < map_size_) &&
-          (costmap_->getCharMap()[point_index] < costmap_2d::LETHAL_OBSTACLE * factor_))
+          (costmap_->getCharMap()[point_index] < costmap_2d::LETHAL_OBSTACLE * obstacle_factor_))
       {
         genets_c.position[random_id].setX(x);
         genets_c.position[random_id].setY(y);

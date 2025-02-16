@@ -44,8 +44,9 @@ public:
    * @brief Construct a new Voronoi-based planning object
    * @param costmap   the environment for path planning
    * @param circumscribed_radius  the circumscribed radius of robot
+   * @param obstacle_factor obstacle factor(greater means obstacles)
    */
-  VoronoiPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double circumscribed_radius);
+  VoronoiPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double circumscribed_radius, double obstacle_factor = 1.0);
   ~VoronoiPathPlanner();
 
   /**

@@ -35,11 +35,13 @@ public:
   /**
    * @brief  Constructor
    * @param   costmap   the environment for path planning
+   * @param   obstacle_factor obstacle factor(greater means obstacles)
    * @param   sample_num  andom sample points
    * @param   max_dist    max distance between sample points
    * @param   r           optimization radius
    */
-  RRTStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num, double max_dist, double r);
+  RRTStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor, int sample_num, double max_dist,
+                     double r);
   /**
    * @brief RRT implementation
    * @param start     start node

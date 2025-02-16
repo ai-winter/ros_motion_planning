@@ -29,18 +29,20 @@ namespace path_planner
  * @brief Construct a new Voronoi-based planning object
  * @param costmap   the environment for path planning
  * @param circumscribed_radius  the circumscribed radius of robot
+ * @param obstacle_factor obstacle factor(greater means obstacles)
  */
-VoronoiPathPlanner::VoronoiPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double circumscribed_radius)
-  : PathPlanner(costmap_ros), circumscribed_radius_(circumscribed_radius)
+VoronoiPathPlanner::VoronoiPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double circumscribed_radius,
+                                       double obstacle_factor)
+  : PathPlanner(costmap_ros, obstacle_factor), circumscribed_radius_(circumscribed_radius)
 {
-  voronoi_diagram_ = new VoronoiData*[costmap_->getSizeInCellsX()];
-  for (unsigned int i = 0; i < costmap_->getSizeInCellsX(); i++)
-    voronoi_diagram_[i] = new VoronoiData[costmap_->getSizeInCellsY()];
+  voronoi_diagram_ = new VoronoiData*[nx_];
+  for (int i = 0; i < nx_; i++)
+    voronoi_diagram_[i] = new VoronoiData[ny_];
 }
 
 VoronoiPathPlanner::~VoronoiPathPlanner()
 {
-  for (unsigned int i = 0; i < costmap_->getSizeInCellsX(); i++)
+  for (int i = 0; i < nx_; i++)
     delete[] voronoi_diagram_[i];
   delete[] voronoi_diagram_;
 }
@@ -57,17 +59,23 @@ bool VoronoiPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3
 {
   // update voronoi diagram
   _updateVoronoi();
-  for (unsigned int j = 0; j < costmap_->getSizeInCellsY(); j++)
+  for (int j = 0; j < ny_; j++)
   {
-    for (unsigned int i = 0; i < costmap_->getSizeInCellsX(); i++)
+    for (int i = 0; i < nx_; i++)
     {
       voronoi_diagram_[i][j].dist = voronoi_.getDistance(i, j) * costmap_->getResolution();
       voronoi_diagram_[i][j].is_voronoi = voronoi_.isVoronoi(i, j);
     }
   }
 
-  Node start_node(start.x(), start.y());
-  Node goal_node(goal.x(), goal.y());
+  double m_start_x, m_start_y, m_goal_x, m_goal_y;
+  if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
+  {
+    return false;
+  }
+  Node start_node(m_start_x, m_start_y);
+  Node goal_node(m_goal_x, m_goal_y);
   start_node.set_id(grid2Index(start_node.x(), start_node.y()));
   goal_node.set_id(grid2Index(goal_node.x(), goal_node.y()));
 
@@ -95,7 +103,10 @@ bool VoronoiPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3
   path_g.insert(path_g.end(), path_s.begin(), path_s.end());
   for (auto iter = path_g.rbegin(); iter != path_g.rend(); iter++)
   {
-    path.emplace_back(iter->x(), iter->y());
+    // convert to world frame
+    double wx, wy;
+    costmap_->mapToWorld(iter->x(), iter->y(), wx, wy);
+    path.emplace_back(wx, wy);
   }
 
   return true;
@@ -139,7 +150,7 @@ bool VoronoiPathPlanner::searchPathWithVoronoi(const Node& start, const Node& go
              voronoi_diagram_[static_cast<unsigned int>(current.x())][static_cast<unsigned int>(current.y())]
                  .is_voronoi))
     {
-      path = _convertClosedListToPath(closed_list, start, current);
+      path = _convertClosedListToPath<Node>(closed_list, start, current);
       if (v_goal != nullptr)
       {
         v_goal->set_x(current.x());

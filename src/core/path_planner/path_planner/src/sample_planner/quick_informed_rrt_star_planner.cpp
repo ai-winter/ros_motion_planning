@@ -28,16 +28,19 @@ namespace
 {
 using CollisionChecker = rmp::common::geometry::CollisionChecker;
 }
-
 /**
  * @brief  Constructor
  * @param   costmap   the environment for path planning
+ * @param   obstacle_factor obstacle factor(greater means obstacles)
+ * @param   sample_num  andom sample points
  * @param   max_dist    max distance between sample points
+ * @param   r           optimization radius
  */
-QuickInformedRRTStarPathPlanner::QuickInformedRRTStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num,
+QuickInformedRRTStarPathPlanner::QuickInformedRRTStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros,
+                                                                 double obstacle_factor, int sample_num,
                                                                  double max_dist, double r, double r_set, int n_threads,
                                                                  double d_extend, double t_freedom)
-  : InformedRRTStarPathPlanner(costmap_ros, sample_num, max_dist, r)
+  : InformedRRTStarPathPlanner(costmap_ros, obstacle_factor, sample_num, max_dist, r)
   , set_r_(r_set)
   , rewire_threads_(n_threads)
   , step_extend_d_(d_extend)
@@ -55,22 +58,31 @@ QuickInformedRRTStarPathPlanner::QuickInformedRRTStarPathPlanner(costmap_2d::Cos
  */
 bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
+  double m_start_x, m_start_y, m_goal_x, m_goal_y;
+  if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
+  {
+    return false;
+  }
+
   path.clear();
   expand.clear();
+
   // initialization
   c_best_ = std::numeric_limits<double>::max();
-  c_min_ = std::hypot(start.x() - goal.x(), start.y() - goal.y());
+  c_min_ = std::hypot(m_start_x - m_goal_x, m_start_y - m_goal_y);
   int best_parent = -1;
   sample_list_.clear();
+
   // copy
-  start_.set_x(start.x());
-  start_.set_y(start.y());
+  start_.set_x(m_start_x);
+  start_.set_y(m_start_y);
   start_.set_id(grid2Index(start_.x(), start_.y()));
-  goal_.set_x(goal.x());
-  goal_.set_y(goal.y());
+  goal_.set_x(m_goal_x);
+  goal_.set_y(m_goal_y);
   goal_.set_id(grid2Index(goal_.x(), goal_.y()));
   sample_list_.insert(std::make_pair(start_.id(), start_));
-  expand.emplace_back(start.x(), start.y(), 0);
+  expand.emplace_back(m_start_x, m_start_y, 0);
 
   // adaptive sampling bias
   double dist_s2g = c_min_;
@@ -93,7 +105,7 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
     Node sample_node = _generateRandomNode(mu, nodes);
 
     // obstacle
-    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
+    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_)
       continue;
 
     // visited
@@ -118,7 +130,7 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
     // goal found
     auto isCollision = [&](const Node& node1, const Node& node2) {
       return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
-        return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+        return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_;
       });
     };
     if (dist_ <= max_dist_ && !isCollision(new_node, goal_))
@@ -152,7 +164,10 @@ bool QuickInformedRRTStarPathPlanner::plan(const Point3d& start, const Point3d& 
     const auto& backtrace = _convertClosedListToPath<Node>(sample_list_, start_, goal_);
     for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
     {
-      path.emplace_back(iter->x(), iter->y());
+      // convert to world frame
+      double wx, wy;
+      costmap_->mapToWorld(iter->x(), iter->y(), wx, wy);
+      path.emplace_back(wx, wy);
     }
     return true;
   }
@@ -248,7 +263,7 @@ QuickInformedRRTStarPathPlanner::_findNearestPoint(std::unordered_map<int, Node>
   // obstacle check
   auto isCollision = [&](const Node& node1, const Node& node2) {
     return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
-      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_;
     });
   };
   if (!isCollision(new_node, nearest_node))

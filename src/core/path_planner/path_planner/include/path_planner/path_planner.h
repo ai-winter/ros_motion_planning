@@ -23,8 +23,9 @@
 #include <costmap_2d/costmap_2d.h>
 #include <costmap_2d/costmap_2d_ros.h>
 
-#include "common/geometry/point.h"
 #include "common/structure/node.h"
+#include "common/geometry/point.h"
+#include "common/geometry/collision_checker.h"
 
 namespace rmp
 {
@@ -45,13 +46,10 @@ public:
 public:
   /**
    * @brief Construct a new Global PathPlanner object
-   * @param costmap   the environment for path planning
+   * @param costmap_ros     the environment for path planning
+   * @param obstacle_factor obstacle factor(greater means obstacles)
    */
-  PathPlanner(costmap_2d::Costmap2DROS* costmap_ros)
-    : factor_(0.5f), map_size_(0), costmap_ros_(costmap_ros), costmap_(costmap_ros->getCostmap())
-  {
-    map_size_ = static_cast<int>(costmap_->getSizeInCellsX() * costmap_->getSizeInCellsY());
-  }
+  PathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor = 1.0);
 
   /**
    * @brief Destroy the Global PathPlanner object
@@ -126,6 +124,16 @@ public:
    */
   void outlineMap();
 
+  /**
+   * @brief Check the validity of (wx, wy)
+   * @param wx world map x
+   * @param wy world map y
+   * @param mx costmap x
+   * @param my costmap y
+   * @return flag true if the position is valid
+   */
+  bool validityCheck(double wx, double wy, double& mx, double& my);
+
 protected:
   /**
    * @brief Convert closed list to path
@@ -195,10 +203,11 @@ protected:
   }
 
 protected:
-  int map_size_;                           // pixel number in costmap
-  float factor_;                           // obstacle factor(greater means obstacles)
+  float obstacle_factor_;                  // obstacle factor(greater means obstacles)
+  int nx_, ny_, map_size_;                 // pixel number in costmap
   costmap_2d::Costmap2DROS* costmap_ros_;  // costmap ROS wrapper
   costmap_2d::Costmap2D* costmap_;         // costmap buffer
+  std::shared_ptr<rmp::common::geometry::CollisionChecker> collision_checker_;  // gridmap collision checker
 };
 }  // namespace path_planner
 }  // namespace rmp

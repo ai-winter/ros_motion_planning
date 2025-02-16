@@ -18,17 +18,35 @@
 
 #include "path_planner/path_planner.h"
 
+using namespace rmp::common::geometry;
+
 namespace rmp
 {
 namespace path_planner
 {
 /**
- * @brief Set or reset obstacle factor
- * @param factor obstacle factor
+ * @brief Construct a new Global PathPlanner object
+ * @param costmap_ros     the environment for path planning
+ * @param obstacle_factor obstacle factor(greater means obstacles)
  */
-void PathPlanner::setFactor(float factor)
+PathPlanner::PathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor)
+  : obstacle_factor_(obstacle_factor)
+  , nx_(static_cast<int>(costmap_ros->getCostmap()->getSizeInCellsX()))
+  , ny_(static_cast<int>(costmap_ros->getCostmap()->getSizeInCellsY()))
+  , map_size_(nx_ * ny_)
+  , costmap_ros_(costmap_ros)
+  , costmap_(costmap_ros->getCostmap())
+  , collision_checker_(std::make_shared<CollisionChecker>(costmap_ros, obstacle_factor))
 {
-  factor_ = factor;
+}
+
+/**
+ * @brief Set or reset obstacle factor
+ * @param obstacle_factor obstacle factor
+ */
+void PathPlanner::setFactor(float obstacle_factor)
+{
+  obstacle_factor_ = obstacle_factor;
 }
 
 /**
@@ -57,7 +75,7 @@ int PathPlanner::getMapSize() const
  */
 int PathPlanner::grid2Index(int x, int y)
 {
-  return x + static_cast<int>(costmap_->getSizeInCellsX() * y);
+  return x + nx_ * y;
 }
 
 /**
@@ -68,8 +86,8 @@ int PathPlanner::grid2Index(int x, int y)
  */
 void PathPlanner::index2Grid(int i, int& x, int& y)
 {
-  x = static_cast<int>(i % costmap_->getSizeInCellsX());
-  y = static_cast<int>(i / costmap_->getSizeInCellsX());
+  x = static_cast<int>(i % nx_);
+  y = static_cast<int>(i / nx_);
 }
 
 /**
@@ -88,7 +106,7 @@ bool PathPlanner::world2Map(double wx, double wy, double& mx, double& my)
   mx = (wx - costmap_->getOriginX()) / costmap_->getResolution();
   my = (wy - costmap_->getOriginY()) / costmap_->getResolution();
 
-  if (mx < costmap_->getSizeInCellsX() && my < costmap_->getSizeInCellsY())
+  if (mx < nx_ && my < ny_)
     return true;
 
   return false;
@@ -112,20 +130,37 @@ void PathPlanner::map2World(double mx, double my, double& wx, double& wy)
  */
 void PathPlanner::outlineMap()
 {
-  auto nx = costmap_->getSizeInCellsX();
-  auto ny = costmap_->getSizeInCellsY();
   auto pc = costmap_->getCharMap();
-  for (int i = 0; i < nx; i++)
+  for (int i = 0; i < nx_; i++)
     *pc++ = costmap_2d::LETHAL_OBSTACLE;
-  pc = costmap_->getCharMap() + (ny - 1) * nx;
-  for (int i = 0; i < nx; i++)
+  pc = costmap_->getCharMap() + (ny_ - 1) * nx_;
+  for (int i = 0; i < nx_; i++)
     *pc++ = costmap_2d::LETHAL_OBSTACLE;
   pc = costmap_->getCharMap();
-  for (int i = 0; i < ny; i++, pc += nx)
+  for (int i = 0; i < ny_; i++, pc += nx_)
     *pc = costmap_2d::LETHAL_OBSTACLE;
-  pc = costmap_->getCharMap() + nx - 1;
-  for (int i = 0; i < ny; i++, pc += nx)
+  pc = costmap_->getCharMap() + nx_ - 1;
+  for (int i = 0; i < ny_; i++, pc += nx_)
     *pc = costmap_2d::LETHAL_OBSTACLE;
+}
+
+/**
+ * @brief Check the validity of (wx, wy)
+ * @param wx world map x
+ * @param wy world map y
+ * @param mx costmap x
+ * @param my costmap y
+ * @return flag true if the position is valid
+ */
+bool PathPlanner::validityCheck(double wx, double wy, double& mx, double& my)
+{
+  if (!world2Map(wx, wy, mx, my))
+  {
+    R_WARN << "The robot's position is off the global costmap. Planning will always fail, are you sure the robot "
+              "has been properly localized?";
+    return false;
+  }
+  return true;
 }
 }  // namespace path_planner
 }  // namespace rmp

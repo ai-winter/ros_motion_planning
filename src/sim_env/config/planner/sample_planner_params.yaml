@@ -1,26 +1,44 @@
 PathPlanner:
-  # random sample points
-  sample_points: 1500 #1000 for informed RRT*, 3000 for others
-  # max distance between sample points
-  sample_max_d: 20.0
-  # optimization radius
-  optimization_r: 30.0
-  # offset of transform from world(x,y) to grid map(x,y)
-  convert_offset: 0.0
-  # error tolerance
-  default_tolerance: 0.0
-  # whether outline the map or not
-  outline_map: true
-  # obstacle inflation factor
-  obstacle_factor: 0.5
-  # whether publish expand zone or not
-  expand_zone: true
-  # qi-rrt*:
-  # radius of priority circles set
-  prior_circle_set_r: 15.0
-  # increased distance of adaptive extend step size
-  step_extend_d: 30.0 # suggest between half and one times sample_max_d
-  # parallel rewire process
-  rewire_threads_num: 4
-  # aggressive or gradual optimizing strategy
-  t_distr_freedom: 1.0 # suggest from 0.2 to 3
+  rrt:
+    # random sample points
+    sample_points: 1500
+    # max distance between sample points
+    sample_max_d: 30.0
+
+  rrt_star:
+    # random sample points
+    sample_points: 1500
+    # max distance between sample points
+    sample_max_d: 30.0
+    # optimization radius
+    optimization_r: 20.0
+
+  rrt_connect:
+    # random sample points
+    sample_points: 1500
+    # max distance between sample points
+    sample_max_d: 30.0
+
+  informed_rrt:
+    # random sample points
+    sample_points: 1500
+    # max distance between sample points
+    sample_max_d: 30.0
+    # optimization radius
+    optimization_r: 20.0
+  
+  quick_informed_rrt:
+    # random sample points
+    sample_points: 3000
+    # max distance between sample points
+    sample_max_d: 30.0
+    # optimization radius
+    optimization_r: 20.0
+    # radius of priority circles set
+    prior_circle_set_r: 15.0
+    # increased distance of adaptive extend step size
+    step_extend_d: 30.0 # suggest between half and one times sample_max_d
+    # parallel rewire process
+    rewire_threads_num: 4
+    # aggressive or gradual optimizing strategy
+    t_distr_freedom: 1.0 # suggest from 0.2 to 3

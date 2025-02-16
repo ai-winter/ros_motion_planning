@@ -4,7 +4,7 @@ rviz_file: "sim_env.rviz"
 
 robots_config:
   - robot1_type: "turtlebot3_waffle"
-    robot1_global_planner: "theta_star"
+    robot1_global_planner: "hybrid_astar"
     robot1_local_planner: "rpp"
     robot1_x_pos: "0.0"
     robot1_y_pos: "0.0"
@@ -13,7 +13,7 @@ robots_config:
 
 # * global planner
 #   * graph_planner
-#     * a_star
+#     * astar
 #     * jps
 #     * gbfs
 #     * dijkstra
@@ -23,7 +23,7 @@ robots_config:
 #     * d_star_lite
 #     * theta_star
 #     * lazy_theta_star
-#     * hybrid_a_star
+#     * hybrid_astar
 #
 #   * sample_planner
 #     * rrt
@@ -47,6 +47,6 @@ robots_config:
 #   * static
 
 plugins:
-  pedestrians: "pedestrian_config.yaml"
+  # pedestrians: "pedestrian_config.yaml"
   # obstacles: "obstacles_config.yaml"
   map_layers: "map_layers_config.yaml"

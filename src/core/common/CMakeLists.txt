@@ -27,13 +27,13 @@ include_directories(
 file(GLOB util_src_files src/util/*.cpp)
 file(GLOB math_src_files_cpp src/math/*.cpp)
 file(GLOB geometry_src_files src/geometry/*.cpp)
-file(GLOB safety_corridor_src_files src/safety_corridor/*.cpp)
+file(GLOB geometry_curve_src_files src/geometry/curve/*.cpp)
 
 add_library(${PROJECT_NAME}
   ${util_src_files}
   ${math_src_files_cpp}
   ${geometry_src_files}
-  ${safety_corridor_src_files}
+  ${geometry_curve_src_files}
 )
 
 add_dependencies(${PROJECT_NAME} 

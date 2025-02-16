@@ -336,32 +336,29 @@ void Controller::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseSta
     }
 
     // transform to the robot frame so that the circle centers at (0,0)
-    std::pair<double, double> prev_p(px - rx, py - ry);
-    std::pair<double, double> goal_p(gx - rx, gy - ry);
-    std::vector<std::pair<double, double>> i_points =
+    rmp::common::geometry::Vec2d prev_p(px - rx, py - ry);
+    rmp::common::geometry::Vec2d goal_p(gx - rx, gy - ry);
+    std::vector<rmp::common::geometry::Vec2d> i_points =
         rmp::common::math::circleSegmentIntersection(prev_p, goal_p, lookahead_dist);
 
-    pt.point.x = i_points[0].first + rx;
-    pt.point.y = i_points[0].second + ry;
+    double dist_to_goal = std::numeric_limits<double>::max();
+    for (const auto& i_point : i_points)
+    {
+      double dist = std::hypot(i_point.x() + rx - gx, i_point.y() + ry - gy);
+      if (dist < dist_to_goal)
+      {
+        dist_to_goal = dist;
+        pt.point.x = i_point.x() + rx;
+        pt.point.y = i_point.y() + ry;
+      }
+    }
 
     auto next_pose_it = std::next(goal_pose_it);
     if (next_pose_it != prune_plan.end())
     {
-      double ax = px;
-      double ay = py;
-      double bx = gx;
-      double by = gy;
-      double cx = next_pose_it->pose.position.x;
-      double cy = next_pose_it->pose.position.y;
-      double a = std::hypot(bx - cx, by - cy);
-      double b = std::hypot(cx - ax, cy - ay);
-      double c = std::hypot(ax - bx, ay - by);
-
-      double cosB = (a * a + c * c - b * b) / (2 * a * c);
-      double sinB = std::sin(std::acos(cosB));
-
-      double cross = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
-      kappa = std::copysign(2 * sinB / b, cross);
+      rmp::common::geometry::Vec2d p1(px, py), p2(gx, gy),
+          p3(next_pose_it->pose.position.x, next_pose_it->pose.position.y);
+      kappa = rmp::common::math::arcCenter(p1, p2, p3, false);
     }
     else
     {
@@ -370,8 +367,6 @@ void Controller::getLookAheadPoint(double lookahead_dist, geometry_msgs::PoseSta
     theta = atan2(gy - py, gx - px);
   }
 
-  if (std::isnan(kappa))
-    kappa = 0.0;
   pt.header.frame_id = goal_pose_it->header.frame_id;
   pt.header.stamp = goal_pose_it->header.stamp;
 }

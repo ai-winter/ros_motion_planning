@@ -28,11 +28,13 @@ using CollisionChecker = rmp::common::geometry::CollisionChecker;
 /**
  * @brief  Constructor
  * @param   costmap   the environment for path planning
+ * @param   obstacle_factor obstacle factor(greater means obstacles)
  * @param   sample_num  andom sample points
  * @param   max_dist    max distance between sample points
  */
-RRTConnectPathPlanner::RRTConnectPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int sample_num, double max_dist)
-  : RRTPathPlanner(costmap_ros, sample_num, max_dist)
+RRTConnectPathPlanner::RRTConnectPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor,
+                                             int sample_num, double max_dist)
+  : RRTPathPlanner(costmap_ros, obstacle_factor, sample_num, max_dist)
 {
 }
 
@@ -45,21 +47,29 @@ RRTConnectPathPlanner::RRTConnectPathPlanner(costmap_2d::Costmap2DROS* costmap_r
  */
 bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
+  double m_start_x, m_start_y, m_goal_x, m_goal_y;
+  if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
+  {
+    return false;
+  }
+
   path.clear();
   expand.clear();
   sample_list_f_.clear();
   sample_list_b_.clear();
+
   // copy
-  start_.set_x(start.x());
-  start_.set_y(start.y());
+  start_.set_x(m_start_x);
+  start_.set_y(m_start_y);
   start_.set_id(grid2Index(start_.x(), start_.y()));
-  goal_.set_x(goal.x());
-  goal_.set_y(goal.y());
+  goal_.set_x(m_goal_x);
+  goal_.set_y(m_goal_y);
   goal_.set_id(grid2Index(goal_.x(), goal_.y()));
   sample_list_f_.insert(std::make_pair(start_.id(), start_));
   sample_list_b_.insert(std::make_pair(goal_.id(), goal_));
-  expand.emplace_back(start.x(), start.y(), 0);
-  expand.emplace_back(goal.x(), goal.y(), 0);
+  expand.emplace_back(m_start_x, m_start_y, 0);
+  expand.emplace_back(m_goal_x, m_goal_y, 0);
 
   // main loop
   int iteration = 0;
@@ -69,7 +79,7 @@ bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
     Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * factor_)
+    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_)
       continue;
 
     // visited
@@ -106,7 +116,8 @@ bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
 
           auto isCollision = [&](const Node& node1, const Node& node2) {
             return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
-              return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * factor_;
+              return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >=
+                     costmap_2d::LETHAL_OBSTACLE * obstacle_factor_;
             });
           };
 
@@ -126,7 +137,10 @@ bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
                 _convertBiClosedListToPath<Node>(sample_list_f_, sample_list_b_, start_, goal_, new_node_b);
             for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
             {
-              path.emplace_back(iter->x(), iter->y());
+              // convert to world frame
+              double wx, wy;
+              costmap_->mapToWorld(iter->x(), iter->y(), wx, wy);
+              path.emplace_back(wx, wy);
             }
             return true;
           }

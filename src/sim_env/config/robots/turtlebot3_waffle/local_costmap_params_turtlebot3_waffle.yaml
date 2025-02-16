@@ -1,0 +1,14 @@
+global_frame: odom
+robot_base_frame: base_footprint
+
+update_frequency: 2.0
+publish_frequency: 1.0
+transform_tolerance: 0.5  
+
+static_map: false  
+rolling_window: true
+width: 3
+height: 3
+resolution: 0.05
+
+inflation_radius: 3.0

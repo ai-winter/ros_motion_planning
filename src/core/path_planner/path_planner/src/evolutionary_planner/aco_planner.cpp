@@ -28,6 +28,7 @@ namespace path_planner
 /**
  * @brief Construct a new ACO object
  * @param costmap   the environment for path planning
+ * @param obstacle_factor obstacle factor(greater means obstacles)
  * @param n_ants			number of ants
  * @param alpha				pheromone weight coefficient
  * @param beta				heuristic factor weight coefficient
@@ -35,9 +36,10 @@ namespace path_planner
  * @param Q						pheromone gain
  * @param max_iter		maximum iterations
  */
-ACOPathPlanner::ACOPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, int n_ants, int n_inherited, int point_num,
-                               double alpha, double beta, double rho, double Q, int init_mode, int max_iter)
-  : PathPlanner(costmap_ros)
+ACOPathPlanner::ACOPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor, int n_ants,
+                               int n_inherited, int point_num, double alpha, double beta, double rho, double Q,
+                               int init_mode, int max_iter)
+  : PathPlanner(costmap_ros, obstacle_factor)
   , n_ants_(n_ants)
   , n_inherited_(n_inherited)
   , point_num_(point_num)
@@ -68,12 +70,21 @@ ACOPathPlanner::~ACOPathPlanner()
  */
 bool ACOPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
 {
-  start_.setX(start.x());
-  start_.setY(start.y());
-  goal_.setX(goal.x());
-  goal_.setY(goal.y());
+  double m_start_x, m_start_y, m_goal_x, m_goal_y;
+  if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
+  {
+    return false;
+  }
+
+  start_.setX(m_start_x);
+  start_.setY(m_start_y);
+  start_.setTheta(start.theta());
+  goal_.setX(m_goal_x);
+  goal_.setY(m_goal_y);
+  goal_.setTheta(goal.theta());
   expand.clear();
-  for (size_t i = 0; i < map_size_; i++)
+  for (int i = 0; i < map_size_; i++)
     pheromone_mat_[i] = 1.0;
 
   // variable initialization
@@ -88,29 +99,31 @@ bool ACOPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
   std::mt19937 gen(rd());
 
   // Iterative optimization
-  for (size_t iter = 0; iter < max_iter_; iter++)
+  for (int iter = 0; iter < max_iter_; iter++)
   {
     updateAnts(ants, start_, goal_, best_ant);
     std::vector<std::thread> ants_list = std::vector<std::thread>(n_ants_);
-    for (size_t i = 0; i < n_ants_; ++i)
+    for (int i = 0; i < n_ants_; ++i)
       ants_list[i] = std::thread(&ACOPathPlanner::optimizeAnt, this, std::ref(ants[i]), std::ref(best_ant),
                                  std::ref(gen), std::ref(expand));
-    for (size_t i = 0; i < n_ants_; ++i)
+    for (int i = 0; i < n_ants_; ++i)
       ants_list[i].join();
 
     // best_ant.position = ants[best_ant_idx_].best_pos;
 
     // pheromone deterioration
-    for (size_t i = 0; i < map_size_; i++)
+    for (int i = 0; i < map_size_; i++)
       pheromone_mat_[i] *= (1 - rho_);
   }
 
   // Generating Paths from Optimal Particles
-  Points2d points, b_path;
-  points.emplace_back(start.x(), start.y());
+  Points3d points, b_path;
+  points.emplace_back(m_start_x, m_start_y, start.theta());
   for (const auto& pos : best_ant.position)
+  {
     points.emplace_back(pos.x(), pos.y());
-  points.emplace_back(goal.x(), goal.y());
+  }
+  points.emplace_back(m_goal_x, m_goal_y, goal.theta());
   points.erase(std::unique(std::begin(points), std::end(points)), std::end(points));
 
   bspline_gen_->run(points, b_path);
@@ -119,14 +132,17 @@ bool ACOPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
   path.clear();
   for (const auto& pt : b_path)
   {
-    path.emplace_back(pt.x(), pt.y());
+    // convert to world frame
+    double wx, wy;
+    costmap_->mapToWorld(pt.x(), pt.y(), wx, wy);
+    path.emplace_back(wx, wy, pt.theta());
   }
 
   // Update inheritance ants based on optimal fitness
   std::sort(ants.begin(), ants.end(), [](const Ant& a, const Ant& b) { return a.best_fitness > b.best_fitness; });
   inherited_ants_.clear();
 
-  for (size_t inherit = 0; inherit < n_inherited_; ++inherit)
+  for (int inherit = 0; inherit < n_inherited_; ++inherit)
     inherited_ants_.emplace_back(ants[inherit]);
 
   return !path.empty();
@@ -139,7 +155,7 @@ bool ACOPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
  * @param goal      goal node
  * @param gen_mode  generation mode
  */
-void ACOPathPlanner::initializePositions(PositionSequence& initial_positions, const Point2d& start, const Point2d& goal,
+void ACOPathPlanner::initializePositions(PositionSequence& initial_positions, const Point3d& start, const Point3d& goal,
                                          int gen_mode)
 {
   // Use a random device and engine to generate random numbers
@@ -165,7 +181,7 @@ void ACOPathPlanner::initializePositions(PositionSequence& initial_positions, co
   }
 
   // initialize n_particles positions
-  for (size_t i = 0; i < n_ants_; ++i)
+  for (int i = 0; i < n_ants_; ++i)
   {
     Points2d ant_positions;
     std::unordered_set<int> visited;
@@ -180,8 +196,8 @@ void ACOPathPlanner::initializePositions(PositionSequence& initial_positions, co
     {
       if (gen_mode == GEN_MODE::RANDOM)
       {
-        temp_x[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsX() - 1)(gen);
-        temp_y[point_id] = std::uniform_int_distribution<int>(0, costmap_->getSizeInCellsY() - 1)(gen);
+        temp_x[point_id] = std::uniform_int_distribution<int>(0, nx_ - 1)(gen);
+        temp_y[point_id] = std::uniform_int_distribution<int>(0, ny_ - 1)(gen);
         pos_id = grid2Index(temp_x[point_id], temp_y[point_id]);
       }
       else
@@ -194,8 +210,7 @@ void ACOPathPlanner::initializePositions(PositionSequence& initial_positions, co
         temp_x[point_id] = static_cast<int>(std::round(center_x + r * std::cos(angle)));
         temp_y[point_id] = static_cast<int>(std::round(center_y + r * std::sin(angle)));
         // Check if the coordinates are within the map range
-        if (temp_x[point_id] >= 0 && temp_x[point_id] < costmap_->getSizeInCellsX() && temp_y[point_id] >= 0 &&
-            temp_y[point_id] < costmap_->getSizeInCellsY())
+        if (temp_x[point_id] >= 0 && temp_x[point_id] < nx_ && temp_y[point_id] >= 0 && temp_y[point_id] < ny_)
           pos_id = grid2Index(temp_x[point_id], temp_y[point_id]);
         else
           continue;
@@ -218,7 +233,7 @@ void ACOPathPlanner::initializePositions(PositionSequence& initial_positions, co
     std::random_device device;
     std::mt19937 engine(device());
     std::discrete_distribution<> dist(probabilities.begin(), probabilities.end());
-    for (size_t j = 0; j < point_num_; j++)
+    for (int j = 0; j < point_num_; j++)
     {
       int idx = dist(engine);
       x[j] = temp_x[idx];
@@ -250,11 +265,13 @@ void ACOPathPlanner::initializePositions(PositionSequence& initial_positions, co
  */
 double ACOPathPlanner::calFitnessValue(const Points2d& position)
 {
-  Points2d points, b_path;
-  points.push_back(start_);
+  Points3d points, b_path;
+  points.emplace_back(start_.x(), start_.y(), start_.theta());
   for (const auto& pos : position)
+  {
     points.emplace_back(pos.x(), pos.y());
-  points.push_back(goal_);
+  }
+  points.emplace_back(goal_.x(), goal_.y(), goal_.theta());
   points.erase(std::unique(std::begin(points), std::end(points)), std::end(points));
 
   bspline_gen_->run(points, b_path);
@@ -267,15 +284,12 @@ double ACOPathPlanner::calFitnessValue(const Points2d& position)
     point_index = grid2Index(static_cast<int>(b_path[i].x()), static_cast<int>(b_path[i].y()));
     // next node hit the boundary or obstacle
     if ((point_index < 0) || (point_index >= map_size_) ||
-        (costmap_->getCharMap()[point_index] >= costmap_2d::LETHAL_OBSTACLE * factor_))
+        (costmap_->getCharMap()[point_index] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_))
       obs_cost++;
   }
   // Calculate particle fitness
-  double b_path_length = bspline_gen_->len(b_path);
-  if (b_path_length > 0)
-    return 100000.0 / (b_path_length + 1000 * obs_cost);
-  else
-    return 0;
+  double b_path_length = bspline_gen_->distance(b_path);
+  return b_path_length > 0 ? 100000.0 / (b_path_length + 1000 * obs_cost) : 0;
 }
 
 /**
@@ -308,7 +322,7 @@ void ACOPathPlanner::optimizeAnt(Ant& ant, Ant& best_ant, std::mt19937& gen, Poi
   }
 }
 
-void ACOPathPlanner::updateAnts(std::vector<Ant>& ants, const Point2d& start, const Point2d& goal, Ant& best_ant)
+void ACOPathPlanner::updateAnts(std::vector<Ant>& ants, const Point3d& start, const Point3d& goal, Ant& best_ant)
 {
   double init_fitness;
   PositionSequence init_positions;
@@ -320,7 +334,7 @@ void ACOPathPlanner::updateAnts(std::vector<Ant>& ants, const Point2d& start, co
   for (int i = 0; i < n_ants_; ++i)
   {
     Points2d init_position;
-    if ((i < n_inherited_) && (inherited_ants_.size() == n_inherited_))
+    if ((i < n_inherited_) && (static_cast<int>(inherited_ants_.size()) == n_inherited_))
       init_position = inherited_ants_[i].best_pos;
     else
       init_position = init_positions[i];
