@@ -1,5 +1,5 @@
 image: ./workshop.pgm
-resolution: 0.050000
+resolution: 0.100000
 origin: [-15.000000, -15.000000, 0.00]
 negate: 0
 occupied_thresh: 0.65
