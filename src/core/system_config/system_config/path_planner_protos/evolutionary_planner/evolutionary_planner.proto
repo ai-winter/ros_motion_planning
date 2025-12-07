@@ -3,6 +3,7 @@ syntax = "proto3";
 package rmp.pb.path_planner;
 
 import "system_config/path_planner_protos/evolutionary_planner/aco_planner.proto";
+import "system_config/path_planner_protos/evolutionary_planner/ga_planner.proto";
 
 // Set the generation mode for the initial position points of the particle swarm
 enum EvolutionaryInitMode {
@@ -16,4 +17,5 @@ message EvolutionaryPathPlanner {
     EvolutionaryInitMode init_mode = 1;
 
     ACOPlanner aco_planner = 10;
+    GAPlanner ga_planner = 12;
 }

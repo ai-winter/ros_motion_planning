@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package rmp.pb.path_planner;
+
+message GAPlanner {
+    // number of genets
+    int64 population_num = 1;
+    // number of inherited genets (Note: Need to be less than parameter ants)
+    int64 inherited_num = 2;
+    // number of position points contained in each genet
+    int64 control_point_num = 3;
+    // The maximum velocity of genet motion
+    double max_speed = 4;
+    // selection probability (Note: The parameter value range is from 0 to 1)
+    // Note ：in the current version, the selection probability in the genetic algorithm is forced to be set to 0.5, so the parameter p_ The value of select does not affect the selection probability, but the value of the parameter int (100 * p-select) determines the setting of the selection scheme:
+    // If the value of int (100 * p-select) is even, select the retained individuals based on their fitness level
+    // If the value of int (100 * p-select) is a series, then the reserved individuals are selected through roulette wheel betting
+    double prob_selection = 5;
+    // crossover probability (Note: The parameter value range is from 0 to 1)
+    double prob_crossover = 6;
+    // mutation probability (Note: The parameter value range is from 0 to 1)
+    double prob_mutation = 7;
+    // maximum iterations
+    int64 max_iterations = 8;
+}

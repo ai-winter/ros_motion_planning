@@ -50,6 +50,17 @@ path_planner {
             Q: 1.0
             max_iterations: 5
         }
+
+        ga_planner {
+            population_num: 50
+            inherited_num: 20
+            control_point_num: 5
+            max_speed: 40.0
+            prob_selection: 0.5
+            prob_crossover: 0.8
+            prob_mutation: 0.3
+            max_iterations: 5
+        }
     }
 }
 
