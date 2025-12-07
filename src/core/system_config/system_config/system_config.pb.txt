@@ -52,4 +52,21 @@ controller {
         dist_from_center_to_front_edge: 0.2
         model_based_mode: true
     }
+
+    mpc_controller {
+        lookahead_time: 1.0
+        min_lookahead_dist: 0.3
+        max_lookahead_dist: 0.9
+        predict_time_domain: 12
+        control_time_domain: 8
+        Q_matrix_x: 1.0
+        Q_matrix_y: 1.0
+        Q_matrix_theta: 1.0
+        R_matrix_v: 1.0
+        R_matrix_w: 1.0
+        delta_linear_velocity_min: -0.2
+        delta_linear_velocity_max: 0.2
+        delta_angular_velocity_min: -0.2
+        delta_angular_velocity_max: 3.14
+    }
 }
