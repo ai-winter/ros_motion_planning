@@ -14,8 +14,6 @@
  *
  * ********************************************************
  */
-#include <ros/ros.h>
-#include <costmap_2d/costmap_2d.h>
 #include <visualization_msgs/MarkerArray.h>
 
 #include "common/util/visualizer.h"
