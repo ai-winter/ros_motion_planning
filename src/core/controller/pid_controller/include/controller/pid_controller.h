@@ -2,7 +2,8 @@
  * *********************************************************
  *
  * @file: pid_controller.h
- * @brief: Contains the Proportional–Integral–Derivative (PID) controller local controller class
+ * @brief: Contains the Proportional–Integral–Derivative (PID) controller local controller
+ * class
  * @author: Yang Haodong, Guo Zhanyu
  * @date: 2024-01-20
  * @version: 1.2
@@ -27,16 +28,14 @@
 #include <Eigen/Dense>
 
 #include "controller/controller.h"
+#include "system_config/controller_protos/pid_controller.pb.h"
 
-namespace rmp
-{
-namespace controller
-{
+namespace rmp {
+namespace controller {
 /**
  * @brief A class implementing a local controller using the PID
  */
-class PIDController : public nav_core::BaseLocalPlanner, Controller
-{
+class PIDController : public nav_core::BaseLocalPlanner, Controller {
 public:
   /**
    * @brief Construct a new PIDController object
@@ -46,7 +45,8 @@ public:
   /**
    * @brief Construct a new PIDController object
    */
-  PIDController(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  PIDController(std::string name, tf2_ros::Buffer* tf,
+                costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Destroy the PIDController object
@@ -59,7 +59,8 @@ public:
    * @param tf          a pointer to a transform listener
    * @param costmap_ros the cost map to use for assigning costs to trajectories
    */
-  void initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  void initialize(std::string name, tf2_ros::Buffer* tf,
+                  costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Set the plan that the controller is following
@@ -75,41 +76,49 @@ public:
   bool isGoalReached();
 
   /**
-   * @brief Given the current position, orientation, and velocity of the robot, compute the velocity commands
-   * @param cmd_vel will be filled with the velocity command to be passed to the robot base
+   * @brief Given the current position, orientation, and velocity of the robot, compute
+   * the velocity commands
+   * @param cmd_vel will be filled with the velocity command to be passed to the robot
+   * base
    * @return true if a valid trajectory was found, else false
    */
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
 
 private:
-  bool initialized_;     // initialized flag
-  bool goal_reached_;    // goal reached flag
-  tf2_ros::Buffer* tf_;  // transform buffer
-
-  // pid controller params
-  double k_v_p_, k_v_i_, k_v_d_;
-  double k_w_p_, k_w_i_, k_w_d_;
-  double k_theta_;
-  double k_, l_;
-
-  double e_v_, e_w_;
-  double i_v_, i_w_;
-
-  double d_t_;  // control time step
-
-  ros::Publisher target_pose_pub_, current_pose_pub_;
-
-  // goal parameters
-  double goal_x_, goal_y_, goal_theta_;
-
   /**
-   * @brief Execute PID control process (no model pid)
+   * @brief Execute model-based PID control process
    * @param s   current state
    * @param s_d desired state
    * @param u_r refered input
    * @return u  control vector
    */
-  Eigen::Vector2d _pidControl(Eigen::Vector3d s, Eigen::Vector3d s_d, Eigen::Vector2d u_r);
+  Eigen::Vector2d _modelBasedPIDControl(Eigen::Vector3d s, Eigen::Vector3d s_d,
+                                        Eigen::Vector2d u_r);
+
+  /**
+   * @brief Execute model-free PID control process
+   * @param s   current state
+   * @param s_d desired state
+   * @param u_r refered input
+   * @return u  control vector
+   */
+  Eigen::Vector2d _modelFreePIDControl(Eigen::Vector3d s, Eigen::Vector3d s_d,
+                                       Eigen::Vector2d u_r);
+
+private:
+  pb::controller::PIDController pid_config_;
+
+  bool initialized_;     // initialized flag
+  bool goal_reached_;    // goal reached flag
+  tf2_ros::Buffer* tf_;  // transform buffer
+
+  double e_v_, e_w_;
+  double i_v_, i_w_;
+
+  ros::Publisher target_pt_pub_, current_pose_pub_;
+
+  // goal parameters
+  double goal_x_, goal_y_, goal_theta_;
 };
 };  // namespace controller
 }  // namespace rmp

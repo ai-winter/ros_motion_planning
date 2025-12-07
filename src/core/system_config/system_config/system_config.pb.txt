@@ -36,4 +36,20 @@ controller {
         R_matrix_v: 1.0
         R_matrix_w: 1.0
     }
+
+    pid_controller {
+        lookahead_time: 0.5
+        min_lookahead_dist: 0.3
+        max_lookahead_dist: 0.9
+        p_linear_velocity: 1.00
+        i_linear_velocity: 0.10
+        d_linear_velocity: 0.10
+        p_angular_velocity: 1.00
+        i_angular_velocity: 0.10
+        d_angular_velocity: 0.10
+        theta_weight: 0.7
+        k_feedback: 1.0
+        dist_from_center_to_front_edge: 0.2
+        model_based_mode: true
+    }
 }

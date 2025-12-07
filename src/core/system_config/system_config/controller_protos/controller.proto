@@ -4,10 +4,7 @@ package rmp.pb.controller;
 
 import "system_config/controller_protos/rpp_controller.proto";
 import "system_config/controller_protos/lqr_controller.proto";
-// import "system_config/controller_protos/pid_controller.proto";
-// import "system_config/controller_protos/mpc_controller.proto";
-// import "system_config/controller_protos/apf_controller.proto";
-// import "system_config/controller_protos/orca_controller.proto";
+import "system_config/controller_protos/pid_controller.proto";
 
 message Controller {
     double control_frequency = 1;
@@ -33,8 +30,5 @@ message Controller {
 
     RPPController rpp_controller = 21;
     LQRController lqr_controller = 22;
-    // PIDController pid_controller = 23;
-    // MPCController mpc_controller = 24;
-    // APFController apf_controller = 25;
-    // ORCAController orca_controller = 26;
+    PIDController pid_controller = 23;
 }

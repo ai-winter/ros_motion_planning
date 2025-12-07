@@ -7,18 +7,18 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_core
   nav_msgs
-  navfn
   pluginlib
   roscpp
   tf2_geometry_msgs
   tf2_ros
   base_local_planner
   controller
+  system_config
 )
 
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS controller
+  CATKIN_DEPENDS controller system_config
 )
 
 include_directories(
