@@ -16,35 +16,32 @@
  */
 #include <pluginlib/class_list_macros.h>
 
+#include "common/util/log.h"
 #include "controller/static_controller.h"
 
 PLUGINLIB_EXPORT_CLASS(rmp::controller::StaticController, nav_core::BaseLocalPlanner)
 
-namespace rmp
-{
-namespace controller
-{
+namespace rmp {
+namespace controller {
 /**
  * @brief Construct a new StaticController object
  */
-StaticController::StaticController() : initialized_(false), goal_reached_(false)
-{
+StaticController::StaticController() : initialized_(false), goal_reached_(false) {
 }
 
 /**
  * @brief Construct a new StaticController object
  */
-StaticController::StaticController(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
-  : StaticController()
-{
+StaticController::StaticController(std::string name, tf2_ros::Buffer* tf,
+                                   costmap_2d::Costmap2DROS* costmap_ros)
+  : StaticController() {
   initialize(name, tf, costmap_ros);
 }
 
 /**
  * @brief Destroy the StaticController object
  */
-StaticController::~StaticController()
-{
+StaticController::~StaticController() {
 }
 
 /**
@@ -53,17 +50,15 @@ StaticController::~StaticController()
  * @param tf          a pointer to a transform listener
  * @param costmap_ros the cost map to use for assigning costs to trajectories
  */
-void StaticController::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
-{
-  if (!initialized_)
-  {
+void StaticController::initialize(std::string name, tf2_ros::Buffer* tf,
+                                  costmap_2d::Costmap2DROS* costmap_ros) {
+  if (!initialized_) {
     initialized_ = true;
     ros::NodeHandle nh = ros::NodeHandle("~/" + name);
 
-    ROS_INFO("Static Controller initialized!");
-  }
-  else
-    ROS_WARN("Static Controller has already been initialized.");
+    R_INFO << "Static Controller initialized!";
+  } else
+    R_WARN << "Static Controller has already been initialized.";
 }
 
 /**
@@ -71,11 +66,11 @@ void StaticController::initialize(std::string name, tf2_ros::Buffer* tf, costmap
  * @param orig_global_plan the plan to pass to the controller
  * @return  true if the plan was updated successfully, else false
  */
-bool StaticController::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
-{
-  if (!initialized_)
-  {
-    ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
+bool StaticController::setPlan(
+    const std::vector<geometry_msgs::PoseStamped>& orig_global_plan) {
+  if (!initialized_) {
+    R_ERROR << "This planner has not been initialized, please call initialize() before "
+               "using this planner";
     return false;
   }
   return true;
@@ -85,17 +80,14 @@ bool StaticController::setPlan(const std::vector<geometry_msgs::PoseStamped>& or
  * @brief  Check if the goal pose has been achieved
  * @return True if achieved, false otherwise
  */
-bool StaticController::isGoalReached()
-{
-  if (!initialized_)
-  {
-    ROS_ERROR("Static Controller has not been initialized");
+bool StaticController::isGoalReached() {
+  if (!initialized_) {
+    R_ERROR << "Static Controller has not been initialized";
     return false;
   }
 
-  if (goal_reached_)
-  {
-    ROS_INFO("GOAL Reached!");
+  if (goal_reached_) {
+    R_INFO << "GOAL Reached!";
     return true;
   }
   return false;
@@ -106,11 +98,9 @@ bool StaticController::isGoalReached()
  * @param cmd_vel will be filled with the velocity command to be passed to the robot base
  * @return  true if a valid trajectory was found, else false
  */
-bool StaticController::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
-{
-  if (!initialized_)
-  {
-    ROS_ERROR("Static Controller has not been initialized");
+bool StaticController::computeVelocityCommands(geometry_msgs::Twist& cmd_vel) {
+  if (!initialized_) {
+    R_ERROR << "Static Controller has not been initialized";
     return false;
   }
 

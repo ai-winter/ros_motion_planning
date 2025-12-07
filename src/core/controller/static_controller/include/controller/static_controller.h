@@ -22,21 +22,19 @@
 #include <costmap_2d/costmap_2d_ros.h>
 #include <base_local_planner/odometry_helper_ros.h>
 
-namespace rmp
-{
-namespace controller
-{
+namespace rmp {
+namespace controller {
 /**
  * @brief A class implementing a static planner
  */
-class StaticController : public nav_core::BaseLocalPlanner
-{
+class StaticController : public nav_core::BaseLocalPlanner {
 public:
   /**
    * @brief Construct a new StaticController object
    */
   StaticController();
-  StaticController(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  StaticController(std::string name, tf2_ros::Buffer* tf,
+                   costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Destroy the StaticController object
@@ -49,7 +47,8 @@ public:
    * @param tf          a pointer to a transform listener
    * @param costmap_ros the cost map to use for assigning costs to trajectories
    */
-  void initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  void initialize(std::string name, tf2_ros::Buffer* tf,
+                  costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Set the plan that the controller is following
@@ -65,8 +64,10 @@ public:
   bool isGoalReached();
 
   /**
-   * @brief Given the current position, orientation, and velocity of the robot, compute the velocity commands
-   * @param cmd_vel will be filled with the velocity command to be passed to the robot base
+   * @brief Given the current position, orientation, and velocity of the robot, compute
+   * the velocity commands
+   * @param cmd_vel will be filled with the velocity command to be passed to the robot
+   * base
    * @return  true if a valid trajectory was found, else false
    */
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);

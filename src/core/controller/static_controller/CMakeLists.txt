@@ -8,10 +8,12 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   roscpp
   base_local_planner
+  controller
 )
 
 catkin_package(
   INCLUDE_DIRS include
+  CATKIN_DEPENDS controller
 )
 
 include_directories(
