@@ -19,7 +19,6 @@ from plugins import ObstacleGenerator, PedGenerator, RobotGenerator, MapsGenerat
 class MainGenerator(XMLGenerator):
     def __init__(self, *plugins) -> None:
         super().__init__()
-        self.main_path = self.root_path + "pedestrian_simulation/"  # todo
         self.app_list = [app for app in plugins]
 
     def writeMainLaunch(self, path):
