@@ -19,15 +19,12 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp
-{
-namespace path_planner
-{
+namespace rmp {
+namespace path_planner {
 /**
  * @brief Class for lazy planner
  */
-class LazyPathPlanner : public PathPlanner
-{
+class LazyPathPlanner : public PathPlanner {
 public:
   /**
    * @brief Construct a new Lazy planner
@@ -39,11 +36,12 @@ public:
    * @brief Lazy implementation
    * @param start          start node
    * @param goal           goal node
-   * @param path           optimal path consists of Node
+   * @param path           The resulting path in (x, y, theta)
    * @param expand         containing the node been search during the process
    * @return true if path found, else false
    */
-  bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);
+  bool plan(const common::geometry::Point3d& start, const common::geometry::Point3d& goal,
+            common::geometry::Points3d* path, common::geometry::Points3d* expand);
 };
 }  // namespace path_planner
 }  // namespace rmp
