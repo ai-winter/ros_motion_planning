@@ -22,20 +22,16 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp
-{
-namespace path_planner
-{
+namespace rmp {
+namespace path_planner {
 /**
  * @brief Class for objects that plan using the LPA* algorithm
  */
-class DStarLitePathPlanner : public PathPlanner
-{
+class DStarLitePathPlanner : public PathPlanner {
 private:
   using Node = rmp::common::structure::Node<int>;
 
-  class LNode : public Node
-  {
+  class LNode : public Node {
   public:
     /**
      * @brief Construct a new LNode object
@@ -48,46 +44,41 @@ private:
      * @param rhs    Node's right hand side
      * @param key    Node's key value
      */
-    LNode(const int x = 0, const int y = 0, const double g = std::numeric_limits<double>::max(),
-          const double h = std::numeric_limits<double>::max(), const int id = 0, const int pid = -1,
-          const double rhs = std::numeric_limits<double>::max(), const double key = std::numeric_limits<double>::max())
-      : Node(x, y, g, h, id, pid), rhs_(rhs), key_(key)
-    {
+    LNode(const int x = 0, const int y = 0,
+          const double g = std::numeric_limits<double>::max(),
+          const double h = std::numeric_limits<double>::max(), const int id = 0,
+          const int pid = -1, const double rhs = std::numeric_limits<double>::max(),
+          const double key = std::numeric_limits<double>::max())
+      : Node(x, y, g, h, id, pid), rhs_(rhs), key_(key) {
     }
 
-    double rhs() const
-    {
+    double rhs() const {
       return rhs_;
     }
 
-    double key() const
-    {
+    double key() const {
       return key_;
     }
 
-    const std::multimap<double, LNode*>::iterator& iter() const
-    {
+    const std::multimap<double, LNode*>::iterator& iter() const {
       return open_it_;
     }
 
-    void setRhs(double rhs)
-    {
+    void setRhs(double rhs) {
       rhs_ = rhs;
     }
 
-    void setKey(double key)
-    {
+    void setKey(double key) {
       key_ = key;
     }
 
-    void setIterator(std::multimap<double, LNode*>::iterator iter)
-    {
+    void setIterator(std::multimap<double, LNode*>::iterator iter) {
       open_it_ = iter;
     }
 
   private:
-    double rhs_;                                       // minimum cost moving from start(value)
-    double key_;                                       // priority
+    double rhs_;  // minimum cost moving from start(value)
+    double key_;  // priority
     std::multimap<double, LNode*>::iterator open_it_;  // iterator
   };
 
@@ -97,9 +88,8 @@ public:
   /**
    * @brief Construct a new DStarLite object
    * @param costmap   the environment for path planning
-   * @param obstacle_factor obstacle factor(greater means obstacles)
    */
-  DStarLitePathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor = 1.0);
+  DStarLitePathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
   ~DStarLitePathPlanner();
 
   /**
@@ -191,15 +181,16 @@ public:
    * @param expand  containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
-  bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);
+  bool plan(const common::geometry::Point3d& start, const common::geometry::Point3d& goal,
+            common::geometry::Points3d* path, common::geometry::Points3d* expand);
 
 public:
   unsigned char* curr_global_costmap_;         // current global costmap
   unsigned char* last_global_costmap_;         // last global costmap
   LNodePtr** map_;                             // grid pointer map
   std::multimap<double, LNodePtr> open_list_;  // open list, ascending order
-  Points3d path_;                              // path
-  Points3d expand_;                            // expand
+  common::geometry::Points3d path_;            // path
+  common::geometry::Points3d expand_;          // expand
   LNode start_, goal_;                         // start and goal
   LNodePtr start_ptr_, goal_ptr_, last_ptr_;   // start and goal ptr
   double km_;                                  // correction
