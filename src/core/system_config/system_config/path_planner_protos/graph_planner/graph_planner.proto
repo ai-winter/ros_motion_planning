@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package rmp.pb.path_planner;
+
+import "system_config/path_planner_protos/graph_planner/hybrid_astar_planner.proto";
+
+message GraphPathPlanner {
+    HybriAstarPlanner hybrid_astar_planner = 10;
+}

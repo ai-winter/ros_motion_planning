@@ -1,3 +1,36 @@
+path_planner {
+    convert_offset: 0.0
+    default_tolerance: 0.0
+    expand_zone: true
+    show_safety_corridor: false
+    enable_resample: false
+    resample_ratio: 0.5
+    obstacle_inflation_factor: 0.5
+    is_outline_map: true
+
+    graph_planner {
+        hybrid_astar_planner {
+            motion_model: DUBINS_UNSPECIFIED
+            goal_tolerance: 0.125
+            dim_3_size: 64
+            max_iterations: 1000000
+            max_approach_iterations: 1000
+            traverse_unknown: false
+            curve_sample_ratio: 0.15
+            minimum_turning_radius: 0.4
+            non_straight_penalty: 1.20
+            change_penalty: 0.0
+            reverse_penalty: 2.1
+            retrospective_penalty: 0.025
+            lookup_table_dim: 20
+            analytic_expansion_ratio: 3.5
+            analytic_expansion_max_length: 3.0
+            lamda_h: 2.5
+            default_graph_size: 100000
+        }
+    }
+}
+
 controller {
     control_frequency: 10.0 # Hz
     base_frame: "base_link"

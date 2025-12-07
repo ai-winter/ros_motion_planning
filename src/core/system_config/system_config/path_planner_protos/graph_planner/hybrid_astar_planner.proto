@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package rmp.pb.path_planner;
+
+import "system_config/common_protos/geometry_protos/points.proto";
+
+enum MotionModel {
+    DUBINS_UNSPECIFIED = 0;
+    REEDS_SHEPP = 1;
+}
+
+message HybriAstarPlanner {
+    MotionModel motion_model = 1;
+    // tolerance distance to goal [m]
+    double goal_tolerance = 2;
+    // Auxiliary dimensions for search
+    int64 dim_3_size = 3;
+    // Maximum number of iterations to use while expanding search
+    int64 max_iterations = 4;
+    // Maximum number of iterations during search near the goal
+    int64 max_approach_iterations = 5;
+    // Allow search in unknown space, good for navigation while mapping
+    bool traverse_unknown = 6;
+    // sample ratio for curve generation
+    double curve_sample_ratio = 7;
+    // Minimum turning radius
+    double minimum_turning_radius = 8;
+    // penalty to apply if motion is non-straight, must be => 1
+    double non_straight_penalty = 9;
+    // penalty to apply if motion is changing directions, must be >= 0
+    double change_penalty = 10;
+    // penalty to apply if motion is reversing, must be => 1
+    double reverse_penalty = 11;
+    // penalty to prefer later maneuvers before earlier along the path
+    double retrospective_penalty = 12;
+    // size of the dubin/reeds-sheep distance window to cache [m]
+    int64 lookup_table_dim = 13;
+    // The ratio to attempt analytic expansions during search for final approach
+    double analytic_expansion_ratio = 14;
+    // The maximum length of the analytic expansion to be considered valid
+    double analytic_expansion_max_length = 15;
+    double lamda_h = 16;
+    int64 default_graph_size = 20;
+}

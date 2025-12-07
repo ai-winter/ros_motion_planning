@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package rmp.pb.path_planner;
+
+import "system_config/path_planner_protos/graph_planner/graph_planner.proto";
+
+message PathPlanner {
+    // offset of transform from world(x,y) to grid map(x,y)
+    double convert_offset = 1;
+    // error tolerance
+    double default_tolerance = 2;
+    // whether outline the map or not
+    bool outline_map = 3;
+    // obstacle inflation factor
+    double obstacle_inflation_factor = 4;
+    // whether publish expand zone or not
+    bool expand_zone = 5;
+    // whether show safety corridor
+    bool show_safety_corridor = 6;
+    // resample path [m]
+    bool enable_resample = 7;
+    double resample_ratio = 8;
+    // whether outline the map or not
+    bool is_outline_map = 9;
+
+    GraphPathPlanner graph_planner = 10;
+}
