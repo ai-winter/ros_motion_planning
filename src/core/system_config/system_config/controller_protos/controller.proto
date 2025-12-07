@@ -3,7 +3,7 @@ syntax = "proto3";
 package rmp.pb.controller;
 
 import "system_config/controller_protos/rpp_controller.proto";
-// import "system_config/controller_protos/lqr_controller.proto";
+import "system_config/controller_protos/lqr_controller.proto";
 // import "system_config/controller_protos/pid_controller.proto";
 // import "system_config/controller_protos/mpc_controller.proto";
 // import "system_config/controller_protos/apf_controller.proto";
@@ -32,7 +32,7 @@ message Controller {
     double max_angular_velocity_increment = 12;
 
     RPPController rpp_controller = 21;
-    // LQRController lqr_controller = 22;
+    LQRController lqr_controller = 22;
     // PIDController pid_controller = 23;
     // MPCController mpc_controller = 24;
     // APFController apf_controller = 25;

@@ -23,16 +23,14 @@
 #include <Eigen/Dense>
 
 #include "controller/controller.h"
+#include "system_config/controller_protos/lqr_controller.pb.h"
 
-namespace rmp
-{
-namespace controller
-{
+namespace rmp {
+namespace controller {
 /**
  * @brief A class implementing a local planner using the LQR
  */
-class LQRController : public nav_core::BaseLocalPlanner, Controller
-{
+class LQRController : public nav_core::BaseLocalPlanner, Controller {
 public:
   /**
    * @brief Construct a new LQR controller object
@@ -42,7 +40,8 @@ public:
   /**
    * @brief Construct a new LQR controller object
    */
-  LQRController(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  LQRController(std::string name, tf2_ros::Buffer* tf,
+                costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Destroy the LQR controller object
@@ -55,7 +54,8 @@ public:
    * @param tf          a pointer to a transform listener
    * @param costmap_ros the cost map to use for assigning costs to trajectories
    */
-  void initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  void initialize(std::string name, tf2_ros::Buffer* tf,
+                  costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Set the plan that the controller is following
@@ -71,8 +71,10 @@ public:
   bool isGoalReached();
 
   /**
-   * @brief Given the current position, orientation, and velocity of the robot, compute the velocity commands
-   * @param cmd_vel will be filled with the velocity command to be passed to the robot base
+   * @brief Given the current position, orientation, and velocity of the robot, compute
+   * the velocity commands
+   * @param cmd_vel will be filled with the velocity command to be passed to the robot
+   * base
    * @return true if a valid trajectory was found, else false
    */
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
@@ -85,18 +87,18 @@ private:
    * @param u_r refered control
    * @return u  control vector
    */
-  Eigen::Vector2d _lqrControl(Eigen::Vector3d s, Eigen::Vector3d s_d, Eigen::Vector2d u_r);
+  Eigen::Vector2d _lqrControl(Eigen::Vector3d s, Eigen::Vector3d s_d,
+                              Eigen::Vector2d u_r);
 
 private:
+  pb::controller::LQRController lqr_config_;
+
   bool initialized_;     // initialized flag
   bool goal_reached_;    // goal reached flag
   tf2_ros::Buffer* tf_;  // transform buffer
 
-  double d_t_;         // control time interval
   Eigen::Matrix3d Q_;  // state error matrix
   Eigen::Matrix2d R_;  // control error matrix
-  int max_iter_;       // maximum iteration for ricatti solution
-  double eps_iter_;    // iteration ending threshold
 
   ros::Publisher target_pt_pub_, current_pose_pub_;
 

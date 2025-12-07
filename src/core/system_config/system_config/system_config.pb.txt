@@ -23,4 +23,17 @@ controller {
         approach_dist: 0.8
         approach_min_v: 0.1
     }
+
+    lqr_controller {
+        lookahead_time: 1.0
+        min_lookahead_dist: 0.3
+        max_lookahead_dist: 0.9
+        solver_max_iterations: 100
+        solver_eps: 0.1
+        Q_matrix_x: 1.0
+        Q_matrix_y: 1.0
+        Q_matrix_theta: 1.0
+        R_matrix_v: 1.0
+        R_matrix_w: 1.0
+    }
 }

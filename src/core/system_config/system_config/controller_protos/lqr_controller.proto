@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package rmp.pb.controller;
+
+message LQRController {
+  // lookahead parameters
+  double lookahead_time = 1;
+  double min_lookahead_dist = 2;
+  double max_lookahead_dist = 3;
+
+  // constriants
+  int64 solver_max_iterations = 4;  // maximum iteration for ricatti solution
+  double solver_eps = 5; // iteration ending threshold
+
+  // weight matrix for penalizing state error while tracking [x,y,theta]
+  double Q_matrix_x = 6;
+  double Q_matrix_y = 7;
+  double Q_matrix_theta = 8;
+
+  // weight matrix for penalizing input error while tracking[v, w]
+  double R_matrix_v = 9;
+  double R_matrix_w = 10;
+}
