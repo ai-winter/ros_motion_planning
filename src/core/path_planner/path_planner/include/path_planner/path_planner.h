@@ -27,29 +27,21 @@
 #include "common/geometry/point.h"
 #include "common/geometry/collision_checker.h"
 
-namespace rmp
-{
-namespace path_planner
-{
-/**
- * @brief Abstract class that is inherited by concerete implementaions of global planner classes.
- *        The Plan function is a pure virtual funciton that is overloaded
- */
-class PathPlanner
-{
-public:
-  using Point2d = rmp::common::geometry::Point2d;
-  using Point3d = rmp::common::geometry::Point3d;
-  using Points2d = rmp::common::geometry::Points2d;
-  using Points3d = rmp::common::geometry::Points3d;
+#include "system_config/path_planner_protos/path_planner.pb.h"
 
+namespace rmp {
+namespace path_planner {
+/**
+ * @brief Abstract class that is inherited by concerete implementaions of global planner
+ * classes. The Plan function is a pure virtual funciton that is overloaded
+ */
+class PathPlanner {
 public:
   /**
    * @brief Construct a new Global PathPlanner object
    * @param costmap_ros     the environment for path planning
-   * @param obstacle_factor obstacle factor(greater means obstacles)
    */
-  PathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor = 1.0);
+  PathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Destroy the Global PathPlanner object
@@ -60,17 +52,19 @@ public:
    * @brief Pure virtual function that is overloadde by planner implementations
    * @param start          start node
    * @param goal           goal node
-   * @param path           optimal path consists of Node
+   * @param path           The resulting path in (x, y, theta)
    * @param expand         containing the node been search during the process
    * @return true if path found, else false
    */
-  virtual bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand) = 0;
+  virtual bool plan(const common::geometry::Point3d& start,
+                    const common::geometry::Point3d& goal,
+                    common::geometry::Points3d* path,
+                    common::geometry::Points3d* expand) = 0;
 
   /**
-   * @brief Set or reset obstacle factor
-   * @param factor obstacle factor
+   * @brief get the planner configure parameters
    */
-  void setFactor(float factor);
+  const pb::path_planner::PathPlanner& config() const;
 
   /**
    * @brief get the costmap
@@ -134,6 +128,16 @@ public:
    */
   bool validityCheck(double wx, double wy, double& mx, double& my);
 
+  /**
+   * @brief Resample the given path based on a specified sampling ratio
+   * @param path           the original path to be resampled
+   * @param path_resample  the resulting resampled path
+   * @param sample_ratio   the ratio used to determine the sampling intervals
+   * @return true if the resampling is successful, false otherwise
+   */
+  static bool resample(const common::geometry::Points3d& path,
+                       common::geometry::Points3d* path_resample, double sample_ratio);
+
 protected:
   /**
    * @brief Convert closed list to path
@@ -143,13 +147,11 @@ protected:
    * @return vector containing path nodes
    */
   template <typename Node>
-  std::vector<Node> _convertClosedListToPath(std::unordered_map<int, Node>& closed_list, const Node& start,
-                                             const Node& goal)
-  {
+  std::vector<Node> _convertClosedListToPath(std::unordered_map<int, Node>& closed_list,
+                                             const Node& start, const Node& goal) {
     std::vector<Node> path;
     auto current = closed_list.find(goal.id());
-    while (current->second != start)
-    {
+    while (current->second != start) {
       path.emplace_back(current->second.x(), current->second.y());
       auto it = closed_list.find(current->second.pid());
       if (it != closed_list.end())
@@ -162,10 +164,10 @@ protected:
   }
 
   template <typename Node>
-  std::vector<Node> _convertBiClosedListToPath(std::unordered_map<int, Node>& f_closed_list,
-                                               std::unordered_map<int, Node>& b_closed_list, const Node& start,
-                                               const Node& goal, const Node& boundary)
-  {
+  std::vector<Node>
+  _convertBiClosedListToPath(std::unordered_map<int, Node>& f_closed_list,
+                             std::unordered_map<int, Node>& b_closed_list,
+                             const Node& start, const Node& goal, const Node& boundary) {
     if (f_closed_list.find(start.id()) == f_closed_list.end())
       std::swap(f_closed_list, b_closed_list);
 
@@ -173,8 +175,7 @@ protected:
 
     // backward
     auto current = b_closed_list.find(boundary.id());
-    while (current->second != goal)
-    {
+    while (current->second != goal) {
       path_b.push_back(current->second);
       auto it = b_closed_list.find(current->second.pid());
       if (it != b_closed_list.end())
@@ -189,8 +190,7 @@ protected:
       path.push_back(*rit);
 
     current = f_closed_list.find(boundary.id());
-    while (current->second != start)
-    {
+    while (current->second != start) {
       auto it = f_closed_list.find(current->second.pid());
       if (it != f_closed_list.end())
         current = it;
@@ -203,11 +203,14 @@ protected:
   }
 
 protected:
-  float obstacle_factor_;                  // obstacle factor(greater means obstacles)
-  int nx_, ny_, map_size_;                 // pixel number in costmap
   costmap_2d::Costmap2DROS* costmap_ros_;  // costmap ROS wrapper
+  int nx_, ny_, map_size_;                 // pixel number in costmap
   costmap_2d::Costmap2D* costmap_;         // costmap buffer
-  std::shared_ptr<rmp::common::geometry::CollisionChecker> collision_checker_;  // gridmap collision checker
+  pb::path_planner::PathPlanner config_;
+  std::shared_ptr<rmp::common::geometry::CollisionChecker>
+      collision_checker_;  // gridmap
+                           // collision
+                           // checker
 };
 }  // namespace path_planner
 }  // namespace rmp

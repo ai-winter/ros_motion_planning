@@ -14,11 +14,12 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   voronoi_layer
   common
+  system_config
 )
 
 catkin_package(
  INCLUDE_DIRS include
- CATKIN_DEPENDS voronoi_layer common
+ CATKIN_DEPENDS voronoi_layer common system_config
 )
 
 include_directories(

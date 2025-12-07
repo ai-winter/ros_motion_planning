@@ -22,6 +22,7 @@
   <depend>tf2_ros</depend>
   <depend>voronoi_layer</depend>
   <depend>common</depend>
+  <depend>system_config</depend>
 
   <export>
     <nav_core plugin="${prefix}/path_planner_plugin.xml" />
