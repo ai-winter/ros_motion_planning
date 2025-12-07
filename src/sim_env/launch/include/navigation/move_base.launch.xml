@@ -75,7 +75,6 @@
         <rosparam file="$(find sim_env)/config/controller/pid_controller_params.yaml" command="load" if="$(eval arg('local_planner')=='pid')" />
 
         <param name="base_local_planner" value="apf_controller/APFController" if="$(eval arg('local_planner')=='apf')" />
-        <rosparam file="$(find sim_env)/config/controller/apf_controller_params.yaml" command="load" if="$(eval arg('local_planner')=='apf')" />
 
         <param name="base_local_planner" value="rpp_controller/RPPController" if="$(eval arg('local_planner')=='rpp')" />
 
