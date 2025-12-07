@@ -1,0 +1,16 @@
+controller {
+    control_frequency: 10.0 # Hz
+    base_frame: "base_link"
+    odom_frame: "odom"
+    map_frame: "map"
+    goal_dist_tolerance: 0.3
+    rotate_tolerance: 0.5
+    max_linear_velocity: 0.5    # m / s
+    min_linear_velocity: 0.0
+    max_linear_velocity_increment: 0.5
+    max_angular_velocity: 1.5   # rad / s
+    min_angular_velocity: 0.0
+    max_angular_velocity_increment: 1.5
+
+   
+}

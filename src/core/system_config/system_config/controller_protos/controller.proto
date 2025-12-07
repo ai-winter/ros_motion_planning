@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package rmp.pb.controller;
+
+// import "system_config/controller_protos/rpp_controller.proto";
+// import "system_config/controller_protos/lqr_controller.proto";
+// import "system_config/controller_protos/pid_controller.proto";
+// import "system_config/controller_protos/mpc_controller.proto";
+// import "system_config/controller_protos/apf_controller.proto";
+// import "system_config/controller_protos/orca_controller.proto";
+
+message Controller {
+    double control_frequency = 1;
+
+    // frame id
+    string base_frame = 2;
+    string map_frame = 3;
+    string odom_frame = 4;
+
+    // goal reached tolerance
+    double goal_dist_tolerance = 5;
+    double rotate_tolerance = 6;
+
+    // linear velocity
+    double max_linear_velocity = 7;
+    double min_linear_velocity = 8;
+    double max_linear_velocity_increment = 9;
+
+    // angular velocity
+    double max_angular_velocity = 10;
+    double min_angular_velocity = 11;
+    double max_angular_velocity_increment = 12;
+
+    // RPPController rpp_controller = 21;
+    // LQRController lqr_controller = 22;
+    // PIDController pid_controller = 23;
+    // MPCController mpc_controller = 24;
+    // APFController apf_controller = 25;
+    // ORCAController orca_controller = 26;
+}
