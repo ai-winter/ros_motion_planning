@@ -37,6 +37,15 @@ public:
 
   /**
    * @brief grid map collision detection
+   * @param x grid coordinate x
+   * @param y grid coordinate y
+   * @param traverse_unknown Whether or not to traverse in unknown space
+   * @return true if collision occurs, else false
+   */
+  bool inCollision(const unsigned int& x, const unsigned int& y, const bool& traverse_unknown = true);
+
+  /**
+   * @brief grid map collision detection
    * @param i grid index
    * @param traverse_unknown Whether or not to traverse in unknown space
    * @return true if collision occurs, else false

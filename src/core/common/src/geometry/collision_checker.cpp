@@ -29,6 +29,20 @@ costmap_2d::Costmap2DROS* CollisionChecker::getCostmapROS() const
 
 /**
  * @brief grid map collision detection
+ * @param x grid coordinate x
+ * @param y grid coordinate y
+ * @param traverse_unknown Whether or not to traverse in unknown space
+ * @return true if collision occurs, else false
+ */
+bool CollisionChecker::inCollision(const unsigned int& x, const unsigned int& y, const bool& traverse_unknown)
+{
+  const unsigned int width = costmap_ros_->getCostmap()->getSizeInCellsX();
+  const unsigned int index = x + width * y;
+  return inCollision(index, traverse_unknown);
+}
+
+/**
+ * @brief grid map collision detection
  * @param i grid index
  * @param traverse_unknown Whether or not to traverse in unknown space
  * @return true if collision occurs, else false
