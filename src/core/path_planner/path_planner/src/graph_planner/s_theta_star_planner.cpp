@@ -19,37 +19,31 @@
 #include "common/geometry/collision_checker.h"
 #include "path_planner/graph_planner/s_theta_star_planner.h"
 
-namespace rmp
-{
-namespace path_planner
-{
-namespace
-{
+using namespace rmp::common::geometry;
 using CollisionChecker = rmp::common::geometry::CollisionChecker;
-}
 
+namespace rmp {
+namespace path_planner {
 /**
  * @brief Construct a new SThetaStar object
  * @param costmap   the environment for path planning
- * @param obstacle_factor obstacle factor(greater means obstacles)
  */
-SThetaStarPathPlanner::SThetaStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor)
-  : ThetaStarPathPlanner(costmap_ros, obstacle_factor){};
+SThetaStarPathPlanner::SThetaStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros)
+  : ThetaStarPathPlanner(costmap_ros){};
 
 /**
  * @brief S-Theta* implementation
  * @param start         start node
  * @param goal          goal node
- * @param path          optimal path consists of Node
+ * @param path          The resulting path in (x, y, theta)
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
-{
+bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal,
+                                 Points3d* path, Points3d* expand) {
   double m_start_x, m_start_y, m_goal_x, m_goal_y;
   if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
-      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
-  {
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y))) {
     return false;
   }
 
@@ -59,8 +53,8 @@ bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
   goal_node.set_id(grid2Index(goal_node.x(), goal_node.y()));
 
   // initialize
-  path.clear();
-  expand.clear();
+  path->clear();
+  expand->clear();
 
   // open list and closed list
   std::priority_queue<Node, std::vector<Node>, Node::compare_cost> open_list;
@@ -69,8 +63,7 @@ bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
   open_list.push(start_node);
 
   // main process
-  while (!open_list.empty())
-  {
+  while (!open_list.empty()) {
     // pop current node from open list
     auto current = open_list.top();
     open_list.pop();
@@ -80,31 +73,30 @@ bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
       continue;
 
     closed_list.insert(std::make_pair(current.id(), current));
-    expand.emplace_back(current.x(), current.y());
+    expand->emplace_back(current.x(), current.y());
 
     // goal found
-    if (current == goal_node)
-    {
-      const auto& backtrace = _convertClosedListToPath<Node>(closed_list, start_node, goal_node);
-      for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
-      {
+    if (current == goal_node) {
+      const auto& backtrace =
+          _convertClosedListToPath<Node>(closed_list, start_node, goal_node);
+      for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter) {
         // convert to world frame
         double wx, wy;
         costmap_->mapToWorld(iter->x(), iter->y(), wx, wy);
-        path.emplace_back(wx, wy);
+        path->emplace_back(wx, wy);
       }
       return true;
     }
 
     // explore neighbor of current node
-    for (const auto& m : motions)
-    {
+    for (const auto& m : motions) {
       // explore a new node
       // path 1
 
       auto node_new = current + m;  // add the x_, y_, g_
       node_new.set_g(current.g() + m.g());
-      node_new.set_h(std::hypot(node_new.x() - goal_node.x(), node_new.y() - goal_node.y()));
+      node_new.set_h(
+          std::hypot(node_new.x() - goal_node.x(), node_new.y() - goal_node.y()));
       node_new.set_id(grid2Index(node_new.x(), node_new.y()));
       node_new.set_pid(current.id());
 
@@ -123,22 +115,23 @@ bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
       parent.set_y(tmp_y);
       // update g value
       auto find_parent = closed_list.find(parent.id());
-      if (find_parent != closed_list.end())
-      {
+      if (find_parent != closed_list.end()) {
         parent = find_parent->second;
         alpha = _alpha(parent, node_new, goal_node);
         // update g
-        node_new.set_g(current.g() + std::hypot(parent.x() - node_new.x(), parent.y() - node_new.y()) + alpha);
+        node_new.set_g(current.g() +
+                       std::hypot(parent.x() - node_new.x(), parent.y() - node_new.y()) +
+                       alpha);
       }
 
       // next node hit the boundary or obstacle
       if ((node_new.id() < 0) || (node_new.id() >= map_size_) ||
-          (costmap_->getCharMap()[node_new.id()] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_ &&
+          (costmap_->getCharMap()[node_new.id()] >=
+               costmap_2d::LETHAL_OBSTACLE * config_.obstacle_inflation_factor() &&
            costmap_->getCharMap()[node_new.id()] >= costmap_->getCharMap()[current.id()]))
         continue;
 
-      if (find_parent != closed_list.end())
-      {
+      if (find_parent != closed_list.end()) {
         _updateVertex(parent, node_new, alpha);
       }
 
@@ -156,21 +149,23 @@ bool SThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Poin
  * @param child
  * @param alpha
  */
-void SThetaStarPathPlanner::_updateVertex(const Node& parent, Node& child, const double alpha)
-{
+void SThetaStarPathPlanner::_updateVertex(const Node& parent, Node& child,
+                                          const double alpha) {
   auto isCollision = [&](const Node& node1, const Node& node2) {
-    return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
-      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_;
-    });
+    return CollisionChecker::BresenhamCollisionDetection(
+        node1, node2, [&](const Node& node) {
+          return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >=
+                 costmap_2d::LETHAL_OBSTACLE * config_.obstacle_inflation_factor();
+        });
   };
 
-  // if (alpha == 0 || !isCollision(parent, child)){  // "alpha == 0" will cause penetration of obstacles
-  if (!isCollision(parent, child))
-  {
+  // if (alpha == 0 || !isCollision(parent, child)){  // "alpha == 0" will cause
+  // penetration of obstacles
+  if (!isCollision(parent, child)) {
     // path 2
-    double new_g = parent.g() + std::hypot(parent.x() - child.x(), parent.y() - child.y()) + alpha;
-    if (new_g < child.g())
-    {
+    double new_g =
+        parent.g() + std::hypot(parent.x() - child.x(), parent.y() - child.y()) + alpha;
+    if (new_g < child.g()) {
       child.set_g(new_g);
       child.set_pid(parent.id());
     }
@@ -184,8 +179,8 @@ void SThetaStarPathPlanner::_updateVertex(const Node& parent, Node& child, const
  * @param goal
  * @return deviation cost
  */
-double SThetaStarPathPlanner::_alpha(const Node& parent, const Node& child, const Node& goal)
-{
+double SThetaStarPathPlanner::_alpha(const Node& parent, const Node& child,
+                                     const Node& goal) {
   double d_qt = std::hypot(parent.x() - child.x(), parent.y() - child.y());
   double d_qg = std::hypot(parent.x() - goal.x(), parent.y() - goal.y());
   double d_tg = std::hypot(child.x() - goal.x(), child.y() - goal.y());
