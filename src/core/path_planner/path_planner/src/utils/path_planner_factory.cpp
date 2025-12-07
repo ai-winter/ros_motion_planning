@@ -20,7 +20,6 @@
 #include "path_planner/path_planner_node.h"
 #include "path_planner/graph_planner/astar_planner.h"
 #include "path_planner/graph_planner/jps_planner.h"
-#include "path_planner/graph_planner/bi_jps_planner.h"
 #include "path_planner/graph_planner/dstar_planner.h"
 #include "path_planner/graph_planner/lpa_star_planner.h"
 #include "path_planner/graph_planner/dstar_lite_planner.h"
@@ -80,11 +79,6 @@ bool PathPlannerFactory::createPlanner(ros::NodeHandle& nh, costmap_2d::Costmap2
   else if (planner_name == "jps")
   {
     planner_props.planner_ptr = std::make_shared<JPSPathPlanner>(costmap_ros, obstacle_factor);
-    planner_props.planner_type = GRAPH_PLANNER;
-  }
-  else if (planner_name == "bi_jps")
-  {
-    planner_props.planner_ptr = std::make_shared<BiJPSPathPlanner>(costmap_ros, obstacle_factor);
     planner_props.planner_type = GRAPH_PLANNER;
   }
   else if (planner_name == "dstar")
