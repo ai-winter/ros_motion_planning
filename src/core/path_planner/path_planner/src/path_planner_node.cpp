@@ -71,14 +71,6 @@ void PathPlannerNode::initialize(std::string name) {
     // costmap frame ID
     frame_id_ = costmap_ros_->getGlobalFrameID();
 
-    private_nh.param("default_tolerance", tolerance_, 0.0);  // error tolerance
-    private_nh.param("outline_map", is_outline_,
-                     false);  // whether outline the map or not
-    private_nh.param("expand_zone", is_expand_,
-                     false);  // whether publish expand zone or not
-    private_nh.param("show_safety_corridor", show_safety_corridor_,
-                     false);  // whether visualize safety corridor
-
     PathPlannerFactory::PlannerProps path_planner_props;
     if (!PathPlannerFactory::createPlanner(private_nh, costmap_ros_,
                                            path_planner_props)) {
@@ -118,7 +110,7 @@ void PathPlannerNode::initialize(std::string name) {
 bool PathPlannerNode::makePlan(const geometry_msgs::PoseStamped& start,
                                const geometry_msgs::PoseStamped& goal,
                                std::vector<geometry_msgs::PoseStamped>& plan) {
-  return makePlan(start, goal, tolerance_, plan);
+  return makePlan(start, goal, g_planner_->config().default_tolerance(), plan);
 }
 
 /**
@@ -160,12 +152,13 @@ bool PathPlannerNode::makePlan(const geometry_msgs::PoseStamped& start,
   const auto& visualizer = rmp::common::util::VisualizerPtr::Instance();
 
   // outline the map
-  if (is_outline_)
+  if (g_planner_->config().is_outline_map()) {
     g_planner_->outlineMap();
+  }
 
   // calculate path
-  PathPlanner::Points3d origin_plan;
-  PathPlanner::Points3d expand;
+  common::geometry::Points3d origin_plan;
+  common::geometry::Points3d expand;
   bool path_found = false;
 
   // planning
@@ -174,7 +167,7 @@ bool PathPlannerNode::makePlan(const geometry_msgs::PoseStamped& start,
       { start.pose.position.x, start.pose.position.y,
         tf2::getYaw(start.pose.orientation) },
       { goal.pose.position.x, goal.pose.position.y, tf2::getYaw(goal.pose.orientation) },
-      origin_plan, expand);
+      &origin_plan, &expand);
   // auto finish_time = std::chrono::high_resolution_clock::now();
   // std::chrono::duration<double> cal_time = finish_time - start_time;
   // R_INFO << "Calculation Time: " << cal_time.count() << " s";
@@ -189,7 +182,7 @@ bool PathPlannerNode::makePlan(const geometry_msgs::PoseStamped& start,
       plan[0].pose.orientation = start.pose.orientation;
 
       // publish visulization plan
-      if (is_expand_) {
+      if (g_planner_->config().expand_zone()) {
         if (planner_type_ == GRAPH_PLANNER) {
           // publish expand zone
           visualizer->publishExpandZone(expand, costmap_ros_->getCostmap(), expand_pub_,
@@ -259,7 +252,7 @@ bool PathPlannerNode::makePlanService(nav_msgs::GetPlan::Request& req,
  * @param plan plan transfromed from path, i.e. [start, ..., goal]
  * @return bool true if successful, else false
  */
-bool PathPlannerNode::_getPlanFromPath(PathPlanner::Points3d& path,
+bool PathPlannerNode::_getPlanFromPath(const common::geometry::Points3d& path,
                                        std::vector<geometry_msgs::PoseStamped>& plan) {
   if (!initialized_) {
     R_ERROR << "This planner has not been initialized yet, but it is being used, please "
@@ -269,9 +262,6 @@ bool PathPlannerNode::_getPlanFromPath(PathPlanner::Points3d& path,
   plan.clear();
 
   for (const auto& pt : path) {
-    // double wx, wy;
-    // g_planner_->map2World(pt.x(), pt.y(), wx, wy);
-
     // coding as message type
     geometry_msgs::PoseStamped pose;
     pose.header.stamp = ros::Time::now();

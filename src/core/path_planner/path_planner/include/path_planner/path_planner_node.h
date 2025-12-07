@@ -26,12 +26,9 @@
 #include "path_planner/path_planner.h"
 #include "path_planner/utils/path_planner_factory.h"
 
-namespace rmp
-{
-namespace path_planner
-{
-class PathPlannerNode : public nav_core::BaseGlobalPlanner
-{
+namespace rmp {
+namespace path_planner {
+class PathPlannerNode : public nav_core::BaseGlobalPlanner {
 public:
   /**
    * @brief Construct a new Path Planner object
@@ -70,7 +67,8 @@ public:
    * @param plan  plan
    * @return true if find a path successfully, else false
    */
-  bool makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,
+  bool makePlan(const geometry_msgs::PoseStamped& start,
+                const geometry_msgs::PoseStamped& goal,
                 std::vector<geometry_msgs::PoseStamped>& plan);
 
   /**
@@ -81,14 +79,16 @@ public:
    * @param tolerance error tolerance
    * @return true if find a path successfully, else false
    */
-  bool makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal, double tolerance,
+  bool makePlan(const geometry_msgs::PoseStamped& start,
+                const geometry_msgs::PoseStamped& goal, double tolerance,
                 std::vector<geometry_msgs::PoseStamped>& plan);
   /**
    * @brief Regeister planning service
    * @param req  request from client
    * @param resp response from server
    */
-  bool makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::GetPlan::Response& resp);
+  bool makePlanService(nav_msgs::GetPlan::Request& req,
+                       nav_msgs::GetPlan::Response& resp);
 
 protected:
   /**
@@ -97,7 +97,8 @@ protected:
    * @param plan plan transfromed from path, i.e. [start, ..., goal]
    * @return bool true if successful, else false
    */
-  bool _getPlanFromPath(PathPlanner::Points3d& path, std::vector<geometry_msgs::PoseStamped>& plan);
+  bool _getPlanFromPath(const common::geometry::Points3d& path,
+                        std::vector<geometry_msgs::PoseStamped>& plan);
 
 protected:
   bool initialized_;                        // initialization flag
@@ -112,12 +113,6 @@ protected:
   ros::Publisher tree_pub_;                 // random search tree publisher
   ros::Publisher particles_pub_;            // evolutionary particles publisher
   ros::ServiceServer make_plan_srv_;        // planning service
-
-private:
-  bool is_outline_;            // whether outline the boudary of map
-  bool is_expand_;             // whether publish expand map or not
-  bool show_safety_corridor_;  // whether visualize safety corridor
-  double tolerance_;           // tolerance
 };
 }  // namespace path_planner
 }  // namespace rmp
