@@ -22,26 +22,17 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp
-{
-namespace path_planner
-{
+namespace rmp {
+namespace path_planner {
 /**
  * @brief Class for objects that plan using the D* algorithm
  */
-class DStarPathPlanner : public PathPlanner
-{
+class DStarPathPlanner : public PathPlanner {
 private:
   using Node = rmp::common::structure::Node<int>;
-  class DNode : public Node
-  {
+  class DNode : public Node {
   public:
-    enum Tag
-    {
-      NEW = 0,
-      OPEN = 1,
-      CLOSED = 2
-    };
+    enum Tag { NEW = 0, OPEN = 1, CLOSED = 2 };
     /**
      * @brief Construct a new DNode object
      * @param x   X value
@@ -53,27 +44,24 @@ private:
      * @param t   DNode's tag among enum Tag
      * @param k   DNode's k_min in history
      */
-    DNode(const int x = 0, const int y = 0, const double g = std::numeric_limits<double>::max(),
-          const double h = std::numeric_limits<double>::max(), const int id = 0, const int pid = -1, const int t = NEW,
+    DNode(const int x = 0, const int y = 0,
+          const double g = std::numeric_limits<double>::max(),
+          const double h = std::numeric_limits<double>::max(), const int id = 0,
+          const int pid = -1, const int t = NEW,
           const double k = std::numeric_limits<double>::max())
-      : Node(x, y, g, h, id, pid), t_(t), k_(k)
-    {
+      : Node(x, y, g, h, id, pid), t_(t), k_(k) {
     }
 
-    int t() const
-    {
+    int t() const {
       return t_;
     }
-    double k() const
-    {
+    double k() const {
       return k_;
     }
-    void setTag(int t)
-    {
+    void setTag(int t) {
       t_ = t;
     }
-    void setK(double k)
-    {
+    void setK(double k) {
       k_ = k;
     }
 
@@ -87,9 +75,8 @@ public:
   /**
    * @brief Construct a new DStar object
    * @param costmap   the environment for path planning
-   * @param obstacle_factor obstacle factor(greater means obstacles)
    */
-  DStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor = 1.0);
+  DStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Init map
@@ -158,7 +145,8 @@ public:
   DNode getState(const DNode& current);
 
   /**
-   * @brief Modify the map when collision occur between x and y in path, and then do processState()
+   * @brief Modify the map when collision occur between x and y in path, and then do
+   * processState()
    * @param x DNode pointer of one DNode
    */
   void modify(DNodePtr x);
@@ -170,15 +158,16 @@ public:
    * @param expand containing the node been search during the process
    * @return tuple contatining a bool as to whether a path was found, and the path
    */
-  bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);
+  bool plan(const common::geometry::Point3d& start, const common::geometry::Point3d& goal,
+            common::geometry::Points3d* path, common::geometry::Points3d* expand);
 
 public:
   unsigned char* curr_global_costmap_;         // current global costmap
   unsigned char* last_global_costmap_;         // last global costmap
   DNodePtr** map_;                             // grid pointer map
   std::multimap<double, DNodePtr> open_list_;  // open list, ascending order
-  Points3d path_;                              // path
-  Points3d expand_;                            // expand
+  common::geometry::Points3d path_;            // path
+  common::geometry::Points3d expand_;          // expand
   DNode goal_;                                 // last goal
 };
 }  // namespace path_planner

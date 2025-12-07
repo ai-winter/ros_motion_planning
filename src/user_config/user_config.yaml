@@ -17,10 +17,10 @@ robots_config:
 #     * jps
 #     * gbfs
 #     * dijkstra
-#     * d_star
+#     * dstar
 #     * lpa_star
 #     * voronoi
-#     * d_star_lite
+#     * dstar_lite
 #     * theta_star
 #     * lazy_theta_star
 #     * hybrid_astar
