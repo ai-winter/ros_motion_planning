@@ -19,24 +19,12 @@
 
 #include <vector>
 
-namespace rmp
-{
-namespace path_planner
-{
-enum class MotionModel
-{
-  UNKNOWN = 0,
-  GRID2D = 1,
-  DUBIN = 2,
-  REEDS_SHEPP = 3,
-  STATE_LATTICE = 4,
-};
-
+namespace rmp {
+namespace path_planner {
 /**
  * @brief A struct with the motion primitive's direction embedded
  */
-enum class TurnDirection
-{
+enum class TurnDirection {
   UNKNOWN = 0,
   FORWARD = 1,
   LEFT = 2,
@@ -47,10 +35,10 @@ enum class TurnDirection
 };
 
 /**
- * @brief A struct for poses in motion primitives
+ * @brief A class for poses in motion primitives
  */
-struct MotionPose
-{
+class MotionPose {
+public:
   /**
    * @brief A constructor for MotionPose
    */
@@ -63,16 +51,32 @@ struct MotionPose
    * @param theta Angle of pose
    * @param TurnDirection Direction of the primitive's turn
    */
-  MotionPose(const float& x, const float& y, const float& theta, const TurnDirection& turn_dir)
-    : x_(x), y_(y), theta_(theta), turn_dir_(turn_dir)
-  {
+  MotionPose(const float& x, const float& y, const float& theta,
+             const TurnDirection& turn_dir)
+    : x_(x), y_(y), theta_(theta), turn_dir_(turn_dir) {
   }
 
-  MotionPose operator-(const MotionPose& p2)
-  {
+  MotionPose operator-(const MotionPose& p2) {
     return MotionPose(x_ - p2.x_, y_ - p2.y_, theta_ - p2.theta_, TurnDirection::UNKNOWN);
   }
 
+  double x() const {
+    return x_;
+  }
+
+  double y() const {
+    return y_;
+  }
+
+  double theta() const {
+    return theta_;
+  }
+
+  TurnDirection turn_dir() const {
+    return turn_dir_;
+  }
+
+private:
   double x_;
   double y_;
   double theta_;
