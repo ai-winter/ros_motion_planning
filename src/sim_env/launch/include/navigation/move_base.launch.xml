@@ -78,7 +78,6 @@
         <rosparam file="$(find sim_env)/config/controller/apf_controller_params.yaml" command="load" if="$(eval arg('local_planner')=='apf')" />
 
         <param name="base_local_planner" value="rpp_controller/RPPController" if="$(eval arg('local_planner')=='rpp')" />
-        <rosparam file="$(find sim_env)/config/controller/rpp_controller_params.yaml" command="load" if="$(eval arg('local_planner')=='rpp')" />
 
         <param name="base_local_planner" value="lqr_controller/LQRController" if="$(eval arg('local_planner')=='lqr')" />
         <rosparam file="$(find sim_env)/config/controller/lqr_controller_params.yaml" command="load" if="$(eval arg('local_planner')=='lqr')" />
