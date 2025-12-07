@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package rmp.pb;
+
+// import "system_config/controller_protos/controller.proto";
+// import "system_config/path_planner_protos/path_planner.proto";
+
+
+message SystemConfig {
+    // path_planner.PathPlanner path_planner = 1;
+    // controller.Controller controller = 2;
+}
