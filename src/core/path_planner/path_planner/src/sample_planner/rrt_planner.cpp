@@ -19,47 +19,38 @@
 #include "common/geometry/collision_checker.h"
 #include "path_planner/sample_planner/rrt_planner.h"
 
-namespace rmp
-{
-namespace path_planner
-{
-namespace
-{
 using CollisionChecker = rmp::common::geometry::CollisionChecker;
-}
+using namespace rmp::common::geometry;
+
+namespace rmp {
+namespace path_planner {
 
 /**
  * @brief  Constructor
  * @param   costmap   the environment for path planning
- * @param obstacle_factor obstacle factor(greater means obstacles)
- * @param   sample_num  andom sample points
- * @param   max_dist    max distance between sample points
  */
-RRTPathPlanner::RRTPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor, int sample_num,
-                               double max_dist)
-  : PathPlanner(costmap_ros, obstacle_factor), sample_num_(sample_num), max_dist_(max_dist)
-{
+RRTPathPlanner::RRTPathPlanner(costmap_2d::Costmap2DROS* costmap_ros)
+  : PathPlanner(costmap_ros) {
 }
 
 /**
  * @brief RRT implementation
  * @param start         start node
  * @param goal          goal node
- * @param path          optimal path consists of Node
+ * @param path          The resulting path in (x, y, theta)
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool RRTPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
-{
+bool RRTPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d* path,
+                          Points3d* expand) {
   double m_start_x, m_start_y, m_goal_x, m_goal_y;
   if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
-      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
-  {
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y))) {
     return false;
   }
 
-  path.clear();
-  expand.clear();
+  path->clear();
+  expand->clear();
   sample_list_.clear();
 
   // copy
@@ -70,46 +61,43 @@ bool RRTPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
   goal_.set_y(m_goal_y);
   goal_.set_id(grid2Index(goal_.x(), goal_.y()));
   sample_list_.insert(std::make_pair(start_.id(), start_));
-  expand.emplace_back(m_start_x, m_start_y, 0);
+  expand->emplace_back(m_start_x, m_start_y, 0);
 
   // main loop
   int iteration = 0;
-  while (iteration < sample_num_)
-  {
+  while (iteration < config_.sample_planner().sample_points()) {
     // generate a random node in the map
     Node sample_node = _generateRandomNode();
 
     // obstacle
-    if (costmap_->getCharMap()[sample_node.id()] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_)
+    if (costmap_->getCharMap()[sample_node.id()] >=
+        costmap_2d::LETHAL_OBSTACLE * config_.obstacle_inflation_factor()) {
       continue;
+    }
 
     // visited
-    if (sample_list_.find(sample_node.id()) != sample_list_.end())
+    if (sample_list_.find(sample_node.id()) != sample_list_.end()) {
       continue;
+    }
 
     // regular the sample node
     Node new_node = _findNearestPoint(sample_list_, sample_node);
 
-    if (new_node.id() == -1)
-    {
+    if (new_node.id() == -1) {
       continue;
-    }
-    else
-    {
+    } else {
       sample_list_.insert(std::make_pair(new_node.id(), new_node));
-      expand.emplace_back(new_node.x(), new_node.y(), new_node.pid());
+      expand->emplace_back(new_node.x(), new_node.y(), new_node.pid());
     }
 
     // goal found
-    if (_checkGoal(new_node))
-    {
+    if (_checkGoal(new_node)) {
       const auto& backtrace = _convertClosedListToPath<Node>(sample_list_, start_, goal_);
-      for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
-      {
+      for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter) {
         // convert to world frame
         double wx, wy;
         costmap_->mapToWorld(iter->x(), iter->y(), wx, wy);
-        path.emplace_back(wx, wy);
+        path->emplace_back(wx, wy);
       }
       return true;
     }
@@ -122,8 +110,7 @@ bool RRTPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& p
  * @brief Generates a random node
  * @return Generated node
  */
-RRTPathPlanner::Node RRTPathPlanner::_generateRandomNode()
-{
+RRTPathPlanner::Node RRTPathPlanner::_generateRandomNode() {
   // obtain a random number from hardware
   std::random_device rd;
   // seed the generator
@@ -131,16 +118,14 @@ RRTPathPlanner::Node RRTPathPlanner::_generateRandomNode()
   // define the range
   std::uniform_real_distribution<float> p(0, 1);
   // heuristic
-  if (p(eng) > opti_sample_p_)
-  {
+  if (p(eng) > config_.sample_planner().optimization_sampe_probability()) {
     // generate node
     std::uniform_int_distribution<int> distr(0, map_size_ - 1);
     const int id = distr(eng);
     int x, y;
     index2Grid(id, x, y);
     return Node(x, y, 0, 0, id, 0);
-  }
-  else
+  } else
     return Node(goal_.x(), goal_.y(), 0, 0, goal_.id(), 0);
 }
 
@@ -150,19 +135,18 @@ RRTPathPlanner::Node RRTPathPlanner::_generateRandomNode()
  * @param node  sample node
  * @return nearest node
  */
-RRTPathPlanner::Node RRTPathPlanner::_findNearestPoint(std::unordered_map<int, Node>& list, const Node& node)
-{
+RRTPathPlanner::Node
+RRTPathPlanner::_findNearestPoint(std::unordered_map<int, Node>& list, const Node& node) {
   Node nearest_node, new_node(node);
   double min_dist = std::numeric_limits<double>::max();
 
-  for (const auto& p : list)
-  {
+  for (const auto& p : list) {
     // calculate distance
-    double new_dist = std::hypot(p.second.x() - new_node.x(), p.second.y() - new_node.y());
+    double new_dist =
+        std::hypot(p.second.x() - new_node.x(), p.second.y() - new_node.y());
 
     // update nearest node
-    if (new_dist < min_dist)
-    {
+    if (new_dist < min_dist) {
       nearest_node = p.second;
       new_node.set_pid(nearest_node.id());
       new_node.set_g(new_dist + p.second.g());
@@ -171,26 +155,28 @@ RRTPathPlanner::Node RRTPathPlanner::_findNearestPoint(std::unordered_map<int, N
   }
 
   // distance longer than the threshold
-  if (min_dist > max_dist_)
-  {
+  const double max_dist = config_.sample_planner().sample_max_distance();
+  if (min_dist > max_dist) {
     // connect sample node and nearest node, then move the nearest node
     // forward to sample node with `max_distance` as result
-    double theta = std::atan2(new_node.y() - nearest_node.y(), new_node.x() - nearest_node.x());
-    new_node.set_x(nearest_node.x() + static_cast<int>(max_dist_ * cos(theta)));
-    new_node.set_y(nearest_node.y() + static_cast<int>(max_dist_ * sin(theta)));
+    double theta =
+        std::atan2(new_node.y() - nearest_node.y(), new_node.x() - nearest_node.x());
+    new_node.set_x(nearest_node.x() + static_cast<int>(max_dist * cos(theta)));
+    new_node.set_y(nearest_node.y() + static_cast<int>(max_dist * sin(theta)));
     new_node.set_id(grid2Index(new_node.x(), new_node.y()));
-    new_node.set_g(max_dist_ + nearest_node.g());
+    new_node.set_g(max_dist + nearest_node.g());
   }
 
   // obstacle check
   auto isCollision = [&](const Node& node1, const Node& node2) {
-    return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
-      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_;
-    });
+    return CollisionChecker::BresenhamCollisionDetection(
+        node1, node2, [&](const Node& node) {
+          return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >=
+                 costmap_2d::LETHAL_OBSTACLE * config_.obstacle_inflation_factor();
+        });
   };
 
-  if (isCollision(new_node, nearest_node))
-  {
+  if (isCollision(new_node, nearest_node)) {
     new_node.set_id(-1);
   }
 
@@ -202,21 +188,22 @@ RRTPathPlanner::Node RRTPathPlanner::_findNearestPoint(std::unordered_map<int, N
  * @param new_node Current node
  * @return bool value of whether goal is reachable from current node
  */
-bool RRTPathPlanner::_checkGoal(const Node& new_node)
-{
+bool RRTPathPlanner::_checkGoal(const Node& new_node) {
   auto dist_ = std::hypot(new_node.x() - goal_.x(), new_node.y() - goal_.y());
-  if (dist_ > max_dist_)
+  if (dist_ > config_.sample_planner().sample_max_distance())
     return false;
 
   auto isCollision = [&](const Node& node1, const Node& node2) {
-    return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
-      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_;
-    });
+    return CollisionChecker::BresenhamCollisionDetection(
+        node1, node2, [&](const Node& node) {
+          return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >=
+                 costmap_2d::LETHAL_OBSTACLE * config_.obstacle_inflation_factor();
+        });
   };
 
-  if (!isCollision(new_node, goal_))
-  {
-    Node goal(goal_.x(), goal_.y(), dist_ + new_node.g(), 0, grid2Index(goal_.x(), goal_.y()), new_node.id());
+  if (!isCollision(new_node, goal_)) {
+    Node goal(goal_.x(), goal_.y(), dist_ + new_node.g(), 0,
+              grid2Index(goal_.x(), goal_.y()), new_node.id());
     sample_list_.insert(std::make_pair(goal.id(), goal));
     return true;
   }

@@ -19,15 +19,12 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp
-{
-namespace path_planner
-{
+namespace rmp {
+namespace path_planner {
 /**
  * @brief Class for objects that plan using the RRT algorithm
  */
-class RRTPathPlanner : public PathPlanner
-{
+class RRTPathPlanner : public PathPlanner {
 private:
   using Node = rmp::common::structure::Node<int>;
 
@@ -35,21 +32,19 @@ public:
   /**
    * @brief  Constructor
    * @param   costmap   the environment for path planning
-   * @param   obstacle_factor obstacle factor(greater means obstacles)
-   * @param   sample_num  andom sample points
-   * @param   max_dist    max distance between sample points
    */
-  RRTPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor, int sample_num, double max_dist);
+  RRTPathPlanner(costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief RRT implementation
    * @param start         start node
    * @param goal          goal node
-   * @param path          optimal path consists of Node
+   * @param path          The resulting path in (x, y, theta)
    * @param expand        containing the node been search during the process
    * @return  true if path found, else false
    */
-  bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);
+  bool plan(const common::geometry::Point3d& start, const common::geometry::Point3d& goal,
+            common::geometry::Points3d* path, common::geometry::Points3d* expand);
 
 protected:
   /**
@@ -74,9 +69,6 @@ protected:
 protected:
   Node start_, goal_;                          // start and goal node copy
   std::unordered_map<int, Node> sample_list_;  // set of sample nodes
-  int sample_num_;                             // max sample number
-  double max_dist_;                            // max distance threshold
-  double opti_sample_p_ = 0.05;                // optimized sample probability, default to 0.05
 };
 }  // namespace path_planner
 }  // namespace rmp

@@ -29,6 +29,13 @@ path_planner {
             default_graph_size: 100000
         }
     }
+
+    sample_planner {
+        sample_points: 1500
+        sample_max_distance: 30.0
+        optimization_radius: 20.0
+        optimization_sampe_probability: 0.05
+    }
 }
 
 controller {
