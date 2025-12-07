@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package rmp.pb.controller;
+
+message ORCAController {
+  double neighbor_distance = 1;
+  double time_horizon = 2;
+  double time_horizon_obstacles = 3;
+  double agent_radius = 4;
+  int64 max_neighbors = 5;
+}

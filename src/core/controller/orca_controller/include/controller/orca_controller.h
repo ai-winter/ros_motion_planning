@@ -30,20 +30,20 @@
 
 #include "RVO/RVO.h"
 #include "controller/controller.h"
+#include "system_config/controller_protos/orca_controller.pb.h"
 
-namespace rmp
-{
-namespace controller
-{
-class ORCAController : public nav_core::BaseLocalPlanner, Controller
-{
+namespace rmp {
+namespace controller {
+class ORCAController : public nav_core::BaseLocalPlanner, Controller {
 public:
   ORCAController();
-  ORCAController(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  ORCAController(std::string name, tf2_ros::Buffer* tf,
+                 costmap_2d::Costmap2DROS* costmap_ros);
 
   ~ORCAController();
 
-  void initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  void initialize(std::string name, tf2_ros::Buffer* tf,
+                  costmap_2d::Costmap2DROS* costmap_ros);
 
   bool setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan);
 
@@ -52,25 +52,24 @@ public:
   bool isGoalReached();
 
 private:
-  costmap_2d::Costmap2DROS* costmap_ros_;
-  tf2_ros::Buffer* tf_;
-  bool initialized_, odom_flag_, goal_reached_, first_plan_;
-
-  int agent_number_, agent_id_;                                       // id begin from 1
-  double d_t_;                                                        // control time step
-  double neighbor_dist_, time_horizon_, time_horizon_obst_, radius_;  // orca parameters
-  int max_neighbors_;
-
-  RVO::RVOSimulator* sim_;
-  RVO::Vector2 goal_;
-  std::vector<ros::Subscriber> odom_subs_;
-  std::vector<nav_msgs::Odometry> other_odoms_;
-
   void odometryCallback(const nav_msgs::OdometryConstPtr& msg, int agent_id);
 
   void initState();
 
   void updateState();
+
+private:
+  pb::controller::ORCAController orca_config_;
+  costmap_2d::Costmap2DROS* costmap_ros_;
+  tf2_ros::Buffer* tf_;
+  bool initialized_, odom_flag_, goal_reached_;
+
+  int agent_number_, agent_id_;  // id begin from 1
+
+  std::unique_ptr<RVO::RVOSimulator> sim_;
+  RVO::Vector2 goal_;
+  std::vector<ros::Subscriber> odom_subs_;
+  std::vector<nav_msgs::Odometry> other_odoms_;
 };
 };  // namespace controller
 }  // namespace rmp

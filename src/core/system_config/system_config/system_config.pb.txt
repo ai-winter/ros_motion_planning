@@ -78,4 +78,12 @@ controller {
         weight_attractive_force: 1.0
         weight_repulsive_force: 3.0
     }
+
+    orca_controller {
+        neighbor_distance: 3.0
+        time_horizon: 3.0
+        time_horizon_obstacles: 1.0
+        agent_radius: 0.15
+        max_neighbors: 5
+    }
 }

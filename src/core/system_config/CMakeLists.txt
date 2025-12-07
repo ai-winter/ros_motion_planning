@@ -46,15 +46,15 @@ set(PROTO_HDRS "")
 # )
 # list(APPEND PROTO_SRCS ${PATH_PLANNER_PROTO_SRCS})
 
-# # controller related protos
-# file(GLOB CONTROLLER_PROTOS "${CMAKE_CURRENT_SOURCE_DIR}/system_config/controller_protos/*.proto")
-# protobuf_generate(
-#   TARGET ${PROJECT_NAME}
-#   LANGUAGE cpp
-#   OUT_VAR CONTROLLER_PROTO_SRCS
-#   PROTOS ${CONTROLLER_PROTOS}
-# )
-# list(APPEND PROTO_SRCS ${CONTROLLER_PROTO_SRCS})
+# controller related protos
+file(GLOB CONTROLLER_PROTOS "${CMAKE_CURRENT_SOURCE_DIR}/system_config/controller_protos/*.proto")
+protobuf_generate(
+  TARGET ${PROJECT_NAME}
+  LANGUAGE cpp
+  OUT_VAR CONTROLLER_PROTO_SRCS
+  PROTOS ${CONTROLLER_PROTOS}
+)
+list(APPEND PROTO_SRCS ${CONTROLLER_PROTO_SRCS})
 
 # system configure related protos
 file(GLOB SYSTEM_CONFIG_PROTOS "${CMAKE_CURRENT_SOURCE_DIR}/system_config/*.proto")
