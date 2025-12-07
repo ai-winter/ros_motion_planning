@@ -37,19 +37,14 @@
     <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
       args="-urdf -x $(arg robot_x) -y $(arg robot_y) -z $(arg robot_z) -Y $(arg robot_yaw) -model $(arg robot_namespace) -param robot_description" />
 
-    <!-- Transform from map to odom -->
-    <node pkg="sim_env" name="tf_map2odom_node" type="tf_map2odom.py" output="screen">
-      <param name="~odom_frame_id" value="$(arg robot_namespace)/odom" />
-    </node>
-
     <!-- AMCL -->
-    <!-- <include file="$(find sim_env)/launch/include/location/amcl.launch.xml">
+    <include file="$(find sim_env)/launch/include/location/amcl.launch.xml">
       <arg name="robot_namespace" value="$(arg robot_namespace)" />
       <arg name="start_ns" value="$(arg start_ns)" />
       <arg name="robot_x" value="$(arg robot_x)" />
       <arg name="robot_y" value="$(arg robot_y)" />
       <arg name="robot_z" value="$(arg robot_z)" />
-    </include> -->
+    </include>
 
     <!-- MoveBase -->
     <include file="$(find sim_env)/launch/include/navigation/move_base.launch.xml">
