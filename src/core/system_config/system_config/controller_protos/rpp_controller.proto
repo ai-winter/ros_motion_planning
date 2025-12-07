@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package rmp.pb.controller;
+
+message RPPController {
+  // lookahead parameters
+  double lookahead_time = 1;
+  double min_lookahead_dist = 2;
+  double max_lookahead_dist = 3;
+
+  // constriants
+  double regulated_min_radius = 4;  // the threshold to apply curvature constraint
+  double inflation_cost_factor = 5; // the heuristical factor to calculate minimum distance to obstacles
+  double scaling_dist = 6;          // the threshold to apply obstacle constraint
+  double scaling_gain = 7;
+  double approach_dist = 8;         // the threshold to apply approaching goal constraint
+  double approach_min_v = 9;        // minimum approaching velocity
+}
