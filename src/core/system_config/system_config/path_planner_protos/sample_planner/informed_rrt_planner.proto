@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+package rmp.pb.path_planner;
+
+message InformedRRTPlanner {
+}
