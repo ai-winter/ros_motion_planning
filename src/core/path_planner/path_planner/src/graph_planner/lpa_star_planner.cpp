@@ -16,12 +16,11 @@
  */
 #include "path_planner/graph_planner/lpa_star_planner.h"
 
-namespace rmp
-{
-namespace path_planner
-{
-namespace
-{
+using namespace rmp::common::geometry;
+
+namespace rmp {
+namespace path_planner {
+namespace {
 // local costmap window size (in grid, 3.5m / 0.05 = 70)
 constexpr int win_size = 70;
 }  // namespace
@@ -29,11 +28,9 @@ constexpr int win_size = 70;
 /**
  * @brief Construct a new LPAStar object
  * @param costmap   the environment for path planning
- * @param obstacle_factor obstacle factor(greater means obstacles)
  */
-LPAStarPathPlanner::LPAStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor)
-  : PathPlanner(costmap_ros, obstacle_factor)
-{
+LPAStarPathPlanner::LPAStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros)
+  : PathPlanner(costmap_ros) {
   curr_global_costmap_ = new unsigned char[map_size_];
   last_global_costmap_ = new unsigned char[map_size_];
   start_.set_x(std::numeric_limits<int>::max());
@@ -43,8 +40,7 @@ LPAStarPathPlanner::LPAStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, do
   initMap();
 }
 
-LPAStarPathPlanner::~LPAStarPathPlanner()
-{
+LPAStarPathPlanner::~LPAStarPathPlanner() {
   delete curr_global_costmap_;
   delete last_global_costmap_;
 }
@@ -52,17 +48,15 @@ LPAStarPathPlanner::~LPAStarPathPlanner()
 /**
  * @brief Init map
  */
-void LPAStarPathPlanner::initMap()
-{
+void LPAStarPathPlanner::initMap() {
   map_ = new LNodePtr*[nx_];
-  for (int i = 0; i < nx_; ++i)
-  {
+  for (int i = 0; i < nx_; ++i) {
     map_[i] = new LNodePtr[ny_];
-    for (int j = 0; j < ny_; ++j)
-    {
-      map_[i][j] =
-          new LNode(i, j, std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), grid2Index(i, j), -1,
-                    std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
+    for (int j = 0; j < ny_; ++j) {
+      map_[i][j] = new LNode(i, j, std::numeric_limits<double>::max(),
+                             std::numeric_limits<double>::max(), grid2Index(i, j), -1,
+                             std::numeric_limits<double>::max(),
+                             std::numeric_limits<double>::max());
       map_[i][j]->setIterator(open_list_.end());  // allocate empty memory
     }
   }
@@ -71,8 +65,7 @@ void LPAStarPathPlanner::initMap()
 /**
  * @brief Reset the system
  */
-void LPAStarPathPlanner::reset()
-{
+void LPAStarPathPlanner::reset() {
   open_list_.clear();
 
   for (int i = 0; i < nx_; ++i)
@@ -93,8 +86,7 @@ void LPAStarPathPlanner::reset()
  * @param n2 LNode pointer of the other LNode
  * @return heuristics between n1 and n2
  */
-double LPAStarPathPlanner::getH(LNodePtr n1, LNodePtr n2)
-{
+double LPAStarPathPlanner::getH(LNodePtr n1, LNodePtr n2) {
   return std::hypot(n1->x() - n2->x(), n1->y() - n2->y());
 }
 
@@ -103,8 +95,7 @@ double LPAStarPathPlanner::getH(LNodePtr n1, LNodePtr n2)
  * @param s LNode pointer
  * @return the key value
  */
-double LPAStarPathPlanner::calculateKey(LNodePtr s)
-{
+double LPAStarPathPlanner::calculateKey(LNodePtr s) {
   return std::min(s->g(), s->rhs()) + 0.9 * getH(s, goal_ptr_);
 }
 
@@ -114,10 +105,11 @@ double LPAStarPathPlanner::calculateKey(LNodePtr s)
  * @param n2 DNode pointer of the other DNode
  * @return true if collision, else false
  */
-bool LPAStarPathPlanner::isCollision(LNodePtr n1, LNodePtr n2)
-{
-  return (curr_global_costmap_[n1->id()] > costmap_2d::LETHAL_OBSTACLE * obstacle_factor_) ||
-         (curr_global_costmap_[n2->id()] > costmap_2d::LETHAL_OBSTACLE * obstacle_factor_);
+bool LPAStarPathPlanner::isCollision(LNodePtr n1, LNodePtr n2) {
+  return (curr_global_costmap_[n1->id()] >
+          costmap_2d::LETHAL_OBSTACLE * config_.obstacle_inflation_factor()) ||
+         (curr_global_costmap_[n2->id()] >
+          costmap_2d::LETHAL_OBSTACLE * config_.obstacle_inflation_factor());
 }
 
 /**
@@ -125,13 +117,10 @@ bool LPAStarPathPlanner::isCollision(LNodePtr n1, LNodePtr n2)
  * @param node_ptr   DNode to expand
  * @param neighbours neigbour LNodePtrs in vector
  */
-void LPAStarPathPlanner::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours)
-{
+void LPAStarPathPlanner::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighbours) {
   int x = u->x(), y = u->y();
-  for (int i = -1; i <= 1; ++i)
-  {
-    for (int j = -1; j <= 1; ++j)
-    {
+  for (int i = -1; i <= 1; ++i) {
+    for (int j = -1; j <= 1; ++j) {
       if (i == 0 && j == 0)
         continue;
 
@@ -154,8 +143,7 @@ void LPAStarPathPlanner::getNeighbours(LNodePtr u, std::vector<LNodePtr>& neighb
  * @param n2 LNode pointer of the other LNode
  * @return cost between n1 and n2
  */
-double LPAStarPathPlanner::getCost(LNodePtr n1, LNodePtr n2)
-{
+double LPAStarPathPlanner::getCost(LNodePtr n1, LNodePtr n2) {
   if (isCollision(n1, n2))
     return std::numeric_limits<double>::max();
 
@@ -166,35 +154,29 @@ double LPAStarPathPlanner::getCost(LNodePtr n1, LNodePtr n2)
  * @brief Update vertex u
  * @param u LNode pointer to update
  */
-void LPAStarPathPlanner::updateVertex(LNodePtr u)
-{
+void LPAStarPathPlanner::updateVertex(LNodePtr u) {
   // u != start
-  if (u->x() != start_.x() || u->y() != start_.y())
-  {
+  if (u->x() != start_.x() || u->y() != start_.y()) {
     std::vector<LNodePtr> neigbours;
     getNeighbours(u, neigbours);
 
     // min_{s\in pred(u)}(g(s) + c(s, u))
     u->setRhs(std::numeric_limits<double>::max());
-    for (LNodePtr s : neigbours)
-    {
-      if (s->g() + getCost(s, u) < u->rhs())
-      {
+    for (LNodePtr s : neigbours) {
+      if (s->g() + getCost(s, u) < u->rhs()) {
         u->setRhs(s->g() + getCost(s, u));
       }
     }
   }
 
   // u in openlist, remove u
-  if (u->iter() != open_list_.end())
-  {
+  if (u->iter() != open_list_.end()) {
     open_list_.erase(u->iter());
     u->setIterator(open_list_.end());
   }
 
   // g(u) != rhs(u)
-  if (u->g() != u->rhs())
-  {
+  if (u->g() != u->rhs()) {
     u->setKey(calculateKey(u));
     u->setIterator(open_list_.insert(std::make_pair(u->key(), u)));
   }
@@ -203,10 +185,8 @@ void LPAStarPathPlanner::updateVertex(LNodePtr u)
 /**
  * @brief Main process of LPA*
  */
-void LPAStarPathPlanner::computeShortestPath()
-{
-  while (1)
-  {
+void LPAStarPathPlanner::computeShortestPath() {
+  while (1) {
     if (open_list_.empty())
       break;
 
@@ -220,13 +200,11 @@ void LPAStarPathPlanner::computeShortestPath()
       break;
 
     // Locally over-consistent -> Locally consistent
-    if (u->g() > u->rhs())
-    {
+    if (u->g() > u->rhs()) {
       u->set_g(u->rhs());
     }
     // Locally under-consistent -> Locally over-consistent
-    else
-    {
+    else {
       u->set_g(std::numeric_limits<double>::max());
       updateVertex(u);
     }
@@ -245,27 +223,25 @@ void LPAStarPathPlanner::computeShortestPath()
  * @param goal  goal node
  * @return flag true if extract successfully else do not
  */
-bool LPAStarPathPlanner::extractPath(const LNode& start, const LNode& goal)
-{
-  path_.clear();
-  LNodePtr node_ptr = map_[static_cast<unsigned int>(goal.x())][static_cast<unsigned int>(goal.y())];
+bool LPAStarPathPlanner::extractPath(const LNode& start, const LNode& goal) {
+  Points3d temp_path;
+  temp_path.reserve(path_.size());
+  LNodePtr node_ptr =
+      map_[static_cast<unsigned int>(goal.x())][static_cast<unsigned int>(goal.y())];
   int count = 0;
-  while (node_ptr->x() != start.x() || node_ptr->y() != start.y())
-  {
+  while (node_ptr->x() != start.x() || node_ptr->y() != start.y()) {
     // convert to world frame
     double wx, wy;
     costmap_->mapToWorld((*node_ptr).x(), (*node_ptr).y(), wx, wy);
-    path_.emplace_back(wx, wy);
+    temp_path.emplace_back(wx, wy);
 
     // argmin_{s\in pred(u)}
     std::vector<LNodePtr> neigbours;
     getNeighbours(node_ptr, neigbours);
     double min_cost = std::numeric_limits<double>::max();
     LNodePtr next_node_ptr;
-    for (LNodePtr node_n_ptr : neigbours)
-    {
-      if (node_n_ptr->g() < min_cost)
-      {
+    for (LNodePtr node_n_ptr : neigbours) {
+      if (node_n_ptr->g() < min_cost) {
         min_cost = node_n_ptr->g();
         next_node_ptr = node_n_ptr;
       }
@@ -274,9 +250,10 @@ bool LPAStarPathPlanner::extractPath(const LNode& start, const LNode& goal)
 
     // TODO: it happens to cannnot find a path to start sometimes..
     // use counter to solve it templately
-    if (count++ > 1000)
+    if (node_ptr == nullptr || count++ > 1000)
       return false;
   }
+  path_ = temp_path;
   return true;
 }
 
@@ -285,16 +262,13 @@ bool LPAStarPathPlanner::extractPath(const LNode& start, const LNode& goal)
  * @param current current state
  * @return the closest Node
  */
-LPAStarPathPlanner::LNode LPAStarPathPlanner::getState(const LNode& current)
-{
+LPAStarPathPlanner::LNode LPAStarPathPlanner::getState(const LNode& current) {
   LNode state(static_cast<int>(path_[0].x()), static_cast<int>(path_[0].y()));
   double dis_min = std::hypot(state.x() - current.x(), state.y() - current.y());
   int idx_min = 0;
-  for (size_t i = 1; i < path_.size(); i++)
-  {
+  for (size_t i = 1; i < path_.size(); i++) {
     double dis = std::hypot(path_[i].x() - current.x(), path_[i].y() - current.y());
-    if (dis < dis_min)
-    {
+    if (dis < dis_min) {
       dis_min = dis;
       idx_min = static_cast<int>(i);
     }
@@ -312,8 +286,8 @@ LPAStarPathPlanner::LNode LPAStarPathPlanner::getState(const LNode& current)
  * @param expand  containing the node been search during the process
  * @return tuple contatining a bool as to whether a path was found, and the path
  */
-bool LPAStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
-{
+bool LPAStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d* path,
+                              Points3d* expand) {
   // update costmap
   memcpy(last_global_costmap_, curr_global_costmap_, map_size_);
   memcpy(curr_global_costmap_, costmap_->getCharMap(), map_size_);
@@ -323,13 +297,12 @@ bool LPAStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3
   // new start or goal set
   double m_start_x, m_start_y, m_goal_x, m_goal_y;
   if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
-      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
-  {
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y))) {
     return false;
   }
 
-  if (start_.x() != m_start_x || start_.y() != m_start_y || goal_.x() != m_goal_x || goal_.y() != m_goal_y)
-  {
+  if (start_.x() != m_start_x || start_.y() != m_start_y || goal_.x() != m_goal_x ||
+      goal_.y() != m_goal_y) {
     reset();
     start_.set_x(m_start_x);
     start_.set_y(m_start_y);
@@ -337,48 +310,46 @@ bool LPAStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3
     goal_.set_x(m_goal_x);
     goal_.set_y(m_goal_y);
     goal_.set_id(grid2Index(m_goal_x, m_goal_y));
-    start_ptr_ = map_[static_cast<unsigned int>(m_start_x)][static_cast<unsigned int>(m_start_y)];
-    goal_ptr_ = map_[static_cast<unsigned int>(m_goal_x)][static_cast<unsigned int>(m_goal_y)];
+    start_ptr_ =
+        map_[static_cast<unsigned int>(m_start_x)][static_cast<unsigned int>(m_start_y)];
+    goal_ptr_ =
+        map_[static_cast<unsigned int>(m_goal_x)][static_cast<unsigned int>(m_goal_y)];
 
     start_ptr_->setRhs(0.0);
     start_ptr_->setKey(calculateKey(start_ptr_));
-    start_ptr_->setIterator(open_list_.insert(std::make_pair(start_ptr_->key(), start_ptr_)));
+    start_ptr_->setIterator(
+        open_list_.insert(std::make_pair(start_ptr_->key(), start_ptr_)));
 
     computeShortestPath();
 
     // path_.clear();
     extractPath(start_, goal_);
 
-    expand = expand_;
-    path = path_;
-    std::reverse(path.begin(), path.end());
+    *expand = expand_;
+    *path = path_;
+    std::reverse(path->begin(), path->end());
     return true;
   }
   // NOTE: Unlike D* or D* lite, we cannot use history after the robot moves,
-  // because we only get the optimal path from original start to goal after environment changed,
-  // but not the current state to goal. To this end, we have to reset and replan.
+  // because we only get the optimal path from original start to goal after environment
+  // changed, but not the current state to goal. To this end, we have to reset and replan.
   // Therefore, it is even worse than using A* algorithm.
-  else
-  {
+  else {
     LNode state = getState({ static_cast<int>(start.x()), static_cast<int>(start.y()) });
 
-    for (int i = -win_size / 2; i < win_size / 2; ++i)
-    {
-      for (int j = -win_size / 2; j < win_size / 2; ++j)
-      {
+    for (int i = -win_size / 2; i < win_size / 2; ++i) {
+      for (int j = -win_size / 2; j < win_size / 2; ++j) {
         int x_n = state.x() + i, y_n = state.y() + j;
         if (x_n < 0 || x_n > nx_ - 1 || y_n < 0 || y_n > ny_ - 1)
           continue;
 
         int idx = grid2Index(x_n, y_n);
-        if (curr_global_costmap_[idx] != last_global_costmap_[idx])
-        {
+        if (curr_global_costmap_[idx] != last_global_costmap_[idx]) {
           LNodePtr u = map_[x_n][y_n];
           std::vector<LNodePtr> neigbours;
           getNeighbours(u, neigbours);
           updateVertex(u);
-          for (LNodePtr s : neigbours)
-          {
+          for (LNodePtr s : neigbours) {
             updateVertex(s);
           }
         }
@@ -393,8 +364,8 @@ bool LPAStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3
     auto state_it = std::find(path_.begin(), path_.end(), state_pt);
     path_.assign(path_.begin(), state_it);
 
-    path = path_;
-    std::reverse(path.begin(), path.end());
+    *path = path_;
+    std::reverse(path->begin(), path->end());
 
     return true;
   }
