@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package rmp.pb.path_planner;
+
+message PSOPlanner {
+    // number of particles
+    int64 population_num = 1;
+    // number of inherited particles (Note: Need to be less than parameter ants)
+    int64 inherited_num = 2;
+    // number of position points contained in each particle
+    int64 control_point_num = 3;
+    // The maximum velocity of particle motion
+    double max_speed = 4;
+    // inertia weight
+    double weight_inertial = 5;
+    // social weight
+    double weight_social = 6;
+    // cognitive weight
+    double weight_cognitive = 7;
+    // maximum iterations
+    int64 max_iterations = 8;
+}

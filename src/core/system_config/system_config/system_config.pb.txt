@@ -51,6 +51,17 @@ path_planner {
             max_iterations: 5
         }
 
+        pso_planner {
+            population_num: 50
+            inherited_num: 20
+            control_point_num: 5
+            max_speed: 40.0
+            weight_inertial: 1.0
+            weight_social: 2.0
+            weight_cognitive: 1.2
+            max_iterations: 5
+        }
+
         ga_planner {
             population_num: 50
             inherited_num: 20
