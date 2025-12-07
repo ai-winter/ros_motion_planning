@@ -3,6 +3,7 @@ syntax = "proto3";
 package rmp.pb.path_planner;
 
 import "system_config/path_planner_protos/sample_planner/rrt_planner.proto";
+import "system_config/path_planner_protos/sample_planner/rrt_star_planner.proto";
 
 message SamplePathPlanner {
     // random sample points
@@ -15,4 +16,5 @@ message SamplePathPlanner {
     double optimization_sampe_probability = 4;
 
     RRTPlanner rrt_planner = 10;
+    RRTStarPlanner rrt_star_planner = 11;
 }
