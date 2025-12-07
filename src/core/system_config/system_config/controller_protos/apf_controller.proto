@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package rmp.pb.controller;
+
+message APFController {
+  // lookahead parameters
+  double lookahead_time = 1;
+  double min_lookahead_dist = 2;
+  double max_lookahead_dist = 3;
+
+  int64 smooth_window = 4;  // trajectory smoothing window time
+  double weight_attractive_force = 5; // scale factor of attractive force
+  double weight_repulsive_force = 6; // scale factor of repulsive force
+}

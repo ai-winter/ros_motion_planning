@@ -7,13 +7,14 @@ find_package(catkin REQUIRED COMPONENTS
   costmap_2d
   geometry_msgs
   common
+  system_config
   base_local_planner
 )
 
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES controller
- CATKIN_DEPENDS common
+ CATKIN_DEPENDS common system_config
 )
 
 include_directories(

@@ -3,11 +3,11 @@
  *
  * @file: apf_controller.h
  * @brief: Contains the Artificial Potential Field (APF) local controller class
- * @author: Wu Maojia, Yang Haodong
+ * @author: Yang Haodong, Wu Maojia
  * @date: 2023-10-17
  * @version: 1.2
  *
- * Copyright (c) 2024, Wu Maojia, Yang Haodong.
+ * Copyright (c) 2024, Yang Haodong.
  * All rights reserved.
  *
  * --------------------------------------------------------
@@ -28,16 +28,14 @@
 
 #include "common/geometry/vec2d.h"
 #include "controller/controller.h"
+#include "system_config/controller_protos/apf_controller.pb.h"
 
-namespace rmp
-{
-namespace controller
-{
+namespace rmp {
+namespace controller {
 /**
  * @brief A class implementing a local controller using the APF
  */
-class APFController : public nav_core::BaseLocalPlanner, Controller
-{
+class APFController : public nav_core::BaseLocalPlanner, Controller {
 public:
   /**
    * @brief Construct a new APFController object
@@ -47,7 +45,8 @@ public:
   /**
    * @brief Construct a new APFController object
    */
-  APFController(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  APFController(std::string name, tf2_ros::Buffer* tf,
+                costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Destroy the APFController object
@@ -60,7 +59,8 @@ public:
    * @param tf          a pointer to a transform listener
    * @param costmap_ros the cost map to use for assigning costs to trajectories
    */
-  void initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros);
+  void initialize(std::string name, tf2_ros::Buffer* tf,
+                  costmap_2d::Costmap2DROS* costmap_ros);
 
   /**
    * @brief Set the plan that the controller is following
@@ -76,57 +76,44 @@ public:
   bool isGoalReached();
 
   /**
-   * @brief Given the current position, orientation, and velocity of the robot, compute the velocity commands
-   * @param cmd_vel will be filled with the velocity command to be passed to the robot base
+   * @brief Given the current position, orientation, and velocity of the robot, compute
+   * the velocity commands
+   * @param cmd_vel will be filled with the velocity command to be passed to the robot
+   * base
    * @return  true if a valid trajectory was found, else false
    */
   bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
 
   /**
    * @brief Get the attractive force of APF
-   * @param ps      global target PoseStamped
+   * @param ps      global target PointStamped
    * @return the attractive force
    */
-  rmp::common::geometry::Vec2d getAttractiveForce(const geometry_msgs::PoseStamped& ps);
+  common::geometry::Vec2d getAttractiveForce(const common::geometry::Vec2d& current_pt,
+                                             const common::geometry::Vec2d& target_pt);
 
   /**
    * @brief Get the repulsive force of APF
    * @return the repulsive force
    */
-  rmp::common::geometry::Vec2d getRepulsiveForce();
+  common::geometry::Vec2d getRepulsiveForce(const common::geometry::Vec2d& current_pt);
 
   /**
    * @brief Callback function of costmap_sub_ to publish /potential_map topic
    * @param msg the message received from topic /move_base/local_costmap/costmap
    */
-  void publishPotentialMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
+  void publishPotentialMap(const common::geometry::Vec2d& current_pt,
+                           const common::geometry::Vec2d& target_pt);
 
 private:
-  bool initialized_;                       // initialized flag
-  bool goal_reached_;                      // goal reached flag
-  tf2_ros::Buffer* tf_;                    // transform buffer
-  nav_msgs::OccupancyGrid potential_map_;  // local potential field map
+  pb::controller::APFController apf_config_;
+  bool initialized_;     // initialized flag
+  bool goal_reached_;    // goal reached flag
+  tf2_ros::Buffer* tf_;  // transform buffer
 
-  int plan_index_;
-  // std::vector<geometry_msgs::PoseStamped> global_plan_;
-  geometry_msgs::PoseStamped target_ps_, current_ps_;
+  std::deque<common::geometry::Vec2d> hist_nf_;  // historical net forces
 
-  double p_window_;     // next point distance
-  double o_precision_;  // goal reached tolerance
-  double d_t_;          // control time step
-
-  int s_window_;  // trajectory smoothing window time
-
-  double zeta_, eta_;  // scale factor of attractive and repulsive force
-
-  int cost_ub_, cost_lb_;  // the upper and lower bound of costmap used to calculate potential field
-
-  double inflation_radius_;  // the costmap inflation radius of obstacles
-
-  std::deque<rmp::common::geometry::Vec2d> hist_nf_;  // historical net forces
-
-  ros::Publisher target_pose_pub_, current_pose_pub_, potential_map_pub_;
-  ros::Subscriber costmap_sub_;  // subscribe local map topic to generate potential field
+  ros::Publisher target_pt_pub_, current_pose_pub_, potential_map_pub_;
 
   // goal parameters
   double goal_x_, goal_y_, goal_theta_;

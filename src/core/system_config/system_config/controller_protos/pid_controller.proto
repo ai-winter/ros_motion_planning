@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package rmp.pb.controller;
+
+message PIDController {
+  // lookahead parameters
+  double lookahead_time = 1;
+  double min_lookahead_dist = 2;
+  double max_lookahead_dist = 3;
+
+  // model-free pid controller params
+  double p_linear_velocity = 4;
+  double i_linear_velocity = 5;
+  double d_linear_velocity = 6;
+  double p_angular_velocity = 7;
+  double i_angular_velocity = 8;
+  double d_angular_velocity = 9;
+  double theta_weight = 10;
+
+  // model-based pid controller params
+  double k_feedback = 11;
+  double dist_from_center_to_front_edge = 12;
+
+  bool model_based_mode = 13;
+}

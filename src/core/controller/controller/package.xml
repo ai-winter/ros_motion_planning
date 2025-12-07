@@ -15,5 +15,6 @@
   <depend>geometry_msgs</depend>
   <depend>roscpp</depend>
   <depend>common</depend>
+  <depend>system_config</depend>
 
 </package>

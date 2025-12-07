@@ -69,4 +69,13 @@ controller {
         delta_angular_velocity_min: -0.2
         delta_angular_velocity_max: 3.14
     }
+
+    apf_controller {
+        lookahead_time: 1.0
+        min_lookahead_dist: 0.3
+        max_lookahead_dist: 0.9
+        smooth_window: 5
+        weight_attractive_force: 1.0
+        weight_repulsive_force: 3.0
+    }
 }

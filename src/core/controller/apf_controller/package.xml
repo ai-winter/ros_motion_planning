@@ -12,13 +12,12 @@
   <depend>geometry_msgs</depend>
   <depend>nav_core</depend>
   <depend>nav_msgs</depend>
-  <depend>navfn</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>controller</depend>
-
+  <depend>system_config</depend>
 
   <export>
     <nav_core plugin="${prefix}/apf_controller_plugin.xml" />

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package rmp.pb.controller;
+
+message MPCController {
+  // lookahead parameters
+  double lookahead_time = 1;
+  double min_lookahead_dist = 2;
+  double max_lookahead_dist = 3;
+
+  int64 predict_time_domain = 4;
+  int64 control_time_domain = 5;
+
+  // weight matrix for penalizing state error while tracking [x,y,theta]
+  double Q_matrix_x = 6;
+  double Q_matrix_y = 7;
+  double Q_matrix_theta = 8;
+
+  // weight matrix for penalizing input error while tracking[v, w]
+  double R_matrix_v = 9;
+  double R_matrix_w = 10;
+
+  double delta_linear_velocity_min = 11;
+  double delta_linear_velocity_max = 12;
+  double delta_angular_velocity_min = 13;
+  double delta_angular_velocity_max = 14;
+}
