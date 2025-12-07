@@ -26,25 +26,25 @@ file(MAKE_DIRECTORY ${PROTO_OUTPUT_DIR})
 set(PROTO_SRCS "")
 set(PROTO_HDRS "")
 
-# # common related protos
-# file(GLOB_RECURSE COMMON_PROTOS "${CMAKE_CURRENT_SOURCE_DIR}/system_config/common_protos/*.proto")
-# protobuf_generate(
-#   TARGET ${PROJECT_NAME}
-#   LANGUAGE cpp
-#   OUT_VAR COMMON_PROTO_SRCS
-#   PROTOS ${COMMON_PROTOS}
-# )
-# list(APPEND PROTO_SRCS ${COMMON_PROTO_SRCS})
+# common related protos
+file(GLOB_RECURSE COMMON_PROTOS "${CMAKE_CURRENT_SOURCE_DIR}/system_config/common_protos/*.proto")
+protobuf_generate(
+  TARGET ${PROJECT_NAME}
+  LANGUAGE cpp
+  OUT_VAR COMMON_PROTO_SRCS
+  PROTOS ${COMMON_PROTOS}
+)
+list(APPEND PROTO_SRCS ${COMMON_PROTO_SRCS})
 
-# # path planner related protos
-# file(GLOB_RECURSE PATH_PLANNER_PROTOS "${CMAKE_CURRENT_SOURCE_DIR}/system_config/path_planner_protos/*.proto")
-# protobuf_generate(
-#   TARGET ${PROJECT_NAME}
-#   LANGUAGE cpp
-#   OUT_VAR PATH_PLANNER_PROTO_SRCS
-#   PROTOS ${PATH_PLANNER_PROTOS}
-# )
-# list(APPEND PROTO_SRCS ${PATH_PLANNER_PROTO_SRCS})
+# path planner related protos
+file(GLOB_RECURSE PATH_PLANNER_PROTOS "${CMAKE_CURRENT_SOURCE_DIR}/system_config/path_planner_protos/*.proto")
+protobuf_generate(
+  TARGET ${PROJECT_NAME}
+  LANGUAGE cpp
+  OUT_VAR PATH_PLANNER_PROTO_SRCS
+  PROTOS ${PATH_PLANNER_PROTOS}
+)
+list(APPEND PROTO_SRCS ${PATH_PLANNER_PROTO_SRCS})
 
 # controller related protos
 file(GLOB CONTROLLER_PROTOS "${CMAKE_CURRENT_SOURCE_DIR}/system_config/controller_protos/*.proto")

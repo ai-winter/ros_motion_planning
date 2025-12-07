@@ -4,7 +4,6 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Maps1/expand_map1
         - /Path1
       Splitter Ratio: 0.5
     Tree Height: 727
