@@ -22,19 +22,15 @@
 #include "path_planner/path_planner.h"
 #include "voronoi_layer.h"
 
-namespace rmp
-{
-namespace path_planner
-{
+namespace rmp {
+namespace path_planner {
 /**
  * @brief Class for objects that plan using the Voronoi-based planning algorithm
  */
-class VoronoiPathPlanner : public PathPlanner
-{
+class VoronoiPathPlanner : public PathPlanner {
 private:
   using Node = rmp::common::structure::Node<int>;
-  struct VoronoiData
-  {
+  struct VoronoiData {
     bool is_voronoi;  // whether the grid is in VD or not
     double dist;      // the distance from the grid to the closest obstacle
   };
@@ -44,9 +40,8 @@ public:
    * @brief Construct a new Voronoi-based planning object
    * @param costmap   the environment for path planning
    * @param circumscribed_radius  the circumscribed radius of robot
-   * @param obstacle_factor obstacle factor(greater means obstacles)
    */
-  VoronoiPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double circumscribed_radius, double obstacle_factor = 1.0);
+  VoronoiPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double circumscribed_radius);
   ~VoronoiPathPlanner();
 
   /**
@@ -57,7 +52,8 @@ public:
    * @param expand        containing the node been search during the process
    * @return  true if path found, else false
    */
-  bool plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand);
+  bool plan(const common::geometry::Point3d& start, const common::geometry::Point3d& goal,
+            common::geometry::Points3d* path, common::geometry::Points3d* expand);
 
 protected:
   /**
@@ -68,7 +64,8 @@ protected:
    * @param path          shortest path from start to VD
    * @return  true if path found, else false
    */
-  bool searchPathWithVoronoi(const Node& start, const Node& goal, std::vector<Node>& path, Node* v_goal = nullptr);
+  bool searchPathWithVoronoi(const Node& start, const Node& goal, std::vector<Node>& path,
+                             Node* v_goal = nullptr);
 
 private:
   /**
@@ -83,8 +80,10 @@ private:
 
   // allowable motions
   const std::vector<Node> motions = {
-    { 0, 1, 1.0 },          { 1, 0, 1.0 },           { 0, -1, 1.0 },          { -1, 0, 1.0 },
-    { 1, 1, std::sqrt(2) }, { 1, -1, std::sqrt(2) }, { -1, 1, std::sqrt(2) }, { -1, -1, std::sqrt(2) },
+    { 0, 1, 1.0 },           { 1, 0, 1.0 },
+    { 0, -1, 1.0 },          { -1, 0, 1.0 },
+    { 1, 1, std::sqrt(2) },  { 1, -1, std::sqrt(2) },
+    { -1, 1, std::sqrt(2) }, { -1, -1, std::sqrt(2) },
   };
 };
 }  // namespace path_planner
