@@ -22,37 +22,31 @@
 #include "common/geometry/collision_checker.h"
 #include "path_planner/graph_planner/theta_star_planner.h"
 
-namespace rmp
-{
-namespace path_planner
-{
-namespace
-{
+using namespace rmp::common::geometry;
 using CollisionChecker = rmp::common::geometry::CollisionChecker;
-}
 
+namespace rmp {
+namespace path_planner {
 /**
  * @brief Construct a new ThetaStar object
  * @param costmap   the environment for path planning
- * @param obstacle_factor obstacle factor(greater means obstacles)
  */
-ThetaStarPathPlanner::ThetaStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros, double obstacle_factor)
-  : PathPlanner(costmap_ros, obstacle_factor){};
+ThetaStarPathPlanner::ThetaStarPathPlanner(costmap_2d::Costmap2DROS* costmap_ros)
+  : PathPlanner(costmap_ros){};
 
 /**
  * @brief Theta* implementation
  * @param start         start node
  * @param goal          goal node
- * @param path          optimal path consists of Node
+ * @param path          The resulting path in (x, y, theta)
  * @param expand        containing the node been search during the process
  * @return  true if path found, else false
  */
-bool ThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d& path, Points3d& expand)
-{
+bool ThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d* path,
+                                Points3d* expand) {
   double m_start_x, m_start_y, m_goal_x, m_goal_y;
   if ((!validityCheck(start.x(), start.y(), m_start_x, m_start_y)) ||
-      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y)))
-  {
+      (!validityCheck(goal.x(), goal.y(), m_goal_x, m_goal_y))) {
     return false;
   }
 
@@ -61,8 +55,8 @@ bool ThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Point
   Node goal_node(m_goal_x, m_goal_y);
   start_node.set_id(grid2Index(start_node.x(), start_node.y()));
   goal_node.set_id(grid2Index(goal_node.x(), goal_node.y()));
-  path.clear();
-  expand.clear();
+  path->clear();
+  expand->clear();
 
   // open list and closed list
   std::priority_queue<Node, std::vector<Node>, Node::compare_cost> open_list;
@@ -71,8 +65,7 @@ bool ThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Point
   open_list.push(start_node);
 
   // main process
-  while (!open_list.empty())
-  {
+  while (!open_list.empty()) {
     // pop current node from open list
     auto current = open_list.top();
     open_list.pop();
@@ -82,30 +75,29 @@ bool ThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Point
       continue;
 
     closed_list.insert(std::make_pair(current.id(), current));
-    expand.emplace_back(current.x(), current.y());
+    expand->emplace_back(current.x(), current.y());
 
     // goal found
-    if (current == goal_node)
-    {
-      const auto& backtrace = _convertClosedListToPath<Node>(closed_list, start_node, goal_node);
-      for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter)
-      {
+    if (current == goal_node) {
+      const auto& backtrace =
+          _convertClosedListToPath<Node>(closed_list, start_node, goal_node);
+      for (auto iter = backtrace.rbegin(); iter != backtrace.rend(); ++iter) {
         // convert to world frame
         double wx, wy;
         costmap_->mapToWorld(iter->x(), iter->y(), wx, wy);
-        path.emplace_back(wx, wy);
+        path->emplace_back(wx, wy);
       }
       return true;
     }
 
     // explore neighbor of current node
-    for (const auto& m : motions)
-    {
+    for (const auto& m : motions) {
       // explore a new node
       // path 1
       auto node_new = current + m;  // add the x_, y_, g_
       node_new.set_g(current.g() + m.g());
-      node_new.set_h(std::hypot(node_new.x() - goal_node.x(), node_new.y() - goal_node.y()));
+      node_new.set_h(
+          std::hypot(node_new.x() - goal_node.x(), node_new.y() - goal_node.y()));
       node_new.set_id(grid2Index(node_new.x(), node_new.y()));
       node_new.set_pid(current.id());
 
@@ -115,7 +107,8 @@ bool ThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Point
 
       // next node hit the boundary or obstacle
       if ((node_new.id() < 0) || (node_new.id() >= map_size_) ||
-          (costmap_->getCharMap()[node_new.id()] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_ &&
+          (costmap_->getCharMap()[node_new.id()] >=
+               costmap_2d::LETHAL_OBSTACLE * config_.obstacle_inflation_factor() &&
            costmap_->getCharMap()[node_new.id()] >= costmap_->getCharMap()[current.id()]))
         continue;
 
@@ -129,8 +122,7 @@ bool ThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Point
 
       // update g value
       auto find_parent = closed_list.find(parent.id());
-      if (find_parent != closed_list.end())
-      {
+      if (find_parent != closed_list.end()) {
         parent = find_parent->second;
         _updateVertex(parent, node_new);
       }
@@ -147,20 +139,19 @@ bool ThetaStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Point
  * @param parent
  * @param child
  */
-void ThetaStarPathPlanner::_updateVertex(const Node& parent, Node& child)
-{
+void ThetaStarPathPlanner::_updateVertex(const Node& parent, Node& child) {
   auto isCollision = [&](const Node& node1, const Node& node2) {
-    return CollisionChecker::BresenhamCollisionDetection(node1, node2, [&](const Node& node) {
-      return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >= costmap_2d::LETHAL_OBSTACLE * obstacle_factor_;
-    });
+    return CollisionChecker::BresenhamCollisionDetection(
+        node1, node2, [&](const Node& node) {
+          return costmap_->getCharMap()[grid2Index(node.x(), node.y())] >=
+                 costmap_2d::LETHAL_OBSTACLE * config_.obstacle_inflation_factor();
+        });
   };
 
-  if (!isCollision(parent, child))
-  {
+  if (!isCollision(parent, child)) {
     // path 2
     const double dist = std::hypot(parent.x() - child.x(), parent.y() - child.y());
-    if (parent.g() + dist < child.g())
-    {
+    if (parent.g() + dist < child.g()) {
       child.set_g(parent.g() + dist);
       child.set_pid(parent.id());
     }
