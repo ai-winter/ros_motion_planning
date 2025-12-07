@@ -30,7 +30,6 @@ robots_config:
 #     * rrt_star
 #     * rrt_connect
 #     * informed_rrt
-#     * quick_informed_rrt
 #
 #   * evolutionary_planner
 #     * aco

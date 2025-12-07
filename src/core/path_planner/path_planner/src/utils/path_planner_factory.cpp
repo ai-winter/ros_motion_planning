@@ -35,7 +35,6 @@
 #include "path_planner/sample_planner/rrt_star_planner.h"
 #include "path_planner/sample_planner/rrt_connect_planner.h"
 #include "path_planner/sample_planner/informed_rrt_star_planner.h"
-#include "path_planner/sample_planner/quick_informed_rrt_star_planner.h"
 
 // evolutionary-based planner
 #include "path_planner/evolutionary_planner/aco_planner.h"
@@ -210,22 +209,6 @@ bool PathPlannerFactory::createPlanner(ros::NodeHandle& nh, costmap_2d::Costmap2
     nh.param(planner_name + "/optimization_r", optimization_r, 10.0);  // optimization radius
     planner_props.planner_ptr = std::make_shared<InformedRRTStarPathPlanner>(
         costmap_ros, obstacle_factor, sample_points, sample_max_d, optimization_r);
-    planner_props.planner_type = SAMPLE_PLANNER;
-  }
-  else if (planner_name == "quick_informed_rrt")
-  {
-    int sample_points, rewire_threads_n;
-    double sample_max_d, optimization_r, prior_set_r, step_ext_d, t_freedom;
-    nh.param(planner_name + "/sample_points", sample_points, 500);        // random sample points
-    nh.param(planner_name + "/sample_max_d", sample_max_d, 5.0);          // max distance between sample points
-    nh.param(planner_name + "/optimization_r", optimization_r, 10.0);     // optimization radius
-    nh.param(planner_name + "/prior_sample_set_r", prior_set_r, 10.0);    // radius of priority circles set
-    nh.param(planner_name + "/rewire_threads_num", rewire_threads_n, 2);  // threads number of rewire process
-    nh.param(planner_name + "/step_extend_d", step_ext_d, 5.0);           // threads number of rewire process
-    nh.param(planner_name + "/t_distr_freedom", t_freedom, 1.0);          // freedom of t distribution
-    planner_props.planner_ptr = std::make_shared<QuickInformedRRTStarPathPlanner>(
-        costmap_ros, obstacle_factor, sample_points, sample_max_d, optimization_r, prior_set_r, rewire_threads_n,
-        step_ext_d, t_freedom);
     planner_props.planner_type = SAMPLE_PLANNER;
   }
   else if (planner_name == "aco")
