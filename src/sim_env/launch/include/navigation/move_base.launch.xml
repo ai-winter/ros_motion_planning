@@ -69,24 +69,15 @@
 
         <!-- local planner plugin -->
         <param name="base_local_planner" value="dwa_controller/DWAController" if="$(eval arg('local_planner')=='dwa')" />
-
         <param name="base_local_planner" value="pid_controller/PIDController" if="$(eval arg('local_planner')=='pid')" />
-
         <param name="base_local_planner" value="apf_controller/APFController" if="$(eval arg('local_planner')=='apf')" />
-
         <param name="base_local_planner" value="rpp_controller/RPPController" if="$(eval arg('local_planner')=='rpp')" />
-
         <param name="base_local_planner" value="lqr_controller/LQRController" if="$(eval arg('local_planner')=='lqr')" />
-
         <param name="base_local_planner" value="mpc_controller/MPCController" if="$(eval arg('local_planner')=='mpc')" />
-
         <param name="base_local_planner" value="static_controller/StaticController" if="$(eval arg('local_planner')=='static')" />
-
-        <!-- ORCA -->
         <param name="base_local_planner" value="orca_controller/ORCAController" if="$(eval arg('local_planner')=='orca')" />
         <param name="ORCAController/agent_number" value="$(arg agent_number)" if="$(eval arg('local_planner')=='orca')" />
         <param name="ORCAController/agent_id" value="$(arg agent_id)" if="$(eval arg('local_planner')=='orca')" />
-        <rosparam file="$(find sim_env)/config/controller/orca_controller_params.yaml" command="load" if="$(eval arg('local_planner')=='orca')" />
 
         <!-- loading navigation parameters -->
         <rosparam file="$(eval find('sim_env') + '/config/robots/' + arg('robot') + '/global_costmap_params_' + arg('robot') + '.yaml')"
