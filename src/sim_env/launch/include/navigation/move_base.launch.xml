@@ -79,7 +79,6 @@
         <param name="base_local_planner" value="lqr_controller/LQRController" if="$(eval arg('local_planner')=='lqr')" />
 
         <param name="base_local_planner" value="mpc_controller/MPCController" if="$(eval arg('local_planner')=='mpc')" />
-        <rosparam file="$(find sim_env)/config/controller/mpc_controller_params.yaml" command="load" if="$(eval arg('local_planner')=='mpc')" />
 
         <param name="base_local_planner" value="static_controller/StaticController" if="$(eval arg('local_planner')=='static')" />
 
