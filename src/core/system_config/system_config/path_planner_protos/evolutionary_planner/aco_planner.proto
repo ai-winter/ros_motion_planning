@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package rmp.pb.path_planner;
+
+message ACOPlanner {
+    // number of ants
+    int64 population_num = 1;
+    // number of inherited ants (Note: Need to be less than parameter ants)
+    int64 inherited_num = 2;
+    // number of position points contained in each ant
+    int64 control_point_num = 3;
+    // pheromone weight coefficient
+    double alpha = 4;
+    // heuristic factor weight coefficient
+    double beta = 5;
+    // evaporation coefficient
+    double rho = 6;
+    // pheromone gain
+    double Q = 7;
+    // maximum iterations
+    int64 max_iterations = 8;
+}

@@ -3,6 +3,8 @@ syntax = "proto3";
 package rmp.pb.path_planner;
 
 import "system_config/path_planner_protos/graph_planner/graph_planner.proto";
+import "system_config/path_planner_protos/sample_planner/sample_planner.proto";
+import "system_config/path_planner_protos/evolutionary_planner/evolutionary_planner.proto";
 
 message PathPlanner {
     // offset of transform from world(x,y) to grid map(x,y)
@@ -24,4 +26,6 @@ message PathPlanner {
     bool is_outline_map = 9;
 
     GraphPathPlanner graph_planner = 10;
+    SamplePathPlanner sample_planner = 11;
+    EvolutionaryPathPlanner evolutionary_planner = 13;
 }
