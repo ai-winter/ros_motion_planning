@@ -8,6 +8,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <base_local_planner/goal_functions.h>
 
+#include "common/util/log.h"
 #include "controller/dwa_controller.h"
 
 // register this planner as a BaseLocalPlanner plugin
@@ -85,7 +86,7 @@ void DWAController::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d
 
     initialized_ = true;
 
-    ROS_INFO("Using local controller: %s", name.c_str());
+    R_INFO << "Using local controller: " << name;
 
     dsrv_ = new dynamic_reconfigure::Server<dwa_controller::DWAControllerConfig>(private_nh);
     dynamic_reconfigure::Server<dwa_controller::DWAControllerConfig>::CallbackType cb =
@@ -108,7 +109,7 @@ bool DWAController::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_
   // when we get a new plan, we also want to clear any latch we may have on goal tolerances
   latchedStopRotateController_.resetLatching();
 
-  ROS_INFO("Got new plan");
+  R_INFO << "Got new plan";
   return dp_->setPlan(orig_global_plan);
 }
 
@@ -127,7 +128,7 @@ bool DWAController::isGoalReached()
 
   if (latchedStopRotateController_.isGoalReached(&planner_util_, odom_helper_, current_pose_))
   {
-    ROS_INFO("Goal reached");
+    R_INFO << "GOAL Reached!";
     return true;
   }
   else

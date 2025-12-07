@@ -12,6 +12,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
 
+#include "common/util/log.h"
 #include "controller/dwa.h"
 
 namespace rmp
@@ -121,7 +122,7 @@ DWA::DWA(std::string name, base_local_planner::LocalPlannerUtil* planner_util)
       sim_period_ = 0.05;
     }
   }
-  ROS_INFO("Sim period is set to %.2f", sim_period_);
+  R_INFO << "Sim period is set to " << sim_period_;
 
   oscillation_costs_.resetOscillationFlags();
 

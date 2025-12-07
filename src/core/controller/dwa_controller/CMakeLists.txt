@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_geometry_msgs
   tf2_ros
+  common
 )
 
 find_package(Eigen3 REQUIRED)
@@ -43,6 +44,7 @@ catkin_package(
     roscpp
     tf2
     tf2_ros
+    common
 )
 
 add_library(${PROJECT_NAME}
