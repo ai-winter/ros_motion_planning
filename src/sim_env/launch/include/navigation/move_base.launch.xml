@@ -32,41 +32,6 @@
         <param name="base_global_planner" value="path_planner/PathPlanner" />
         <param name="PathPlanner/planner_name" value="$(arg global_planner)" />
 
-        <!-- graph search -->
-        <rosparam file="$(find sim_env)/config/planner/common_planner_params.yaml" command="load" />
-        <rosparam file="$(find sim_env)/config/planner/graph_planner_params.yaml" command="load"
-            if="$(eval arg('global_planner')=='astar'
-                    or arg('global_planner')=='jps' 
-                    or arg('global_planner')=='bi_jps' 
-                    or arg('global_planner')=='gbfs'
-                    or arg('global_planner')=='dijkstra'
-                    or arg('global_planner')=='dstar'
-                    or arg('global_planner')=='lpa_star'
-                    or arg('global_planner')=='voronoi'
-                    or arg('global_planner')=='dstar_lite'
-                    or arg('global_planner')=='theta_star'
-                    or arg('global_planner')=='lazy_theta_star'
-                    or arg('global_planner')=='s_theta_star'
-                    or arg('global_planner')=='hybrid_astar'
-                    or arg('global_planner')=='lazy'
-                )" />
-
-        <!-- sample search -->
-        <rosparam file="$(find sim_env)/config/planner/sample_planner_params.yaml" command="load"
-            if="$(eval arg('global_planner')=='rrt'
-                    or arg('global_planner')=='rrt_star'
-                    or arg('global_planner')=='informed_rrt'
-                    or arg('global_planner')=='quick_informed_rrt'
-                    or arg('global_planner')=='rrt_connect'
-                )" /> 
-
-        <!-- evolutionary search -->
-        <rosparam file="$(find sim_env)/config/planner/evolutionary_planner_params.yaml" command="load"
-            if="$(eval arg('global_planner')=='aco'
-                    or arg('global_planner')=='pso'
-                    or arg('global_planner')=='ga'
-                )" />
-
         <!-- local planner plugin -->
         <param name="base_local_planner" value="dwa_controller/DWAController" if="$(eval arg('local_planner')=='dwa')" />
         <param name="base_local_planner" value="pid_controller/PIDController" if="$(eval arg('local_planner')=='pid')" />
