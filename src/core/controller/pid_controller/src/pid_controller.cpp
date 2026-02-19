@@ -194,21 +194,21 @@ bool PIDController::computeVelocityCommands(geometry_msgs::Twist& cmd_vel) {
       cmd_vel.linear.x = 0.0;
       cmd_vel.angular.z = angularRegularization(wt, e_theta / control_dt_);
     }
+    return true;
   }
-  // posistion not reached
-  else {
-    Eigen::Vector3d s(robot_pose_map.pose.position.x, robot_pose_map.pose.position.y,
-                      theta);  // current state
-    Eigen::Vector3d s_d(lookahead_pt.x(), lookahead_pt.y(),
-                        lookahead_pt.theta());  // desired state
-    Eigen::Vector2d u_r(vt, wt);                // refered input
-    Eigen::Vector2d u = pid_config_.model_based_mode() ?
-                            _modelBasedPIDControl(s, s_d, u_r) :
-                            _modelFreePIDControl(s, s_d, u_r);
 
-    cmd_vel.linear.x = linearRegularization(vt, u[0]);
-    cmd_vel.angular.z = angularRegularization(wt, u[1]);
-  }
+  // posistion not reached
+  Eigen::Vector3d s(robot_pose_map.pose.position.x, robot_pose_map.pose.position.y,
+                    theta);  // current state
+  Eigen::Vector3d s_d(lookahead_pt.x(), lookahead_pt.y(),
+                      lookahead_pt.theta());  // desired state
+  Eigen::Vector2d u_r(vt, wt);                // refered input
+  Eigen::Vector2d u = pid_config_.model_based_mode() ?
+                          _modelBasedPIDControl(s, s_d, u_r) :
+                          _modelFreePIDControl(s, s_d, u_r);
+
+  cmd_vel.linear.x = linearRegularization(vt, u[0]);
+  cmd_vel.angular.z = angularRegularization(wt, u[1]);
 
   // visualization
   const auto& visualizer = rmp::common::util::VisualizerPtr::Instance();
