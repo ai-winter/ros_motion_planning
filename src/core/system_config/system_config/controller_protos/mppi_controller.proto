@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package rmp.pb.controller;
+
+message MPPIController {
+  double dt = 1;
+}

@@ -8,6 +8,7 @@ import "system_config/controller_protos/pid_controller.proto";
 import "system_config/controller_protos/mpc_controller.proto";
 import "system_config/controller_protos/apf_controller.proto";
 import "system_config/controller_protos/orca_controller.proto";
+import "system_config/controller_protos/mppi_controller.proto";
 
 message Controller {
     double control_frequency = 1;
@@ -37,4 +38,5 @@ message Controller {
     MPCController mpc_controller = 24;
     APFController apf_controller = 25;
     ORCAController orca_controller = 26;
+    MPPIController mppi_controller = 27;
 }

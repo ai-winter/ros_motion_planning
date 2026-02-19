@@ -163,4 +163,8 @@ controller {
         agent_radius: 0.15
         max_neighbors: 5
     }
+
+    mppi_controller {
+        dt: 0.05
+    }
 }
