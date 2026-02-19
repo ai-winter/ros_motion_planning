@@ -1,5 +1,23 @@
+/**
+ * *********************************************************
+ *
+ * @file: mppi_controller.hpp
+ * @brief: Contains the Model Predictive Path Integral (MPPI) controller local controller
+ * class
+ * @author: Zhanyu Guo
+ * @date: 2026-02-19
+ * @version: 1.0
+ *
+ * Copyright (c) 2026, Zhanyu Guo.
+ * All rights reserved.
+ *
+ * --------------------------------------------------------
+ *
+ * ********************************************************
+ */
 
-#pragma once
+#ifndef RMP_CONTROLLER_MPPI_CONTROLLER_HPP_
+#define RMP_CONTROLLER_MPPI_CONTROLLER_HPP_
 
 #include <tf2/utils.h>
 #include <tf2_ros/buffer.h>
@@ -12,8 +30,7 @@
 #include "controller/controller.h"
 #include "system_config/controller_protos/mppi_controller.pb.h"
 
-namespace rmp {
-namespace controller {
+namespace rmp::controller {
 
 class MPPIController : public nav_core::BaseLocalPlanner, Controller {
 public:
@@ -44,5 +61,6 @@ private:
   double goal_x_, goal_y_, goal_theta_;
 };
 
-}  // namespace controller
-}  // namespace rmp
+}  // namespace rmp::controller
+
+#endif // RMP_CONTROLLER_MPPI_CONTROLLER_HPP_
