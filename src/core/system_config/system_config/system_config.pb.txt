@@ -173,5 +173,13 @@ controller {
         constraint_critic_vx_max: 0.5;
         constraint_critic_vy_max: 0.0;
         constraint_critic_vx_min: -0.35;
+        cost_critic_enabled: true;
+        cost_critic_cost_power: 1;
+        cost_critic_cost_weight: 3.81;
+        cost_critic_critical_cost: 300.0;
+        cost_critic_near_collision_cost: 253;
+        cost_critic_collision_cost: 1000000.0;
+        cost_critic_near_goal_distance: 0.5;
+        trajectory_point_step: 2;
     }
 }

@@ -24,6 +24,9 @@ void ConstraintCritic::initialize() {
   power_ = mppi_config_->constraint_critic_cost_power();
   weight_ = mppi_config_->constraint_critic_cost_weight();
 
+  R_INFO << "Constraint critic enabled: " << enabled_ << ", power: " << power_
+         << ", weight: " << weight_;
+
   float vx_max, vy_max, vx_min;
   vx_max = mppi_config_->constraint_critic_vx_max();
   vy_max = mppi_config_->constraint_critic_vy_max();
@@ -135,3 +138,7 @@ void ConstraintCritic::score(CriticData& data) {
 }
 
 }  // namespace rmp::controller::mppi::critics
+
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(rmp::controller::mppi::critics::ConstraintCritic,
+                       rmp::controller::mppi::critics::CriticFunction)

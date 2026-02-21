@@ -22,6 +22,8 @@
 #include <memory>
 
 #include <costmap_2d/costmap_2d_ros.h>
+
+#include "common/util/log.h"
 #include "controller/critic_data.hpp"
 #include "system_config/controller_protos/mppi_controller.pb.h"
 

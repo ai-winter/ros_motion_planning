@@ -41,6 +41,7 @@
         <param name="base_local_planner" value="mpc_controller/MPCController" if="$(eval arg('local_planner')=='mpc')" />
         <param name="base_local_planner" value="static_controller/StaticController" if="$(eval arg('local_planner')=='static')" />
         <param name="base_local_planner" value="orca_controller/ORCAController" if="$(eval arg('local_planner')=='orca')" />
+        <param name="base_local_planner" value="mppi_controller/MPPIController" if="$(eval arg('local_planner')=='mppi')" />
         <param name="ORCAController/agent_number" value="$(arg agent_number)" if="$(eval arg('local_planner')=='orca')" />
         <param name="ORCAController/agent_id" value="$(arg agent_id)" if="$(eval arg('local_planner')=='orca')" />
 
