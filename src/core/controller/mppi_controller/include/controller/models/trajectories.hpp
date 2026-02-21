@@ -20,9 +20,9 @@
 
 #include <Eigen/Dense>
 
-namespace rmp::controller::mppi {
+namespace rmp::controller::mppi::models {
 /**
- * @class rmp::controller::mppi::Trajectories
+ * @class rmp::controller::mppi::models::Trajectories
  * @brief Candidate Trajectories
  */
 struct Trajectories {
@@ -40,6 +40,6 @@ struct Trajectories {
   }
 };
 
-}  // namespace rmp::controller::mppi
+}  // namespace rmp::controller::mppi::models
 
 #endif  // RMP_CONTROLLER_MPPI_TRAJECTORIES_HPP_

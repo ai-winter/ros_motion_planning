@@ -1,13 +1,28 @@
-#include <pluginlib/class_list_macros.h>
+/**
+ * *********************************************************
+ *
+ * @file: mppi_controller.cpp
+ * @brief: Contains the Model Predictive Path Integral (MPPI) controller local controller
+ * class
+ * @author: Zhanyu Guo
+ * @date: 2026-02-19
+ * @version: 1.0
+ *
+ * Copyright (c) 2026, Zhanyu Guo.
+ * All rights reserved.
+ *
+ * --------------------------------------------------------
+ *
+ * ********************************************************
+ */
+
+#include "controller/mppi_controller.hpp"
 
 #include "common/util/log.h"
 #include "common/util/visualizer.h"
 #include "common/math/math_helper.h"
 #include "common/geometry/angles.h"
 #include "common/geometry/point.h"
-#include "controller/mppi_controller.hpp"
-
-PLUGINLIB_EXPORT_CLASS(rmp::controller::MPPIController, nav_core::BaseLocalPlanner)
 
 using namespace rmp::common::math;
 using namespace rmp::common::geometry;
@@ -132,3 +147,6 @@ bool MPPIController::computeVelocityCommands(geometry_msgs::Twist& cmd_vel) {
 
 }  // namespace controller
 }  // namespace rmp
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_EXPORT_CLASS(rmp::controller::MPPIController, nav_core::BaseLocalPlanner)

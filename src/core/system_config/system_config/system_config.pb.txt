@@ -165,6 +165,13 @@ controller {
     }
 
     mppi_controller {
-        dt: 0.05
+        min_turning_r: 0.2
+        regenerate_noises: true
+        constraint_critic_enabled: true;
+        constraint_critic_cost_power: 1;
+        constraint_critic_cost_weight: 4.0;
+        constraint_critic_vx_max: 0.5;
+        constraint_critic_vy_max: 0.0;
+        constraint_critic_vx_min: -0.35;
     }
 }

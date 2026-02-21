@@ -20,10 +20,10 @@
 
 #include "controller/models/constraints.hpp"
 
-namespace rmp::controller::mppi {
+namespace rmp::controller::mppi::models {
 
 /**
- * @struct mppi::models::OptimizerSettings
+ * @struct rmp::controller::mppi::models::OptimizerSettings
  * @brief Settings for the optimizer to use
  */
 struct OptimizerSettings {
@@ -42,6 +42,6 @@ struct OptimizerSettings {
   bool open_loop{ false };
 };
 
-}  // namespace rmp::controller::mppi
+}  // namespace rmp::controller::mppi::models
 
 #endif  // RMP_CONTROLLER_MPPI_OPTIMIZER_SETTINGS_HPP_

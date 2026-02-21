@@ -20,10 +20,10 @@
 
 #include <Eigen/Dense>
 
-namespace rmp::controller::mppi {
+namespace rmp::controller::mppi::models {
 
 /**
- * @struct rmp::controller::mppi::Path
+ * @struct rmp::controller::mppi::models::Path
  * @brief Path represented as Eigen Array
  */
 struct Path {
@@ -41,6 +41,6 @@ struct Path {
   }
 };
 
-}  // namespace rmp::controller::mppi
+}  // namespace rmp::controller::mppi::models
 
 #endif  // RMP_CONTROLLER_MPPI_PATH_HPP_

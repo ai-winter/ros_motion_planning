@@ -23,10 +23,10 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Twist.h>
 
-namespace rmp::controller::mppi {
+namespace rmp::controller::mppi::models {
 
 /**
- * @struct rmp::controller::mppi::State
+ * @struct rmp::controller::mppi::models::State
  * @brief State information: velocities, controls, poses, speed
  */
 struct State {
@@ -56,6 +56,6 @@ struct State {
   }
 };
 
-}  // namespace rmp::controller::mppi
+}  // namespace rmp::controller::mppi::models
 
 #endif  // RMP_CONTROLLER_MPPI_STATE_HPP_

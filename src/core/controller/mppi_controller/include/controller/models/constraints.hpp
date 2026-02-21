@@ -18,10 +18,10 @@
 #ifndef RMP_CONTROLLER_MPPI_CONSTRAINTS_HPP_
 #define RMP_CONTROLLER_MPPI_CONSTRAINTS_HPP_
 
-namespace rmp::controller::mppi {
+namespace rmp::controller::mppi::models {
 
 /**
- * @struct rmp::controller::mppi::ControlConstraints
+ * @struct rmp::controller::mppi::models::ControlConstraints
  * @brief Constraints on control
  */
 struct ControlConstraints {
@@ -37,7 +37,7 @@ struct ControlConstraints {
 };
 
 /**
- * @struct rmp::controller::models::SamplingStd
+ * @struct rmp::controller::mppi::models::SamplingStd
  * @brief Noise parameters for sampling trajectories
  */
 struct SamplingStd {
@@ -46,6 +46,6 @@ struct SamplingStd {
   float wz;
 };
 
-}  // namespace rmp::controller::mppi
+}  // namespace rmp::controller::mppi::models
 
 #endif  // RMP_CONTROLLER_MPPI_CONSTRAINTS_HPP_

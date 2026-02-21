@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(mppi_controller)
+add_compile_options(-std=c++17)
 
 find_package(catkin REQUIRED COMPONENTS
   angles
@@ -28,6 +29,7 @@ include_directories(
 
 add_library(${PROJECT_NAME}
   src/mppi_controller.cpp
+  # src/noise_generator.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

@@ -20,10 +20,10 @@
 
 #include <Eigen/Dense>
 
-namespace rmp::controller::mppi {
+namespace rmp::controller::mppi::models {
 
 /**
- * @struct rmp::controller::mppi::Control
+ * @struct rmp::controller::mppi::models::Control
  * @brief A set of controls
  */
 struct Control {
@@ -31,7 +31,7 @@ struct Control {
 };
 
 /**
- * @struct rmp::controller::mppi::ControlSequence
+ * @struct rmp::controller::mppi::models::ControlSequence
  * @brief A control sequence over time (e.g. trajectory)
  */
 struct ControlSequence {
@@ -46,6 +46,6 @@ struct ControlSequence {
   }
 };
 
-}  // namespace rmp::controller::mppi
+}  // namespace rmp::controller::mppi::models
 
 #endif  // RMP_CONTROLLER_MPPI_CONTROL_SEQUENCE_HPP_

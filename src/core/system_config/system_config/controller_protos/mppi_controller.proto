@@ -3,5 +3,14 @@ syntax = "proto3";
 package rmp.pb.controller;
 
 message MPPIController {
-  double dt = 1;
+  float min_turning_r = 1;
+  bool regenerate_noises = 2;
+
+  // constraint critics
+  bool constraint_critic_enabled = 3;
+  uint32 constraint_critic_cost_power = 4;
+  float constraint_critic_cost_weight = 5;
+  float constraint_critic_vx_max = 6;
+  float constraint_critic_vy_max = 7;
+  float constraint_critic_vx_min = 8;
 }
