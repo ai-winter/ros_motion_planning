@@ -25,8 +25,7 @@
 using namespace rmp::common::geometry;
 using CollisionChecker = rmp::common::geometry::CollisionChecker;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Construct a new ThetaStar object
  * @param costmap   the environment for path planning
@@ -157,5 +156,4 @@ void ThetaStarPathPlanner::_updateVertex(const Node& parent, Node& child) {
     }
   }
 }
-}  // namespace path_planner
 }  // namespace rmp

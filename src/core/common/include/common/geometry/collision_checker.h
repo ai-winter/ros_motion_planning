@@ -17,11 +17,7 @@
 #include <cmath>
 #include <costmap_2d/costmap_2d_ros.h>
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 class CollisionChecker
 {
@@ -146,8 +142,6 @@ private:
   costmap_2d::Costmap2DROS* costmap_ros_;  // costmap ROS wrapper
   double obstacle_factor_;                 // obstacle factor(greater means obstacles)
 };
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp
 
 #endif

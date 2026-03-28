@@ -19,11 +19,7 @@
 
 #include "common/util/log.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 template <typename T>
 class Point2_
@@ -150,8 +146,6 @@ using Points3i = std::vector<Point3i>;
 using Points3f = std::vector<Point3f>;
 using Points3d = std::vector<Point3d>;
 
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp
 
 #endif

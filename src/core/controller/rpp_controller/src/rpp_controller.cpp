@@ -27,8 +27,7 @@ PLUGINLIB_EXPORT_CLASS(rmp::controller::RPPController, nav_core::BaseLocalPlanne
 using namespace rmp::common::math;
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace controller {
+namespace rmp::controller {
 static constexpr double kLargeAngleRad = M_PI_2;
 
 /**
@@ -293,5 +292,4 @@ double RPPController::_applyApproachConstraint(
                   std::max(rpp_config_.approach_min_v(), raw_linear_vel * s));
 }
 
-}  // namespace controller
 }  // namespace rmp

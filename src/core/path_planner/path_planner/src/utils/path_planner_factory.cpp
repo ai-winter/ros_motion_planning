@@ -41,8 +41,7 @@
 #include "path_planner/evolutionary_planner/pso_planner.h"
 #include "path_planner/evolutionary_planner/ga_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Create and configure planner
  * @param nh ROS node handler
@@ -126,5 +125,4 @@ bool PathPlannerFactory::createPlanner(ros::NodeHandle& nh,
   R_INFO << "Using path planner: " << planner_name;
   return true;
 }
-}  // namespace path_planner
 }  // namespace rmp

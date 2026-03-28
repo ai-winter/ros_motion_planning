@@ -25,8 +25,7 @@
 #include "controller/controller.h"
 #include "system_config/controller_protos/lqr_controller.pb.h"
 
-namespace rmp {
-namespace controller {
+namespace rmp::controller {
 /**
  * @brief A class implementing a local planner using the LQR
  */
@@ -105,6 +104,5 @@ private:
   // goal parameters
   double goal_x_, goal_y_, goal_theta_;
 };
-}  // namespace controller
 }  // namespace rmp
 #endif

@@ -21,8 +21,7 @@
 #include "path_planner/graph_planner/hybrid_astar_planner/node_hybrid.h"
 #include "system_config/path_planner_protos/graph_planner/hybrid_astar_planner.pb.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the A* algorithm
  */
@@ -218,7 +217,6 @@ protected:
   std::vector<std::vector<double>> obstacle_hmap_;
   std::vector<NodeHybrid::NodePtr> expansions_node_;
 };
-}  // namespace path_planner
 }  // namespace rmp
 
 #endif

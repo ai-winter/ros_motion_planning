@@ -21,11 +21,7 @@
 #include "common/math/math_helper.h"
 #include "common/geometry/curve/reeds_shepp_curve.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 /**
  * @brief Construct a new Reeds-Shepp Path object
@@ -1075,6 +1071,4 @@ void ReedsSheppCurve::_update(const std::vector<RSPath>& cur_paths, RSPath& best
     }
   }
 }
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp

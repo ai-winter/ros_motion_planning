@@ -21,11 +21,7 @@
 
 #include "common/geometry/curve/curve.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 class BezierCurve : public Curve
 {
@@ -119,7 +115,5 @@ public:
 private:
   static Eigen::Matrix<double, 6, 6> matrix5_;
 };
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp
 #endif

@@ -24,8 +24,7 @@ PLUGINLIB_EXPORT_CLASS(rmp::controller::ORCAController, nav_core::BaseLocalPlann
 
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace controller {
+namespace rmp::controller {
 ORCAController::ORCAController()
   : initialized_(false)
   , costmap_ros_(nullptr)
@@ -191,5 +190,4 @@ void ORCAController::updateState() {
                          config_.max_linear_velocity());
 }
 
-}  // namespace controller
 }  // namespace rmp

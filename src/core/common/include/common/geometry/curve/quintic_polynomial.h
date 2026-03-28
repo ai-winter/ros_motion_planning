@@ -19,11 +19,7 @@
 
 #include <array>
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 class QuinticPolynomial
 {
@@ -44,8 +40,6 @@ public:
 private:
   double a0_, a1_, a2_, a3_, a4_, a5_;
 };
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp
 
 #endif

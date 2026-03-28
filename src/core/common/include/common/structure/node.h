@@ -22,11 +22,7 @@
 #include <vector>
 #include <map>
 
-namespace rmp
-{
-namespace common
-{
-namespace structure
+namespace rmp::common::structure
 {
 /**
  * @brief Basic Node class
@@ -185,7 +181,5 @@ protected:
   double g_, h_;  // g value, cost to reach this node. h value, heuristic cost to reach the goal
   int id_, pid_;  // Node's index and parent's index
 };
-}  // namespace structure
-}  // namespace common
 }  // namespace rmp
 #endif  // NODES_H

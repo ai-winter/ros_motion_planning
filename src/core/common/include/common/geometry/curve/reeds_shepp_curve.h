@@ -21,11 +21,7 @@
 
 #include "common/geometry/curve/curve.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 class ReedsSheppCurve : public Curve
 {
@@ -249,8 +245,6 @@ private:
     REEDS_SHEPP_R = 2,
   };
 };
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp
 
 #endif

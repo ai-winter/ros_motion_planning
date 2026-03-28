@@ -19,8 +19,7 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for lazy planner
  */
@@ -43,6 +42,5 @@ public:
   bool plan(const common::geometry::Point3d& start, const common::geometry::Point3d& goal,
             common::geometry::Points3d* path, common::geometry::Points3d* expand);
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif

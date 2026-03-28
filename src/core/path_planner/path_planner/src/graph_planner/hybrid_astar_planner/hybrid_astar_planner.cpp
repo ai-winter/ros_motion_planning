@@ -24,8 +24,7 @@ using namespace rmp::common::math;
 using namespace rmp::common::geometry;
 using namespace rmp::common::structure;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 // defining static member for all instance to share
 HybridAStarMotionTable HybridAStarPathPlanner::motion_table_;
 std::vector<Node<int>> HybridAStarPathPlanner::grid_motions_ = {
@@ -506,5 +505,4 @@ bool HybridAStarPathPlanner::isReachGoal(const NodeHybrid::NodePtr& node,
   const double dtheta = node->pose().theta() - goal->pose().theta();
   return (dx * dx + dy * dy + dtheta * dtheta) < kMathEpsilon;
 }
-}  // namespace path_planner
 }  // namespace rmp

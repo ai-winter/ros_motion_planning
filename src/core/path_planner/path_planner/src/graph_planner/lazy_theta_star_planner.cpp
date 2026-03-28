@@ -24,8 +24,7 @@
 using namespace rmp::common::geometry;
 using CollisionChecker = rmp::common::geometry::CollisionChecker;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Construct a new LazyThetaStar object
  * @param costmap   the environment for path planning
@@ -198,5 +197,4 @@ void LazyThetaStarPathPlanner::_setVertex(Node& node) {
     }
   }
 }
-}  // namespace path_planner
 }  // namespace rmp

@@ -19,8 +19,7 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the RRT algorithm
  */
@@ -70,6 +69,5 @@ protected:
   Node start_, goal_;                          // start and goal node copy
   std::unordered_map<int, Node> sample_list_;  // set of sample nodes
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif  // RRT_H

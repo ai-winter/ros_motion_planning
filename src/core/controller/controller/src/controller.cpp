@@ -26,8 +26,7 @@
 using namespace rmp::common::math;
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace controller {
+namespace rmp::controller {
 /**
  * @brief Construct a new Controller object
  */
@@ -323,5 +322,4 @@ void Controller::getLookAheadPoint(
   }
 }
 
-}  // namespace controller
 }  // namespace rmp

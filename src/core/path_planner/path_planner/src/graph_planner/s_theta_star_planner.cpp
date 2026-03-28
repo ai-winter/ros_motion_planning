@@ -22,8 +22,7 @@
 using namespace rmp::common::geometry;
 using CollisionChecker = rmp::common::geometry::CollisionChecker;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Construct a new SThetaStar object
  * @param costmap   the environment for path planning
@@ -194,5 +193,4 @@ double SThetaStarPathPlanner::_alpha(const Node& parent, const Node& child,
     cost = std::acos(value);
   return cost;
 }
-}  // namespace path_planner
 }  // namespace rmp

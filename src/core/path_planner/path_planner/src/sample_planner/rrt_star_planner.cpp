@@ -22,8 +22,7 @@
 using namespace rmp::common::geometry;
 using CollisionChecker = rmp::common::geometry::CollisionChecker;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief  Constructor
  * @param   costmap   the environment for path planning
@@ -181,5 +180,4 @@ RRTStarPathPlanner::_findNearestPoint(std::unordered_map<int, Node>& list, Node&
   }
   return new_node;
 }
-}  // namespace path_planner
 }  // namespace rmp

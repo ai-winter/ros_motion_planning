@@ -19,8 +19,7 @@
 
 #include "path_planner/sample_planner/rrt_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the RRT* algorithm
  */
@@ -53,6 +52,5 @@ protected:
    */
   Node _findNearestPoint(std::unordered_map<int, Node>& list, Node& node);
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif  // RRT_H

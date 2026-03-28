@@ -20,8 +20,7 @@
 
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Retrieve all motion primitives available for a given pose.
  * @param pose The current pose consisting of x, y, and theta (orientation in radians).
@@ -149,5 +148,4 @@ void HybridAStarMotionTable::initMotionPrimitives(double angle, double d_dist) {
   }
 }
 
-}  // namespace path_planner
 }  // namespace rmp

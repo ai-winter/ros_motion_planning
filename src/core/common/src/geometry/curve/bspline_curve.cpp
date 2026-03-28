@@ -18,11 +18,7 @@
 #include <cassert>
 #include "common/geometry/curve/bspline_curve.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 /**
  * @brief Construct a new B-Spline generation object
@@ -390,6 +386,4 @@ void BSplineCurve::setSPlineMode(int spline_mode)
   assert((spline_mode == SPLINE_MODE::APPROXIMATION) || (spline_mode == SPLINE_MODE::INTERPOLATION));
   spline_mode_ = spline_mode;
 }
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp

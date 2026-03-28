@@ -18,8 +18,7 @@
 #include "system_config/system_config.pb.h"
 #include "common/structure/singleton.h"
 
-namespace rmp {
-namespace system_config {
+namespace rmp::system_config {
 class SystemConfig {
 public:
   /**
@@ -40,5 +39,4 @@ private:
 
 using SystemConfigPtr = common::structure::Singleton<SystemConfig>;
 
-}  // namespace system_config
 }  // namespace rmp

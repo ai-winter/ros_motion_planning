@@ -24,9 +24,7 @@
 #include "path_planner/utils/motions.h"
 #include "path_planner/graph_planner/hybrid_astar_planner/motion_table.h"
 
-namespace rmp
-{
-namespace path_planner
+namespace rmp::path_planner
 {
 class NodeHybrid
 {
@@ -162,7 +160,6 @@ private:
   TurnDirection turn_dir_;               // turn direction mode
   rmp::common::geometry::Point3d pose_;  // the pose of current node
 };
-}  // namespace path_planner
 }  // namespace rmp
 
 #endif

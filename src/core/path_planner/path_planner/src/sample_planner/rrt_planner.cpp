@@ -22,8 +22,7 @@
 using CollisionChecker = rmp::common::geometry::CollisionChecker;
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 
 /**
  * @brief  Constructor
@@ -209,5 +208,4 @@ bool RRTPathPlanner::_checkGoal(const Node& new_node) {
   }
   return false;
 }
-}  // namespace path_planner
 }  // namespace rmp

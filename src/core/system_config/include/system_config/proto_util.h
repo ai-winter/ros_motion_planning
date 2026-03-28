@@ -18,8 +18,7 @@
 
 #include <google/protobuf/text_format.h>
 
-namespace rmp {
-namespace system_config {
+namespace rmp::system_config {
 /**
  * @brief Read a text-format protobuf message from a file.
  * @param filename Path to the text proto file.
@@ -37,5 +36,4 @@ bool readTextProtoFile(const std::string& filename, google::protobuf::Message* m
  */
 bool writeTextProtoFile(const std::string& filename,
                         const google::protobuf::Message& message);
-}  // namespace system_config
 }  // namespace rmp

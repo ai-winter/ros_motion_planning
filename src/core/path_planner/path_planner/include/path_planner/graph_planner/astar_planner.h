@@ -19,8 +19,7 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the A* algorithm
  */
@@ -53,6 +52,5 @@ private:
   using Node = rmp::common::structure::Node<int>;
   static std::vector<Node> motions_;
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif

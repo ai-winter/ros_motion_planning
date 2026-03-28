@@ -19,11 +19,7 @@
 
 #include "common/geometry/curve/curve.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 class BSplineCurve : public Curve
 {
@@ -162,7 +158,5 @@ protected:
   int spline_mode_;  // B-Spline generation mode
   double start_angle_{ 0.0 }, goal_angle_{ 0.0 };
 };
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp
 #endif

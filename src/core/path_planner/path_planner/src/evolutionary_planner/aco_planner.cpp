@@ -22,8 +22,7 @@
 #include "path_planner/evolutionary_planner/aco_planner.h"
 
 using namespace rmp::common::geometry;
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Construct a new ACO object
  * @param costmap   the environment for path planning
@@ -334,5 +333,4 @@ void ACOPathPlanner::updateAnts(std::vector<Ant>& ants, const Point3d& start,
     ants[i] = { init_position, init_fitness };
   }
 }
-}  // namespace path_planner
 }  // namespace rmp

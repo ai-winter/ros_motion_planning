@@ -22,8 +22,7 @@
 #include "common/util/log.h"
 #include "system_config/proto_util.h"
 
-namespace rmp {
-namespace system_config {
+namespace rmp::system_config {
 /**
  * @brief Read a text-format protobuf message from a file.
  * @param filename Path to the text proto file.
@@ -65,5 +64,4 @@ bool writeTextProtoFile(const std::string& filename,
   google::protobuf::io::OstreamOutputStream file_output(&output);
   return google::protobuf::TextFormat::Print(message, &file_output);
 }
-}  // namespace system_config
 }  // namespace rmp

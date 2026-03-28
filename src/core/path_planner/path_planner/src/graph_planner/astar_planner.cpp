@@ -25,8 +25,7 @@
 
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 std::vector<AStarPathPlanner::Node> AStarPathPlanner::motions_ = {
   { 0, 1, 1.0 },           { 1, 0, 1.0 },
   { 0, -1, 1.0 },          { -1, 0, 1.0 },
@@ -152,5 +151,4 @@ bool AStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d*
 
   return false;
 }
-}  // namespace path_planner
 }  // namespace rmp

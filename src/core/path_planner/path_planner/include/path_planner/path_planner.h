@@ -29,8 +29,7 @@
 
 #include "system_config/path_planner_protos/path_planner.pb.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Abstract class that is inherited by concerete implementaions of global planner
  * classes. The Plan function is a pure virtual funciton that is overloaded
@@ -212,6 +211,5 @@ protected:
                            // collision
                            // checker
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif  // PLANNER_HPP

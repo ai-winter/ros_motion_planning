@@ -24,11 +24,7 @@
 
 #include "common/geometry/vec2d.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace math
+namespace rmp::common::math
 {
 constexpr double kMathEpsilon = 1e-10;
 
@@ -236,7 +232,5 @@ rmp::common::geometry::Vec2d tangentDir(const rmp::common::geometry::Vec2d& pt_p
  */
 void sortPoints(std::vector<rmp::common::geometry::Vec2d>& points);
 
-}  // namespace math
-}  // namespace common
 }  // namespace rmp
 #endif

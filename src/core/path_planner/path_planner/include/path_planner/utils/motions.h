@@ -19,8 +19,7 @@
 
 #include <vector>
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief A struct with the motion primitive's direction embedded
  */
@@ -85,6 +84,5 @@ private:
 
 using MotionPoses = std::vector<MotionPose>;
 
-}  // namespace path_planner
 }  // namespace rmp
 #endif

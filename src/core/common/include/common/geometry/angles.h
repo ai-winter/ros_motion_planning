@@ -22,11 +22,7 @@
 
 #include "common/math/math_helper.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 /**
  * Convert degrees to radians.
@@ -473,8 +469,6 @@ inline T quaternionToHeading(const Eigen::Quaternion<T>& q)
 {
   return static_cast<T>(quaternionToHeading(q.w(), q.x(), q.y(), q.z()));
 }
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp
 
 #endif

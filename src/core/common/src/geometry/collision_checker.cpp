@@ -13,11 +13,7 @@
  **********************************************************/
 #include "common/geometry/collision_checker.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 /**
  * @brief Get the current costmap ROS wrapper object
@@ -88,6 +84,4 @@ bool CollisionChecker::isInsideMap(const unsigned int& i)
   return ((i > 0) && (i < size));
 }
 
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp

@@ -20,11 +20,7 @@
 #include "common/geometry/point.h"
 #include "common/math/math_helper.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 class Curve
 {
@@ -81,7 +77,5 @@ public:
 protected:
   double step_;  // Simulation or interpolation size
 };
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp
 #endif

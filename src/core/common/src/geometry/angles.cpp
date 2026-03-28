@@ -18,11 +18,7 @@
 
 #include "common/geometry/angles.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 /**
  * Convert degrees to radians.
@@ -186,6 +182,4 @@ void interpolateAngles(double start_angle, double end_angle, bool left_turn, int
     result.push_back(normalizeAnglePositive(start_angle + i * step));
   }
 }
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp

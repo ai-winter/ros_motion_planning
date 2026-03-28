@@ -19,8 +19,7 @@
 
 #include "path_planner/sample_planner/rrt_star_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the RRT* algorithm
  */
@@ -64,6 +63,5 @@ protected:
   double c_best_;  // best planning cost
   double c_min_;   // distance between start and goal
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif

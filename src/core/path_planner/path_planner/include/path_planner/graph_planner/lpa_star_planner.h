@@ -23,8 +23,7 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the LPA* algorithm
  * @param costmap   the environment for path planning
@@ -191,6 +190,5 @@ public:
   LNodePtr start_ptr_, goal_ptr_, last_ptr_;   // start and goal ptr
 };
 
-}  // namespace path_planner
 }  // namespace rmp
 #endif

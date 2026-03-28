@@ -28,8 +28,7 @@
 #include "common/geometry/point.h"
 #include "system_config/controller_protos/controller.pb.h"
 
-namespace rmp {
-namespace controller {
+namespace rmp::controller {
 class Controller {
 public:
   /**
@@ -128,6 +127,5 @@ protected:
   costmap_2d::Costmap2DROS* costmap_ros_;  // costmap(ROS wrapper)
   std::vector<geometry_msgs::PoseStamped> global_plan_;
 };
-}  // namespace controller
 }  // namespace rmp
 #endif

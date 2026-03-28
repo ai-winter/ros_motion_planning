@@ -18,11 +18,7 @@
 
 #include "common/geometry/curve/bezier_curve.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 /**
  * @brief Construct a new Bezier generation object
@@ -203,6 +199,4 @@ Eigen::Matrix<double, 6, 6> Bernstein::matrix5_ =
      5, -20, 30, -20, 5, 0, -1, 5, -10, 10, -5, 1)
         .finished();
 
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp

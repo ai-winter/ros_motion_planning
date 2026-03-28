@@ -19,8 +19,7 @@
 
 #include "path_planner/graph_planner/theta_star_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the lazy Theta* algorithm
  */
@@ -69,6 +68,5 @@ private:
     { -1, 1, std::sqrt(2) }, { -1, -1, std::sqrt(2) },
   };
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif

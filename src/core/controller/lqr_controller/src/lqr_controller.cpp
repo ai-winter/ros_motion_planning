@@ -26,8 +26,7 @@ PLUGINLIB_EXPORT_CLASS(rmp::controller::LQRController, nav_core::BaseLocalPlanne
 using namespace rmp::common::math;
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace controller {
+namespace rmp::controller {
 /**
  * @brief Construct a new LQR controller object
  */
@@ -257,5 +256,4 @@ Eigen::Vector2d LQRController::_lqrControl(Eigen::Vector3d s, Eigen::Vector3d s_
   return u;
 }
 
-}  // namespace controller
 }  // namespace rmp

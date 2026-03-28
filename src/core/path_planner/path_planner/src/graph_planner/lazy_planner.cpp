@@ -18,8 +18,7 @@
 
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Construct a new Lazy planner
  * @param costmap   the environment for path planning
@@ -40,5 +39,4 @@ bool LazyPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d* 
   path->emplace_back(goal);
   return true;
 }
-}  // namespace path_planner
 }  // namespace rmp

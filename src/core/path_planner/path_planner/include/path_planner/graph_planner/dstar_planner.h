@@ -22,8 +22,7 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the D* algorithm
  */
@@ -170,6 +169,5 @@ public:
   common::geometry::Points3d expand_;          // expand
   DNode goal_;                                 // last goal
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif

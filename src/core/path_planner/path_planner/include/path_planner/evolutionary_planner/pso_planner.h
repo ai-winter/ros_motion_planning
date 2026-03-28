@@ -25,8 +25,7 @@
 #include "common/geometry/curve/bspline_curve.h"
 #include "system_config/path_planner_protos/evolutionary_planner/pso_planner.pb.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the PSO algorithm
  */
@@ -126,6 +125,5 @@ private:
   std::unique_ptr<rmp::common::geometry::BSplineCurve> bspline_gen_;  // Path generation
 };
 
-}  // namespace path_planner
 }  // namespace rmp
 #endif

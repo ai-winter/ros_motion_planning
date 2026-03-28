@@ -64,11 +64,7 @@
     return val;                                                                                                        \
   }
 
-namespace rmp
-{
-namespace common
-{
-namespace util
+namespace rmp::common::util
 {
 class LoggerInitializer
 {
@@ -85,8 +81,6 @@ public:
     google::ShutdownGoogleLogging();
   }
 };
-}  // namespace util
-}  // namespace common
 }  // namespace rmp
 extern rmp::common::util::LoggerInitializer logger_initializer;
 

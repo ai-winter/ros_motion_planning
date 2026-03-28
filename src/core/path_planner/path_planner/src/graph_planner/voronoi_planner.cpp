@@ -23,8 +23,7 @@
 
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Construct a new Voronoi-based planning object
  * @param costmap   the environment for path planning
@@ -209,5 +208,4 @@ void VoronoiPathPlanner::_updateVoronoi() {
   }
 }
 
-}  // namespace path_planner
 }  // namespace rmp

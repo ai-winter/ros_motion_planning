@@ -26,8 +26,7 @@
 #include "path_planner/path_planner.h"
 #include "path_planner/utils/path_planner_factory.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 class PathPlannerNode : public nav_core::BaseGlobalPlanner {
 public:
   /**
@@ -114,6 +113,5 @@ protected:
   ros::Publisher particles_pub_;            // evolutionary particles publisher
   ros::ServiceServer make_plan_srv_;        // planning service
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif

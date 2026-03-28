@@ -20,11 +20,7 @@
 #include "common/geometry/vec2d.h"
 #include "common/math/math_helper.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 Vec2d Vec2d::createUnitVec2d(const double angle)
 {
@@ -156,6 +152,4 @@ Vec2d operator*(const double ratio, const Vec2d& vec)
   return vec * ratio;
 }
 
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp

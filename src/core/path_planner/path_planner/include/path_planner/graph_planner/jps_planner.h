@@ -21,8 +21,7 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief lass for objects that plan using the Jump Point Search(JPSPlanner) algorithm
  */
@@ -145,6 +144,5 @@ protected:
     { nx_ - 1, { 0, 3 } },   // direction right-top, obstacle detection [left-bottom]
   };
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif  // JUMP_POINT_SEARCH_H

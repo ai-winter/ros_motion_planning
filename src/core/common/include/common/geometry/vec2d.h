@@ -17,11 +17,7 @@
 #ifndef RMP_COMMON_GEOMETRY_VECTOR2D_H_
 #define RMP_COMMON_GEOMETRY_VECTOR2D_H_
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 /**
  * @class Vec2d
@@ -134,7 +130,5 @@ protected:
 //! Multiplies the given Vec2d by a given scalar
 Vec2d operator*(const double ratio, const Vec2d& vec);
 
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp
 #endif

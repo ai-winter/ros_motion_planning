@@ -19,11 +19,7 @@
 
 #include "common/geometry/curve/curve.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 class CubicSplineCurve : public Curve
 {
@@ -78,7 +74,5 @@ public:
 protected:
   double start_angle_{ 0.0 }, goal_angle_{ 0.0 };
 };
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp
 #endif

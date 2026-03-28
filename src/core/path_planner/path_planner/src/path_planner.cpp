@@ -23,8 +23,7 @@
 using namespace rmp::common::math;
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Construct a new Global PathPlanner object
  * @param costmap_ros     the environment for path planning
@@ -254,5 +253,4 @@ bool PathPlanner::resample(const Points3d& path, Points3d* path_resample,
 
   return true;
 }
-}  // namespace path_planner
 }  // namespace rmp

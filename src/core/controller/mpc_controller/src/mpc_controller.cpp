@@ -30,8 +30,7 @@ PLUGINLIB_EXPORT_CLASS(rmp::controller::MPCController, nav_core::BaseLocalPlanne
 using namespace rmp::common::math;
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace controller {
+namespace rmp::controller {
 static constexpr int X_DIM = 3;
 static constexpr int U_DIM = 2;
 
@@ -428,5 +427,4 @@ Eigen::Vector2d MPCController::_mpcControl(Eigen::Vector3d s, Eigen::Vector3d s_
   return u;
 }
 
-}  // namespace controller
 }  // namespace rmp

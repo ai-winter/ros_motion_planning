@@ -17,11 +17,7 @@
 #include "common/util/log.h"
 #include "common/geometry/curve/curve.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 /**
  * @brief Construct a new Curve object
@@ -55,6 +51,4 @@ void Curve::setStep(double step)
   CHECK_GT(step, 0.0);
   step_ = step;
 }
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp

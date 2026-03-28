@@ -26,11 +26,7 @@
 #include <functional>
 #include <cmath>
 
-namespace rmp
-{
-namespace common
-{
-namespace structure
+namespace rmp::common::structure
 {
 /**
  * @brief k-d tree class
@@ -442,8 +438,6 @@ private:
   std::vector<PointT> points_;
 };
 
-}  // namespace structure
-}  // namespace common
 }  // namespace rmp
 
 #endif

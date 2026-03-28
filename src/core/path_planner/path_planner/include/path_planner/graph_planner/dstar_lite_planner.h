@@ -22,8 +22,7 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the LPA* algorithm
  */
@@ -196,6 +195,5 @@ public:
   double km_;                                  // correction
 };
 
-}  // namespace path_planner
 }  // namespace rmp
 #endif

@@ -21,9 +21,7 @@
 
 #include "path_planner/path_planner.h"
 
-namespace rmp
-{
-namespace path_planner
+namespace rmp::path_planner
 {
 enum PLANNER_TYPE
 {
@@ -51,7 +49,6 @@ public:
    */
   static bool createPlanner(ros::NodeHandle& nh, costmap_2d::Costmap2DROS* costmap_ros, PlannerProps& planner_props);
 };
-}  // namespace path_planner
 }  // namespace rmp
 
 #endif

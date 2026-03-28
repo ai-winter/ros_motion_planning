@@ -28,9 +28,7 @@
 #include "common/geometry/point.h"
 #include "common/structure/singleton.h"
 
-namespace rmp {
-namespace common {
-namespace util {
+namespace rmp::common::util {
 class Visualizer {
 public:
   using Line2d = std::pair<common::geometry::Point2d, common::geometry::Point2d>;
@@ -175,8 +173,6 @@ public:
 
 using VisualizerPtr = rmp::common::structure::Singleton<Visualizer>;
 
-}  // namespace util
-}  // namespace common
 }  // namespace rmp
 
 #endif

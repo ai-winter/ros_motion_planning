@@ -21,9 +21,7 @@
 
 #include "trajectory_planner/trajectory_optimization/optimizer_core.h"
 
-namespace rmp
-{
-namespace path_planner
+namespace rmp::path_planner
 {
 class TrajectoryPlannerFactory
 {
@@ -44,7 +42,6 @@ public:
    */
   static bool createPlanner(ros::NodeHandle& nh, costmap_2d::Costmap2DROS* costmap_ros, PlannerProps& planner_props);
 };
-}  // namespace path_planner
 }  // namespace rmp
 
 #endif

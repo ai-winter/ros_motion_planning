@@ -17,11 +17,7 @@
 #ifndef RMP_COMMON_STRUCTURE_SINGLETON_H_
 #define RMP_COMMON_STRUCTURE_SINGLETON_H_
 
-namespace rmp
-{
-namespace common
-{
-namespace structure
+namespace rmp::common::structure
 {
 template <typename TSingleton>
 class Singleton
@@ -43,7 +39,5 @@ public:
     return instance;
   }
 };
-}  // namespace structure
-}  // namespace common
 }  // namespace rmp
 #endif

@@ -22,8 +22,7 @@
 #include "path_planner/path_planner.h"
 #include "voronoi_layer.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the Voronoi-based planning algorithm
  */
@@ -86,6 +85,5 @@ private:
     { -1, 1, std::sqrt(2) }, { -1, -1, std::sqrt(2) },
   };
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif

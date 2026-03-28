@@ -22,11 +22,7 @@
 #include "common/math/math_helper.h"
 #include "common/geometry/curve/dubins_curve.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 namespace
 {
@@ -465,6 +461,4 @@ void DubinsCurve::_update(DubinsLength length, DubinsMode mode, DubinsLength& be
     }
   }
 }
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp

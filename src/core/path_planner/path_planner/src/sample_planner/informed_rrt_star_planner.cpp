@@ -22,8 +22,7 @@
 using namespace rmp::common::geometry;
 using CollisionChecker = rmp::common::geometry::CollisionChecker;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief  Constructor
  * @param   costmap   the environment for path planning
@@ -185,5 +184,4 @@ InformedRRTStarPathPlanner::Node InformedRRTStarPathPlanner::_transform(double x
   int id = grid2Index(tx, ty);
   return Node(tx, ty, 0, 0, id, 0);
 }
-}  // namespace path_planner
 }  // namespace rmp

@@ -27,8 +27,7 @@ PLUGINLIB_EXPORT_CLASS(rmp::controller::APFController, nav_core::BaseLocalPlanne
 using namespace rmp::common::math;
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace controller {
+namespace rmp::controller {
 static constexpr double kLargeAngleRad = M_PI_2;
 static constexpr double kInflationRadiusM = 3.0;
 
@@ -365,5 +364,4 @@ void APFController::publishPotentialMap(const Vec2d& current_pt, const Vec2d& ta
   potential_map.info.origin.position.y = origin_y;
   potential_map_pub_.publish(potential_map);
 }
-}  // namespace controller
 }  // namespace rmp

@@ -19,8 +19,7 @@
 
 #include "path_planner/sample_planner/rrt_planner.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the RRT Connect algorithm
  */
@@ -51,7 +50,6 @@ protected:
   // Sampled list backward
   std::unordered_map<int, Node> sample_list_b_;
 };
-}  // namespace path_planner
 }  // namespace rmp
 
 #endif

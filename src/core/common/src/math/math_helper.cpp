@@ -20,11 +20,7 @@
 
 #include "common/math/math_helper.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace math
+namespace rmp::common::math
 {
 double crossProd(const rmp::common::geometry::Vec2d& start_point, const rmp::common::geometry::Vec2d& end_point_1,
                  const rmp::common::geometry::Vec2d& end_point_2)
@@ -220,6 +216,4 @@ void sortPoints(std::vector<rmp::common::geometry::Vec2d>& points)
             });
 }
 
-}  // namespace math
-}  // namespace common
 }  // namespace rmp

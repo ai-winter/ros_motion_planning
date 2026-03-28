@@ -17,8 +17,7 @@
 #include "common/util/log.h"
 #include "system_config/system_config.h"
 
-namespace rmp {
-namespace system_config {
+namespace rmp::system_config {
 /**
  * @brief Load and parse the system configuration from the file.
  */
@@ -46,5 +45,4 @@ const pb::SystemConfig& SystemConfig::configure() {
   return config_;
 }
 
-}  // namespace system_config
 }  // namespace rmp

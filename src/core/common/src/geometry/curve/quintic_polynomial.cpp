@@ -19,11 +19,7 @@
 
 #include "common/geometry/curve/quintic_polynomial.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 QuinticPolynomial::QuinticPolynomial() : a0_(0.0), a1_(0.0), a2_(0.0), a3_(0.0), a4_(0.0), a5_(0.0)
 {
@@ -91,6 +87,4 @@ double QuinticPolynomial::ddddx(double t) const
 {
   return 24 * a4_ + 120 * a5_ * t;
 }
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp

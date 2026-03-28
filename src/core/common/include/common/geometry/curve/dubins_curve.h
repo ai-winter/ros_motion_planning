@@ -21,11 +21,7 @@
 
 #include "common/geometry/curve/curve.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 class DubinsCurve : public Curve
 {
@@ -180,7 +176,5 @@ private:
   };
 };
 
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp
 #endif

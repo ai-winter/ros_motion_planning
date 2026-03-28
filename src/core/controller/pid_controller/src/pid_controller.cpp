@@ -29,8 +29,7 @@ PLUGINLIB_EXPORT_CLASS(rmp::controller::PIDController, nav_core::BaseLocalPlanne
 using namespace rmp::common::math;
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace controller {
+namespace rmp::controller {
 /**
  * @brief Construct a new PIDController object
  */
@@ -320,5 +319,4 @@ Eigen::Vector2d PIDController::_modelBasedPIDControl(Eigen::Vector3d s,
 
   return u;
 }
-}  // namespace controller
 }  // namespace rmp

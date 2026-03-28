@@ -18,9 +18,7 @@
 
 using namespace rmp::common::geometry;
 
-namespace rmp
-{
-namespace path_planner
+namespace rmp::path_planner
 {
 /**
  * @brief A constructor for NodeHybrid
@@ -109,5 +107,4 @@ double NodeHybrid::getTraversalCost(const NodePtr& child, const HybridAStarMotio
   return travel_cost;
 }
 
-}  // namespace path_planner
 }  // namespace rmp

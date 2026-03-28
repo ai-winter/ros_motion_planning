@@ -18,11 +18,7 @@
 
 #include "common/geometry/curve/cubic_spline_curve.h"
 
-namespace rmp
-{
-namespace common
-{
-namespace geometry
+namespace rmp::common::geometry
 {
 /**
  * @brief Construct a new Cubic spline generation object
@@ -198,6 +194,4 @@ bool CubicSplineCurve::run(const Points3d& points, Points3d& path)
     return run(points_, path);
   }
 }
-}  // namespace geometry
-}  // namespace common
 }  // namespace rmp

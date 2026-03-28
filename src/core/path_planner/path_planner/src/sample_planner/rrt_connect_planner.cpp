@@ -19,8 +19,7 @@
 using namespace rmp::common::geometry;
 using CollisionChecker = rmp::common::geometry::CollisionChecker;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief  Constructor
  * @param   costmap   the environment for path planning
@@ -142,5 +141,4 @@ bool RRTConnectPathPlanner::plan(const Point3d& start, const Point3d& goal,
   }
   return false;
 }
-}  // namespace path_planner
 }  // namespace rmp

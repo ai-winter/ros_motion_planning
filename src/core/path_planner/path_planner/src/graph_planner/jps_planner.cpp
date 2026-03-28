@@ -21,8 +21,7 @@
 
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Constructor
  * @param costmap   the environment for path planning
@@ -314,5 +313,4 @@ bool JPSPathPlanner::_checkSlashLine(int dir, const JNode& node, OpenList& open_
   }
 }
 
-}  // namespace path_planner
 }  // namespace rmp

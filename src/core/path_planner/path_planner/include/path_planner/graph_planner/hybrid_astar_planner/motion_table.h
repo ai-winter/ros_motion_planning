@@ -22,9 +22,7 @@
 #include "common/geometry/curve/curve.h"
 #include "path_planner/utils/motions.h"
 
-namespace rmp
-{
-namespace path_planner
+namespace rmp::path_planner
 {
 class HybridAStarMotionTable
 {
@@ -98,7 +96,6 @@ public:
 
   std::unique_ptr<rmp::common::geometry::Curve> curve_gen;
 };
-}  // namespace path_planner
 }  // namespace rmp
 
 #endif

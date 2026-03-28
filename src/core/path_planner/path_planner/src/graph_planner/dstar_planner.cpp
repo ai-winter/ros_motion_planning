@@ -20,8 +20,7 @@
 
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 namespace {
 // local costmap window size (in grid, 3.5m / 0.05 = 70)
 constexpr int win_size = 70;
@@ -352,5 +351,4 @@ bool DStarPathPlanner::plan(const Point3d& start, const Point3d& goal, Points3d*
     return true;
   }
 }
-}  // namespace path_planner
 }  // namespace rmp

@@ -22,8 +22,7 @@
 
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Construct a new GA object
  * @param costmap   the environment for path planning
@@ -433,5 +432,4 @@ void GAPathPlanner::optimizeGenets(const Genets& genets_p, Genets& genets_c,
     best_genet.position = genets_c.best_pos;
   }
 }
-}  // namespace path_planner
 }  // namespace rmp

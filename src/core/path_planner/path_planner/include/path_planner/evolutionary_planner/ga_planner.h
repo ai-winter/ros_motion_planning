@@ -25,8 +25,7 @@
 #include "common/geometry/curve/bspline_curve.h"
 #include "system_config/path_planner_protos/evolutionary_planner/ga_planner.pb.h"
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Class for objects that plan using the GA algorithm
  */
@@ -119,6 +118,5 @@ private:
   std::vector<Genets> inherited_genets_;                         // inherited genets
   std::unique_ptr<common::geometry::BSplineCurve> bspline_gen_;  // Path generation
 };
-}  // namespace path_planner
 }  // namespace rmp
 #endif

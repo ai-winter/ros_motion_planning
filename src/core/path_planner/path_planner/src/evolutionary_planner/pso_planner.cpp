@@ -24,8 +24,7 @@
 using namespace rmp::common::math;
 using namespace rmp::common::geometry;
 
-namespace rmp {
-namespace path_planner {
+namespace rmp::path_planner {
 /**
  * @brief Construct a new PSO object
  * @param costmap   the environment for path planning
@@ -363,5 +362,4 @@ void PSOPathPlanner::optimizeParticle(Particle& particle, Particle& best_particl
     best_particle.position = particle.position;
   }
 }
-}  // namespace path_planner
 }  // namespace rmp
