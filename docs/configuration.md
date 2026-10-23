@@ -6,6 +6,7 @@
   - [1. Dynamic Obstacles](#1-dynamic-obstacles)
   - [2. Static Obstacles](#2-static-obstacles)
   - [3. Costmap Layers](#3-costmap-layers)
+  - [4. Planner and Controller Parameters](#4-planner-and-controller-parameters)
 
 ## <span id="0">0. Introduction
 
@@ -20,7 +21,7 @@ rviz_file: "sim_env.rviz"
 
 robots_config:
   - robot1_type: "turtlebot3_waffle"
-    robot1_global_planner: "a_star"
+    robot1_global_planner: "astar"
     robot1_local_planner: "dwa"
     robot1_x_pos: "0.0"
     robot1_y_pos: "0.0"
@@ -197,3 +198,9 @@ local_costmap:
 Explanation:
 - `global_costmap`: global costmap option
 - `local_costmap`: local costmap option
+
+## <span id="4">4. Planner and Controller Parameters
+
+`src/user_config/user_config.yaml` selects planner names, robot types and poses, maps, and plugins. Use planner identifiers recognized by the path-planner factory; for example, `astar` (not `a_star`) or `jps`. The local-planner field selects implementations such as `dwa` and `pid`.
+
+These selections do not set the planners' or controllers' numeric tuning parameters. Their defaults are in the text-format protobuf file `src/core/system_config/system_config/system_config.pb.txt`; field definitions are in `src/core/system_config/system_config/path_planner_protos/` and `src/core/system_config/system_config/controller_protos/`. `SystemConfig` loads the text proto during initialization, so update it before starting or restarting the application. Edit `user_config.yaml` rather than generated launch files for implementation selection.
